@@ -37,7 +37,6 @@ object LogTranslator {
             cmd == "ATDP" -> "The car uses $reply"
             cmd in SETUP -> SETUP[cmd]
             cmd.startsWith("AT") -> null
-            cmd == "04" -> if (ElmParser.extractData(lines, "44") != null) "Cleared the trouble codes and turned off the check-engine light" else null
             cmd == "0902" -> ElmParser.parseVin(lines)?.let { "VIN: $it" }
             cmd == "03" || cmd == "07" -> null // decoded codes follow, with their definitions
             cmd.startsWith("01") && cmd.length >= 4 -> mode01(cmd.substring(2), lines)

@@ -2,6 +2,13 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.2.4 (19 October 2026)
+
+### Changed
+- OBD2 Reader is now read-only. The **Clear codes** button is gone, and the app can no longer clear trouble codes, turn off the check-engine light or reset emissions readiness.
+- Every command is checked before it reaches the adapter. Only the adapter's own settings and OBD2 read requests (live data, freeze frame, stored, pending and permanent codes, test results and vehicle info) get through. Anything that could change the car is blocked and noted in the adapter log.
+- The Help section explains that the app is read-only, and that a workshop scan tool can clear codes after a repair.
+
 ## 1.2.3 (19 October 2026)
 
 Fixes from a full QA pass (Android Lint, compiler warnings, unit tests and a code review).

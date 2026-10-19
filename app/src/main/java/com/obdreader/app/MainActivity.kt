@@ -132,7 +132,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var connectBtn: SkewButton
     private lateinit var demoBtn: SkewButton
     private lateinit var readDtcBtn: SkewButton
-    private lateinit var clearDtcBtn: SkewButton
     private lateinit var vinBtn: MaterialButton
     private lateinit var towerList: LinearLayout
     private lateinit var vinText: TextView
@@ -234,7 +233,6 @@ class MainActivity : AppCompatActivity() {
         connectBtn = findViewById(R.id.connectButton)
         demoBtn = findViewById(R.id.demoButton)
         readDtcBtn = findViewById(R.id.readDtcButton)
-        clearDtcBtn = findViewById(R.id.clearDtcButton)
         vinBtn = findViewById(R.id.vinButton)
         towerList = findViewById(R.id.gaugeGrid)
         vinText = findViewById(R.id.vinText)
@@ -263,13 +261,10 @@ class MainActivity : AppCompatActivity() {
         demoBtn.text = getString(R.string.demo_car)
         demoBtn.kind = SkewButton.Kind.OUTLINE
         readDtcBtn.text = getString(R.string.read_codes)
-        clearDtcBtn.text = getString(R.string.clear_codes)
-        clearDtcBtn.kind = SkewButton.Kind.DANGER
 
         connectBtn.setOnClickListener { if (ObdSession.isActive) disconnect() else showConnectSheet() }
         demoBtn.setOnClickListener { if (!ObdSession.isActive) startSession(DemoTransport()) }
         readDtcBtn.setOnClickListener { readDtcs() }
-        clearDtcBtn.setOnClickListener { confirmClearDtcs() }
         vinBtn.setOnClickListener { readVin() }
         findViewById<View>(R.id.logCard).setOnClickListener { toggleLog() }
         findViewById<View>(R.id.helpRow).setOnClickListener { showHelp() }
@@ -983,36 +978,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun confirmClearDtcs() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Clear trouble codes?")
-            .setMessage("This turns off the check-engine light and erases stored codes and freeze-frame data. It also resets emissions readiness monitors. Do this with the engine off and ignition on. It doesn't fix the underlying fault.")
-            .setPositiveButton("Clear codes") { _, _ -> clearDtcs() }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun clearDtcs() {
-        if (ObdSession.client == null) return
-        lifecycleScope.launch {
-            setDtcStatus("Clearing codes…")
-            try {
-                if (ObdSession.clearCodes()) {
-                    dtcContainer.removeAllViews()
-                    setCodeBadge(0)
-                    roundel.checkEngine = false
-                    setDtcStatus("Codes cleared", "Read codes again to confirm they've gone.", MilBannerView.State.OK)
-                } else {
-                    setDtcStatus("The car refused to clear codes", "Some cars only allow it with the engine off and the ignition on.")
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                setDtcStatus("Couldn't clear codes", e.message ?: "The adapter didn't answer.")
-            }
-        }
-    }
-
     private fun readVin() {
         if (ObdSession.client == null) return
         lifecycleScope.launch {
@@ -1492,7 +1457,6 @@ class MainActivity : AppCompatActivity() {
         connectBtn.kind = if (active) SkewButton.Kind.OUTLINE else SkewButton.Kind.PRIMARY
         demoBtn.isEnabled = !active
         readDtcBtn.isEnabled = connected
-        clearDtcBtn.isEnabled = connected
         vinBtn.isEnabled = connected
     }
 
