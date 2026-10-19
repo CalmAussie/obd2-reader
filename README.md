@@ -7,17 +7,18 @@ An Android app that reads live engine data and trouble codes from a cheap ELM327
 ## What it looks like
 
 <p align="center">
-  <img src="docs/demo.gif" width="300" alt="Animated demo: the demo car connects with start lights and a rev sweep, live readings glide on the Dashboard, then the Race telemetry and Digital cockpit styles, the Graphs tab and trouble codes on the Diagnostics tab">
+  <img src="docs/demo.gif" width="300" alt="Animated demo: choosing the car first, the demo car connecting with start lights and a rev sweep, live readings gliding on the Dashboard, the driving score in its Everyday, Efficiency and Racing styles, the Race telemetry and Digital cockpit styles, the Graphs tab and trouble codes on the Diagnostics tab">
 </p>
 
 **[Try the interactive demo in your browser](https://raw.githack.com/CalmAussie/obd2-reader/main/preview/index.html)**: tap **Demo car**, switch styles with the palette button, and open **Android Auto** at the top to see the car screen. It's a web mock-up of the app, so nothing needs installing.
 
-The real app, running on Android 15 with the demo car:
+The real app, version 1.4.2, running on Android 15 with the demo car:
 
 <p align="center">
-  <img src="docs/screen-dashboard.png" width="240" alt="Dashboard: the rev roundel, speed, coolant and fuel">
-  <img src="docs/screen-graphs.png" width="240" alt="Graphs: live charts of engine speed and road speed">
-  <img src="docs/screen-diagnostics.png" width="240" alt="Diagnostics: three trouble codes with a full explanation">
+  <img src="docs/screen-choose-car.png" width="180" alt="First launch: choose your car">
+  <img src="docs/screen-dashboard.png" width="180" alt="Dashboard: the rev roundel, speed, coolant and fuel">
+  <img src="docs/screen-graphs.png" width="180" alt="Graphs: live charts of engine speed and road speed">
+  <img src="docs/screen-diagnostics.png" width="180" alt="Diagnostics: three trouble codes with a full explanation">
 </p>
 
 <p align="center">
