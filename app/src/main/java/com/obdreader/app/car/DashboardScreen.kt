@@ -156,7 +156,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
                 if (ObdSession.lastAdapterName(carContext) != null) {
                     strip.addAction(Action.Builder().setTitle("Connect").setOnClickListener { connectLast() }.build())
                 }
-                strip.addAction(Action.Builder().setTitle("Demo").setOnClickListener { ObdSession.connect(carContext, DemoTransport()) }.build())
+                strip.addAction(Action.Builder().setTitle("Demo").setOnClickListener { ObdSession.connect(carContext, DemoTransport(com.obdreader.app.obd.VinDecoder.sampleVin(com.obdreader.app.session.AppPrefs.savedCar(com.obdreader.app.session.AppPrefs.of(carContext))?.make, com.obdreader.app.session.AppPrefs.savedCar(com.obdreader.app.session.AppPrefs.of(carContext))?.year))) }.build())
             }
         }
         return strip.build()

@@ -106,6 +106,43 @@ object VinDecoder {
     /** Model-year codes for VIN position 10, starting at 1980. I, O, Q, U, Z and 0 are never used. */
     private const val YEAR_CODES = "ABCDEFGHJKLMNPRSTVWXY123456789"
 
+    /** True if a make from the VIN and a make from the car list are the same brand ("Lexus (Toyota)" and "Lexus"). */
+    fun sameMake(a: String, b: String): Boolean {
+        fun names(s: String) = s.substringBefore(" (").split("/").map { it.trim().lowercase(Locale.US) }.filter { it.isNotEmpty() }.toSet()
+        return names(a).intersect(names(b)).isNotEmpty()
+    }
+
+    /**
+     * A believable VIN for [make] and [year], with a valid check digit. The demo car reports it,
+     * so the demo matches the car the user chose.
+     */
+    fun sampleVin(make: String?, year: Int?): String {
+        val wmi = make?.let { m ->
+            WMI.entries.filter { sameMake(it.value, m) }.map { it.key }.sortedBy { if (it[0] in '1'..'5') 0 else 1 }.firstOrNull()
+        } ?: "1FA"
+        val y = (year ?: 2012).coerceIn(1980, 2039)
+        val yearCode = YEAR_CODES[(y - 1980) % 30]
+        // Position 7 is a letter for 2010 to 2039 and a digit for 1980 to 2009 (North American rule).
+        val pos7 = if (y >= 2010) 'F' else '2'
+        val chars = (wmi + "HP3" + pos7 + "2" + "0" + yearCode + "L123456").toCharArray()
+        chars[8] = checkDigit(String(chars))
+        return String(chars)
+    }
+
+    /** The standard VIN check digit (position 9). */
+    internal fun checkDigit(vin: String): Char {
+        val weights = intArrayOf(8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2)
+        fun value(c: Char): Int = when (c) {
+            in '0'..'9' -> c - '0'
+            in "AJ" -> 1; in "BKS" -> 2; in "CLT" -> 3; in "DMU" -> 4; in "ENV" -> 5
+            in "FW" -> 6; in "GPX" -> 7; in "HY" -> 8; in "RZ" -> 9
+            else -> 0
+        }
+        val sum = vin.indices.sumOf { value(vin[it]) * weights[it] }
+        val r = sum % 11
+        return if (r == 10) 'X' else ('0' + r)
+    }
+
     fun decode(vin: String): Info {
         val v = vin.trim().uppercase(Locale.US)
         if (v.length != 17) return Info(null, null)

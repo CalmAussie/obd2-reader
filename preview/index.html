@@ -1212,7 +1212,7 @@ async function startSession(name, onConnected, failure) {
   setStatus("connected", `Connected to ${name}`, "ELM327 v1.5, CAN 500 kbaud");
   ignition();
   $("protocol").textContent = "Protocol: ISO 15765-4 CAN (11-bit, 500 kbaud)";
-  log("> 0902"); log("< " + VIN_FRAMES); showVin(DEMO_VIN);
+  log("> 0902"); log("< " + VIN_FRAMES); showVin(demoVin());
   if (onConnected) onConnected();
   let cycle = 0;
   const poll = () => {
@@ -1334,7 +1334,7 @@ async function readVin() {
   const id = session;
   $("vin").textContent = "Reading…"; log("> 0902"); await wait(500); if (id !== session) return;
   log("< " + VIN_FRAMES);
-  showVin(DEMO_VIN);
+  showVin(demoVin());
 }
 
 $("connectBtn").onclick = () => state === "idle" ? showConnectSheet() : disconnect();
@@ -1654,7 +1654,7 @@ function translate(cmd, rsp) {
   if (cmd.startsWith("ATSP")) return "Set the protocol to " + (protoName(cmd.slice(4)) || cmd.slice(4));
   if (cmd === "ATDPN") return "The car uses " + (protoName(r.replace(/^A/, "")) || r);
   if (SETUP[cmd]) return SETUP[cmd];
-  if (cmd === "0902") return `VIN: ${DEMO_VIN}`;
+  if (cmd === "0902") return `VIN: ${demoVin()}`;
   if (/^01(00|20|40|60)$/.test(cmd)) {
     const hex = r.slice(4); let c = 0; for (let i = 0; i < 31; i++) c += (parseInt(hex.slice(Math.floor(i / 4), Math.floor(i / 4) + 1), 16) >> (3 - i % 4)) & 1;
     const b = parseInt(cmd.slice(2), 16), h = n => n.toString(16).toUpperCase().padStart(2, "0");
@@ -1776,7 +1776,8 @@ showCarPicker = function (firstRun = false, onDone = null) {
     sh.querySelector("p").textContent = "So the app can explain your car's own fault codes, set the rev dial to its redline and find its protocol faster. You can change it later under Diagnostics.";
     $("carClear").textContent = "Not listed";
   }
-  $("carSave").addEventListener("click", () => { mark(); if (onDone) setTimeout(onDone, 50); });
+  /* In the preview every connection is the simulated car, so it becomes the car you choose. */
+  $("carSave").addEventListener("click", () => { mark(); if (state === "connected") setTimeout(() => showVin(demoVin()), 0); if (onDone) setTimeout(onDone, 50); });
   $("carClear").addEventListener("click", () => { mark(); if (onDone) setTimeout(onDone, 50); });
 };
 $("carRow").onclick = () => showCarPicker();
@@ -1846,6 +1847,22 @@ setInterval(renderScore, 500);
 renderScore();
 /* First thing on a first visit: choose the car */
 setTimeout(() => { if (needsCar() && !location.hash && !window.__noFirstRun) showCarPicker(true); }, 300);
+
+/* ===== 1.4.1: the demo car's VIN matches the chosen car (mirrors VinDecoder.sampleVin) ===== */
+const MORE_WMI = { "4F2": "Mazda", "JTD": "Toyota", "4T1": "Toyota", "KMH": "Hyundai", "5NP": "Hyundai", "KNA": "Kia", "5XY": "Kia", "1N4": "Nissan", "JN1": "Nissan", "4S3": "Subaru", "JF1": "Subaru", "1G1": "Chevrolet", "1C4": "Jeep", "1J4": "Jeep", "WVW": "Volkswagen", "WAU": "Audi", "WBA": "BMW", "WDD": "Mercedes-Benz", "YV1": "Volvo", "SAL": "Land Rover", "SAJ": "Jaguar", "WP0": "Porsche", "5YJ": "Tesla", "JA3": "Mitsubishi", "JS2": "Suzuki", "6G1": "Holden" };
+Object.entries(MORE_WMI).forEach(([k, v]) => { if (!WMI[k]) WMI[k] = v; });
+const sameMake = (a, b) => { const n = s => s.split(" (")[0].split("/").map(x => x.trim().toLowerCase()).filter(Boolean); const x = n(a); return n(b).some(y => x.includes(y)); };
+function vinCheck(v) {
+  const w = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
+  const val = c => /\d/.test(c) ? +c : ("AJ".includes(c) ? 1 : "BKS".includes(c) ? 2 : "CLT".includes(c) ? 3 : "DMU".includes(c) ? 4 : "ENV".includes(c) ? 5 : "FW".includes(c) ? 6 : "GPX".includes(c) ? 7 : "HY".includes(c) ? 8 : "RZ".includes(c) ? 9 : 0);
+  const r = [...v].reduce((s, c, i) => s + val(c) * w[i], 0) % 11; return r === 10 ? "X" : String(r);
+}
+function demoVin() {
+  const make = myCar && myCar.make, year = Math.max(1980, Math.min(2039, (myCar && myCar.year) || 2012));
+  const wmi = (make && Object.keys(WMI).filter(k => sameMake(WMI[k], make)).sort((a, b) => (/^[1-5]/.test(a) ? 0 : 1) - (/^[1-5]/.test(b) ? 0 : 1))[0]) || "1FA";
+  const v = wmi + "HP3" + (year >= 2010 ? "F" : "2") + "20" + "ABCDEFGHJKLMNPRSTVWXY123456789"[(year - 1980) % 30] + "L123456";
+  return v.slice(0, 8) + vinCheck(v) + v.slice(9);
+}
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

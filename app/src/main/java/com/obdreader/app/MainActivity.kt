@@ -281,7 +281,7 @@ class MainActivity : AppCompatActivity() {
                 else -> showConnectSheet()
             }
         }
-        demoBtn.setOnClickListener { if (!ObdSession.isActive) startSession(DemoTransport()) }
+        demoBtn.setOnClickListener { if (!ObdSession.isActive) startSession(DemoTransport(VinDecoder.sampleVin(savedCar()?.make, savedCar()?.year))) }
         readDtcBtn.setOnClickListener { readDtcs() }
         vinBtn.setOnClickListener { readVin() }
         findViewById<View>(R.id.logCard).setOnClickListener { toggleLog() }
@@ -1195,12 +1195,44 @@ class MainActivity : AppCompatActivity() {
     private fun showVin(vin: String?) {
         vinText.text = vin ?: "Not reported"
         val info = vin?.let { VinDecoder.decode(it) }
+        showVinMismatch(info)
         vehicleText.text = when {
             info?.make != null && info.modelYear != null -> "${info.make}, ${info.modelYear} model year"
             info?.make != null -> info.make
             vin != null -> "Make not recognised from VIN"
             savedCar() != null -> "Your car: ${savedCar()?.label}. It doesn't report a VIN."
             else -> "Older cars often don't report a VIN. Live data and codes still work."
+        }
+    }
+
+    /**
+     * The VIN is the car's own word on what it is. If it disagrees with the car the user chose,
+     * say so and offer to switch, because the chosen car decides how manufacturer codes are explained.
+     */
+    private fun showVinMismatch(info: VinDecoder.Info?) {
+        val note = findViewById<TextView>(R.id.vinMismatch)
+        val fix = findViewById<MaterialButton>(R.id.vinMismatchFix)
+        val car = savedCar()
+        val vinMake = info?.make
+        val makeDiffers = car != null && vinMake != null && !VinDecoder.sameMake(vinMake, car.make)
+        val yearDiffers = car != null && vinMake != null && !makeDiffers && info.modelYear != null && kotlin.math.abs(info.modelYear - car.year) > 1
+        if (car == null || (!makeDiffers && !yearDiffers)) {
+            note.visibility = View.GONE; fix.visibility = View.GONE
+            return
+        }
+        val fromVin = listOfNotNull(info?.modelYear?.toString(), vinMake?.substringBefore(" (")).joinToString(" ")
+        note.text = "This car's VIN says it's a $fromVin, but your car is set to ${car.label}. Fault codes are explained for the car you choose."
+        note.visibility = View.VISIBLE
+        fix.text = "Set my car to $fromVin"
+        fix.visibility = View.VISIBLE
+        fix.setOnClickListener {
+            val make = VehicleCatalog.makeNames.firstOrNull { VinDecoder.sameMake(vinMake!!, it) } ?: vinMake!!.substringBefore(" (")
+            prefs.edit().putString(PREF_CAR_MAKE, make).putInt(PREF_CAR_YEAR, info?.modelYear ?: car.year)
+                .remove(PREF_CAR_MODEL).remove(PREF_CAR_ENGINE).remove(PREF_LAST_PROTOCOL).apply()
+            updateCarSetting(); applyRedline()
+            showVinMismatch(info)
+            lastCodes?.let { renderCodes(it) }
+            toast("Your car is now set to $make. Add the model under Your car if you like.")
         }
     }
 
@@ -1475,6 +1507,7 @@ class MainActivity : AppCompatActivity() {
             applyRedline()
             sheet.dismiss()
             if (lastCodes != null) lastCodes?.let { renderCodes(it) } // re-explain codes for the new make
+            showVinMismatch(ObdSession.state.value.vin?.let { VinDecoder.decode(it) })
             when {
                 onDone != null -> onDone()
                 firstRun -> toast("Saved. Tap Connect when you're in the car, or try the demo car.")
