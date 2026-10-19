@@ -95,7 +95,7 @@ Tap the palette icon on the Dashboard to choose a style. Your choice is saved.
 | Digital cockpit | One big speed in a glowing ring, on layered glass |
 
 ## Android Auto
-The car screen shows live RPM, speed, coolant, throttle, fuel and battery, and lists trouble codes. It uses your style's colours, but its background, fonts and layout are always Android Auto's own.
+The car screen shows live RPM, speed, coolant, throttle, fuel and battery, refreshing about five times a second with each number gliding to the next reading, and lists trouble codes. It uses your style's colours, but its background, fonts and layout are always Android Auto's own.
 
 Android Auto only shows Play Store apps until you allow others. On your phone:
 1. Open Android Auto's settings (search "Android Auto" in Settings).

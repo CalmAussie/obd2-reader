@@ -27,7 +27,8 @@
 .car-grid { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, 1fr); gap: 1.4cqi; }
 .car-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: .6cqi; border-radius: 2cqi; }
 .car-item svg { width: 5.6cqi; height: 5.6cqi; fill: var(--car-accent, #E8EAED); }
-.car-item svg.roundel { width: 9cqi; height: 9cqi; fill: none; }
+.car-item svg.roundel { width: 11cqi; height: 11cqi; fill: none; }
+.car-item svg.tile { width: 16.5cqi; height: 11cqi; fill: none; }
 .car-item.hot svg { fill: #F28B82; }
 .car-row.has-plate { display: flex; align-items: center; gap: 2.4cqi; }
 .car-plate { flex: none; min-width: 14cqi; text-align: center; font-family: "Archivo", sans-serif; font-stretch: 125%; font-weight: 850; font-style: italic; font-size: max(12px, 2.6cqi); padding: 1cqi 1.6cqi .8cqi; border-radius: .6cqi; line-height: 1; }
@@ -477,7 +478,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
   <div class="car-rail"><div class="clock" id="carClock">12:00</div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4,4h7v7H4zM13,4h7v7h-7zM4,13h7v7H4zM13,13h7v7h-7z"/></svg><div class="app"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.38,8.57l-1.23,1.85a8,8 0,0 1,-0.22 7.58H5.07A8,8 0,0 1,15.58 6.85l1.85,-1.23A10,10 0,0 0,3.35 19a2,2 0,0 0,1.72 1h13.85a2,2 0,0 0,1.74 -1a10,10 0,0 0,-0.27 -10.44zM10.59,15.41a2,2 0,0 0,2.83 0l5.66,-8.49 -8.49,5.66a2,2 0,0 0,0 2.83z"/></svg></div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,22c1.1,0 2,-0.9 2,-2h-4c0,1.1 0.9,2 2,2zM18,16v-5c0,-3.07 -1.64,-5.64 -4.5,-6.32V4c0,-0.83 -0.67,-1.5 -1.5,-1.5s-1.5,0.67 -1.5,1.5v0.68C7.63,5.36 6,7.92 6,11v5l-2,2v1h16v-1l-2,-2z"/></svg></div>
   <div class="car-main" id="carMain"></div>
 </div>
-<p class="car-caption" id="carCaption" hidden>Android Auto draws every app with its own driving-safe templates, so the background, fonts and layout stay Android Auto's. The car screen takes your livery's colours for buttons and icons, and shows the rev roundel and code plates as images. It shares the phone's connection: connect on either one.</p>
+<p class="car-caption" id="carCaption" hidden>Android Auto draws every app with its own driving-safe templates, so the background, fonts and layout stay Android Auto's. The car screen takes your livery's colours, and draws the live numbers, the rev roundel and the code plates as images. Android Auto limits how often a car screen can redraw, so it refreshes about five times a second, with each number gliding between refreshes. It shares the phone's connection: connect on either one.</p>
 <div class="phone" id="phone">
   <div class="statusbar"><span id="clock">12:00</span><span>▮▮▮ 87%</span></div>
   <div class="scroll" id="pageDash">
@@ -1665,6 +1666,59 @@ function logCodes(codes, kind) {
 }
 const _disc2 = disconnect;
 disconnect = function () { codeLines = []; _disc2(); renderLog(); $("graphRate").textContent = "Connect on the Dashboard tab to see live graphs."; };
+
+/* ===== 1.3.1: Android Auto, mirrors car/DashboardScreen.kt =====
+   One grid for every state with fixed tile titles (so each update is a free refresh under
+   Android Auto's 5-template rule); live numbers drawn into the tile images; ~5 refreshes a
+   second with each value gliding between refreshes. */
+const CAR_TILES = [
+  { key: "0C", title: "Engine speed", unit: "rpm", dec: 0, min: 0, max: 8000, warn: 6500 },
+  { key: "0D", title: "Speed", unit: "km/h", dec: 0, min: 0, max: 240, warn: null },
+  { key: "05", title: "Coolant", unit: "°C", dec: 0, min: 40, max: 120, warn: 108 },
+  { key: "11", title: "Throttle", unit: "%", dec: 0, min: 0, max: 100, warn: null },
+  { key: "2F", title: "Fuel", unit: "%", dec: 0, min: 0, max: 100, warn: null },
+  { key: "VOLT", title: "Battery", unit: "V", dec: 1, min: 11, max: 15, warn: null },
+];
+const carShown = {}, carStepAt = {};
+function carGlide(key, v, now) {
+  if (v == null) { delete carShown[key]; return null; }
+  if (carShown[key] == null) { carShown[key] = v; carStepAt[key] = now; return v; }
+  const dt = Math.min(300, now - (carStepAt[key] || now) || 200); carStepAt[key] = now;
+  carShown[key] += (v - carShown[key]) * (1 - Math.exp(-dt / 140));
+  return carShown[key];
+}
+function carRoundelNum(frac, num) {
+  return carRoundel(frac).replace('r="18"', 'r="22"').replace("</svg>", `<text x="32" y="32" dy=".36em" text-anchor="middle" font-size="${num.length > 4 ? 11.5 : 15}" fill="#111214" style="font-family:Archivo;font-stretch:125%;font-weight:850;font-style:italic">${num}</text></svg>`);
+}
+function carTile(value, frac, high) {
+  const [acc] = CAR_ACCENT[themeId] || CAR_ACCENT.asphalt, col = high ? "#F28B82" : "#E8EAED";
+  return `<svg class="tile" viewBox="0 0 288 192" aria-hidden="true"><text x="144" y="92" dy=".36em" text-anchor="middle" font-size="${value.length > 4 ? 80 : 104}" fill="${col}" style="font-family:Archivo;font-stretch:125%;font-weight:850;font-style:italic;font-variant-numeric:tabular-nums">${value}</text>
+    <rect x="28" y="166" width="232" height="12" rx="6" fill="#3C4043"/>${frac != null && frac > 0.004 ? `<rect x="28" y="166" width="${(232 * frac).toFixed(1)}" height="12" rx="6" fill="${high ? "#F28B82" : acc}"/>` : ""}</svg>`;
+}
+const _renderCar = renderCar;
+renderCar = function () {
+  const main = $("carMain"); if (!main || $("car").hidden) return;
+  if (carScreen === "codes" && state === "connected") return _renderCar();
+  carScreen = "dash";
+  const [acc, onAcc] = CAR_ACCENT[themeId] || CAR_ACCENT.asphalt;
+  $("car").style.setProperty("--car-accent", acc); $("car").style.setProperty("--car-on-accent", onAcc);
+  const connected = state === "connected" && !ignOff, now = performance.now();
+  const status = state === "connecting" ? "Connecting…" : state === "waiting" ? statusNow.title : statusNow.kind === "error" ? statusNow.title : lastUsed ? "Not connected" : "Pair on phone";
+  const items = CAR_TILES.map((t, i) => {
+    const raw = connected ? live[t.key] : null, shown = carGlide(t.key, raw, now);
+    const high = raw != null && t.warn != null && raw >= t.warn;
+    const text = i === 0 && !connected ? status : high ? "High" : t.unit;
+    const img = t.key === "0C" ? carRoundelNum(Math.min(1, (shown || 0) / t.max), shown == null ? "—" : (Math.floor(shown / 10) * 10).toLocaleString("en-US"))
+      : carTile(shown == null ? "—" : shown.toFixed(t.dec), shown == null ? null : Math.max(0, Math.min(1, (shown - t.min) / (t.max - t.min))), high);
+    return `<div class="car-item${high ? " hot" : ""}">${img}<div class="t">${t.title}</div><div class="x${high ? " hot" : ""}">${text}</div></div>`;
+  }).join("");
+  const codesLabel = sharedCodes == null ? "Codes" : sharedCodes.length ? `Codes (${sharedCodes.length})` : "No codes";
+  const actions = connected ? [["codes", codesLabel], ["disconnect", "Disconnect"]]
+    : state === "connecting" || state === "waiting" ? [["disconnect", "Stop"]]
+    : (lastUsed ? [["connect", "Connect"]] : []).concat([["demo", "Demo"]]);
+  main.innerHTML = carHead("OBD2 Reader", { actions }) + `<div class="car-grid">${items}</div>`;
+};
+setInterval(() => { if (!$("car").hidden && state === "connected") renderCar(); }, 200);
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

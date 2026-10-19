@@ -2,6 +2,13 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.3.1 (20 October 2026)
+
+### Android Auto
+- The car screen is now smooth too. It refreshes about five times a second (Android Auto limits how often a car screen may redraw), and each number glides between refreshes instead of jumping once a second.
+- Live numbers are now drawn big in the livery's display font, with a bar under each reading and the engine speed inside the rev roundel.
+- Fixed: every update of the car screen used to count as a brand-new screen. Android Auto allows only five of those before it closes an app with an error, so the car screen could shut down after a few seconds of live data. It now keeps one screen for every state (not connected, connecting, live and ignition off) and only changes the numbers, which Android Auto treats as a free refresh. Connection problems show as a pop-up message instead.
+
 ## 1.3.0 (20 October 2026)
 
 ### Smoother Dashboard
