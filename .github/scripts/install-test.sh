@@ -97,8 +97,14 @@ tap_tab() {
 }
 FAIL=0
 # First launch asks for the car before anything else.
-sleep 2
-if tap_text "First, choose your car" > /dev/null 2>&1 || grep -q "First, choose your car" "$OUT/ui.xml" 2>/dev/null; then
+SEEN=0
+for i in 1 2 3 4 5 6 7 8 9 10; do   # slow emulators can take a while to show it
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+  adb shell cat /sdcard/ui.xml > "$OUT/ui.xml"
+  grep -q "First, choose your car" "$OUT/ui.xml" && { SEEN=1; break; }
+  sleep 2
+done
+if [ $SEEN = 1 ]; then
   adb exec-out screencap -p > "$OUT/0-choose-car.png"
   log "car picker: shown first"
   tap_text "Not listed" || { log "car picker: FAILED (no Not listed button)"; FAIL=1; }

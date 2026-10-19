@@ -697,6 +697,24 @@
                     </LinearLayout>
 
                     <TextView
+                        android:id="@+id/vinMismatch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="?attr/obdWarn"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/vinMismatchFix"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-12dp"
+                        android:textColor="?attr/obdAccent"
+                        android:visibility="gone" />
+
+                    <TextView
                         style="@style/ObdHeading"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

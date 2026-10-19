@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.4.1 (20 October 2026)
+- The demo car now reports a VIN for the car you chose, so its make and year match **Your car** on the Diagnostics tab. (It always said it was a 2012 Ford before.)
+- With a real car, if the VIN's make or year doesn't match the car you chose, Diagnostics says so and offers **Set my car to** the VIN's make and year. Fault codes are explained for the car you choose, so it's worth keeping them in step.
+
 ## 1.4.0 (20 October 2026)
 
 ### Your car comes first

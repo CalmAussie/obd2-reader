@@ -9,7 +9,10 @@ import kotlin.math.sin
  * A simulated ELM327 + car, so the whole app can be tried without hardware.
  * Speaks the same text protocol as a real adapter (CAN, ATS0/ATH0 style).
  */
-class DemoTransport : ObdTransport {
+class DemoTransport(
+    /** The VIN the demo car reports: made from the user's chosen car, so the demo matches it. */
+    private val vin: String = "1FAHP3F20CL123456",
+) : ObdTransport {
     override val name = "Demo vehicle"
 
     private val start = System.currentTimeMillis()
@@ -37,7 +40,7 @@ class DemoTransport : ObdTransport {
             cmd.startsWith("AT") -> "OK"
             cmd == "03" -> "430201330420"
             cmd == "07" -> "47010171"
-            cmd == "0902" -> vinFrames("1FAHP3F20CL123456")
+            cmd == "0902" -> vinFrames(vin)
             cmd.length == 4 && cmd.startsWith("01") -> pid(cmd.substring(2).toInt(16))?.let { "41${cmd.substring(2)}$it" } ?: "NO DATA"
             // Several PIDs in one request, as CAN cars allow.
             cmd.length > 4 && cmd.startsWith("01") && cmd.length % 2 == 0 -> {

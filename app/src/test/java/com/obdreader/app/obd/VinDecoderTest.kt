@@ -51,4 +51,30 @@ class VinDecoderTest {
         assertEquals("Hyundai", VinDecoder.decode("KMHD841CBJU123456").make)
         assertEquals("Kia", VinDecoder.decode("KNADN412BK6123456").make)
     }
+
+    @Test
+    fun sampleVinsDecodeToTheChosenCar() {
+        val mazda = VinDecoder.decode(VinDecoder.sampleVin("Mazda", 2006))
+        assertEquals("Mazda", mazda.make)
+        assertEquals(2006, mazda.modelYear)
+        val toyota = VinDecoder.decode(VinDecoder.sampleVin("Toyota", 2018))
+        assertEquals("Toyota", toyota.make)
+        assertEquals("1FAHP3F20CL123456".length, VinDecoder.sampleVin(null, null).length)
+        assertEquals("Ford", VinDecoder.decode(VinDecoder.sampleVin(null, null)).make)
+    }
+
+    @Test
+    fun brandsMatchAcrossNameStyles() {
+        org.junit.Assert.assertTrue(VinDecoder.sameMake("Lexus (Toyota)", "Lexus"))
+        org.junit.Assert.assertTrue(VinDecoder.sameMake("SEAT / Cupra", "Cupra"))
+        org.junit.Assert.assertFalse(VinDecoder.sameMake("Ford", "Mazda"))
+    }
+
+    @Test
+    fun checkDigitFollowsTheStandard() {
+        assertEquals('X', VinDecoder.checkDigit("1M8GDM9AXKP042788")) // the textbook example
+        assertEquals('1', VinDecoder.checkDigit("11111111111111111"))
+        val v = VinDecoder.sampleVin("Ford", 2012)
+        assertEquals(VinDecoder.checkDigit(v), v[8])
+    }
 }
