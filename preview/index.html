@@ -1,0 +1,1636 @@
+<meta charset="utf-8">
+<title>OBD2 Reader Preview</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Roboto:wght@400;500&display=swap">
+<style>
+/* Layout: a single phone screen, mirroring the Android app 1:1; the app's theme is always dark, so this page is too. */
+:root { --page: #0D0E10; --ui: "Archivo", system-ui, sans-serif; --font: var(--ui); --fg-2: #8E9096; color-scheme: dark; }
+[hidden] { display: none !important; }
+.view-switch { display: flex; gap: 4px; padding: 4px; border-radius: 99px; background: #141A21; border: 1px solid #25303C; flex: none; }
+.view-switch button { padding: 8px 18px; border-radius: 99px; font-size: 14px; font-weight: 500; color: #8A98A8; background: none; }
+.view-switch button[aria-selected="true"] { background: #25303C; color: #E9EEF3; }
+.car { width: 100%; max-width: 780px; aspect-ratio: 16 / 9; flex: none; background: #000; border: 10px solid #1A1D22; border-radius: 22px; display: flex; overflow: hidden; container-type: inline-size; color: #E8EAED; font-family: var(--font); position: relative; }
+.car-rail { width: 9cqi; background: #121314; display: flex; flex-direction: column; align-items: center; gap: 3.2cqi; padding: 2.6cqi 0; flex: none; }
+.car-rail .clock { font-size: max(11px, 2.2cqi); font-weight: 500; font-variant-numeric: tabular-nums; }
+.car-rail svg { width: 4.2cqi; height: 4.2cqi; fill: #9AA0A6; }
+.car-rail .app { width: 6cqi; height: 6cqi; border-radius: 50%; background: #0B2540; display: grid; place-items: center; }
+.car-rail .app svg { fill: #fff; width: 3.6cqi; height: 3.6cqi; }
+.car-main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 2.2cqi 2.6cqi; gap: 1.6cqi; }
+.car-head { display: flex; align-items: center; gap: 1.8cqi; min-height: 6cqi; }
+.car-head .hi { width: 5cqi; height: 5cqi; border-radius: 50%; background: #0B2540; display: grid; place-items: center; flex: none; }
+.car-head .hi svg { width: 3cqi; height: 3cqi; fill: #fff; }
+.car-head button.hi { background: #303134; }
+.car-head h4 { font-size: max(13px, 3.1cqi); font-weight: 500; margin: 0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.car-act { background: #303134; color: #E8EAED; border-radius: 99px; padding: 1cqi 2.4cqi; font-size: max(11px, 2.2cqi); font-weight: 500; white-space: nowrap; }
+.car-grid { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, 1fr); gap: 1.4cqi; }
+.car-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: .6cqi; border-radius: 2cqi; }
+.car-item svg { width: 5.6cqi; height: 5.6cqi; fill: var(--car-accent, #E8EAED); }
+.car-item svg.roundel { width: 9cqi; height: 9cqi; fill: none; }
+.car-item.hot svg { fill: #F28B82; }
+.car-row.has-plate { display: flex; align-items: center; gap: 2.4cqi; }
+.car-plate { flex: none; min-width: 14cqi; text-align: center; font-family: "Archivo", sans-serif; font-stretch: 125%; font-weight: 850; font-style: italic; font-size: max(12px, 2.6cqi); padding: 1cqi 1.6cqi .8cqi; border-radius: .6cqi; line-height: 1; }
+.car-plate.stored { background: #FFB000; color: #1A1100; }
+.car-plate.pending { color: #E8EAED; box-shadow: inset 0 0 0 .35cqi #9AA0A6; }
+.car-logo { width: 12cqi; height: 12cqi; }
+.car-item .t { font-size: max(14px, 4cqi); font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.car-item .x { font-size: max(11px, 2.2cqi); color: #9AA0A6; }
+.car-item .x.hot { color: #F28B82; }
+.car-msg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.6cqi; text-align: center; padding: 0 6cqi; }
+.car-msg p { font-size: max(12px, 2.8cqi); line-height: 1.4; margin: 0; white-space: pre-line; }
+.car-msg .row { display: flex; gap: 2cqi; }
+.car-btn-p { background: var(--car-accent, #8AB4F8); color: var(--car-on-accent, #062E6F); border-radius: 99px; padding: 1.4cqi 4cqi; font-size: max(12px, 2.6cqi); font-weight: 500; }
+.car-btn-s { background: #303134; color: #E8EAED; border-radius: 99px; padding: 1.4cqi 4cqi; font-size: max(12px, 2.6cqi); font-weight: 500; }
+.car-list { flex: 1; overflow-y: auto; scrollbar-width: none; }
+.car-row { padding: 1.6cqi 1cqi; border-bottom: 1px solid #303134; }
+.car-row .t { font-size: max(12px, 2.7cqi); }
+.car-row .x { font-size: max(11px, 2.2cqi); color: #9AA0A6; margin-top: .4cqi; }
+.car-empty { flex: 1; display: grid; place-items: center; font-size: max(12px, 2.8cqi); color: #9AA0A6; }
+.car-spin { width: 6cqi; height: 6cqi; border: .6cqi solid #303134; border-top-color: #8AB4F8; border-radius: 50%; animation: rot 1s linear infinite; }
+.car-toast { position: absolute; left: 50%; bottom: 3cqi; transform: translateX(-50%); background: #303134; color: #E8EAED; padding: 1.4cqi 3cqi; border-radius: 99px; font-size: max(11px, 2.4cqi); animation: fade .2s both; white-space: nowrap; }
+.car-caption { font-size: 13px; color: var(--fg-2); text-align: center; max-width: 560px; line-height: 1.5; text-wrap: balance; }
+html, body { height: 100%; }
+* { box-sizing: border-box; }
+body {
+  background: var(--page); color: #EDEDEA; font-family: var(--ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.note { font-size: 13px; color: #8E9096; text-align: center; max-width: 400px; line-height: 1.5; text-wrap: balance; }
+.note b { color: #EDEDEA; font-weight: 600; }
+.car { --font: "Roboto", system-ui, sans-serif; }
+.car-caption { color: #8E9096; }
+
+/* ---------- Liveries (mirror AppThemes.kt) ---------- */
+.phone, [data-theme="asphalt"] {
+  --base: #131417; --panel: #1C1D21; --panel-2: #26272C; --line: #303137;
+  --fg: #F4F4F1; --fg-2: #92949B; --ink: #0E0F11;
+  --s1: #FF5A1F; --s2: #F4F4F1; --s3: #131417;
+  --roundel: #F4F4F1; --roundel-ink: #0E0F11; --ring: var(--s1); --track: #2A2B30;
+  --accent: #FF5A1F; --on-accent: #120500;
+  --amber: #FFB000; --red: #FF3B2F; --green: #2FD573;
+  --scrim: rgba(0, 0, 0, .6); --skew: -12deg; --r: 4px;
+  color-scheme: dark;
+}
+[data-theme="endurance"] {
+  --base: #0A1424; --panel: #111E33; --panel-2: #1A2A44; --line: #22344F;
+  --fg: #F2F5FA; --fg-2: #8796AD; --ink: #08101D;
+  --s1: #FFD000; --s2: #F2F5FA; --s3: #0A1424;
+  --roundel: #FFD000; --roundel-ink: #0A1424; --ring: #FFD000; --track: #1C2B45;
+  --accent: #FFD000; --on-accent: #0A1424;
+}
+[data-theme="kerb"] {
+  --base: #16171A; --panel: #1F2024; --panel-2: #292A2F; --line: #323339;
+  --fg: #F5F5F3; --fg-2: #96989E; --ink: #0F1012;
+  --s1: #E4161B; --s2: #F5F5F3; --s3: #E4161B;
+  --roundel: #F5F5F3; --roundel-ink: #0F1012; --ring: #E4161B; --track: #2C2D32;
+  --accent: #E4161B; --on-accent: #FFFFFF; --kerb: 1;
+}
+[data-theme="pitlane"] {
+  --base: #EEEFF1; --panel: #FFFFFF; --panel-2: #F6F6F7; --line: #D6D8DC;
+  --fg: #101114; --fg-2: #5D6168; --ink: #FFFFFF;
+  --s1: #101114; --s2: #E10600; --s3: #EEEFF1;
+  --roundel: #101114; --roundel-ink: #FFFFFF; --ring: #E10600; --track: #DCDEE2;
+  --accent: #E10600; --on-accent: #FFFFFF;
+  --amber: #E39600; --red: #D9180F; --green: #11A150; --scrim: rgba(16, 17, 20, .4);
+  color-scheme: light;
+}
+[data-theme="drift"] {
+  --base: #0F0F12; --panel: #18181D; --panel-2: #222228; --line: #2C2C34;
+  --fg: #F6F4F7; --fg-2: #9693A0; --ink: #0F0F12;
+  --s1: #FF2E88; --s2: #19D3C5; --s3: #0F0F12;
+  --roundel: #F6F4F7; --roundel-ink: #0F0F12; --ring: #FF2E88; --track: #26262D;
+  --accent: #FF2E88; --on-accent: #1A0010;
+}
+[data-theme="apex"] {
+  --base: #0E0F11; --panel: #17191C; --panel-2: #202328; --line: #2A2D33;
+  --fg: #F3F5F7; --fg-2: #8A9099; --ink: #0E0F11;
+  --s1: #D7FF1F; --s2: #F3F5F7; --s3: #0E0F11;
+  --roundel: #D7FF1F; --roundel-ink: #0E0F11; --ring: #D7FF1F; --track: #24272C;
+  --accent: #D7FF1F; --on-accent: #0D1100; --r: 0px; --skew: -18deg;
+}
+
+/* ---------- Phone shell ---------- */
+.phone {
+  width: 100%; max-width: 400px; flex: 1; min-height: 0; max-height: 880px;
+  border: 10px solid #1A1B1E; border-radius: 46px; background: var(--base); color: var(--fg);
+  position: relative; overflow: hidden; display: flex; flex-direction: column; font-family: var(--ui);
+}
+.statusbar { display: flex; justify-content: space-between; font-size: 13px; padding: 12px 26px 2px; font-variant-numeric: tabular-nums; flex: none; position: relative; z-index: 2; }
+.scroll { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: none; position: relative; }
+.scroll::-webkit-scrollbar { display: none; }
+.content { padding: 0 16px 28px; display: flex; flex-direction: column; position: relative; }
+button { font: inherit; cursor: pointer; border: 0; color: inherit; background: none; padding: 0; }
+button:focus-visible, .opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:disabled { opacity: .38; cursor: default; }
+.xb { font-family: var(--ui); font-stretch: 125%; font-weight: 850; font-style: italic; }
+
+/* Livery stripes: three flat bands raked across the top of each page */
+.livery { position: absolute; left: -60px; right: -60px; top: 26px; pointer-events: none; transform: rotate(-7deg); transform-origin: 50% 50%; }
+.livery i { display: block; height: 30px; background: var(--s1); }
+.livery i:nth-child(2) { height: 12px; background: var(--s2); margin-top: 7px; }
+.livery i:nth-child(3) { height: 6px; background: var(--s1); margin-top: 7px; }
+[data-theme="kerb"] .livery i:first-child { background: repeating-linear-gradient(90deg, var(--s1) 0 28px, var(--s2) 28px 56px); }
+[data-theme="drift"] .livery i:nth-child(2) { background: var(--s2); }
+
+.topbar { display: flex; align-items: center; gap: 10px; padding: 96px 2px 4px; position: relative; }
+.wordmark { font-size: 22px; flex: 1; letter-spacing: -.01em; }
+.icon-btn { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+.icon-btn svg { width: 22px; height: 22px; fill: var(--fg-2); }
+
+/* ---------- Roundel ---------- */
+.roundel-wrap { display: grid; place-items: center; margin-top: 8px; position: relative; }
+.roundel-wrap svg { width: min(100%, 300px); height: auto; display: block; }
+.lights { display: flex; justify-content: center; gap: 10px; margin-top: 4px; }
+.lights i { width: 16px; height: 16px; border-radius: 50%; background: var(--track); transition: background .12s; }
+.lights i.on { background: var(--red); box-shadow: 0 0 10px var(--red); }
+.lights.go i { background: var(--green); box-shadow: 0 0 10px var(--green); }
+
+/* ---------- Decals ---------- */
+.decals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.decal { position: relative; padding: 12px 16px 14px 18px; background: var(--panel); transform: skewX(var(--skew)); border-radius: var(--r); overflow: hidden; }
+.decal > * { transform: skewX(calc(var(--skew) * -1)); }
+.decal::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--s1); }
+.decal.wide { grid-column: 1 / -1; display: flex; align-items: flex-end; justify-content: space-between; padding: 14px 22px 14px 24px; }
+.decal .l { font-size: 13px; color: var(--fg-2); font-weight: 500; }
+.decal .v { font-size: 34px; line-height: 1; margin-top: 4px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.decal .v small { font-family: var(--ui); font-stretch: 100%; font-style: normal; font-weight: 500; font-size: 13px; color: var(--fg-2); margin-left: 4px; }
+.decal.wide .v { font-size: 56px; }
+.decal.hot::before { background: var(--red); }
+.decal.hot .v { color: var(--red); }
+.decal .meter { height: 4px; background: var(--track); margin-top: 10px; }
+.decal .meter b { display: block; height: 100%; width: 0; background: var(--fg); transition: width .4s; }
+
+/* ---------- Start ---------- */
+.startrow { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 18px; }
+.go-btn { height: 58px; background: var(--accent); color: var(--on-accent); transform: skewX(var(--skew)); border-radius: var(--r); font-size: 20px; display: grid; place-items: center; }
+.go-btn span { transform: skewX(calc(var(--skew) * -1)); }
+.go-btn.stop { background: transparent; color: var(--fg); box-shadow: inset 0 0 0 2px var(--line); }
+.demo { height: 58px; padding: 0 22px; transform: skewX(var(--skew)); border-radius: var(--r); box-shadow: inset 0 0 0 2px var(--line); font-weight: 600; font-size: 15px; }
+.demo span { display: block; transform: skewX(calc(var(--skew) * -1)); }
+.status { margin-top: 12px; font-size: 14px; line-height: 1.4; }
+.status small { display: block; font-size: 13px; color: var(--fg-2); margin-top: 2px; }
+.car-btn { align-self: flex-start; margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; color: var(--accent); padding: 6px 0; font-size: 14px; font-weight: 600; }
+.car-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* ---------- Timing tower ---------- */
+.h2 { font-size: 20px; margin: 30px 0 10px; }
+.tower { display: flex; flex-direction: column; gap: 4px; }
+.trow { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; column-gap: 12px; background: var(--panel); padding: 10px 14px 10px 0; border-radius: var(--r); }
+.trow .tab { align-self: stretch; background: var(--s1); transform: skewX(var(--skew)); margin-left: -3px; }
+.trow .l { font-size: 14px; font-weight: 500; }
+.trow .v { font-size: 22px; font-variant-numeric: tabular-nums; }
+.trow .v small { font-family: var(--ui); font-stretch: 100%; font-style: normal; font-weight: 500; font-size: 12px; color: var(--fg-2); margin-left: 3px; }
+.trow .bar { grid-column: 2 / -1; height: 3px; background: var(--track); margin-top: 6px; }
+.trow .bar b { display: block; height: 100%; width: 0; background: var(--fg-2); transition: width .4s; }
+.trow.hot .tab, .trow.hot .bar b { background: var(--red); }
+.trow.hot .v { color: var(--red); }
+
+/* ---------- Diagnostics ---------- */
+h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
+.lede { font-size: 14px; color: var(--fg-2); margin-top: 4px; line-height: 1.45; }
+.mil { margin-top: 18px; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; padding: 16px 18px; background: var(--panel); border-radius: var(--r); position: relative; overflow: hidden; }
+.mil::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--fg-2); }
+.mil .lamp { width: 44px; height: 44px; margin-left: 4px; }
+.mil .lamp svg { width: 100%; height: 100%; fill: var(--fg-2); }
+.mil.on { background: var(--amber); color: #1A1100; }
+.mil.on::before { background: #1A1100; }
+.mil.on .lamp svg { fill: #1A1100; }
+.mil.on .s { color: rgba(26, 17, 0, .75); }
+.mil.ok::before { background: var(--green); }
+.mil.ok .lamp svg { fill: var(--green); }
+.mil .t { font-size: 20px; }
+.mil .s { font-size: 13px; color: var(--fg-2); margin-top: 3px; line-height: 1.4; }
+.row-btns { display: flex; gap: 10px; margin-top: 12px; }
+.btn { flex: 1; height: 50px; border-radius: var(--r); font-size: 15px; font-weight: 600; transform: skewX(var(--skew)); }
+.btn span { display: block; transform: skewX(calc(var(--skew) * -1)); }
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+.btn.quiet { box-shadow: inset 0 0 0 2px var(--line); }
+.btn.quiet.danger { color: var(--red); }
+
+.codes { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.code { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; animation: rise .3s both; }
+@keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+.plate-code { font-size: 22px; padding: 8px 12px 6px; background: var(--fg); color: var(--base); border-radius: var(--r); box-shadow: inset 0 0 0 3px var(--base), 0 0 0 2px var(--fg); line-height: 1; min-width: 104px; text-align: center; }
+.code.stored .plate-code { background: var(--amber); color: #1A1100; box-shadow: inset 0 0 0 3px var(--amber), 0 0 0 2px var(--amber); }
+.code .t { font-size: 14px; line-height: 1.35; }
+.code .s { font-size: 12px; color: var(--fg-2); margin-top: 2px; }
+
+.vin-decal { margin-top: 0; padding: 14px 18px; background: var(--fg); color: var(--base); border-radius: var(--r); position: relative; overflow: hidden; }
+.vin-decal::after { content: ""; position: absolute; right: -20px; top: 0; bottom: 0; width: 70px; background: var(--s1); transform: skewX(var(--skew)); }
+.vin-decal .k { font-size: 12px; font-weight: 600; opacity: .7; }
+.vin-decal .vin { font-size: 16px; margin-top: 4px; white-space: nowrap; overflow-wrap: anywhere; user-select: text; position: relative; z-index: 1; max-width: calc(100% - 44px); }
+.veh-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.veh-row > div { flex: 1; min-width: 0; }
+.veh-line { font-size: 15px; font-weight: 500; }
+.veh-sub { font-size: 13px; color: var(--fg-2); margin-top: 3px; }
+.link-btn { color: var(--accent); font-size: 14px; font-weight: 600; padding: 8px 2px; }
+[data-theme="pitlane"] .link-btn, [data-theme="pitlane"] .car-btn, [data-theme="pitlane"] .setting .r span:nth-child(2) { color: var(--s2); }
+
+.list { display: flex; flex-direction: column; gap: 4px; }
+.setting { display: block; width: 100%; text-align: left; padding: 14px 16px; background: var(--panel); border-radius: var(--r); }
+.setting .r { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; }
+.setting .r span:nth-child(2) { flex: 1; min-width: 0; text-align: right; color: var(--accent); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.setting .r svg { width: 20px; height: 20px; fill: var(--fg-2); flex: none; }
+.setting .h { font-size: 13px; color: var(--fg-2); margin-top: 4px; line-height: 1.45; }
+.log pre { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 11px; color: var(--fg-2); margin: 10px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+
+/* ---------- Bottom bar ---------- */
+.nav { flex: none; display: flex; background: var(--panel); }
+.nav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 12px; font-weight: 600; color: var(--fg-2); padding: 10px 0 14px; position: relative; }
+.nav button::before { content: ""; position: absolute; top: 0; left: 28%; right: 28%; height: 4px; transform: skewX(var(--skew)); }
+.nav button[aria-selected="true"] { color: var(--fg); }
+.nav button[aria-selected="true"]::before { background: var(--accent); }
+.nav svg { width: 24px; height: 24px; fill: currentColor; }
+.nav .ind { position: relative; display: grid; place-items: center; }
+.badge { position: absolute; top: -3px; left: 16px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 3px; background: var(--amber); color: #1A1100; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; }
+
+/* ---------- Sheets and dialogs ---------- */
+.scrim { position: absolute; inset: 0; background: var(--scrim); display: flex; z-index: 5; animation: fade .2s both; }
+@keyframes fade { from { opacity: 0; } }
+.sheet { margin-top: auto; width: 100%; background: var(--panel); border-radius: 18px 18px 0 0; padding: 10px 20px 28px; animation: slide .28s cubic-bezier(.2, .8, .2, 1) both; position: relative; overflow: hidden; }
+.sheet::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--s1); }
+[data-theme="apex"] .sheet { border-radius: 0; clip-path: polygon(26px 0, 100% 0, 100% 100%, 0 100%, 0 26px); }
+@keyframes slide { from { transform: translateY(100%); } }
+.sheet.tall { max-height: 92%; overflow-y: auto; }
+.handle { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 6px auto 16px; }
+.sheet h2 { font-family: var(--ui); font-stretch: 125%; font-weight: 850; font-style: italic; font-size: 22px; margin: 0; }
+.sheet p { font-size: 14px; color: var(--fg-2); margin: 4px 0 16px; }
+.sheet .lbl { font-size: 13px; color: var(--fg-2); font-weight: 600; margin: 0 0 8px 2px; }
+.sheet .lbl + .opt + .lbl { margin-top: 8px; }
+.opt { display: flex; align-items: center; gap: 14px; width: 100%; background: var(--panel-2); border-radius: var(--r); padding: 14px; margin-bottom: 8px; text-align: left; }
+.opt .ic { width: 42px; height: 42px; display: grid; place-items: center; flex: none; background: var(--s1); transform: skewX(var(--skew)); border-radius: var(--r); }
+.opt .ic svg { width: 22px; height: 22px; fill: var(--on-accent); transform: skewX(calc(var(--skew) * -1)); }
+.opt .tx { flex: 1; min-width: 0; } .opt .tt { font-size: 16px; font-weight: 600; } .opt .ts { font-size: 13px; color: var(--fg-2); margin-top: 2px; }
+.opt > svg { width: 20px; height: 20px; fill: var(--fg-2); flex: none; }
+.dialog { margin: auto 24px; width: 100%; background: var(--panel-2); border-radius: 16px; padding: 24px 24px 12px; animation: pop .2s both; max-height: 85%; overflow-y: auto; }
+[data-theme="apex"] .dialog { border-radius: 0; }
+@keyframes pop { from { opacity: 0; transform: scale(.95); } }
+.dialog h3 { font-family: var(--ui); font-stretch: 125%; font-weight: 850; font-style: italic; font-size: 21px; margin: 0 0 14px; text-wrap: balance; }
+.dialog .msg { font-size: 14px; color: var(--fg-2); line-height: 1.5; margin: 0 0 14px; }
+.dialog .item { display: block; width: 100%; text-align: left; padding: 12px 4px; font-size: 16px; line-height: 1.35; border-radius: 8px; animation: rise .25s both; }
+.dialog .item small { display: block; font-size: 13px; color: var(--fg-2); }
+.dialog .btns { display: flex; justify-content: flex-end; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+.dialog .btns button { color: var(--accent); font-weight: 600; font-size: 14px; padding: 10px 12px; border-radius: 20px; }
+[data-theme="pitlane"] .dialog .btns button { color: var(--s2); }
+.radio { display: flex; gap: 14px; align-items: flex-start; width: 100%; text-align: left; padding: 10px 2px; border-radius: 8px; }
+.radio .c { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--fg-2); flex: none; margin-top: 2px; display: grid; place-items: center; }
+.radio[aria-checked="true"] .c { border-color: var(--accent); }
+.radio[aria-checked="true"] .c::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.radio .n { font-size: 15px; line-height: 1.3; } .radio .d { font-size: 12px; color: var(--fg-2); margin-top: 2px; line-height: 1.35; }
+.field { position: relative; margin-bottom: 14px; }
+.field label { position: absolute; left: 12px; top: -8px; font-size: 12px; background: var(--panel-2); padding: 0 4px; color: var(--fg-2); }
+.field input { width: 100%; height: 56px; border-radius: 6px; border: 1px solid var(--fg-2); background: transparent; color: var(--fg); font: 16px var(--ui); padding: 0 16px; }
+.field input:focus { outline: none; border: 2px solid var(--accent); }
+.field.err input { border-color: var(--red); } .field .e { font-size: 12px; color: var(--red); margin: 4px 16px 0; }
+.ofield { position: relative; margin-top: 14px; }
+.ofield label { position: absolute; left: 12px; top: -8px; font-size: 12px; background: var(--panel); padding: 0 4px; color: var(--fg-2); z-index: 1; }
+.ofield select, .ofield input { width: 100%; height: 56px; border-radius: 6px; border: 1px solid var(--fg-2); background: transparent; color: var(--fg); font: 16px var(--ui); padding: 0 16px; appearance: none; }
+.ofield select { background-image: linear-gradient(45deg, transparent 50%, var(--fg-2) 50%), linear-gradient(135deg, var(--fg-2) 50%, transparent 50%); background-position: calc(100% - 22px) 26px, calc(100% - 16px) 26px; background-size: 6px 6px; background-repeat: no-repeat; }
+.ofield select option { background: var(--panel-2); color: var(--fg); }
+.ofield input { padding-left: 44px; }
+.ofield input.plain { padding-left: 16px; }
+.ofield .si { position: absolute; left: 14px; top: 16px; width: 24px; height: 24px; fill: var(--fg-2); }
+.ofield select:focus, .ofield input:focus { outline: none; border: 2px solid var(--accent); }
+.helper { font-size: 12px; color: var(--fg-2); margin: 4px 16px 0; }
+.sugg { background: var(--panel-2); border-radius: 6px; margin-top: 4px; overflow: hidden; max-height: 196px; overflow-y: auto; }
+.sugg button { display: block; width: 100%; text-align: left; padding: 12px 16px; font-size: 15px; }
+.sugg button:hover, .sugg button:focus-visible { background: var(--line); }
+.result { background: var(--panel-2); border-radius: var(--r); padding: 16px; margin-top: 16px; }
+.result .l { font-size: 12px; color: var(--fg-2); }
+.result .p { font-size: 15px; font-weight: 600; color: var(--fg); margin-top: 2px; }
+.result .w { font-size: 13px; color: var(--amber); margin-top: 8px; }
+.result .rl, .result .f { font-size: 13px; color: var(--fg-2); margin-top: 8px; }
+.sheet-actions { display: flex; gap: 12px; margin-top: 18px; }
+.sheet-actions button { flex: 1; height: 52px; border-radius: var(--r); font-size: 15px; font-weight: 600; }
+#carSave { background: var(--accent); color: var(--on-accent); }
+.btn-out { box-shadow: inset 0 0 0 2px var(--line); }
+.theme-opt { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: var(--panel-2); border-radius: var(--r); padding: 10px 14px 10px 10px; margin-bottom: 8px; }
+.theme-opt[aria-checked="true"] { box-shadow: inset 0 0 0 2px var(--accent); }
+.theme-opt svg.sw { width: 72px; height: 54px; flex: none; }
+.theme-opt .tt { font-size: 16px; font-weight: 600; } .theme-opt .ts { font-size: 13px; color: var(--fg-2); margin-top: 2px; line-height: 1.35; }
+.theme-opt .ck { width: 24px; height: 24px; fill: var(--accent); flex: none; }
+.help h3 { font-family: var(--ui); font-stretch: 125%; font-weight: 850; font-style: italic; font-size: 17px; margin: 20px 0 6px; }
+.help .b { font-size: 14px; color: var(--fg-2); line-height: 1.5; white-space: pre-line; }
+.help .ver { font-size: 12px; color: var(--fg-2); margin-top: 22px; }
+.spin { width: 22px; height: 22px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: rot 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
+@keyframes rot { to { transform: rotate(360deg); } }
+.toast { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); background: var(--fg); color: var(--base); font-size: 14px; padding: 12px 16px; border-radius: 6px; z-index: 9; width: max-content; max-width: 88%; animation: fade .2s both; }
+
+@media (max-width: 480px) {
+  body { padding-block: 8px; gap: 8px; }
+  .phone { border-width: 0; border-radius: 20px; max-height: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* =================== Layouts =================== */
+.lay-telemetry, .lay-cockpit { display: none; }
+.phone[data-layout="telemetry"] .lay-livery, .phone[data-layout="cockpit"] .lay-livery { display: none; }
+.phone[data-layout="telemetry"] .lay-telemetry, .phone[data-layout="cockpit"] .lay-cockpit { display: block; }
+.phone[data-layout="telemetry"] .livery, .phone[data-layout="cockpit"] .livery { display: none; }
+.phone[data-layout="telemetry"] .topbar, .phone[data-layout="cockpit"] .topbar { padding-top: 14px; }
+.spark { display: none; }
+
+/* ---------- Race telemetry: data-logger screen, a colour per channel ---------- */
+[data-theme="telemetry"] {
+  --base: #0C0D0F; --panel: #141518; --panel-2: #1C1D21; --line: #26282C;
+  --fg: #E9EBEE; --fg-2: #7F848C; --ink: #0C0D0F;
+  --s1: #FF3B30; --s2: #E9EBEE; --s3: #0C0D0F;
+  --roundel: #E9EBEE; --roundel-ink: #0C0D0F; --ring: #FF3B30; --track: #1F2125;
+  --accent: #FF3B30; --on-accent: #FFFFFF; --r: 2px; --skew: 0deg;
+  --ch-rpm: #FF3B30; --ch-speed: #3D9BFF; --ch-throttle: #34D17A; --ch-load: #FFB000; --ch-air: #34C8E0; --ch-map: #B57CFF; --ch-maf: #FF7AC6; --ch-timing: #E6E15A; --ch-amb: #9AA3AD; --ch-oil: #FF8A3D; --ch-volt: #7DD3A0;
+}
+.tn { font-family: var(--ui); font-stretch: 75%; font-weight: 700; font-variant-numeric: tabular-nums; }
+.shift { display: grid; grid-template-columns: repeat(15, 1fr); gap: 4px; margin-top: 6px; }
+.shift i { height: 14px; border-radius: 2px; background: var(--track); }
+.shift i.on.g { background: #34D17A; box-shadow: 0 0 8px #34D17A; }
+.shift i.on.a { background: #FFB000; box-shadow: 0 0 8px #FFB000; }
+.shift i.on.r { background: #FF3B30; box-shadow: 0 0 8px #FF3B30; }
+.shift.flash i { background: #3D9BFF !important; box-shadow: 0 0 10px #3D9BFF !important; }
+.tele-big { display: grid; grid-template-columns: 1.25fr 1fr; gap: 12px; margin-top: 16px; }
+.tele-big > div { border-left: 3px solid var(--ch-rpm); padding-left: 12px; }
+.tele-big > div + div { border-left-color: var(--ch-speed); }
+.tl { font-size: 12px; color: var(--fg-2); font-weight: 500; }
+.tv { font-size: 72px; line-height: .95; margin-top: 2px; letter-spacing: -.02em; }
+.tu { font-size: 13px; color: var(--fg-2); }
+.tele-trace { margin-top: 14px; background: var(--panel); border-radius: var(--r); padding: 10px 10px 8px; }
+.tele-trace svg { width: 100%; height: 96px; display: block; }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--fg-2); margin-top: 6px; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 3px; background: var(--c); margin-right: 6px; vertical-align: middle; }
+.legend .w { margin-left: auto; } .legend .w::before { display: none; }
+.tele-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.tele-pair > div { background: var(--panel); border-radius: var(--r); padding: 10px 12px; display: flex; align-items: baseline; gap: 6px; }
+.tele-pair .tl { flex: 1; }
+.tele-pair b { font-size: 26px; }
+.tele-pair small { font-size: 12px; color: var(--fg-2); }
+.phone[data-layout="telemetry"] .xb { font-stretch: 75%; font-weight: 700; font-style: normal; }
+.phone[data-layout="telemetry"] .trow { grid-template-columns: 3px 1fr auto; padding: 8px 12px 8px 0; }
+.phone[data-layout="telemetry"] .trow .tab { transform: none; margin-left: 0; background: var(--c, var(--s1)); }
+.phone[data-layout="telemetry"] .trow .bar { display: none; }
+.phone[data-layout="telemetry"] .trow .spark { display: block; grid-column: 2 / -1; width: 100%; height: 30px; margin-top: 4px; }
+.phone[data-layout="telemetry"] .go-btn, .phone[data-layout="telemetry"] .demo { height: 52px; }
+
+/* ---------- Digital cockpit: calm, layered, glowing ---------- */
+[data-theme="cockpit"] {
+  --base: #05070C; --panel: rgba(255, 255, 255, .055); --panel-2: #141924; --line: rgba(255, 255, 255, .09);
+  --fg: #EEF2FA; --fg-2: #8890A0; --ink: #05070C;
+  --s1: #5B8CFF; --s2: #3FE0D0; --s3: #05070C;
+  --roundel: #EEF2FA; --roundel-ink: #05070C; --ring: #5B8CFF; --track: rgba(255, 255, 255, .08);
+  --accent: #7FA6FF; --on-accent: #050B1E; --r: 16px; --skew: 0deg;
+}
+.phone[data-theme="cockpit"] { background: radial-gradient(120% 60% at 50% 18%, #13203F 0%, #070A12 55%, #05070C 100%); }
+.phone[data-layout="cockpit"] .xb { font-stretch: 100%; font-weight: 500; font-style: normal; letter-spacing: -.01em; }
+.phone[data-layout="cockpit"] .wordmark { font-weight: 600; font-size: 19px; }
+.cp-ring { display: grid; place-items: center; margin-top: 4px; }
+.cp-ring svg { width: min(100%, 320px); height: auto; overflow: visible; }
+.glass-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+.glass { background: var(--panel); border-radius: var(--r); padding: 12px 12px 10px; box-shadow: inset 0 0 0 1px var(--line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.glass .gl { display: block; font-size: 12px; color: var(--fg-2); }
+.glass b { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.glass small { font-size: 12px; color: var(--fg-2); margin-left: 3px; }
+.phone[data-layout="cockpit"] :is(.trow, .setting, .mil, .decal, .tele-trace, .opt, .theme-opt, .result) { box-shadow: inset 0 0 0 1px var(--line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.phone[data-layout="cockpit"] .trow .tab { visibility: hidden; }
+.phone[data-layout="cockpit"] .trow { grid-template-columns: 0 1fr auto; padding-left: 16px; }
+.phone[data-layout="cockpit"] .trow .bar b { background: linear-gradient(90deg, var(--s1), var(--s2)); }
+.phone[data-layout="cockpit"] .go-btn { background: linear-gradient(90deg, #5B8CFF, #3FE0D0); color: #050B1E; border-radius: 999px; }
+.phone[data-layout="cockpit"] .go-btn.stop { background: transparent; color: var(--fg); }
+.phone[data-layout="cockpit"] .demo, .phone[data-layout="cockpit"] .btn { border-radius: 999px; }
+.phone[data-layout="cockpit"] .mil.on { background: rgba(255, 176, 0, .14); color: var(--fg); box-shadow: inset 0 0 0 1px rgba(255, 176, 0, .5); }
+.phone[data-layout="cockpit"] .mil.on .lamp svg { fill: var(--amber); filter: drop-shadow(0 0 8px var(--amber)); }
+.phone[data-layout="cockpit"] .mil.on .s { color: var(--fg-2); }
+.phone[data-layout="cockpit"] .mil::before, .phone[data-layout="cockpit"] .sheet::before, .phone[data-layout="cockpit"] .vin-decal::after { display: none; }
+.phone[data-layout="cockpit"] .vin-decal { background: var(--panel); color: var(--fg); box-shadow: inset 0 0 0 1px var(--line); }
+.phone[data-layout="cockpit"] .plate-code { border-radius: 999px; }
+.phone[data-layout="cockpit"] .nav { background: rgba(10, 14, 24, .85); backdrop-filter: blur(14px); }
+.phone[data-layout="cockpit"] .nav button::before { border-radius: 2px; transform: none; background: transparent; }
+.phone[data-layout="cockpit"] .nav button[aria-selected="true"]::before { background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.phone[data-layout="cockpit"] .sheet { background: #0E1320; }
+.theme-group { font-size: 13px; font-weight: 600; color: var(--fg-2); margin: 14px 2px 8px; }
+
+/* Graphs tab: mirrors ui/GraphStripView.kt */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.chip { height: 34px; padding: 0 14px; border-radius: 17px; box-shadow: inset 0 0 0 1.5px var(--line); font-size: 13px; font-weight: 600; color: var(--fg-2); display: inline-flex; align-items: center; gap: 7px; }
+.chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); opacity: .45; }
+.chip[aria-checked="true"] { background: var(--panel-2); color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--c); }
+.chip[aria-checked="true"]::before { opacity: 1; }
+.graph-tools { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 12px; }
+.seg { display: inline-flex; background: var(--panel); border-radius: var(--r); padding: 3px; }
+.seg button { height: 32px; padding: 0 14px; font-size: 13px; font-weight: 600; color: var(--fg-2); border-radius: calc(var(--r) - 1px); }
+.seg button[aria-checked="true"] { background: var(--accent); color: var(--on-accent); }
+.strip { position: relative; height: 150px; margin-bottom: 8px; background: var(--panel); border-radius: var(--r); overflow: hidden; }
+[data-layout="cockpit"] .strip { box-shadow: inset 0 0 0 1px var(--line); }
+.strip canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rec { width: 100%; margin-top: 10px; }
+.rec.on { background: var(--red); color: #fff; }
+.rec-status { font-size: 13px; color: var(--fg-2); margin-top: 10px; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.link-btn { color: var(--accent); font-weight: 600; font-size: 14px; padding: 6px 0; }
+/* Expandable trouble-code cards: mirrors MainActivity.addDtcRow */
+.code { display: block; background: var(--panel); border-radius: var(--r); padding: 12px; }
+.code > .head { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; width: 100%; text-align: left; }
+.code .chev { width: 22px; height: 22px; fill: var(--fg-2); transition: transform .2s; }
+.code.open .chev { transform: rotate(90deg); }
+.code .t { font-size: 15px; font-weight: 600; }
+.code .sev-line { font-size: 12px; margin-top: 3px; color: var(--fg-2); }
+.code .sev-line b { font-weight: 600; }
+.sev-HIGH { --sev: var(--red); } .sev-MEDIUM { --sev: var(--amber); } .sev-LOW { --sev: var(--green); } .sev-UNKNOWN { --sev: var(--fg-2); }
+.code .sev-line b { color: var(--sev); }
+.code .more { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.5; }
+.code.open .more { display: block; animation: rise .2s both; }
+.pill { display: inline-block; padding: 4px 10px; border-radius: 12px; background: var(--sev); color: #111; font-size: 12px; font-weight: 700; }
+.more .adv { color: var(--fg-2); margin: 8px 0 0; }
+.more h4 { font-size: 13px; font-weight: 700; margin: 14px 0 4px; letter-spacing: .02em; }
+.more ul, .more ol { margin: 0; padding-left: 20px; color: var(--fg); }
+.more li { margin: 2px 0; }
+.more p { margin: 0; }
+.more .sys { font-size: 12px; color: var(--fg-2); margin-top: 14px; }
+/* Settings switch (Material 3) */
+.switch { width: 52px; height: 32px; border-radius: 16px; background: var(--panel-2); box-shadow: inset 0 0 0 2px var(--fg-2); position: relative; flex: none; transition: background .2s; }
+.switch i { position: absolute; left: 8px; top: 8px; width: 16px; height: 16px; border-radius: 50%; background: var(--fg-2); transition: all .2s; }
+.switch[aria-checked="true"] { background: var(--accent); box-shadow: none; }
+.switch[aria-checked="true"] i { left: 24px; top: 4px; width: 24px; height: 24px; background: var(--on-accent); }
+.log-t { flex: 1; text-align: left; font: inherit; padding: 0; }
+.setting.log .link-btn { padding: 0 0 0 16px; }
+.sim-btn { margin-top: 10px; font-size: 12px; color: var(--fg-2); border: 1px dashed var(--line); border-radius: 6px; padding: 8px 10px; align-self: flex-start; }
+.drive { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.drive > div { flex: 1; min-width: 0; font-size: 14px; } .drive small { display: block; color: var(--fg-2); font-size: 12px; }
+.drive button { color: var(--accent); font-weight: 600; font-size: 13px; padding: 6px 8px; }
+.drive button.del { color: var(--red); }
+
+#log b { font-weight: 400; color: var(--fg); }
+.vin-decal .vin { font-size: clamp(10px, 3.6vw, 16px); }
+.livery-clip { position: absolute; left: 0; right: 0; top: 0; height: 190px; overflow: hidden; pointer-events: none; }
+.content { overflow-x: clip; }
+.tele-big > div { min-width: 0; }
+.tv { font-size: clamp(52px, 17vw, 72px); }
+</style>
+
+<p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
+
+<div class="view-switch" role="tablist" aria-label="Screen to show">
+  <button role="tab" id="viewPhone" aria-selected="true">Phone</button>
+  <button role="tab" id="viewCar" aria-selected="false">Android Auto</button>
+</div>
+<div class="car" id="car" hidden aria-label="Android Auto car display">
+  <div class="car-rail"><div class="clock" id="carClock">12:00</div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4,4h7v7H4zM13,4h7v7h-7zM4,13h7v7H4zM13,13h7v7h-7z"/></svg><div class="app"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.38,8.57l-1.23,1.85a8,8 0,0 1,-0.22 7.58H5.07A8,8 0,0 1,15.58 6.85l1.85,-1.23A10,10 0,0 0,3.35 19a2,2 0,0 0,1.72 1h13.85a2,2 0,0 0,1.74 -1a10,10 0,0 0,-0.27 -10.44zM10.59,15.41a2,2 0,0 0,2.83 0l5.66,-8.49 -8.49,5.66a2,2 0,0 0,0 2.83z"/></svg></div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,22c1.1,0 2,-0.9 2,-2h-4c0,1.1 0.9,2 2,2zM18,16v-5c0,-3.07 -1.64,-5.64 -4.5,-6.32V4c0,-0.83 -0.67,-1.5 -1.5,-1.5s-1.5,0.67 -1.5,1.5v0.68C7.63,5.36 6,7.92 6,11v5l-2,2v1h16v-1l-2,-2z"/></svg></div>
+  <div class="car-main" id="carMain"></div>
+</div>
+<p class="car-caption" id="carCaption" hidden>Android Auto draws every app with its own driving-safe templates, so the background, fonts and layout stay Android Auto's. The car screen takes your livery's colours for buttons and icons, and shows the rev roundel and code plates as images. It shares the phone's connection: connect on either one.</p>
+<div class="phone" id="phone">
+  <div class="statusbar"><span id="clock">12:00</span><span>▮▮▮ 87%</span></div>
+  <div class="scroll" id="pageDash">
+    <div class="livery-clip" aria-hidden="true"><div class="livery"><i></i><i></i><i></i></div></div>
+    <div class="content">
+      <div class="topbar"><div class="wordmark xb">OBD2 Reader</div><button class="icon-btn" id="themeBtn" aria-label="Livery"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,3c-4.97,0 -9,4.03 -9,9s4.03,9 9,9c0.83,0 1.5,-0.67 1.5,-1.5 0,-0.39 -0.15,-0.74 -0.39,-1.01 -0.23,-0.26 -0.38,-0.61 -0.38,-0.99 0,-0.83 0.67,-1.5 1.5,-1.5L16,16c2.76,0 5,-2.24 5,-5 0,-4.42 -4.03,-8 -9,-8zM6.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S5.67,9 6.5,9 8,9.67 8,10.5 7.33,12 6.5,12zM9.5,8C8.67,8 8,7.33 8,6.5S8.67,5 9.5,5s1.5,0.67 1.5,1.5S10.33,8 9.5,8zM14.5,8c-0.83,0 -1.5,-0.67 -1.5,-1.5S13.67,5 14.5,5s1.5,0.67 1.5,1.5S15.33,8 14.5,8zM17.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S16.67,9 17.5,9s1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/></svg></button></div>
+      <div class="lay-livery">
+      <div class="roundel-wrap"><svg id="rpmGauge" viewBox="0 0 240 240" role="img" aria-label="Engine speed"></svg></div>
+      <div class="lights" id="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="decals">
+        <div class="decal wide" id="speedDecal"><div><div class="l">Speed</div><div class="v xb" id="speedV">—<small>km/h</small></div></div></div>
+        <div class="decal" id="coolDecal"><div><div class="l">Coolant</div><div class="v xb">—<small>°C</small></div><div class="meter"><b></b></div></div></div>
+        <div class="decal" id="fuelDecal"><div><div class="l">Fuel</div><div class="v xb">—<small>%</small></div><div class="meter"><b></b></div></div></div>
+      </div>
+      </div>
+      <div class="lay-telemetry">
+        <div class="shift" id="shift" aria-hidden="true"></div>
+        <div class="tele-big">
+          <div><div class="tl">Engine speed</div><div class="tv tn" id="teleRpm">—</div><div class="tu">rpm</div></div>
+          <div><div class="tl">Speed</div><div class="tv tn" id="teleSpeed">—</div><div class="tu">km/h</div></div>
+        </div>
+        <div class="tele-trace"><svg id="teleTrace" viewBox="0 0 300 96" preserveAspectRatio="none" role="img" aria-label="Engine speed and road speed over the last 30 seconds"></svg>
+          <div class="legend"><span style="--c:var(--ch-rpm)">rpm</span><span style="--c:var(--ch-speed)">km/h</span><span class="w">Last 30 s</span></div></div>
+        <div class="tele-pair"><div><span class="tl">Coolant</span><b class="tn" id="teleCool">—</b><small>°C</small></div><div><span class="tl">Fuel</span><b class="tn" id="teleFuel">—</b><small>%</small></div></div>
+      </div>
+      <div class="lay-cockpit">
+        <div class="cp-ring"><svg id="cpRing" viewBox="0 0 260 230" role="img" aria-label="Speed and engine speed"></svg></div>
+        <div class="glass-row">
+          <div class="glass"><span class="gl">Coolant</span><b id="cpCool">—</b><small>°C</small></div>
+          <div class="glass"><span class="gl">Fuel</span><b id="cpFuel">—</b><small>%</small></div>
+          <div class="glass"><span class="gl">Battery</span><b id="cpVolt">—</b><small>V</small></div>
+        </div>
+      </div>
+      <div class="startrow">
+        <button class="go-btn xb" id="connectBtn"><span id="connectLabel">Connect</span></button>
+        <button class="demo" id="demoBtn"><span>Demo car</span></button>
+      </div>
+      <div class="status"><span id="status">Not connected</span><small id="detail"></small></div>
+      <button class="sim-btn" id="ignBtn" hidden>Preview only: turn the demo car's ignition off</button>
+      <button class="car-btn" id="chooseCarBtn" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5,14h-0.79l-0.28,-0.27C15.41,12.59 16,11.11 16,9.5 16,5.91 13.09,3 9.5,3S3,5.91 3,9.5 5.91,16 9.5,16c1.61,0 3.09,-0.59 4.23,-1.57l0.27,0.28v0.79l5,4.99L20.49,19l-4.99,-5zM9.5,14C7.01,14 5,11.99 5,9.5S7.01,5 9.5,5 14,7.01 14,9.5 11.99,14 9.5,14z"/></svg>Choose your car</button>
+      <div class="h2 xb">Live data</div>
+      <div class="tower" id="mfd"></div>
+    </div>
+  </div>
+  <div class="scroll" id="pageGraphs" hidden>
+    <div class="livery-clip" aria-hidden="true"><div class="livery"><i></i><i></i><i></i></div></div>
+    <div class="content">
+      <div class="topbar"><h1 class="xb" style="flex:1">Graphs</h1></div>
+      <div class="lede" id="graphRate">Connect on the Dashboard tab to see live graphs.</div>
+      <div class="chips" id="graphChips" role="group" aria-label="Readings to graph"></div>
+      <div class="graph-tools">
+        <div class="seg" role="radiogroup" aria-label="Time shown"><button role="radio" data-w="10000" aria-checked="false">10 s</button><button role="radio" data-w="30000" aria-checked="true">30 s</button><button role="radio" data-w="60000" aria-checked="false">60 s</button></div>
+        <button class="link-btn" id="graphPause">Pause</button>
+      </div>
+      <div id="graphList"></div>
+      <button class="go-btn xb rec" id="recordBtn"><span id="recordLabel">Record drive</span></button>
+      <div class="rec-status" id="recordStatus">Saves every reading to a CSV file you can open in Excel or Google Sheets.</div>
+      <button class="car-btn" id="savedBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18,16.08c-0.76,0 -1.44,0.3 -1.96,0.77L8.91,12.7c0.05,-0.23 0.09,-0.46 0.09,-0.7s-0.04,-0.47 -0.09,-0.7l7.05,-4.11c0.54,0.5 1.25,0.81 2.04,0.81 1.66,0 3,-1.34 3,-3s-1.34,-3 -3,-3 -3,1.34 -3,3c0,0.24 0.04,0.47 0.09,0.7L8.04,9.81C7.5,9.31 6.79,9 6,9c-1.66,0 -3,1.34 -3,3s1.34,3 3,3c0.79,0 1.5,-0.31 2.04,-0.81l7.12,4.16c-0.05,0.21 -0.08,0.43 -0.08,0.65 0,1.61 1.31,2.92 2.92,2.92 1.61,0 2.92,-1.31 2.92,-2.92s-1.31,-2.92 -2.92,-2.92z"/></svg>Saved drives</button>
+    </div>
+  </div>
+  <div class="scroll" id="pageDiag" hidden>
+    <div class="livery-clip" aria-hidden="true"><div class="livery"><i></i><i></i><i></i></div></div>
+    <div class="content">
+      <div class="topbar"><h1 class="xb" style="flex:1">Diagnostics</h1></div>
+      <div class="lede" id="status2">Not connected</div>
+      <div class="mil" id="mil"><div class="lamp" id="milLamp"></div><div><div class="t xb" id="dtcStatus">Engine not checked</div><div class="s" id="dtcSub">Connect on the Dashboard tab to read trouble codes.</div></div></div>
+      <div class="row-btns"><button class="btn primary" id="readBtn"><span>Read codes</span></button></div>
+      <div class="codes" id="dtcList"></div>
+      <button class="car-btn" id="shareReport" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18,16.08c-0.76,0 -1.44,0.3 -1.96,0.77L8.91,12.7c0.05,-0.23 0.09,-0.46 0.09,-0.7s-0.04,-0.47 -0.09,-0.7l7.05,-4.11c0.54,0.5 1.25,0.81 2.04,0.81 1.66,0 3,-1.34 3,-3s-1.34,-3 -3,-3 -3,1.34 -3,3c0,0.24 0.04,0.47 0.09,0.7L8.04,9.81C7.5,9.31 6.79,9 6,9c-1.66,0 -3,1.34 -3,3s1.34,3 3,3c0.79,0 1.5,-0.31 2.04,-0.81l7.12,4.16c-0.05,0.21 -0.08,0.43 -0.08,0.65 0,1.61 1.31,2.92 2.92,2.92 1.61,0 2.92,-1.31 2.92,-2.92s-1.31,-2.92 -2.92,-2.92z"/></svg>Share code report</button>
+      <div class="h2 xb">Vehicle</div>
+      <div class="vin-decal"><div class="k">VIN</div><div class="vin xb" id="vin">—</div></div>
+      <div class="veh-row"><div><div class="veh-line" id="vehicle">Make and year appear after connecting.</div><div class="veh-sub" id="protocol">Protocol not detected yet</div></div><button class="link-btn" id="vinBtn">Read VIN</button></div>
+      <div class="h2 xb">Connection</div>
+      <div class="list">
+        <button class="setting" id="carRow">
+          <div class="r"><span>Your car</span><span id="carSetting">Not set</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
+          <div class="h">If your car won't connect, choose it so the app tries its usual protocol first.</div>
+        </button>
+        <button class="setting" id="protocolRow">
+          <div class="r"><span>Protocol</span><span id="protocolSetting">Automatic</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
+          <div class="h">Leave on Automatic unless your car won't connect.</div>
+        </button>
+        <div class="setting" id="reconnectRow">
+          <div class="r"><span style="flex:1">Reconnect automatically</span><button class="switch" id="reconnectSwitch" role="switch" aria-checked="true" aria-label="Reconnect automatically"><i></i></button></div>
+          <div class="h">Reconnects to your adapter when you open the app, start Android Auto or turn the ignition back on.</div>
+        </div>
+        <div class="setting log">
+          <div class="r"><button id="logToggle" aria-expanded="false" class="log-t">Adapter log</button><button class="link-btn" id="logShare">Share</button><button class="link-btn" id="logLabel">Show</button></div>
+          <pre id="log" hidden></pre>
+        </div>
+        <button class="setting" id="helpRow">
+          <div class="r"><span>Help</span><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
+          <div class="h">Connecting an adapter, choosing your car and Android Auto</div>
+        </button>
+      </div>
+    </div>
+  </div>
+  <nav class="nav" role="tablist">
+    <button role="tab" id="tabDash" aria-selected="true"><span class="ind"><svg viewBox="0 0 24 24"><path d="M20.38,8.57l-1.23,1.85a8,8 0,0 1,-0.22 7.58H5.07A8,8 0,0 1,15.58 6.85l1.85,-1.23A10,10 0,0 0,3.35 19a2,2 0,0 0,1.72 1h13.85a2,2 0,0 0,1.74 -1a10,10 0,0 0,-0.27 -10.44zM10.59,15.41a2,2 0,0 0,2.83 0l5.66,-8.49 -8.49,5.66a2,2 0,0 0,0 2.83z"/></svg></span>Dashboard</button>
+    <button role="tab" id="tabGraphs" aria-selected="false"><span class="ind"><svg viewBox="0 0 24 24"><path d="M3.5,18.49l6,-6.01 4,4L22,6.92l-1.41,-1.41 -7.09,7.97 -4,-4L2,16.99z"/></svg></span>Graphs</button>
+    <button role="tab" id="tabDiag" aria-selected="false"><span class="ind"><svg viewBox="0 0 24 24"><path id="navMil" fill-rule="evenodd"/></svg><span class="badge" id="badge" hidden></span></span>Diagnostics</button>
+  </nav>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const ICON = {
+  bt: "M17.71,7.71L12,2h-1v7.59L6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 11,14.41V22h1l5.71,-5.71 -4.3,-4.29 4.3,-4.29zM13,5.83l1.88,1.88L13,9.59V5.83zM14.88,16.29L13,18.17v-3.76l1.88,1.88z",
+  ble: "M14.24,12.01l2.32,2.32c0.28,-0.72 0.44,-1.51 0.44,-2.33 0,-0.82 -0.16,-1.59 -0.43,-2.31l-2.33,2.32zM19.53,6.71l-1.26,1.26c0.63,1.21 0.98,2.57 0.98,4.02s-0.36,2.82 -0.98,4.02l1.2,1.2c0.97,-1.54 1.54,-3.36 1.54,-5.31 -0.01,-1.89 -0.55,-3.67 -1.48,-5.19zM15.71,7.71L10,2L9,2v7.59L4.41,5 3,6.41 8.59,12 3,17.59 4.41,19 9,14.41L9,22h1l5.71,-5.71 -4.3,-4.29 4.3,-4.29zM11,5.83l1.88,1.88L11,9.59L11,5.83zM12.88,16.29L11,18.17v-3.76l1.88,1.88z",
+  wifi: "M1,9l2,2c4.97,-4.97 13.03,-4.97 18,0l2,-2C16.93,2.93 7.08,2.93 1,9zM9,17l3,3 3,-3c-1.65,-1.66 -4.34,-1.66 -6,0zM5,13l2,2c2.76,-2.76 7.24,-2.76 10,0l2,-2C15.14,9.14 8.87,9.14 5,13z",
+  close: "M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12z",
+  chev: "M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z",
+  check: "M9,16.17L4.83,12l-1.42,1.41L9,19 21,7l-1.41,-1.41z",
+};
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* PIDs: same order, ranges, warnings and formulas as Pids.kt */
+const PIDS = [
+  { n: 0x0C, label: "Engine RPM", unit: "rpm", dec: 0, fast: true, min: 0, max: 8000, warn: 6500, dec2: b => (b[0] * 256 + b[1]) / 4 },
+  { n: 0x0D, label: "Speed", unit: "km/h", dec: 0, fast: true, min: 0, max: 200, warn: null, dec2: b => b[0] },
+  { n: 0x11, label: "Throttle", unit: "%", dec: 0, fast: true, min: 0, max: 100, warn: null, dec2: b => b[0] * 100 / 255 },
+  { n: 0x04, label: "Engine load", unit: "%", dec: 0, fast: true, min: 0, max: 100, warn: 90, dec2: b => b[0] * 100 / 255 },
+  { n: 0x05, label: "Coolant", unit: "°C", dec: 0, fast: false, min: 40, max: 120, warn: 108, dec2: b => b[0] - 40 },
+  { n: 0x0F, label: "Intake air", unit: "°C", dec: 0, fast: false, min: -20, max: 80, warn: 65, dec2: b => b[0] - 40 },
+  { n: 0x0B, label: "Manifold pressure", unit: "kPa", dec: 0, fast: true, min: 0, max: 250, warn: null, dec2: b => b[0] },
+  { n: 0x10, label: "MAF airflow", unit: "g/s", dec: 1, fast: true, min: 0, max: 100, warn: null, dec2: b => (b[0] * 256 + b[1]) / 100 },
+  { n: 0x0E, label: "Timing advance", unit: "°", dec: 1, fast: true, min: -10, max: 50, warn: null, dec2: b => b[0] / 2 - 64 },
+  { n: 0x2F, label: "Fuel level", unit: "%", dec: 0, fast: false, min: 0, max: 100, warn: null, dec2: b => b[0] * 100 / 255 },
+  { n: 0x46, label: "Ambient air", unit: "°C", dec: 0, fast: false, min: -10, max: 50, warn: null, dec2: b => b[0] - 40 },
+  { n: 0x5C, label: "Oil temp", unit: "°C", dec: 0, fast: false, min: 40, max: 150, warn: 130, dec2: b => b[0] - 40 },
+];
+const hex2 = n => n.toString(16).toUpperCase().padStart(2, "0");
+const DESCR = { P0133: "O2 sensor slow response (bank 1, sensor 1)", P0420: "Catalyst efficiency below threshold (bank 1)", P0171: "System too lean (bank 1)" };
+
+const live = {};          /* latest readings, shared by the phone and car screens (like ObdSession.state) */
+let sharedCodes = null;
+let statusNow = { kind: "idle", title: "Not connected", detail: "" };
+/* Simulated car: mirrors DemoTransport.kt */
+const car = {
+  start: 0, cleared: false,
+  t() { return (performance.now() - this.start) / 1000; },
+  raw(n) {
+    const t = this.t(), d = Math.pow(0.5 + 0.5 * Math.sin(t / 2.5), 2), rpm = 850 + 2400 * d;
+    const one = v => [Math.max(0, Math.min(255, Math.trunc(v)))];
+    const two = v => { v = Math.max(0, Math.min(65535, Math.trunc(v))); return [v >> 8, v & 255]; };
+    const pct = p => p * 255 / 100;
+    switch (n) {
+      case 0x0C: return two(rpm * 4);
+      case 0x0D: return one(d * 95);
+      case 0x11: return one(pct(12 + d * 70));
+      case 0x04: return one(pct(18 + d * 65));
+      case 0x05: return one(Math.min(90, 45 + t * 1.5) + 40);
+      case 0x0F: return one(71);
+      case 0x0B: return one(32 + d * 60);
+      case 0x10: return two((2.5 + d * 30) * 100);
+      case 0x0E: return one((12 + d * 18 + 64) * 2);
+      case 0x2F: return one(pct(62));
+      case 0x46: return one(64);
+      case 0x5C: return one(Math.min(102, 40 + t * 1.2) + 40);
+    }
+  },
+  volts() { return 14.1 + 0.2 * Math.sin(this.t()); },
+};
+
+/* ===== Livery dashboard: mirrors ui/RoundelView.kt, StartLightsView.kt, DecalView.kt and TowerRowView.kt ===== */
+const LAMP = {
+  engine: "M7,5h8v2h-2v1h3l2,2h1V8.5h2V17h-2v-1.5h-1L16,18H9l-2,-2H5v1.5H3v-8h2V11h2l1,-3h2V7H7z",
+};
+$("navMil").setAttribute("d", LAMP.engine);
+$("milLamp").innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="${LAMP.engine}"/></svg>`;
+
+let themeId = "asphalt";
+const START = 135, SWEEP = 270;
+const polar = (cx, cy, r, deg) => [cx + r * Math.cos(deg * Math.PI / 180), cy + r * Math.sin(deg * Math.PI / 180)];
+const arcPath = (cx, cy, r, a0, a1) => { const [x0, y0] = polar(cx, cy, r, a0), [x1, y1] = polar(cx, cy, r, a1); return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+let sweepAt = null;
+
+/* The race-number roundel: live RPM on the disc, a flat segmented rev ring around it */
+function makeRoundel(svg) {
+  const g = { min: 0, max: 8000, warnAt: 6500, shown: 0, target: null };
+  let segs, num, tag;
+  const frac = v => Math.max(0, Math.min(1, (v - g.min) / (g.max - g.min)));
+  g.build = () => {
+    const n = Math.round((g.max - g.min) / 500), step = SWEEP / n;
+    let s = "";
+    for (let i = 0; i < n; i++) {
+      const a0 = START + i * step + 0.9, a1 = START + (i + 1) * step - 0.9, top = g.min + (i + 1) * 500;
+      s += `<path class="seg" data-f="${((i + 1) / n).toFixed(4)}" data-red="${top > g.warnAt ? 1 : 0}" d="${arcPath(120, 120, 108, a0, a1)}" fill="none" stroke-width="18"/>`;
+    }
+    for (let k = 1000; k < g.max; k += 1000) {
+      const [x, y] = polar(120, 120, 88, START + SWEEP * frac(k));
+      s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.6" fill="var(--fg-2)"/>`;
+    }
+    s += `<circle cx="120" cy="120" r="80" fill="var(--roundel)"/>
+      <text class="num xb" x="120" y="138" text-anchor="middle" font-size="44" fill="var(--roundel-ink)" style="font-variant-numeric:tabular-nums">—</text>
+      <text x="120" y="162" text-anchor="middle" font-size="13" font-weight="600" fill="var(--roundel-ink)" opacity=".6">rpm</text>
+      <g class="tag" visibility="hidden"><polygon points="84,174 160,174 156,190 80,190" fill="var(--amber)"/><text x="120" y="186" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1A1100">Check engine</text></g>
+      <text x="${polar(120, 120, 118, START)[0].toFixed(1)}" y="232" text-anchor="middle" font-size="11" font-weight="600" fill="var(--fg-2)">0</text>
+      <text x="${polar(120, 120, 118, START + SWEEP)[0].toFixed(1)}" y="232" text-anchor="middle" font-size="11" font-weight="600" fill="var(--fg-2)">${g.max / 1000}k</text>`;
+    svg.innerHTML = s;
+    segs = [...svg.querySelectorAll(".seg")]; num = svg.querySelector(".num"); tag = svg.querySelector(".tag");
+  };
+  g.build();
+  g.set = v => { g.target = v; };
+  g.setCheck = on => tag.setAttribute("visibility", on ? "visible" : "hidden");
+  g.frame = now => {
+    let goal = g.target == null ? g.min : Math.max(g.min, Math.min(g.max, g.target));
+    if (sweepAt != null && now - sweepAt < 1000) { goal = g.max * Math.sin(Math.PI * Math.min(1, (now - sweepAt) / 1000)); g.shown = goal; }
+    else g.shown = reduced ? goal : g.shown + (goal - g.shown) * 0.2;
+    const f = frac(g.shown), shift = g.target != null && g.target >= g.warnAt;
+    segs.forEach(p => {
+      const lit = +p.dataset.f <= f + 0.0001;
+      p.setAttribute("stroke", !lit ? (p.dataset.red === "1" ? "color-mix(in srgb, var(--red) 28%, var(--track))" : "var(--track)") : p.dataset.red === "1" || shift ? "var(--red)" : "var(--ring)");
+    });
+    num.textContent = g.target == null ? "—" : Math.round(g.target / 10) * 10;
+  };
+  return g;
+}
+const rpmGauge = makeRoundel($("rpmGauge"));
+
+/* Decals: speed, coolant and fuel */
+function makeDecal(el, { min, max, dec = 0, warn = null }) {
+  const v = el.querySelector(".v"), meter = el.querySelector(".meter b");
+  return {
+    set(x) {
+      v.firstChild.textContent = x == null ? "—" : x.toFixed(dec);
+      if (meter) meter.style.width = x == null ? "0%" : (Math.max(0, Math.min(1, (x - min) / (max - min))) * 100).toFixed(1) + "%";
+      el.classList.toggle("hot", x != null && warn != null && x >= warn);
+    },
+    build() {}, frame() {},
+  };
+}
+const speedGauge = makeDecal($("speedDecal"), { min: 0, max: 240 });
+const coolGauge = makeDecal($("coolDecal"), { min: 40, max: 120, warn: 108 });
+const fuelGauge = makeDecal($("fuelDecal"), { min: 0, max: 100 });
+
+/* Start lights: they come on one by one while the app talks to the car, then go out when it's connected */
+let lightsTimer = null;
+function startLights() {
+  if (lightsTimer) return;
+  const lights = [...$("lights").children]; let i = 0;
+  lights.forEach(l => l.classList.remove("on"));
+  lightsTimer = setInterval(() => { if (i < 5) lights[i++].classList.add("on"); }, reduced ? 0 : 320);
+}
+function lightsOut() { clearInterval(lightsTimer); lightsTimer = null; [...$("lights").children].forEach(l => l.classList.remove("on")); }
+function updateTells() {
+  if (state === "connecting") startLights(); else if (lightsTimer && state !== "connecting") lightsOut();
+  const stored = (sharedCodes || []).filter(c => !c[1]).length;
+  rpmGauge.setCheck(state === "connected" && stored > 0);
+}
+function ignition() { lightsOut(); sweepAt = reduced ? null : performance.now(); }
+
+/* Timing tower: the remaining readings */
+const MFD_KEYS = [0x11, 0x04, 0x0F, 0x0B, 0x10, 0x0E, 0x46, 0x5C];
+const mfdDefs = MFD_KEYS.map(n => { const p = PIDS.find(x => x.n === n); return { key: hex2(n), ...p }; })
+  .concat([{ key: "VOLT", label: "Battery", unit: "V", dec: 1, min: 11, max: 15, warn: 15 }]);
+$("mfd").innerHTML = mfdDefs.map(p => `<div class="trow" id="mfd${p.key}"><span class="tab"></span><span class="l">${p.label}</span><span class="v xb">—<small>${p.unit}</small></span><span class="bar"><b></b></span></div>`).join("");
+const tiles = {};
+mfdDefs.forEach(p => {
+  const el = $("mfd" + p.key), v = el.querySelector(".v"), bar = el.querySelector(".bar b");
+  tiles[p.key] = x => {
+    v.firstChild.textContent = x == null ? "—" : x.toFixed(p.dec);
+    bar.style.width = x == null ? "0%" : (Math.max(0, Math.min(1, (x - p.min) / (p.max - p.min))) * 100).toFixed(1) + "%";
+    el.classList.toggle("hot", x != null && p.warn != null && x >= p.warn);
+  };
+});
+tiles["05"] = v => coolGauge.set(v); tiles["2F"] = v => fuelGauge.set(v);
+(function loop(now) { rpmGauge.frame(now); requestAnimationFrame(loop); })(performance.now());
+
+/* ===== Race telemetry and digital cockpit layouts: mirror ui/TelemetryView.kt and ui/CockpitView.kt ===== */
+const HIST_LEN = 94; /* about 30 seconds of readings at the app's polling rate */
+const hist = {};
+const pushHist = (k, v) => { const a = hist[k] || (hist[k] = []); a.push(v); if (a.length > HIST_LEN) a.shift(); };
+const CHANNEL = { "11": "--ch-throttle", "04": "--ch-load", "0F": "--ch-air", "0B": "--ch-map", "10": "--ch-maf", "0E": "--ch-timing", "46": "--ch-amb", "5C": "--ch-oil", VOLT: "--ch-volt" };
+const fmtInt = v => Math.round(v).toLocaleString("en-US");
+
+/* Shift lights: 5 green, 5 amber, 5 red, then all flash blue at the redline */
+$("shift").innerHTML = Array.from({ length: 15 }, (_, i) => `<i class="${i < 5 ? "g" : i < 10 ? "a" : "r"}"></i>`).join("");
+const shiftLeds = [...$("shift").children];
+function teleRpm(v) {
+  $("teleRpm").textContent = v == null ? "—" : fmtInt(v);
+  const start = rpmGauge.warnAt * 0.35, f = v == null ? 0 : Math.max(0, Math.min(1, (v - start) / (rpmGauge.warnAt - start)));
+  const lit = Math.round(f * 15);
+  shiftLeds.forEach((l, i) => l.classList.toggle("on", i < lit));
+  $("shift").classList.toggle("flash", v != null && v >= rpmGauge.warnAt);
+}
+function sparkPath(arr, lo, hi, w, h) {
+  if (!arr || arr.length < 2) return "";
+  const span = hi - lo || 1, dx = w / (HIST_LEN - 1), x0 = w - (arr.length - 1) * dx;
+  return arr.map((v, i) => `${i ? "L" : "M"}${(x0 + i * dx).toFixed(1)} ${(h - 2 - (Math.max(lo, Math.min(hi, v)) - lo) / span * (h - 4)).toFixed(1)}`).join("");
+}
+function drawTeleTrace() {
+  const grid = [24, 48, 72].map(y => `<line x1="0" y1="${y}" x2="300" y2="${y}" stroke="var(--line)" stroke-width="1"/>`).join("");
+  $("teleTrace").innerHTML = grid +
+    `<path d="${sparkPath(hist.RPM, 0, rpmGauge.max, 300, 96)}" fill="none" stroke="var(--ch-rpm)" stroke-width="2" vector-effect="non-scaling-stroke"/>` +
+    `<path d="${sparkPath(hist.SPD, 0, 160, 300, 96)}" fill="none" stroke="var(--ch-speed)" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+}
+
+/* Digital cockpit: one big speed inside a thin ring, engine speed on an outer arc */
+function drawCockpit(speed, rpm) {
+  const cx = 130, cy = 120, a0 = 140, sw = 260;
+  const fs = speed == null ? 0 : Math.min(1, speed / 240), fr = rpm == null ? 0 : Math.min(1, rpm / rpmGauge.max), fw = rpmGauge.warnAt / rpmGauge.max;
+  $("cpRing").innerHTML = `<defs><linearGradient id="cpG" x1="0" x2="1"><stop offset="0" stop-color="var(--s1)"/><stop offset="1" stop-color="var(--s2)"/></linearGradient>
+      <filter id="cpGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter></defs>
+    <path d="${arcPath(cx, cy, 104, a0, a0 + sw)}" fill="none" stroke="var(--track)" stroke-width="3" stroke-linecap="round"/>
+    <path d="${arcPath(cx, cy, 104, a0 + sw * fw, a0 + sw)}" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+    ${fr > 0.003 ? `<path d="${arcPath(cx, cy, 104, a0, a0 + sw * fr)}" fill="none" stroke="${rpm >= rpmGauge.warnAt ? "var(--red)" : "var(--fg)"}" stroke-width="3" stroke-linecap="round"/>` : ""}
+    <path d="${arcPath(cx, cy, 88, a0, a0 + sw)}" fill="none" stroke="var(--track)" stroke-width="8" stroke-linecap="round"/>
+    ${fs > 0.003 ? `<path d="${arcPath(cx, cy, 88, a0, a0 + sw * fs)}" fill="none" stroke="url(#cpG)" stroke-width="8" stroke-linecap="round" filter="url(#cpGlow)" opacity=".8"/><path d="${arcPath(cx, cy, 88, a0, a0 + sw * fs)}" fill="none" stroke="url(#cpG)" stroke-width="8" stroke-linecap="round"/>` : ""}
+    <text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="78" font-weight="300" fill="var(--fg)" style="font-family:var(--ui);font-variant-numeric:tabular-nums;letter-spacing:-2px">${speed == null ? "—" : Math.round(speed)}</text>
+    <text x="${cx}" y="${cy + 44}" text-anchor="middle" font-size="14" fill="var(--fg-2)" style="font-family:var(--ui)">km/h</text>
+    <text x="${cx}" y="${cy + 92}" text-anchor="middle" font-size="15" fill="var(--fg)" style="font-family:var(--ui);font-variant-numeric:tabular-nums">${rpm == null ? "—" : fmtInt(rpm)} <tspan fill="var(--fg-2)" font-size="12">rpm</tspan></text>`;
+}
+
+/* Route every reading to all three layouts; hidden ones are cheap to update */
+let lastRpm = null, lastSpeed = null;
+{
+  const r = rpmGauge.set, s = speedGauge.set;
+  rpmGauge.set = v => { r(v); lastRpm = v; teleRpm(v); drawCockpit(lastSpeed, v); };
+  speedGauge.set = v => { s(v); lastSpeed = v; $("teleSpeed").textContent = v == null ? "—" : Math.round(v); };
+  const fix = (v, d = 0) => v == null ? "—" : v.toFixed(d);
+  tiles["05"] = v => { coolGauge.set(v); $("teleCool").textContent = fix(v); $("cpCool").textContent = fix(v); };
+  tiles["2F"] = v => { fuelGauge.set(v); $("teleFuel").textContent = fix(v); $("cpFuel").textContent = fix(v); };
+  mfdDefs.forEach(p => {
+    const el = $("mfd" + p.key); el.style.setProperty("--c", `var(${CHANNEL[p.key] || "--s1"})`);
+    el.insertAdjacentHTML("beforeend", `<svg class="spark" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path fill="none" stroke="var(${CHANNEL[p.key] || "--s1"})" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`);
+    const path = el.querySelector(".spark path"), base = tiles[p.key];
+    tiles[p.key] = v => {
+      base(v);
+      if (v == null) { hist[p.key] = []; path.setAttribute("d", ""); }
+      else { pushHist(p.key, v); path.setAttribute("d", sparkPath(hist[p.key], p.min, p.max, 300, 30)); }
+      if (p.key === "VOLT") $("cpVolt").textContent = v == null ? "—" : v.toFixed(1);
+    };
+  });
+}
+/* Sample engine and road speed for the trace at the same rate as the other readings */
+setInterval(() => {
+  if (state !== "connected") { hist.RPM = []; hist.SPD = []; }
+  else { pushHist("RPM", lastRpm ?? 0); pushHist("SPD", lastSpeed ?? 0); }
+  drawTeleTrace();
+}, 320);
+drawCockpit(null, null);
+
+/* Log */
+const logLines = [];
+function log(line) { logLines.push(line); while (logLines.length > 40) logLines.shift(); $("log").textContent = logLines.join("\n"); }
+$("logToggle").onclick = () => { const show = $("log").hidden; $("log").hidden = !show; $("logLabel").textContent = show ? "Hide" : "Show"; $("logToggle").setAttribute("aria-expanded", show); };
+
+/* Status and buttons */
+let state = "idle", session = 0, pollTimer = null;
+function setStatus(kind, title, detail) {
+  $("status").textContent = title; $("detail").textContent = detail; $("status2").textContent = title;
+  $("chooseCarBtn").hidden = kind !== "error";
+  statusNow = { kind, title, detail };
+  if (window.carReady) renderCar();
+  updateTells();
+}
+function updateButtons() {
+  const active = state !== "idle";
+  $("connectLabel").textContent = active ? "Disconnect" : "Connect";
+  $("connectBtn").classList.toggle("stop", active);
+  $("demoBtn").disabled = active;
+  ["readBtn", "vinBtn"].forEach(id => $(id).disabled = state !== "connected");
+}
+/* The check-engine banner on the Diagnostics tab: kind "on" turns it amber, "ok" marks it green */
+function setDtcStatus(title, sub = "", kind = null) {
+  $("dtcStatus").textContent = title; $("dtcSub").textContent = sub;
+  $("mil").className = "mil" + (kind ? " " + kind : "");
+}
+function setBadge(n) { $("badge").hidden = !n; $("badge").textContent = n || ""; }
+function showPage(diag) {
+  $("pageDash").hidden = diag; $("pageDiag").hidden = !diag;
+  $("tabDash").setAttribute("aria-selected", !diag); $("tabDiag").setAttribute("aria-selected", diag);
+}
+$("tabDash").onclick = () => showPage(false);
+$("tabDiag").onclick = () => showPage(true);
+
+function clearReadings() {
+  Object.values(tiles).forEach(f => f(null));
+  rpmGauge.set(null); speedGauge.set(null);
+  $("vin").textContent = "—"; $("dtcList").innerHTML = "";
+  $("vehicle").textContent = "Make and year appear after connecting."; $("protocol").textContent = "Protocol not detected yet";
+  setDtcStatus("Engine not checked", "Connect on the Dashboard tab to read trouble codes."); setBadge(0);
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+/* Mirrors ObdProtocols.kt */
+const PROTOCOLS = [
+  ["6", "ISO 15765-4 CAN (11-bit, 500 kbaud)", "Most cars from 2008, including Ford, Mazda and Honda"],
+  ["1", "SAE J1850 PWM", "Fords and Ford-based Mazdas, about 2000–2007"],
+  ["3", "ISO 9141-2", "Hondas and Mazdas, about 2000–2007"],
+  ["5", "ISO 14230-4 KWP (fast init)", "Some Mazdas and Hondas, about 2003–2008"],
+  ["4", "ISO 14230-4 KWP (5-baud init)", "Some early-2000s Asian and European cars"],
+  ["2", "SAE J1850 VPW", "Mainly GM, rarely needed for these makes"],
+  ["7", "ISO 15765-4 CAN (29-bit, 500 kbaud)", "Some newer models"],
+  ["8", "ISO 15765-4 CAN (11-bit, 250 kbaud)", "Uncommon"],
+  ["9", "ISO 15765-4 CAN (29-bit, 250 kbaud)", "Uncommon"],
+];
+let protocolChoice = "0";
+try { protocolChoice = localStorage.getItem("protocol") || "0"; } catch (e) {}
+const protoName = c => (PROTOCOLS.find(p => p[0] === c) || [])[1];
+function updateProtocolSetting() { $("protocolSetting").textContent = protoName(protocolChoice) || "Automatic"; }
+function showProtocolPicker() {
+  const opts = [["0", "Automatic (recommended)", "Tries every protocol, starting with the one that worked last time"]].concat(PROTOCOLS);
+  const s = overlay(`<h3>Protocol</h3>` + opts.map(o => `<button class="radio" role="radio" aria-checked="${o[0] === protocolChoice}" data-c="${o[0]}"><span class="c"></span><span><div class="n">${o[1]}</div><div class="d">${o[2]}</div></span></button>`).join("") + `<div class="btns"><button id="cancel">Cancel</button></div>`);
+  $("cancel").onclick = closeOverlay;
+  s.querySelectorAll(".radio").forEach(b => b.onclick = () => {
+    protocolChoice = b.dataset.c; try { localStorage.setItem("protocol", protocolChoice); } catch (e) {}
+    updateProtocolSetting(); closeOverlay();
+    if (state !== "idle") toast("Disconnect and connect again to use the new protocol");
+  });
+}
+$("protocolRow").onclick = showProtocolPicker;
+updateProtocolSetting();
+
+/* Mirrors VinDecoder.kt (subset of WMI codes) */
+const WMI = { "1J4": "Jeep", "1J8": "Jeep", "1C3": "Chrysler", "2C3": "Chrysler", "1B3": "Dodge", "2B3": "Dodge", "1C6": "Ram", "ZFA": "Fiat", "ZAR": "Alfa Romeo", "VF3": "Peugeot", "VF7": "Citroën", "6H8": "Holden", "6G1": "Holden", "1G1": "Chevrolet", "1GC": "Chevrolet", "1GT": "GMC", "1G6": "Cadillac", "WVW": "Volkswagen", "WVG": "Volkswagen", "WAU": "Audi", "TMB": "Skoda", "WP0": "Porsche", "WDB": "Mercedes-Benz", "WDD": "Mercedes-Benz", "WDC": "Mercedes-Benz", "WDF": "Mercedes-Benz", "4JG": "Mercedes-Benz", "W1K": "Mercedes-Benz", "W1N": "Mercedes-Benz", "JTD": "Toyota", "JTN": "Toyota", "6T1": "Toyota", "MR0": "Toyota", "4T1": "Toyota", "JTH": "Lexus (Toyota)", "WBA": "BMW", "WBS": "BMW", "5UX": "BMW", "1FA": "Ford", "1FM": "Ford", "1FT": "Ford", "6FP": "Ford", "WF0": "Ford", "MNB": "Ford", "JM0": "Mazda", "JM1": "Mazda", "JM3": "Mazda", "MM0": "Mazda", "JHM": "Honda", "1HG": "Honda", "MRH": "Honda", "2HG": "Honda" };
+function decodeVin(v) {
+  const make = WMI[v.slice(0, 3)] || null; let year = null;
+  if (/^[1-5]/.test(v)) { const i = "ABCDEFGHJKLMNPRSTVWXY123456789".indexOf(v[9]); if (i >= 0) year = 1980 + i + (/[A-Z]/.test(v[6]) ? 30 : 0); }
+  return { make, year };
+}
+function showVin(vin) {
+  $("vin").textContent = vin || "Not reported";
+  const d = vin ? decodeVin(vin) : null;
+  $("vehicle").textContent = d && d.make && d.year ? `${d.make}, ${d.year} model year` : d && d.make ? d.make : vin ? "Make not recognised from VIN" : "Older cars often don't report a VIN. Live data and codes still work.";
+}
+const VIN_FRAMES = "014 | 0:490201314641 | 1:48503346323043 | 2:4C313233343536";
+const DEMO_VIN = "1FAHP3F20CL123456";
+
+/* Mirrors VehicleCatalog.kt */
+/* Generated from VehicleCatalog.kt by gen_catalog.py: do not edit by hand */
+const MAKES = {"Abarth": [["124 Spider", 2016, 2020], ["500 / 595 / 695", 2008, 2026], ["Punto", 2008, 2015]], "Acura": [["CL", 2001, 2003], ["ILX", 2013, 2022], ["Integra", 2023, 2026], ["MDX", 2001, 2026], ["NSX", 2000, 2022], ["RDX", 2007, 2026], ["RL / RLX", 2000, 2020], ["RSX", 2002, 2006], ["TL", 2000, 2014], ["TLX", 2015, 2026], ["TSX", 2004, 2014], ["ZDX", 2010, 2026]], "Alfa Romeo": [["147", 2001, 2010], ["156", 2000, 2006], ["159", 2005, 2011], ["166", 2000, 2007], ["4C", 2013, 2020], ["Brera / Spider", 2006, 2010], ["Giulia", 2016, 2026], ["Giulietta", 2010, 2020], ["GT", 2004, 2010], ["GTV / Spider", 2000, 2005], ["MiTo", 2008, 2018], ["Stelvio", 2017, 2026], ["Tonale", 2022, 2026]], "Alpine": [["A110", 2017, 2026]], "Aston Martin": [["DB7", 2000, 2004], ["DB9", 2004, 2016], ["DB11", 2016, 2023], ["DB12", 2023, 2026], ["DBS", 2007, 2026], ["DBX", 2020, 2026], ["Rapide", 2010, 2020], ["Vanquish", 2001, 2026], ["Vantage", 2005, 2026]], "Audi": [["A1", 2010, 2026], ["A3", 2000, 2026], ["A4", 2000, 2026], ["A5", 2007, 2026], ["A6", 2000, 2026], ["A8", 2000, 2026], ["Q3", 2011, 2026], ["Q5", 2008, 2026], ["Q7", 2006, 2026], ["R8", 2007, 2024], ["RS3", 2011, 2026], ["RS4", 2000, 2026], ["RS6", 2002, 2026], ["S3", 2000, 2026], ["S4", 2000, 2026], ["TT", 2000, 2023]], "Bentley": [["Arnage", 2000, 2009], ["Bentayga", 2016, 2026], ["Continental GT", 2003, 2026], ["Flying Spur", 2005, 2026]], "BMW": [["1 Series", 2004, 2026], ["2 Series", 2014, 2026], ["3 Series", 2000, 2026], ["4 Series", 2013, 2026], ["5 Series", 2000, 2026], ["6 Series", 2003, 2019], ["7 Series", 2000, 2026], ["M3", 2000, 2026], ["M5", 2000, 2026], ["X1", 2009, 2026], ["X3", 2003, 2026], ["X5", 2000, 2026], ["X6", 2008, 2026], ["Z3", 2000, 2002], ["Z4", 2003, 2026]], "Bugatti": [["Chiron", 2016, 2024], ["Veyron", 2005, 2015]], "Buick": [["Century", 2000, 2005], ["Enclave", 2008, 2026], ["Encore", 2013, 2026], ["Envision", 2016, 2026], ["LaCrosse", 2005, 2019], ["LeSabre", 2000, 2005], ["Lucerne", 2006, 2011], ["Park Avenue", 2000, 2005], ["Regal", 2000, 2020], ["Rendezvous", 2002, 2007]], "Cadillac": [["ATS", 2013, 2019], ["CT4", 2020, 2026], ["CT5", 2020, 2026], ["CTS", 2003, 2019], ["DeVille / DTS", 2000, 2011], ["Escalade", 2000, 2026], ["Seville", 2000, 2004], ["SRX", 2004, 2016], ["STS", 2005, 2011], ["XLR", 2004, 2009], ["XT5", 2017, 2026]], "Chevrolet": [["Aveo", 2004, 2011], ["Blazer", 2000, 2026], ["Camaro", 2010, 2024], ["Cobalt", 2005, 2010], ["Colorado", 2004, 2026], ["Corvette", 2000, 2026], ["Cruze", 2011, 2019], ["Equinox", 2005, 2026], ["Express", 2000, 2026], ["Impala", 2000, 2020], ["Malibu", 2000, 2026], ["Silverado", 2000, 2026], ["Spark", 2013, 2022], ["Suburban", 2000, 2026], ["Tahoe", 2000, 2026], ["TrailBlazer", 2002, 2009], ["Trax", 2015, 2026], ["Volt", 2011, 2019]], "Chrysler": [["300 / 300C", 2005, 2023], ["Crossfire", 2004, 2008], ["Neon", 2000, 2005], ["Pacifica", 2004, 2026], ["PT Cruiser", 2001, 2010], ["Sebring", 2001, 2010], ["Voyager / Town & Country", 2000, 2016]], "Citroën": [["Berlingo", 2000, 2026], ["C-Crosser", 2007, 2012], ["C1", 2005, 2022], ["C3", 2002, 2026], ["C4", 2004, 2026], ["C4 Picasso", 2006, 2022], ["C5", 2001, 2017], ["C5 Aircross", 2019, 2026], ["Jumper", 2000, 2026], ["Jumpy", 2000, 2026], ["Saxo", 2000, 2003], ["Xsara", 2000, 2006], ["Xsara Picasso", 2000, 2012]], "Dacia": [["Duster", 2010, 2026], ["Jogger", 2022, 2026], ["Logan", 2004, 2026], ["Sandero", 2008, 2026], ["Spring", 2021, 2026]], "Daihatsu": [["Charade", 2000, 2000], ["Copen", 2003, 2006], ["Cuore", 2000, 2003], ["Pyzar", 2000, 2002], ["Sirion", 2000, 2005], ["Terios", 2000, 2006], ["YRV", 2001, 2005]], "Dodge": [["Avenger", 2008, 2014], ["Caliber", 2006, 2012], ["Challenger", 2008, 2023], ["Charger", 2006, 2023], ["Dakota", 2000, 2011], ["Durango", 2000, 2026], ["Grand Caravan", 2000, 2020], ["Journey", 2009, 2020], ["Neon", 2000, 2005], ["Nitro", 2007, 2011], ["Ram (to 2009)", 2000, 2009], ["Viper", 2000, 2017]], "DS": [["DS3", 2010, 2026], ["DS4", 2011, 2026], ["DS5", 2012, 2018], ["DS7", 2017, 2026]], "Ferrari": [["360", 2000, 2005], ["430", 2005, 2009], ["458", 2010, 2015], ["488", 2016, 2020], ["550 / 575M", 2000, 2006], ["599", 2007, 2012], ["612 Scaglietti", 2004, 2011], ["812", 2017, 2024], ["California / Portofino", 2009, 2026], ["F8", 2020, 2023], ["F12", 2013, 2017], ["FF / GTC4Lusso", 2012, 2020], ["Purosangue", 2023, 2026], ["Roma", 2020, 2026], ["SF90", 2020, 2026], ["296", 2022, 2026]], "Fiat": [["124 Spider", 2016, 2020], ["500", 2007, 2026], ["500X", 2015, 2026], ["Bravo", 2007, 2014], ["Doblo", 2001, 2026], ["Ducato", 2000, 2026], ["Freemont", 2011, 2016], ["Fullback", 2016, 2019], ["Multipla", 2000, 2010], ["Panda", 2003, 2026], ["Punto", 2000, 2018], ["Stilo", 2001, 2007], ["Tipo", 2016, 2026]], "Ford": [["Escape", 2001, 2026], ["EcoSport", 2013, 2020], ["Everest", 2015, 2026], ["Explorer", 2000, 2026], ["F-150", 2000, 2026], ["Falcon", 2000, 2016], ["Fiesta", 2004, 2019], ["Focus", 2002, 2018], ["Kuga", 2012, 2020], ["Laser", 2000, 2002], ["Mondeo", 2001, 2019], ["Mustang", 2000, 2026], ["Puma", 2020, 2026], ["Ranger", 2000, 2026], ["Territory", 2004, 2016], ["Transit", 2000, 2026]], "GMC": [["Acadia", 2007, 2026], ["Canyon", 2004, 2026], ["Envoy", 2000, 2009], ["Savana", 2000, 2026], ["Sierra", 2000, 2026], ["Terrain", 2010, 2026], ["Yukon", 2000, 2026]], "Holden": [["Acadia", 2018, 2020], ["Astra", 2000, 2020], ["Barina", 2000, 2018], ["Calais / Berlina", 2000, 2017], ["Captiva", 2006, 2018], ["Colorado", 2008, 2020], ["Commodore", 2000, 2020], ["Cruze", 2009, 2016], ["Epica", 2007, 2011], ["Equinox", 2017, 2020], ["Monaro", 2001, 2005], ["Rodeo", 2000, 2008], ["Statesman / Caprice", 2000, 2017], ["Trailblazer", 2012, 2020], ["Trax", 2013, 2020], ["Ute", 2000, 2017], ["Vectra", 2000, 2006], ["Viva", 2005, 2009], ["Zafira", 2001, 2005]], "Honda": [["Accord", 2000, 2026], ["Accord Euro", 2003, 2015], ["City", 2003, 2026], ["Civic", 2000, 2026], ["CR-V", 2000, 2026], ["CR-Z", 2011, 2016], ["HR-V", 2015, 2026], ["Insight", 2000, 2014], ["Integra", 2000, 2006], ["Jazz / Fit", 2001, 2020], ["Legend", 2000, 2012], ["Odyssey", 2000, 2021], ["Pilot", 2003, 2026], ["Prelude", 2000, 2001], ["S2000", 2000, 2009], ["ZR-V", 2023, 2026]], "Hummer": [["H1", 2000, 2006], ["H2", 2003, 2009], ["H3", 2006, 2010]], "Infiniti": [["FX / QX70", 2003, 2017], ["G35 / G37", 2003, 2013], ["I30 / I35", 2000, 2004], ["M / Q70", 2003, 2019], ["Q30", 2016, 2019], ["Q50", 2014, 2026], ["Q60", 2014, 2022], ["QX30", 2017, 2019], ["QX50 / EX", 2008, 2026], ["QX56 / QX80", 2004, 2026], ["QX60 / JX", 2013, 2026]], "Isuzu": [["Ascender", 2003, 2008], ["Axiom", 2002, 2004], ["D-Max", 2008, 2026], ["i-Series", 2006, 2008], ["MU-X", 2013, 2026], ["Rodeo", 2000, 2004], ["Trooper", 2000, 2002]], "Jaguar": [["E-Pace", 2018, 2024], ["F-Pace", 2016, 2026], ["F-Type", 2013, 2024], ["I-Pace", 2018, 2024], ["S-Type", 2000, 2008], ["X-Type", 2001, 2009], ["XE", 2015, 2024], ["XF", 2008, 2024], ["XJ", 2000, 2019], ["XK", 2000, 2014]], "Jeep": [["Cherokee / Liberty", 2000, 2026], ["Commander", 2006, 2010], ["Compass", 2007, 2026], ["Gladiator", 2020, 2026], ["Grand Cherokee", 2000, 2026], ["Patriot", 2007, 2017], ["Renegade", 2015, 2026], ["Wagoneer", 2022, 2026], ["Wrangler", 2000, 2026]], "Lamborghini": [["Aventador", 2011, 2022], ["Gallardo", 2003, 2013], ["Huracán", 2014, 2026], ["Murciélago", 2001, 2010], ["Urus", 2018, 2026]], "Lancia": [["Delta", 2008, 2014], ["Lybra", 2000, 2005], ["Musa", 2004, 2012], ["Thesis", 2002, 2009], ["Ypsilon", 2003, 2026]], "Land Rover": [["Defender", 2000, 2026], ["Discovery", 2000, 2026], ["Discovery Sport", 2015, 2026], ["Freelander", 2000, 2015], ["Range Rover", 2000, 2026], ["Range Rover Evoque", 2011, 2026], ["Range Rover Sport", 2005, 2026], ["Range Rover Velar", 2017, 2026]], "Lexus": [["CT", 2011, 2022], ["ES", 2000, 2026], ["GS", 2000, 2020], ["GX", 2003, 2026], ["IS", 2000, 2026], ["LC", 2017, 2026], ["LS", 2000, 2026], ["LX", 2000, 2026], ["NX", 2015, 2026], ["RC", 2015, 2026], ["RX", 2000, 2026], ["RZ", 2023, 2026], ["SC", 2002, 2010], ["UX", 2019, 2026]], "Lincoln": [["Aviator", 2003, 2026], ["Blackwood", 2002, 2002], ["Continental", 2000, 2020], ["Corsair", 2020, 2026], ["LS", 2000, 2006], ["Mark LT", 2006, 2008], ["MKC", 2015, 2019], ["MKS", 2009, 2016], ["MKT", 2010, 2019], ["MKX / Nautilus", 2007, 2026], ["MKZ / Zephyr", 2006, 2020], ["Navigator", 2000, 2026], ["Town Car", 2000, 2011]], "Lotus": [["Eletre", 2023, 2026], ["Elise", 2000, 2021], ["Emira", 2022, 2026], ["Evora", 2009, 2021], ["Exige", 2000, 2021]], "Lucid": [["Air", 2021, 2026], ["Gravity", 2025, 2026]], "Maserati": [["3200 GT / Coupé / Spyder", 2000, 2007], ["Ghibli", 2013, 2024], ["GranTurismo", 2007, 2026], ["Grecale", 2022, 2026], ["Levante", 2016, 2026], ["MC20", 2021, 2026], ["Quattroporte", 2000, 2026]], "Mazda": [["121 / Mazda2", 2000, 2026], ["323", 2000, 2003], ["626", 2000, 2002], ["B-Series / Bravo", 2000, 2006], ["BT-50", 2006, 2026], ["CX-3", 2015, 2026], ["CX-30", 2019, 2026], ["CX-5", 2012, 2026], ["CX-60", 2022, 2026], ["CX-7", 2007, 2012], ["CX-9", 2007, 2023], ["CX-90", 2023, 2026], ["Mazda3", 2004, 2026], ["Mazda6", 2002, 2026], ["MPV", 2000, 2006], ["MX-5", 2000, 2026], ["Premacy", 2000, 2004], ["RX-8", 2003, 2012], ["Tribute", 2001, 2006]], "McLaren": [["540C / 570S / 600LT", 2015, 2021], ["720S / 750S", 2017, 2026], ["Artura", 2022, 2026], ["GT", 2019, 2026], ["MP4-12C / 650S / 675LT", 2011, 2017]], "Mercedes-Benz": [["A-Class", 2000, 2026], ["B-Class", 2005, 2026], ["C-Class", 2000, 2026], ["CLA", 2013, 2026], ["CLK", 2000, 2010], ["CLS", 2004, 2026], ["E-Class", 2000, 2026], ["G-Class", 2000, 2026], ["GLA", 2014, 2026], ["GLC", 2015, 2026], ["GLE / M-Class", 2000, 2026], ["GLS / GL", 2006, 2026], ["S-Class", 2000, 2026], ["SL", 2000, 2026], ["SLK / SLC", 2000, 2020], ["Sprinter", 2000, 2026], ["Vito / Valente", 2000, 2026], ["X-Class", 2017, 2020]], "Mercury": [["Cougar", 2000, 2002], ["Grand Marquis", 2000, 2011], ["Mariner", 2005, 2011], ["Milan", 2006, 2011], ["Montego", 2005, 2007], ["Monterey", 2004, 2007], ["Mountaineer", 2000, 2010], ["Sable", 2000, 2009], ["Villager", 2000, 2002]], "MG": [["MG3", 2011, 2026], ["MG4", 2022, 2026], ["HS", 2018, 2026], ["TF", 2002, 2011], ["ZR", 2001, 2005], ["ZS", 2017, 2026], ["ZS (Rover era)", 2001, 2005], ["ZT", 2001, 2005]], "Mini": [["Clubman", 2007, 2024], ["Convertible", 2004, 2026], ["Countryman", 2010, 2026], ["Hatch / Cooper", 2001, 2026], ["Paceman", 2013, 2016]], "Mitsubishi": [["380", 2005, 2008], ["ASX / Outlander Sport", 2010, 2026], ["Colt", 2004, 2012], ["Eclipse", 2000, 2012], ["Eclipse Cross", 2017, 2026], ["Endeavor", 2004, 2011], ["Galant", 2000, 2012], ["i-MiEV", 2009, 2016], ["Lancer", 2000, 2017], ["Lancer Evolution", 2001, 2016], ["Magna / Verada", 2000, 2005], ["Mirage", 2012, 2026], ["Outlander", 2003, 2026], ["Pajero / Montero", 2000, 2021], ["Pajero Sport / Challenger", 2000, 2026], ["Triton / L200", 2000, 2026]], "Nissan": [["200SX / Silvia", 2000, 2002], ["350Z", 2003, 2009], ["370Z", 2009, 2020], ["Altima", 2000, 2026], ["Dualis / Qashqai", 2007, 2026], ["Frontier", 2000, 2026], ["GT-R", 2008, 2026], ["Juke", 2010, 2026], ["Leaf", 2011, 2026], ["Maxima", 2000, 2023], ["Micra", 2000, 2017], ["Murano", 2003, 2026], ["Navara", 2000, 2026], ["Note", 2005, 2020], ["Pathfinder", 2000, 2026], ["Patrol", 2000, 2026], ["Pulsar / Sentra", 2000, 2019], ["Rogue", 2008, 2026], ["Skyline", 2000, 2007], ["Tiida", 2006, 2013], ["Titan", 2004, 2024], ["X-Trail", 2001, 2026]], "Oldsmobile": [["Alero", 2000, 2004], ["Aurora", 2001, 2003], ["Bravada", 2002, 2004], ["Intrigue", 2000, 2002], ["Silhouette", 2000, 2004]], "Opel / Vauxhall": [["Antara", 2006, 2015], ["Astra", 2000, 2026], ["Combo", 2000, 2026], ["Corsa", 2000, 2026], ["Insignia", 2008, 2022], ["Meriva", 2003, 2017], ["Mokka", 2012, 2026], ["Omega", 2000, 2003], ["Signum", 2003, 2008], ["Tigra", 2004, 2009], ["Vectra", 2000, 2008], ["Vivaro", 2001, 2026], ["Zafira", 2000, 2019]], "Peugeot": [["107 / 108", 2005, 2021], ["2008", 2013, 2026], ["206", 2000, 2010], ["207", 2006, 2014], ["208", 2012, 2026], ["306", 2000, 2002], ["307", 2001, 2008], ["3008", 2009, 2026], ["308", 2007, 2026], ["4007", 2007, 2012], ["406", 2000, 2004], ["407", 2004, 2011], ["5008", 2009, 2026], ["508", 2011, 2026], ["607", 2000, 2010], ["Boxer", 2000, 2026], ["Expert", 2000, 2026], ["Partner", 2000, 2026], ["RCZ", 2010, 2015]], "Plymouth": [["Neon", 2000, 2001], ["Prowler", 2001, 2001], ["Voyager", 2000, 2000]], "Polestar": [["Polestar 1", 2019, 2021], ["Polestar 2", 2020, 2026], ["Polestar 3", 2024, 2026], ["Polestar 4", 2024, 2026]], "Pontiac": [["Aztek", 2001, 2005], ["Bonneville", 2000, 2005], ["Firebird", 2000, 2002], ["G6", 2005, 2010], ["G8", 2008, 2009], ["Grand Am", 2000, 2005], ["Grand Prix", 2000, 2008], ["GTO", 2004, 2006], ["Solstice", 2006, 2010], ["Sunfire", 2000, 2005], ["Torrent", 2006, 2009], ["Vibe", 2003, 2010]], "Porsche": [["911", 2000, 2026], ["Boxster", 2000, 2026], ["Cayenne", 2003, 2026], ["Cayman", 2006, 2026], ["Macan", 2014, 2026], ["Panamera", 2009, 2026]], "Ram": [["1500", 2010, 2026], ["2500 / 3500", 2010, 2026], ["ProMaster", 2014, 2026]], "Renault": [["Arkana", 2021, 2026], ["Captur", 2013, 2026], ["Clio", 2000, 2026], ["Kadjar", 2015, 2022], ["Kangoo", 2000, 2026], ["Koleos", 2008, 2026], ["Laguna", 2000, 2015], ["Master", 2000, 2026], ["Mégane", 2000, 2026], ["Scénic", 2000, 2022], ["Trafic", 2001, 2026], ["Zoe", 2013, 2024]], "Rivian": [["R1S", 2022, 2026], ["R1T", 2022, 2026]], "Rolls-Royce": [["Cullinan", 2018, 2026], ["Dawn", 2016, 2023], ["Ghost", 2010, 2026], ["Phantom", 2003, 2026], ["Spectre", 2023, 2026], ["Wraith", 2013, 2023]], "Rover": [["25", 2000, 2005], ["45", 2000, 2005], ["75", 2000, 2005], ["Streetwise", 2003, 2005]], "Saab": [["9-2X", 2005, 2006], ["9-3", 2000, 2014], ["9-5", 2000, 2011], ["9-7X", 2005, 2009]], "Saturn": [["Aura", 2007, 2009], ["Ion", 2003, 2007], ["L-Series", 2000, 2005], ["Outlook", 2007, 2010], ["S-Series", 2000, 2002], ["Sky", 2007, 2010], ["Vue", 2002, 2010]], "Scion": [["FR-S", 2013, 2016], ["iA", 2016, 2016], ["iM", 2016, 2016], ["iQ", 2012, 2015], ["tC", 2005, 2016], ["xA", 2004, 2006], ["xB", 2004, 2015], ["xD", 2008, 2014]], "SEAT / Cupra": [["Alhambra", 2000, 2020], ["Altea", 2004, 2015], ["Arona", 2017, 2026], ["Ateca", 2016, 2026], ["Formentor", 2020, 2026], ["Ibiza", 2000, 2026], ["Leon", 2000, 2026], ["Tarraco", 2018, 2026], ["Toledo", 2000, 2019]], "Skoda": [["Fabia", 2000, 2026], ["Kamiq", 2019, 2026], ["Karoq", 2017, 2026], ["Kodiaq", 2016, 2026], ["Octavia", 2000, 2026], ["Rapid", 2012, 2019], ["Roomster", 2006, 2015], ["Scala", 2019, 2026], ["Superb", 2002, 2026], ["Yeti", 2009, 2017]], "Smart": [["ForFour", 2004, 2021], ["ForTwo", 2000, 2024], ["Roadster", 2003, 2005], ["#1", 2023, 2026], ["#3", 2024, 2026]], "Subaru": [["Ascent", 2019, 2026], ["Baja", 2003, 2006], ["BRZ", 2012, 2026], ["Crosstrek / XV", 2012, 2026], ["Forester", 2000, 2026], ["Impreza", 2000, 2026], ["Levorg", 2016, 2026], ["Liberty / Legacy", 2000, 2026], ["Outback", 2000, 2026], ["Solterra", 2023, 2026], ["Tribeca", 2006, 2014], ["WRX / STI", 2000, 2026]], "Suzuki": [["Alto", 2009, 2014], ["Baleno", 2016, 2022], ["Celerio", 2015, 2021], ["Equator", 2009, 2012], ["Grand Vitara", 2000, 2019], ["Ignis", 2017, 2026], ["Jimny", 2000, 2026], ["Kizashi", 2010, 2016], ["Liana", 2002, 2007], ["S-Cross / SX4", 2007, 2026], ["Swift", 2005, 2026], ["Vitara", 2015, 2026], ["XL-7", 2001, 2009]], "Tesla": [["Cybertruck", 2023, 2026], ["Model 3", 2017, 2026], ["Model S", 2012, 2026], ["Model X", 2015, 2026], ["Model Y", 2020, 2026], ["Roadster", 2008, 2012]], "Toyota": [["86 / GR86", 2012, 2026], ["Aurion", 2006, 2017], ["C-HR", 2017, 2026], ["Celica", 2000, 2006], ["Camry", 2000, 2026], ["Corolla", 2000, 2026], ["Echo / Yaris", 2000, 2026], ["Fortuner", 2015, 2026], ["HiAce", 2000, 2026], ["HiLux", 2000, 2026], ["Kluger / Highlander", 2003, 2026], ["LandCruiser", 2000, 2026], ["LandCruiser Prado", 2000, 2026], ["Prius", 2001, 2026], ["RAV4", 2000, 2026], ["Supra", 2019, 2026], ["Tacoma", 2000, 2026], ["Tarago", 2000, 2019], ["Tundra", 2000, 2026]], "Volkswagen": [["Amarok", 2011, 2026], ["Arteon", 2017, 2026], ["Atlas", 2017, 2026], ["Beetle", 2000, 2019], ["Bora", 2000, 2005], ["Caddy", 2004, 2026], ["CC", 2008, 2017], ["Eos", 2006, 2015], ["Golf", 2000, 2026], ["Jetta", 2000, 2026], ["Multivan", 2003, 2026], ["Passat", 2000, 2026], ["Polo", 2000, 2026], ["Scirocco", 2009, 2017], ["T-Cross", 2019, 2026], ["T-Roc", 2017, 2026], ["Tiguan", 2007, 2026], ["Touareg", 2003, 2026], ["Touran", 2003, 2026], ["Transporter", 2000, 2026], ["Up!", 2012, 2023]], "Volvo": [["C30", 2007, 2013], ["C40", 2022, 2025], ["C70", 2000, 2013], ["EX30", 2024, 2026], ["S40 / V40", 2000, 2019], ["S60", 2000, 2026], ["S80 / S90", 2000, 2026], ["V50", 2004, 2012], ["V60", 2011, 2026], ["V70", 2000, 2016], ["XC40", 2018, 2026], ["XC60", 2008, 2026], ["XC70", 2000, 2016], ["XC90", 2003, 2026]]};
+const ENGINES = {"Ford|Escape": [["2.0 I4", 2001, 2004, 6500], ["2.3 I4", 2005, 2008, 6500], ["3.0 V6", 2001, 2008, 6250], ["2.5 I4", 2009, 2026, 6500], ["1.5 EcoBoost", 2013, 2026, 6500], ["2.0 EcoBoost", 2013, 2026, 6500]], "Ford|Falcon": [["4.0 I6", 2000, 2016, 6000], ["4.0 I6 turbo", 2002, 2016, 6000], ["4.0 I6 LPG", 2000, 2016, 6000, "lpg"], ["5.0 V8", 2000, 2002, 5500], ["5.4 V8", 2002, 2010, 6000], ["5.0 V8 supercharged", 2010, 2016, 6250], ["2.0 EcoBoost", 2012, 2016, 6500]], "Ford|Focus": [["1.8", 2002, 2005, 6500], ["2.0", 2002, 2018, 6500], ["2.5 turbo (XR5)", 2006, 2010, 6500], ["2.0 diesel", 2008, 2015, 4500, "diesel"], ["1.6 EcoBoost", 2011, 2015, 6500], ["2.0 EcoBoost (ST)", 2012, 2018, 6800], ["1.5 EcoBoost", 2015, 2018, 6500], ["2.3 EcoBoost (RS)", 2016, 2018, 6800]], "Ford|Mustang": [["3.8 V6", 2000, 2004, 6000], ["4.6 V8", 2000, 2010, 6000], ["4.0 V6", 2005, 2010, 6000], ["3.7 V6", 2011, 2014, 7000], ["5.0 V8", 2011, 2026, 7500], ["2.3 EcoBoost", 2015, 2026, 6500]], "Ford|Ranger": [["2.6 petrol", 2000, 2006, 5500], ["2.5 diesel", 2000, 2011, 4500, "diesel"], ["3.0 diesel", 2006, 2011, 4500, "diesel"], ["2.2 diesel", 2011, 2022, 4500, "diesel"], ["3.2 diesel", 2011, 2022, 4500, "diesel"], ["2.0 bi-turbo diesel", 2018, 2026, 4500, "diesel"], ["3.0 V6 diesel", 2022, 2026, 4500, "diesel"], ["3.0 V6 EcoBoost (Raptor)", 2023, 2026, 6000]], "Ford|Territory": [["4.0 I6", 2004, 2016, 6000], ["4.0 I6 turbo", 2006, 2011, 6000], ["2.7 V6 diesel", 2011, 2016, 4500, "diesel"]], "Mazda|BT-50": [["2.5 diesel", 2006, 2011, 4500, "diesel"], ["3.0 diesel", 2006, 2011, 4500, "diesel"], ["2.2 diesel", 2011, 2020, 4500, "diesel"], ["3.2 diesel", 2011, 2020, 4500, "diesel"], ["3.0 diesel", 2020, 2026, 4500, "diesel"]], "Mazda|CX-5": [["2.0", 2012, 2026, 6500], ["2.5", 2012, 2026, 6500], ["2.2 diesel", 2012, 2026, 5000, "diesel"], ["2.5 turbo", 2018, 2026, 6000]], "Mazda|Mazda3": [["2.0", 2004, 2026, 6500], ["2.3", 2004, 2009, 6500], ["2.3 turbo (MPS)", 2007, 2013, 6500], ["2.5", 2009, 2026, 6500]], "Mazda|Mazda6": [["2.3", 2002, 2007, 6500], ["2.3 turbo (MPS)", 2006, 2007, 6500], ["2.5", 2008, 2026, 6500], ["2.2 diesel", 2009, 2021, 5000, "diesel"], ["2.5 turbo", 2018, 2026, 6000]], "Mazda|MX-5": [["1.8", 2000, 2005, 7000], ["2.0", 2005, 2026, 7000], ["1.5", 2015, 2026, 7500]], "Mazda|RX-8": [["1.3 rotary", 2003, 2012, 9000]], "Mazda|Tribute": [["2.0 I4", 2001, 2004, 6500], ["2.3 I4", 2004, 2006, 6500], ["3.0 V6", 2001, 2006, 6250]], "Honda|Accord": [["2.3", 2000, 2002, 6800], ["2.4", 2003, 2019, 6800], ["3.0 V6", 2003, 2007, 6800], ["3.5 V6", 2008, 2017, 6800]], "Honda|Civic": [["1.7", 2000, 2005, 6800], ["2.0 Type R", 2002, 2005, 8000], ["1.3 hybrid", 2003, 2011, 6000, "hybrid"], ["1.8", 2006, 2015, 6800], ["2.0", 2006, 2026, 6800], ["1.5 turbo", 2016, 2026, 6500]], "Honda|CR-V": [["2.0", 2000, 2006, 6800], ["2.4", 2002, 2017, 6800], ["1.5 turbo", 2017, 2026, 6500]], "Honda|Jazz / Fit": [["1.3", 2002, 2008, 6500], ["1.5", 2002, 2020, 6800]], "Honda|S2000": [["2.0", 2000, 2004, 9000], ["2.2", 2004, 2009, 8000]], "Toyota|86 / GR86": [["2.0", 2012, 2021, 7400], ["2.4", 2022, 2026, 7500]], "Toyota|Camry": [["2.2", 2000, 2001, 6000], ["2.4", 2002, 2011, 6000], ["2.5", 2011, 2026, 6200], ["3.0 V6", 2000, 2006, 6200], ["3.5 V6", 2006, 2024, 6300], ["2.5 hybrid", 2010, 2026, 5500, "hybrid"]], "Toyota|Corolla": [["1.8", 2000, 2018, 6400], ["2.0", 2018, 2026, 6600], ["1.8 hybrid", 2019, 2026, 5200, "hybrid"]], "Toyota|Echo / Yaris": [["1.3", 2000, 2011, 6400], ["1.5", 2000, 2026, 6400]], "Toyota|HiLux": [["2.7 petrol", 2005, 2026, 5600], ["4.0 V6 petrol", 2005, 2015, 6000], ["2.5 diesel", 2005, 2015, 4400, "diesel"], ["3.0 diesel", 2005, 2015, 4400, "diesel"], ["2.4 diesel", 2015, 2026, 4400, "diesel"], ["2.8 diesel", 2015, 2026, 4400, "diesel"]], "Toyota|Kluger / Highlander": [["3.0 V6", 2003, 2007, 6200], ["3.5 V6", 2007, 2026, 6300], ["2.5 hybrid", 2021, 2026, 5500, "hybrid"]], "Toyota|LandCruiser": [["4.7 V8 petrol", 2000, 2011, 5400], ["4.2 diesel", 2000, 2007, 4000, "diesel"], ["4.5 V8 diesel", 2007, 2021, 4000, "diesel"], ["4.6 V8 petrol", 2012, 2021, 5800], ["3.3 V6 diesel", 2021, 2026, 4400, "diesel"]], "Toyota|LandCruiser Prado": [["3.4 V6", 2000, 2002, 5200], ["4.0 V6", 2003, 2017, 6000], ["3.0 diesel", 2006, 2015, 4400, "diesel"], ["2.8 diesel", 2015, 2026, 4400, "diesel"]], "Toyota|Prius": [["1.5 hybrid", 2001, 2009, 5000, "hybrid"], ["1.8 hybrid", 2009, 2022, 5200, "hybrid"], ["2.0 hybrid", 2023, 2026, 5500, "hybrid"]], "Toyota|RAV4": [["2.0", 2000, 2005, 6400], ["2.4", 2005, 2012, 6000], ["2.5", 2012, 2026, 6200], ["2.5 hybrid", 2016, 2026, 5500, "hybrid"]], "Toyota|Supra": [["2.0 turbo", 2019, 2026, 6500], ["3.0 I6 turbo", 2019, 2026, 6500]], "BMW|1 Series": [["2.0", 2004, 2011, 6500], ["2.0 diesel", 2004, 2019, 4800, "diesel"], ["3.0 I6 turbo", 2008, 2019, 7000], ["2.0 turbo", 2012, 2026, 6500], ["1.5 turbo", 2015, 2026, 6500]], "BMW|3 Series": [["2.0", 2000, 2012, 6500], ["2.5 I6", 2000, 2007, 6500], ["3.0 I6", 2000, 2008, 7000], ["3.0 I6 turbo", 2006, 2026, 7000], ["2.0 turbo", 2012, 2026, 6500], ["2.0 diesel", 2002, 2026, 4800, "diesel"]], "BMW|5 Series": [["2.5 I6", 2000, 2005, 6500], ["3.0 I6", 2000, 2010, 6500], ["4.4 V8", 2000, 2010, 6500], ["3.0 I6 turbo", 2007, 2026, 7000], ["2.0 turbo", 2011, 2026, 6500], ["2.0 diesel", 2007, 2026, 4800, "diesel"], ["3.0 diesel", 2000, 2026, 4800, "diesel"]], "BMW|M3": [["3.2 I6", 2000, 2006, 8000], ["4.0 V8", 2007, 2013, 8300], ["3.0 I6 twin-turbo", 2014, 2026, 7200]], "BMW|X3": [["2.5 I6", 2003, 2006, 6500], ["3.0 I6", 2003, 2010, 6500], ["2.0 diesel", 2004, 2026, 4800, "diesel"], ["3.0 diesel", 2004, 2026, 4800, "diesel"], ["2.0 turbo", 2011, 2026, 6500], ["3.0 I6 turbo", 2011, 2026, 7000]], "BMW|X5": [["3.0 I6", 2000, 2006, 6500], ["4.4 V8", 2000, 2006, 6000], ["4.8 V8", 2004, 2010, 6500], ["3.0 diesel", 2003, 2026, 4800, "diesel"], ["3.0 I6 turbo", 2010, 2026, 7000]], "BMW|Z4": [["2.5 I6", 2003, 2008, 6500], ["3.0 I6", 2003, 2016, 7000], ["3.0 I6 turbo", 2009, 2026, 7000], ["2.0 turbo", 2011, 2026, 6500]], "Mercedes-Benz|A-Class": [["2.0", 2005, 2012, 6200], ["1.6 turbo", 2012, 2018, 6000], ["2.0 turbo", 2012, 2026, 6500], ["1.3 turbo", 2018, 2026, 6200]], "Mercedes-Benz|C-Class": [["2.6 V6", 2000, 2005, 6000], ["3.2 V6", 2000, 2005, 6000], ["1.8 supercharged", 2002, 2007, 6500], ["2.1 diesel", 2000, 2018, 4600, "diesel"], ["3.5 V6", 2005, 2014, 6500], ["1.8 turbo", 2008, 2014, 6000], ["6.2 V8 (AMG)", 2007, 2014, 7200], ["2.0 turbo", 2014, 2026, 6200], ["4.0 V8 twin-turbo (AMG)", 2015, 2021, 7000]], "Mercedes-Benz|E-Class": [["2.6 V6", 2000, 2005, 6000], ["3.2 V6", 2000, 2005, 6000], ["5.0 V8", 2000, 2006, 6000], ["2.1 diesel", 2000, 2016, 4600, "diesel"], ["3.0 V6 diesel", 2005, 2018, 4600, "diesel"], ["3.5 V6", 2005, 2016, 6500], ["5.5 V8", 2006, 2016, 6000], ["6.2 V8 (AMG)", 2006, 2011, 7200], ["2.0 turbo", 2013, 2026, 6200], ["3.0 V6 turbo", 2016, 2026, 6200]], "Mercedes-Benz|GLE / M-Class": [["3.2 V6", 2000, 2005, 6000], ["5.0 V8", 2002, 2007, 6000], ["2.7 diesel", 2001, 2005, 4600, "diesel"], ["3.5 V6", 2005, 2015, 6500], ["3.0 V6 diesel", 2005, 2026, 4600, "diesel"], ["2.1 diesel", 2012, 2015, 4600, "diesel"]], "Mercedes-Benz|S-Class": [["5.0 V8", 2000, 2006, 6000], ["5.5 V8", 2006, 2013, 6000], ["3.0 V6 diesel", 2006, 2013, 4600, "diesel"], ["4.7 V8 twin-turbo", 2013, 2020, 6200]], "Mercedes-Benz|Sprinter": [["2.2 diesel", 2000, 2006, 4200, "diesel"], ["2.1 diesel", 2006, 2026, 4200, "diesel"], ["3.0 V6 diesel", 2006, 2026, 4200, "diesel"]], "Holden|Calais / Berlina": [["3.8 V6", 2000, 2004, 5500], ["5.7 V8", 2000, 2006, 6000], ["3.6 V6", 2004, 2020, 6500], ["6.0 V8", 2006, 2017, 6000], ["3.0 V6", 2009, 2017, 6800], ["6.2 V8", 2013, 2017, 6000], ["2.0 turbo", 2018, 2020, 6200]], "Holden|Captiva": [["2.4", 2006, 2018, 6200], ["3.2 V6", 2006, 2010, 6200], ["2.0 diesel", 2006, 2010, 4500, "diesel"], ["2.2 diesel", 2011, 2018, 4500, "diesel"], ["3.0 V6", 2011, 2018, 6500]], "Holden|Colorado": [["3.0 diesel", 2008, 2012, 4000, "diesel"], ["3.6 V6", 2008, 2012, 6000], ["2.8 diesel", 2012, 2020, 4200, "diesel"]], "Holden|Commodore": [["3.8 V6", 2000, 2004, 5500], ["5.7 V8", 2000, 2006, 6000], ["3.6 V6", 2004, 2020, 6500], ["6.0 V8", 2006, 2017, 6000], ["3.0 V6", 2009, 2017, 6800], ["6.2 V8", 2013, 2017, 6000], ["2.0 turbo", 2018, 2020, 6200]], "Holden|Cruze": [["1.8", 2009, 2016, 6500], ["1.4 turbo", 2011, 2016, 6000], ["2.0 diesel", 2009, 2016, 4500, "diesel"]], "Holden|Monaro": [["3.8 V6", 2001, 2004, 5500], ["5.7 V8", 2001, 2005, 6000]], "Holden|Statesman / Caprice": [["3.8 V6", 2000, 2004, 5500], ["5.7 V8", 2000, 2006, 6000], ["3.6 V6", 2004, 2017, 6500], ["6.0 V8", 2006, 2017, 6000], ["6.2 V8", 2013, 2017, 6000]], "Holden|Ute": [["3.8 V6", 2000, 2004, 5500], ["5.7 V8", 2000, 2006, 6000], ["3.6 V6", 2004, 2020, 6500], ["6.0 V8", 2006, 2017, 6000], ["3.0 V6", 2009, 2017, 6800], ["6.2 V8", 2013, 2017, 6000], ["2.0 turbo", 2018, 2020, 6200]], "Chevrolet|Camaro": [["3.6 V6", 2010, 2024, 7000], ["6.2 V8", 2010, 2024, 6600], ["2.0 turbo", 2016, 2024, 6500]], "Chevrolet|Corvette": [["5.7 V8", 2000, 2004, 6000], ["6.0 V8", 2005, 2007, 6500], ["7.0 V8 (Z06)", 2006, 2013, 7000], ["6.2 V8", 2008, 2026, 6600]], "Chevrolet|Silverado": [["4.3 V6", 2000, 2019, 5600], ["4.8 V8", 2000, 2013, 6000], ["5.3 V8", 2000, 2026, 6000], ["6.0 V8", 2001, 2019, 6000], ["6.2 V8", 2009, 2026, 6000], ["6.6 diesel", 2001, 2026, 3600, "diesel"]], "GMC|Sierra": [["4.3 V6", 2000, 2019, 5600], ["4.8 V8", 2000, 2013, 6000], ["5.3 V8", 2000, 2026, 6000], ["6.0 V8", 2001, 2019, 6000], ["6.2 V8", 2009, 2026, 6000], ["6.6 diesel", 2001, 2026, 3600, "diesel"]], "Pontiac|GTO": [["5.7 V8", 2004, 2004, 6000], ["6.0 V8", 2005, 2006, 6500]], "Volkswagen|Amarok": [["2.0 TDI diesel", 2011, 2026, 4500, "diesel"], ["3.0 V6 TDI diesel", 2016, 2026, 4500, "diesel"]], "Volkswagen|Golf": [["1.6", 2000, 2008, 6200], ["2.0", 2000, 2008, 6200], ["1.8 turbo", 2000, 2005, 6500], ["1.9 TDI diesel", 2000, 2009, 4800, "diesel"], ["3.2 V6 (R32)", 2003, 2009, 6800], ["2.0 TDI diesel", 2004, 2026, 4800, "diesel"], ["2.0 TSI turbo (GTI/R)", 2005, 2026, 6500], ["1.4 TSI", 2007, 2020, 6000], ["1.2 TSI", 2010, 2019, 6000], ["1.5 TSI", 2019, 2026, 6000]], "Volkswagen|Passat": [["1.8 turbo", 2000, 2005, 6500], ["2.8 V6", 2000, 2005, 6500], ["1.9 TDI diesel", 2000, 2005, 4800, "diesel"], ["2.0 TSI turbo", 2005, 2026, 6500], ["2.0 TDI diesel", 2005, 2026, 4800, "diesel"], ["3.6 V6", 2006, 2017, 6500]], "Volkswagen|Polo": [["1.4", 2000, 2009, 6200], ["1.6", 2000, 2010, 6200], ["1.2 TSI", 2010, 2017, 6000], ["1.8 TSI (GTI)", 2010, 2017, 6500], ["1.0 TSI", 2017, 2026, 6000]], "Volkswagen|Tiguan": [["1.4 TSI", 2007, 2020, 6000], ["2.0 TSI turbo", 2007, 2026, 6500], ["2.0 TDI diesel", 2007, 2026, 4800, "diesel"]], "Volkswagen|Touareg": [["3.2 V6", 2003, 2006, 6500], ["2.5 TDI diesel", 2003, 2010, 4500, "diesel"], ["4.2 V8", 2004, 2010, 6500], ["5.0 V10 TDI diesel", 2003, 2009, 4500, "diesel"], ["3.6 V6", 2006, 2018, 6500], ["3.0 V6 TDI diesel", 2007, 2026, 4800, "diesel"]], "Audi|A3": [["1.8 turbo", 2000, 2003, 6500], ["2.0 TFSI turbo", 2004, 2026, 6500], ["3.2 V6", 2004, 2009, 6800], ["2.0 TDI diesel", 2004, 2020, 4800, "diesel"], ["1.4 TFSI", 2008, 2020, 6000]], "Audi|A4": [["1.8 turbo", 2000, 2006, 6500], ["3.0 V6", 2002, 2006, 6500], ["2.0 TFSI turbo", 2004, 2026, 6500], ["3.2 V6", 2004, 2012, 6800], ["2.0 TDI diesel", 2004, 2026, 4800, "diesel"]], "Audi|Q5": [["2.0 TFSI turbo", 2008, 2026, 6500], ["3.2 V6", 2008, 2012, 6800], ["2.0 TDI diesel", 2008, 2026, 4800, "diesel"], ["3.0 TDI diesel", 2008, 2026, 4800, "diesel"]], "Audi|Q7": [["3.6 V6", 2006, 2010, 6500], ["4.2 V8", 2006, 2015, 6500], ["3.0 TDI diesel", 2006, 2026, 4800, "diesel"]], "Audi|R8": [["4.2 V8", 2007, 2015, 8250], ["5.2 V10", 2009, 2024, 8700]], "Audi|TT": [["1.8 turbo", 2000, 2006, 6500], ["3.2 V6", 2003, 2010, 6800], ["2.0 TFSI turbo", 2006, 2023, 6500], ["2.5 TFSI (TT RS)", 2009, 2023, 6800]], "Skoda|Octavia": [["1.6", 2000, 2013, 6200], ["1.8 turbo", 2000, 2004, 6500], ["1.9 TDI diesel", 2000, 2010, 4800, "diesel"], ["2.0 TFSI turbo (RS)", 2005, 2026, 6500], ["2.0 TDI diesel", 2004, 2026, 4800, "diesel"], ["1.4 TSI", 2008, 2020, 6000]], "Porsche|911": [["3.4", 2000, 2001, 7300], ["3.6", 2002, 2008, 7300], ["3.8", 2005, 2016, 7400], ["3.0 turbo", 2016, 2026, 7500], ["4.0 (GT3)", 2015, 2026, 9000]], "Porsche|Boxster": [["2.7", 2000, 2012, 7200], ["3.2", 2000, 2004, 7200], ["3.4", 2005, 2016, 7500], ["2.0 turbo", 2016, 2026, 7500]], "Porsche|Cayenne": [["3.2 V6", 2003, 2010, 6700], ["4.5 V8", 2003, 2010, 6500], ["4.8 V8", 2008, 2017, 6700], ["3.0 V6 diesel", 2009, 2018, 4800, "diesel"], ["3.6 V6", 2010, 2018, 6700]], "Porsche|Macan": [["2.0 turbo", 2014, 2026, 6800], ["3.0 V6 turbo", 2014, 2026, 6800]], "Jeep|Grand Cherokee": [["4.0 I6", 2000, 2004, 5400], ["4.7 V8", 2000, 2009, 5800], ["3.7 V6", 2005, 2010, 6000], ["5.7 V8", 2005, 2026, 5800], ["3.0 V6 diesel", 2005, 2026, 4500, "diesel"], ["6.1 V8 (SRT8)", 2006, 2010, 6400], ["3.6 V6", 2011, 2026, 6400], ["6.4 V8 (SRT)", 2012, 2026, 6400]], "Jeep|Wrangler": [["2.5 I4", 2000, 2002, 5500], ["4.0 I6", 2000, 2006, 5400], ["3.8 V6", 2007, 2011, 5800], ["2.8 diesel", 2007, 2018, 4200, "diesel"], ["3.6 V6", 2012, 2026, 6600], ["2.0 turbo", 2018, 2026, 6000]], "Chrysler|300 / 300C": [["2.7 V6", 2005, 2010, 6400], ["3.5 V6", 2005, 2010, 6400], ["5.7 V8", 2005, 2023, 5800], ["3.0 V6 diesel", 2006, 2015, 4500, "diesel"], ["6.1 V8 (SRT8)", 2006, 2010, 6400], ["3.6 V6", 2011, 2023, 6400], ["6.4 V8 (SRT)", 2012, 2023, 6400]], "Dodge|Challenger": [["3.5 V6", 2006, 2010, 6400], ["3.6 V6", 2011, 2023, 6400], ["5.7 V8", 2006, 2023, 5800], ["6.1 V8 (SRT8)", 2006, 2010, 6400], ["6.4 V8", 2011, 2023, 6400], ["6.2 V8 supercharged", 2015, 2023, 6200]], "Dodge|Charger": [["3.5 V6", 2006, 2010, 6400], ["3.6 V6", 2011, 2023, 6400], ["5.7 V8", 2006, 2023, 5800], ["6.1 V8 (SRT8)", 2006, 2010, 6400], ["6.4 V8", 2011, 2023, 6400], ["6.2 V8 supercharged", 2015, 2023, 6200]], "Dodge|Ram (to 2009)": [["4.7 V8", 2000, 2009, 5800], ["5.9 V8", 2000, 2003, 5200], ["5.7 V8", 2003, 2009, 5800], ["5.9 diesel", 2000, 2007, 3200, "diesel"], ["6.7 diesel", 2007, 2009, 3200, "diesel"]], "Dodge|Viper": [["8.0 V10", 2000, 2007, 6000], ["8.4 V10", 2008, 2017, 6200]], "Ram|1500": [["3.6 V6", 2013, 2026, 6400], ["5.7 V8", 2010, 2026, 5800], ["3.0 V6 diesel", 2014, 2026, 4500, "diesel"]], "Ram|2500 / 3500": [["5.7 V8", 2010, 2018, 5800], ["6.4 V8", 2014, 2026, 6000], ["6.7 diesel", 2010, 2026, 3200, "diesel"]], "Fiat|500": [["1.2", 2007, 2019, 6500], ["1.4", 2007, 2015, 6800], ["0.9 TwinAir turbo", 2010, 2019, 6000]], "Fiat|Ducato": [["2.8 diesel", 2000, 2006, 4200, "diesel"], ["2.3 diesel", 2006, 2026, 4500, "diesel"], ["3.0 diesel", 2006, 2026, 4200, "diesel"]], "Abarth|500 / 595 / 695": [["1.4 turbo", 2008, 2026, 6500]], "Alfa Romeo|Giulia": [["2.0 turbo", 2016, 2026, 6000], ["2.2 diesel", 2016, 2026, 4800, "diesel"], ["2.9 V6 twin-turbo (QV)", 2016, 2026, 7000]], "Peugeot|206": [["1.4", 2000, 2010, 6200], ["1.6", 2000, 2010, 6200], ["2.0 (GTi/CC)", 2000, 2007, 6500]], "Peugeot|3008": [["1.6 turbo", 2009, 2026, 6000], ["2.0 HDi diesel", 2009, 2026, 4500, "diesel"], ["1.2 turbo", 2017, 2026, 6000]], "Peugeot|308": [["1.6 turbo", 2007, 2021, 6000], ["1.6 HDi diesel", 2007, 2021, 4500, "diesel"], ["2.0 HDi diesel", 2007, 2021, 4500, "diesel"], ["1.2 turbo", 2014, 2026, 6000]], "Nissan|350Z": [["3.5 V6", 2003, 2009, 7000]], "Nissan|370Z": [["3.7 V6", 2009, 2020, 7500]], "Nissan|GT-R": [["3.8 V6 twin-turbo", 2008, 2026, 7000]], "Nissan|Navara": [["2.4 petrol", 2000, 2015, 5500], ["3.3 V6 petrol", 2000, 2005, 5500], ["3.0 diesel", 2002, 2015, 4400, "diesel"], ["2.5 diesel", 2005, 2015, 4500, "diesel"], ["4.0 V6 petrol", 2005, 2015, 6000], ["3.0 V6 diesel", 2011, 2015, 4500, "diesel"], ["2.3 diesel", 2015, 2026, 4500, "diesel"]], "Nissan|Patrol": [["4.8 I6 petrol", 2001, 2016, 5800], ["3.0 diesel", 2000, 2016, 4400, "diesel"], ["4.2 diesel", 2000, 2016, 4000, "diesel"], ["5.6 V8 petrol", 2013, 2026, 6000]], "Nissan|Skyline": [["2.5 turbo (RB25)", 2000, 2002, 8000], ["2.6 twin-turbo GT-R (RB26)", 2000, 2002, 8000], ["3.5 V6", 2002, 2007, 6600]], "Nissan|X-Trail": [["2.0", 2001, 2022, 6500], ["2.5", 2001, 2026, 6500], ["2.0 diesel", 2007, 2017, 4500, "diesel"]], "Subaru|BRZ": [["2.0", 2012, 2021, 7400], ["2.4", 2022, 2026, 7500]], "Subaru|Forester": [["2.0", 2000, 2026, 6500], ["2.5", 2000, 2026, 6500], ["2.5 turbo (XT)", 2004, 2013, 6500], ["2.0 turbo (XT)", 2013, 2018, 6500], ["2.0 diesel", 2013, 2018, 4500, "diesel"], ["2.0 hybrid", 2019, 2026, 6000, "hybrid"]], "Subaru|Impreza": [["2.0", 2000, 2026, 6500], ["2.5", 2000, 2011, 6500]], "Subaru|Liberty / Legacy": [["2.5", 2000, 2026, 6500], ["2.0 turbo (GT)", 2003, 2009, 7000], ["3.0 H6", 2001, 2009, 7000], ["3.6 H6", 2009, 2019, 6500], ["2.0 diesel", 2009, 2014, 4500, "diesel"]], "Subaru|Outback": [["2.5", 2000, 2026, 6500], ["3.0 H6", 2001, 2009, 7000], ["3.6 H6", 2009, 2023, 6500], ["2.0 diesel", 2009, 2020, 4500, "diesel"], ["2.4 turbo", 2020, 2026, 6000]], "Subaru|WRX / STI": [["2.0 turbo (WRX)", 2000, 2005, 7000], ["2.0 turbo (STI)", 2000, 2005, 8000], ["2.5 turbo (WRX)", 2006, 2014, 6500], ["2.5 turbo (STI)", 2004, 2021, 7000], ["2.0 DIT turbo (WRX)", 2015, 2021, 6500], ["2.4 turbo", 2022, 2026, 6000]], "Mitsubishi|Lancer": [["2.0", 2000, 2017, 6500], ["2.4", 2003, 2017, 6500]], "Mitsubishi|Lancer Evolution": [["2.0 turbo", 2001, 2016, 7000]], "Mitsubishi|Outlander": [["2.0", 2003, 2021, 6500], ["2.4", 2003, 2026, 6000], ["3.0 V6", 2007, 2021, 6000], ["2.2 diesel", 2007, 2018, 4500, "diesel"], ["2.0 plug-in hybrid", 2014, 2018, 6000, "hybrid"], ["2.4 plug-in hybrid", 2019, 2026, 6000, "hybrid"]], "Mitsubishi|Pajero / Montero": [["3.5 V6", 2000, 2008, 6000], ["3.8 V6", 2006, 2015, 6000], ["3.2 diesel", 2000, 2021, 4400, "diesel"]], "Mitsubishi|Triton / L200": [["2.4 petrol", 2000, 2026, 6000], ["3.5 V6 petrol", 2006, 2009, 6000], ["2.5 diesel", 2000, 2015, 4500, "diesel"], ["3.2 diesel", 2006, 2009, 4400, "diesel"], ["2.4 diesel", 2015, 2026, 4500, "diesel"]], "Suzuki|Jimny": [["1.3", 2000, 2018, 6500], ["1.5", 2018, 2026, 6000]], "Suzuki|Swift": [["1.5", 2005, 2010, 6500], ["1.6 (Sport)", 2006, 2017, 7000], ["1.4", 2010, 2017, 6500], ["1.2", 2010, 2026, 6500], ["1.4 turbo (Sport)", 2017, 2026, 6000]], "Isuzu|D-Max": [["3.0 diesel", 2008, 2026, 4000, "diesel"], ["1.9 diesel", 2017, 2026, 4500, "diesel"]], "Isuzu|MU-X": [["3.0 diesel", 2013, 2026, 4000, "diesel"], ["1.9 diesel", 2021, 2026, 4500, "diesel"]], "Lexus|IS": [["2.0 I6 (IS200)", 2000, 2005, 6800], ["3.0 I6 (IS300)", 2001, 2005, 6500], ["2.5 V6", 2006, 2015, 6500], ["3.5 V6", 2006, 2026, 6600], ["5.0 V8 (IS F / IS 500)", 2008, 2026, 7000], ["2.0 turbo", 2016, 2021, 6000], ["2.5 hybrid", 2014, 2026, 5500, "hybrid"]], "Lexus|RX": [["3.0 V6", 2000, 2003, 6200], ["3.3 V6", 2004, 2008, 6200], ["3.5 V6", 2008, 2022, 6300], ["3.5 V6 hybrid", 2006, 2026, 6000, "hybrid"], ["2.0 turbo", 2016, 2022, 6000], ["2.4 turbo", 2023, 2026, 6000]], "Acura|NSX": [["3.2 V6", 2000, 2005, 8000], ["3.5 V6 twin-turbo hybrid", 2017, 2022, 7500, "hybrid"]], "Acura|RSX": [["2.0", 2002, 2006, 6800], ["2.0 Type-S", 2002, 2006, 8000]], "Mini|Hatch / Cooper": [["1.6 (Cooper)", 2001, 2013, 6750], ["1.6 supercharged (Cooper S)", 2002, 2006, 6750], ["1.6 turbo (Cooper S)", 2007, 2013, 6500], ["1.5 turbo (Cooper)", 2014, 2026, 6500], ["2.0 turbo (Cooper S / JCW)", 2014, 2026, 6500], ["1.6 diesel", 2007, 2013, 4800, "diesel"]], "Volvo|XC90": [["2.5 I5 turbo", 2003, 2010, 6000], ["2.9 I6 twin-turbo", 2003, 2006, 6000], ["3.2 I6", 2007, 2014, 6500], ["4.4 V8", 2005, 2011, 6500], ["2.4 diesel", 2005, 2014, 4500, "diesel"], ["2.0 diesel", 2015, 2026, 4800, "diesel"], ["2.0 turbo", 2015, 2026, 6200], ["2.0 plug-in hybrid", 2016, 2026, 6200, "hybrid"]], "Land Rover|Defender": [["2.5 Td5 diesel", 2000, 2007, 4000, "diesel"], ["2.4 diesel", 2007, 2012, 4000, "diesel"], ["2.2 diesel", 2012, 2016, 4000, "diesel"], ["2.0 turbo", 2020, 2026, 6500], ["3.0 I6 diesel", 2020, 2026, 4500, "diesel"], ["3.0 I6 turbo", 2020, 2026, 6500], ["5.0 V8 supercharged", 2021, 2026, 6500]], "Land Rover|Discovery": [["2.5 Td5 diesel", 2000, 2004, 4000, "diesel"], ["4.0 V8", 2000, 2004, 5500], ["4.4 V8", 2005, 2009, 6500], ["2.7 V6 diesel", 2005, 2009, 4400, "diesel"], ["3.0 V6 diesel", 2009, 2020, 4500, "diesel"], ["2.0 diesel", 2017, 2026, 4500, "diesel"], ["3.0 I6 diesel", 2021, 2026, 4500, "diesel"]], "Renault|Clio": [["1.6", 2000, 2012, 6500], ["2.0 (RS)", 2000, 2012, 7500], ["1.6 turbo (RS)", 2013, 2019, 6500], ["0.9 turbo", 2013, 2026, 6000], ["1.5 diesel", 2005, 2019, 4800, "diesel"]], "Renault|Mégane": [["1.6", 2000, 2016, 6500], ["2.0", 2000, 2016, 6500], ["2.0 turbo (RS)", 2004, 2016, 6500], ["1.8 turbo (RS)", 2018, 2023, 6800], ["1.5 diesel", 2003, 2020, 4800, "diesel"], ["1.9 diesel", 2002, 2009, 4500, "diesel"]], "Alpine|A110": [["1.8 turbo", 2017, 2026, 6800]]};
+function enginesFor(make, year, model) {
+  const key = Object.keys(ENGINES).find(k => k.toLowerCase() === `${make}|${(model || "").trim()}`.toLowerCase());
+  return key ? ENGINES[key].filter(e => year >= e[1] && year <= e[2]) : [];
+}
+const OTHER = "Other make";
+const GM_NA = ["Chevrolet", "GMC", "Cadillac", "Buick", "Pontiac", "Saturn", "Hummer", "Oldsmobile"];
+const FORD_G = ["Ford", "Lincoln", "Mercury"], TOYOTA_G = ["Toyota", "Lexus", "Scion"], HONDA_G = ["Honda", "Acura"], BMW_G = ["BMW", "Mini", "Rolls-Royce"], MB_G = ["Mercedes-Benz", "Smart"];
+const JAPANESE = ["Nissan", "Infiniti", "Subaru", "Mitsubishi", "Suzuki", "Isuzu", "Daihatsu"];
+const EUROPEAN = ["Jaguar", "Land Rover", "Renault", "Dacia", "Alpine", "Aston Martin", "Ferrari", "McLaren", "Lotus", "Rover", "MG"];
+const JLR = ["Jaguar", "Land Rover"], RENAULT_G = ["Renault", "Dacia", "Alpine"], DEALER_ONLY = ["Rolls-Royce", "Aston Martin", "Ferrari", "McLaren"];
+const NA_ONLY = ["Lincoln", "Mercury", "Oldsmobile", "Plymouth", "Scion", "Acura"];
+const EV_MAKES = ["Tesla", "Rivian", "Lucid", "Polestar"];
+const EV_MODELS = [["Nissan", "leaf"], ["Mitsubishi", "i-miev"], ["Subaru", "solterra"], ["Lexus", "rz"], ["Jaguar", "i-pace"], ["Renault", "zoe"], ["Dacia", "spring"], ["MG", "mg4"], ["Smart", "#"], ["Volvo", "ex30"], ["Volvo", "c40"], ["Lotus", "eletre"], ["Rolls-Royce", "spectre"]];
+const isElectric = (make, y, m) => (EV_MAKES.includes(make) && !(make === "Polestar" && m.startsWith("polestar 1"))) || EV_MODELS.some(([k, p]) => k === make && m.startsWith(p)) || (make === "Acura" && m.startsWith("zdx") && y >= 2024);
+const FCA_US = ["Chrysler", "Dodge", "Jeep", "Ram", "Plymouth"], ITALIAN = ["Fiat", "Abarth", "Alfa Romeo", "Lancia", "Maserati"], PSA = ["Peugeot", "Citroën", "DS"];
+const VW_GROUP = ["Volkswagen", "Audi", "Skoda", "SEAT / Cupra", "Porsche", "Lamborghini", "Bentley", "Bugatti"];
+function recommend(make, y, model, engine) {
+  const m = (model || "").toLowerCase(); let note = null, first;
+  const electric = isElectric(make, y, m);
+  if (electric) first = ["6", "7"];
+  else if (make === "Ford" && m.startsWith("falcon") && y >= 2002) { first = ["6", "1"]; if (y <= 2005) note = "BA Falcons (2002–2005) show live data but may not report trouble codes."; }
+  else if (make === "Ford" && m.startsWith("falcon")) { first = ["1", "6", "3"]; note = "AU Falcons only partly support standard OBD2, so some readings may be missing."; }
+  else if (make === "Ford" && m.startsWith("territory")) first = ["6"];
+  else if (make === "Chrysler" && m.startsWith("crossfire")) { note = "The Crossfire is a Mercedes-Benz SLK underneath, with Mercedes electronics."; first = y >= 2005 ? ["5", "6", "3"] : ["3", "5", "4"]; }
+  else if ((make === "Peugeot" && m.startsWith("107")) || (make === "Citroën" && m === "c1")) { if (y <= 2014) note = "Built by Toyota alongside the Aygo, with Toyota electronics."; first = y >= 2008 ? ["6", "7"] : ["6", "5", "3"]; }
+  else if ((make === "Peugeot" && m.startsWith("4007")) || (make === "Citroën" && m.startsWith("c-crosser"))) { note = "A Mitsubishi Outlander underneath, with Mitsubishi electronics."; first = ["6", "5", "3"]; }
+  else if (make === "Fiat" && m.startsWith("fullback")) { note = "The Fullback is a Mitsubishi Triton underneath, with Mitsubishi electronics."; first = ["6", "7"]; }
+  else if (make === "Fiat" && m.startsWith("freemont")) { note = "The Freemont is a Dodge Journey underneath, with Chrysler electronics."; first = ["6", "7"]; }
+  else if ((make === "Fiat" || make === "Abarth") && m.startsWith("124")) { note = "The 124 Spider is built by Mazda on the MX-5, with Mazda electronics."; first = ["6", "7"]; }
+  else if (make === "Infiniti" && (m.startsWith("q30") || m.startsWith("qx30"))) { note = "Built on the Mercedes-Benz A-Class and GLA, with Mercedes electronics."; first = ["6", "7"]; }
+  else if (make === "Suzuki" && m.startsWith("equator")) { note = "The Equator is a Nissan Frontier underneath, with Nissan electronics."; first = ["6", "7"]; }
+  else if (make === "Suzuki" && m.startsWith("xl-7") && y >= 2007) { note = "The 2007–2009 XL-7 was built by GM alongside the Chevrolet Equinox, with GM electronics."; first = ["6", "2"]; }
+  else if (make === "Isuzu" && (m.startsWith("ascender") || m.startsWith("i-series"))) { note = m.startsWith("ascender") ? "The Ascender is a GM TrailBlazer underneath, with GM electronics." : "The i-Series is a Chevrolet Colorado underneath, with GM electronics."; first = y >= 2007 ? ["6", "2"] : ["2", "6"]; }
+  else if (make === "Mercury" && m.startsWith("villager")) { note = "The Villager is a Nissan Quest underneath, with Nissan electronics."; first = ["3", "5", "4"]; }
+  else if (make === "Scion" && m === "ia") { note = "The iA is a Mazda2 underneath, with Mazda electronics."; first = ["6", "7"]; }
+  else if (make === "Smart" && m.startsWith("forfour") && y <= 2006) { note = "The 2004–2006 ForFour is a Mitsubishi Colt underneath, with Mitsubishi electronics."; first = ["6", "5", "3"]; }
+  else if (make === "Smart" && (m.startsWith("forfour") || m.startsWith("fortwo")) && y >= 2015) { note = "Built alongside the Renault Twingo, with Renault electronics."; first = ["6", "7"]; }
+  else if (FCA_US.includes(make)) first = y >= 2008 ? ["6", "7"] : y >= 2005 ? ["6", "2"] : ["2", "3", "6"];
+  else if (ITALIAN.includes(make) || PSA.includes(make) || EUROPEAN.includes(make)) first = y >= 2008 ? ["6", "7"] : y >= 2004 ? ["6", "5", "3", "4"] : JLR.includes(make) ? ["3", "5", "4", "1"] : ["3", "4", "5"];
+  else if (make === "Volvo") first = y >= 2005 ? ["6", "7"] : ["3", "5", "4"];
+  else if (JAPANESE.includes(make)) first = make === "Isuzu" && (m.startsWith("d-max") || m.startsWith("mu-x")) ? ["6", "5", "4"] : y >= 2008 ? ["6", "7"] : y >= 2005 ? ["6", "5", "3"] : ["3", "5", "4"];
+  else if (make === "Holden" && ["commodore", "calais", "ute", "statesman", "monaro"].some(k => m.startsWith(k))) {
+    if (y <= 2004) note = "VX and VY models only partly support OBD2: expect live data, but trouble codes may not appear. VT models (to 2000) use Holden's older ALDL system instead.";
+    first = y >= 2006 ? ["6"] : y >= 2004 ? ["6", "2", "3"] : ["2", "3", "5"];
+  }
+  else if (make === "Pontiac" && m.startsWith("vibe")) { note = "The Vibe is a Toyota Matrix underneath, with Toyota electronics."; first = y >= 2005 ? ["6", "5", "3"] : ["3", "5", "4"]; }
+  else if (make === "Pontiac" && m.startsWith("g8")) { note = "The G8 is a Holden VE Commodore built for the US."; first = ["6"]; }
+  else if (make === "Pontiac" && m.startsWith("gto")) { note = "The GTO is a Holden Monaro built for the US, with full OBD2."; first = ["2", "6"]; }
+  else if (make === "Saab" && m.startsWith("9-2x")) { note = "The 9-2X is a Subaru Impreza underneath, with Subaru electronics."; first = ["3", "5", "4"]; }
+  else if (make === "Saab" && m.startsWith("9-3") && y >= 2003) first = ["6", "5", "3"];
+  else if (GM_NA.includes(make) || (make === "Saab" && m.startsWith("9-7x"))) first = y >= 2008 ? ["6", "7"] : y >= 2005 ? ["6", "2"] : ["2", "6"];
+  else if (make === "Holden") first = y >= 2008 ? ["6", "7"] : y >= 2004 ? ["5", "6", "3"] : ["3", "5", "4", "2"];
+  else if (make === "Opel / Vauxhall" || make === "Saab") first = y >= 2007 ? ["6", "7"] : y >= 2004 ? ["6", "5", "3"] : ["3", "5", "4"];
+  else if (VW_GROUP.includes(make)) first = y >= 2008 ? ["6", "7"] : y >= 2004 ? ["6", "4", "5", "3"] : ["3", "4", "5"];
+  else if (make === "Mazda" && (m.startsWith("tribute") || m.startsWith("b-series")) && y <= 2006) first = ["1", "3"];
+  else if (FORD_G.includes(make)) first = y >= 2008 ? ["6", "7"] : y >= 2004 ? ["6", "1", "3"] : ["1", "6", "3"];
+  else if (make === "Mazda") first = y >= 2008 ? ["6", "7"] : y >= 2004 ? ["6", "3", "5"] : ["3", "5", "4", "1"];
+  else if (TOYOTA_G.includes(make)) first = m.startsWith("supra") || y >= 2008 ? ["6", "7"] : y >= 2005 ? ["6", "5", "3"] : ["3", "5", "4"];
+  else if (MB_G.includes(make)) first = y >= 2008 ? ["6", "7"] : y >= 2005 ? ["5", "6", "3"] : ["3", "5", "4"];
+  else if (BMW_G.includes(make)) first = y >= 2008 ? ["6", "7"] : y >= 2004 ? ["5", "3", "6"] : ["3", "4", "5"];
+  else if (HONDA_G.includes(make)) first = y >= 2008 ? ["6", "7"] : y >= 2006 ? ["6", "3", "5"] : ["3", "5", "4"];
+  else first = y >= 2008 ? ["6", "7", "8", "9"] : [];
+  if (GM_NA.includes(make) && y < 2008 && !note) note = "Most GM cars before 2008 use SAE J1850 VPW, which many cheap ELM327 adapters can't speak.";
+  if (FCA_US.includes(make) && y < 2008 && !note) note = "Most Chrysler, Dodge and Jeep vehicles before 2008 use SAE J1850 VPW, which many cheap ELM327 adapters can't speak.";
+  if (ITALIAN.includes(make) && !note) note = make === "Maserati" ? "Generic OBD2 covers engine data and emissions codes. Deeper diagnostics need Maserati's dealer tools." : "Generic OBD2 covers engine data and emissions codes. Deeper diagnostics need tools such as AlfaOBD.";
+  if (PSA.includes(make) && !note) note = "Generic OBD2 covers engine data and emissions codes. Deeper diagnostics need tools such as Peugeot-Citroën's DiagBox.";
+  if (VW_GROUP.includes(make)) note = ["Porsche", "Lamborghini", "Bentley", "Bugatti"].includes(make) ? `Generic OBD2 covers engine data and emissions codes. Deeper diagnostics need ${make}'s dealer tools.` : "Generic OBD2 covers engine data and emissions codes. Deeper diagnostics on VW-group cars need tools such as VCDS.";
+  if (make === "BMW" || make === "Mini") note = `Generic OBD2 covers engine data and emissions codes. ${make}'s deeper diagnostics need BMW-specific tools.`;
+  if (DEALER_ONLY.includes(make) && !note) note = `Generic OBD2 covers engine data and emissions codes. Deeper diagnostics need ${make}'s dealer tools.`;
+  if (JLR.includes(make) && !note) note = "Generic OBD2 covers engine data and emissions codes. Deeper diagnostics on Jaguar and Land Rover need their dealer tools.";
+  if (RENAULT_G.includes(make) && !note) note = "Generic OBD2 covers engine data and emissions codes. Deeper diagnostics need Renault-specific tools.";
+  if (make === "Volvo" && !note) note = "Generic OBD2 covers engine data and emissions codes. Volvo's deeper diagnostics need its own dealer tools.";
+  if (make === "Smart" && !note) note = "Generic OBD2 covers engine data and emissions codes. Deeper diagnostics need Mercedes-Benz dealer tools.";
+  if (make === "Mercedes-Benz") note = m.startsWith("x-class") ? "The X-Class is built on the Nissan Navara and uses Nissan electronics." : "Generic OBD2 covers engine data and emissions codes. Mercedes-Benz's deeper diagnostics need its own dealer tools.";
+  if (electric) note = make === "Tesla" ? "Teslas have no standard OBD2 port, so an adapter can't plug in directly. Adapter cables exist, but standard OBD2 readings are still very limited." : "Electric cars don't have to support standard OBD2 engine readings, so expect little or no live data.";
+  if (!note && y < 2006 && !NA_ONLY.includes(make)) note = "Cars sold new in Australia before 2006 weren't required to have full OBD2.";
+  const eng = enginesFor(make, y, model).find(e => e[0].toLowerCase() === (engine || "").trim().toLowerCase());
+  const diesel = (eng && eng[4] === "diesel") || /diesel/i.test(engine || "");
+  if (diesel) note = (note ? note + " " : "") + "Diesels usually report fewer live readings than petrol engines.";
+  const order = [...new Set(first.concat(PROTOCOLS.map(p => p[0])))];
+  return { order, note, redline: eng ? eng[3] : diesel ? 4500 : null };
+}
+let myCar = null;
+try { myCar = JSON.parse(localStorage.getItem("myCar") || "null"); } catch (e) {}
+const carLabel = c => [c.year, c.make === OTHER ? null : c.make, c.model, c.engine].filter(Boolean).join(" ");
+function applyRedline() {
+  const r = myCar ? recommend(myCar.make, myCar.year, myCar.model, myCar.engine).redline : null;
+  rpmGauge.max = r == null ? 8000 : (Math.floor(r / 1000) + 2) * 1000; rpmGauge.warnAt = r || 6500; rpmGauge.build();
+}
+function updateCarSetting() { $("carSetting").textContent = myCar ? carLabel(myCar) : "Not set"; }
+function showCarPicker() {
+  let make = myCar ? myCar.make : "Ford", year = myCar ? myCar.year : 2010;
+  const years = []; for (let y = 2026; y >= 2000; y--) years.push(y);
+  const s = overlay(`<div class="handle"></div><h2>Choose your car</h2><p>The app tries this car's usual protocol first, and waits longer for it.</p>
+    <div class="ofield"><label for="carMake">Manufacturer</label><select id="carMake">${Object.keys(MAKES).concat(OTHER).map(m => `<option>${m}</option>`).join("")}</select></div>
+    <div class="ofield"><label for="carYear">Year</label><select id="carYear">${years.map(y => `<option>${y}</option>`).join("")}</select></div>
+    <div class="ofield"><label for="carModel">Model</label><svg class="si" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5,14h-0.79l-0.28,-0.27C15.41,12.59 16,11.11 16,9.5 16,5.91 13.09,3 9.5,3S3,5.91 3,9.5 5.91,16 9.5,16c1.61,0 3.09,-0.59 4.23,-1.57l0.27,0.28v0.79l5,4.99L20.49,19l-4.99,-5zM9.5,14C7.01,14 5,11.99 5,9.5S7.01,5 9.5,5 14,7.01 14,9.5 11.99,14 9.5,14z"/></svg><input id="carModel" autocomplete="off" placeholder=""></div>
+    <div class="sugg" id="carSugg" hidden></div>
+    <div class="helper">Start typing, e.g. Falcon, CX-5 or Civic. Leave blank if it's not listed.</div>
+    <div class="ofield"><label for="carEngine">Engine</label><input id="carEngine" class="plain" autocomplete="off"></div>
+    <div class="sugg" id="engSugg" hidden></div>
+    <div class="helper" id="engHelp"></div>
+    <div class="result"><div class="l">Most likely protocol</div><div class="p" id="carProto"></div><div class="w" id="carNote" hidden></div><div class="rl" id="carRedline" hidden></div><div class="f">If this doesn't work, the app still tries every other protocol.</div></div>
+    <div class="sheet-actions"><button class="btn-out" id="carClear" style="color:var(--accent)">Clear</button><button class="primary" id="carSave">Save</button></div>`, { sheet: true });
+  s.querySelector(".sheet").classList.add("tall");
+  $("carMake").value = make; $("carYear").value = year; $("carModel").value = myCar && myCar.model || ""; $("carEngine").value = myCar && myCar.engine || "";
+  const refresh = () => {
+    const r = recommend(make, year, $("carModel").value.trim(), $("carEngine").value.trim()); const p = PROTOCOLS.find(x => x[0] === r.order[0]);
+    $("carProto").textContent = p[1];
+    $("carNote").hidden = !r.note; $("carNote").textContent = r.note || "";
+    $("carRedline").hidden = r.redline == null; $("carRedline").textContent = r.redline ? `RPM dial redline set to ${r.redline.toLocaleString("en-US")} rpm for this engine.` : "";
+    $("engHelp").textContent = enginesFor(make, year, $("carModel").value).length ? "Optional. Tap to see the engines offered that year, or type your own." : "Optional. Type your engine, e.g. 2.0 or 3.0 V6.";
+  };
+  const suggestEngine = () => {
+    const q = $("carEngine").value.trim().toLowerCase();
+    const list = enginesFor(make, year, $("carModel").value).filter(e => !q || e[0].toLowerCase().includes(q));
+    const box = $("engSugg");
+    const exact = list.length === 1 && list[0][0].toLowerCase() === q;
+    box.hidden = !list.length || exact || document.activeElement !== $("carEngine");
+    box.innerHTML = list.map(e => `<button type="button">${e[0]}</button>`).join("");
+    box.querySelectorAll("button").forEach(b => b.onmousedown = ev => { ev.preventDefault(); $("carEngine").value = b.textContent; box.hidden = true; refresh(); });
+  };
+  $("carEngine").oninput = () => { refresh(); suggestEngine(); };
+  $("carEngine").onfocus = suggestEngine;
+  $("carEngine").onblur = () => setTimeout(() => { if ($("engSugg")) $("engSugg").hidden = true; }, 120);
+  const suggest = () => {
+    const q = $("carModel").value.trim().toLowerCase();
+    const list = (MAKES[make] || []).filter(m => year >= m[1] && year <= m[2] && (!q || m[0].toLowerCase().includes(q)));
+    const box = $("carSugg");
+    const exact = list.length === 1 && list[0][0].toLowerCase() === q;
+    box.hidden = !list.length || exact || document.activeElement !== $("carModel");
+    box.innerHTML = list.map(m => `<button type="button">${m[0]}</button>`).join("");
+    box.querySelectorAll("button").forEach(b => b.onmousedown = e => { e.preventDefault(); $("carModel").value = b.textContent; $("carEngine").value = ""; box.hidden = true; refresh(); });
+  };
+  $("carMake").onchange = () => { make = $("carMake").value; $("carModel").value = ""; $("carEngine").value = ""; refresh(); };
+  $("carYear").onchange = () => { year = Number($("carYear").value); refresh(); };
+  $("carModel").oninput = () => { refresh(); suggest(); };
+  $("carModel").onfocus = suggest;
+  $("carModel").onblur = () => setTimeout(() => { if ($("carSugg")) $("carSugg").hidden = true; }, 120);
+  $("carSave").onclick = () => {
+    myCar = { make, year, model: $("carModel").value.trim() || null, engine: $("carEngine").value.trim() || null };
+    try { localStorage.setItem("myCar", JSON.stringify(myCar)); } catch (e) {}
+    updateCarSetting(); applyRedline(); closeOverlay();
+    toast(state === "connected" ? "Saved. Disconnect and connect again to use it." : "Saved. Tap Connect to try again.");
+  };
+  $("carClear").onclick = () => { myCar = null; try { localStorage.removeItem("myCar"); } catch (e) {} updateCarSetting(); applyRedline(); closeOverlay(); };
+  refresh();
+}
+$("carRow").onclick = showCarPicker;
+$("chooseCarBtn").onclick = showCarPicker;
+updateCarSetting();
+applyRedline();
+
+/* Mirrors AppThemes.kt: each theme is a livery colourway */
+const THEMES = [
+  ["asphalt", "Asphalt", "Signal orange and white stripes on dark tarmac grey."],
+  ["endurance", "Endurance", "Night-race navy with yellow, like a Le Mans prototype after dark."],
+  ["kerb", "Kerb", "Red and white kerb stripes, straight off the apex of a corner."],
+  ["pitlane", "Pit lane", "A light livery in black and race red. Easiest to read in sunlight."],
+  ["drift", "Drift", "Hot pink and teal, from the drift and street scene."],
+  ["apex", "Apex", "Volt yellow on carbon black with sharp, raked edges."],
+  ["telemetry", "Race telemetry", "A data-logger screen: shift lights, big numbers and a live 30-second trace for every reading."],
+  ["cockpit", "Digital cockpit", "Calm and premium, like a modern EV: one big speed in a glowing ring, on layered glass."],
+];
+/* The last two change the dashboard's layout as well as its colours */
+const LAYOUT = { telemetry: "telemetry", cockpit: "cockpit" };
+const OLD_THEMES = { midnight: "asphalt", racing: "asphalt", daylight: "pitlane", lcd: "asphalt", night: "asphalt", red: "kerb", optitron: "endurance", white: "pitlane", digital: "drift" };
+function swatch(id) {
+  if (id === "telemetry") {
+    const leds = Array.from({ length: 9 }, (_, i) => `<rect x="${6 + i * 6.8}" y="7" width="5" height="4" rx="1" fill="${i < 3 ? "#34D17A" : i < 6 ? "#FFB000" : "#FF3B30"}"/>`).join("");
+    return `<span data-theme="telemetry" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><rect width="72" height="54" rx="4" fill="var(--base)"/>${leds}<text x="7" y="31" font-size="15" fill="var(--fg)" style="font-family:var(--ui);font-stretch:75%;font-weight:700">3420</text><path d="M6 46 L16 40 L24 43 L34 33 L44 38 L54 30 L66 35" fill="none" stroke="#FF3B30" stroke-width="1.6"/><path d="M6 49 L18 46 L30 47 L42 42 L54 44 L66 41" fill="none" stroke="#3D9BFF" stroke-width="1.6"/></svg></span>`;
+  }
+  if (id === "cockpit") {
+    return `<span data-theme="cockpit" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><defs><radialGradient id="swCp" cx="50%" cy="30%" r="80%"><stop offset="0" stop-color="#16244A"/><stop offset="1" stop-color="#05070C"/></radialGradient><linearGradient id="swCpG" x1="0" x2="1"><stop offset="0" stop-color="#5B8CFF"/><stop offset="1" stop-color="#3FE0D0"/></linearGradient></defs><rect width="72" height="54" rx="4" fill="url(#swCp)"/><path d="${arcPath(36, 29, 19, 140, 400)}" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-linecap="round"/><path d="${arcPath(36, 29, 19, 140, 300)}" fill="none" stroke="url(#swCpG)" stroke-width="3" stroke-linecap="round"/><text x="36" y="34" text-anchor="middle" font-size="14" font-weight="300" fill="#EEF2FA" style="font-family:var(--ui)">87</text></svg></span>`;
+  }
+  const kerb = id === "kerb";
+  const stripe = kerb ? `<g transform="skewY(-12)">${[0, 1, 2, 3, 4, 5].map(i => `<rect x="${i * 14}" y="18" width="14" height="9" fill="${i % 2 ? "var(--s2)" : "var(--s1)"}"/>`).join("")}</g>`
+    : `<g transform="skewY(-12)"><rect x="0" y="18" width="72" height="9" fill="var(--s1)"/><rect x="0" y="30" width="72" height="4" fill="var(--s2)"/></g>`;
+  return `<span data-theme="${id}" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><rect width="72" height="54" rx="4" fill="var(--base)"/>${stripe}<circle cx="50" cy="34" r="13" fill="var(--roundel)"/><text x="50" y="39" text-anchor="middle" font-size="13" fill="var(--roundel-ink)" style="font-family:var(--ui);font-stretch:125%;font-weight:850;font-style:italic">42</text></svg></span>`;
+}
+function setTheme(id) {
+  themeId = id; $("phone").dataset.theme = id; $("phone").dataset.layout = LAYOUT[id] || "livery";
+  try { localStorage.setItem("theme", id); } catch (e) {}
+  rpmGauge.build();
+}
+function showThemePicker() {
+  const opt = ([id, name, desc]) => `<button class="theme-opt" role="radio" aria-checked="${id === themeId}" data-t="${id}">${swatch(id)}<span style="flex:1;min-width:0"><div class="tt">${name}</div><div class="ts">${desc}</div></span>${id === themeId ? `<svg class="ck" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON.check}"/></svg>` : ""}</button>`;
+  const s = overlay(`<div class="handle"></div><h2>Style</h2><p>Pick how your dash looks. Your choice is saved.</p>` +
+    `<div class="theme-group">Liveries</div>` + THEMES.filter(t => !LAYOUT[t[0]]).map(opt).join("") +
+    `<div class="theme-group">Other layouts</div>` + THEMES.filter(t => LAYOUT[t[0]]).map(opt).join(""), { sheet: true });
+  s.querySelector(".sheet").classList.add("tall");
+  s.querySelectorAll(".theme-opt").forEach(b => b.onclick = () => {
+    const id = b.dataset.t;
+    closeOverlay();
+    if (id !== themeId) setTheme(id); // the connection lives outside the screen, so it carries on
+  });
+}
+$("themeBtn").onclick = showThemePicker;
+
+/* Mirrors MainActivity.showHelp() and the help_* strings */
+const HELP = [
+  ["Getting connected", "1. Plug your ELM327 adapter into the car's OBD2 port, usually under the dashboard near the steering wheel.\n2. Turn the ignition on (the engine can be off).\n3. Tap Connect and choose how your adapter connects.\n\nNo adapter? Tap Demo to try the app with a simulated car."],
+  ["Adapter types", "Bluetooth Classic: pair it in your phone's Bluetooth settings first. The PIN is usually 1234 or 0000.\n\nBluetooth LE (for example the Veepeak OBDCheck BLE+): don't pair it in settings. The app finds it for you.\n\nWi-Fi: join the adapter's Wi-Fi network in your phone's settings first, then connect. The usual address is 192.168.0.10, port 35000."],
+  ["If it won't connect", "Check the ignition is on and the adapter's light is lit. Then, on the Diagnostics tab, tap Your car and choose your car's make, year and model, so the app tries its usual protocol first. Cars sold in Australia before 2006 may not fully support OBD2, and some cheap adapters can't talk to older Fords, GM and Chrysler cars."],
+  ["Android Auto", "Android Auto only shows apps from the Play Store until you allow others. To turn that on:\n1. Open Android Auto's settings on your phone (search \"Android Auto\" in Settings).\n2. Scroll to the bottom and tap Version about 10 times, then confirm to turn on developer mode.\n3. Tap the three-dot menu at the top right, then Developer settings, and turn on Unknown sources.\n4. Reconnect to your car. OBD2 Reader appears in Android Auto's app list.\n\nConnect to your adapter from the phone first, or tap Connect on the car screen to reconnect to the last one."],
+  ["Read-only", "OBD2 Reader only reads from your car. It never clears trouble codes, turns off the check-engine light or changes any setting, and it blocks any command that could. After a repair, a workshop scan tool can clear the codes."],
+];
+function showHelp() {
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const s = overlay(`<div class="handle"></div><div class="help"><h2>Help</h2>${HELP.map(([t, b]) => `<h3>${esc(t)}</h3><div class="b">${esc(b)}</div>`).join("")}<div class="ver">OBD2 Reader 1.2.1</div></div>`, { sheet: true });
+  s.querySelector(".sheet").classList.add("tall");
+}
+$("helpRow").onclick = showHelp;
+try { let saved = localStorage.getItem("theme"); saved = OLD_THEMES[saved] || saved; setTheme(THEMES.some(t => t[0] === saved) ? saved : "asphalt"); } catch (e) { setTheme("asphalt"); }
+
+let lastUsed = null;
+try { lastUsed = JSON.parse(localStorage.getItem("lastAdapter") || "null"); } catch (e) {}
+function rememberLast(type, name) { lastUsed = { type, name }; try { localStorage.setItem("lastAdapter", JSON.stringify(lastUsed)); } catch (e) {} }
+const TYPE_LABEL = { classic: "Bluetooth Classic", ble: "Bluetooth LE", wifi: "Wi-Fi" };
+const TYPE_ICON = { classic: "bt", ble: "ble", wifi: "wifi" };
+
+async function startSession(name, onConnected, failure) {
+  if (state !== "idle") return;
+  const id = ++session;
+  state = "connecting"; clearReadings(); updateButtons();
+  setStatus("connecting", `Connecting to ${name}…`, "This can take up to 15 seconds the first time.");
+  await wait(failure ? 1600 : 700); if (id !== session) return;
+  if (failure) { state = "idle"; updateButtons(); setStatus("error", "Couldn't connect", failure); return; }
+  setStatus("connecting", "Talking to the car…", "Detecting the vehicle's protocol.");
+  const sp = protocolChoice, isDemo = name === "Demo vehicle";
+  const steps = [["ATZ", "ELM327 v1.5"], ["ATE0", "OK"], ["ATL0", "OK"], ["ATS0", "OK"], ["ATH0", "OK"], ["ATAT1", "OK"], ["ATI", "ELM327 v1.5"]];
+  /* Like ElmClient: a chosen car's likely protocol goes first; the simulated car answers on CAN (6). */
+  const guess = !isDemo && sp === "0" && myCar ? recommend(myCar.make, myCar.year, myCar.model).order[0] : null;
+  if (guess && guess !== "6") steps.push(["ATSP" + guess, "OK"], ["0100", "UNABLE TO CONNECT"], ["ATPC", "OK"]);
+  const first = guess === "6" ? "6" : sp;
+  steps.push(["ATSP" + first, "OK"], ["0100", (first === "0" ? "SEARCHING... | " : "") + "4100FFFFFFFF"], ["ATDPN", "A6"], ["0120", "4120FFFFFFFF"], ["0140", "4140FFFFFFFE"]);
+  for (const [c, rsp] of steps) {
+    if (c.startsWith("ATSP")) { const code = c.slice(4); setStatus("connecting", "Talking to the car…", code === "0" ? "Searching for the car's protocol…" : `Trying ${protoName(code)}…`); }
+    log("> " + c); log("< " + rsp); await wait(c === "0100" ? 800 : 70); if (id !== session) return;
+  }
+  car.start = performance.now(); car.cleared = false;
+  state = "connected"; updateButtons();
+  setStatus("connected", `Connected to ${name}`, "ELM327 v1.5, CAN 500 kbaud");
+  ignition();
+  $("protocol").textContent = "Protocol: ISO 15765-4 CAN (11-bit, 500 kbaud)";
+  log("> 0902"); log("< " + VIN_FRAMES); showVin(DEMO_VIN);
+  if (onConnected) onConnected();
+  let cycle = 0;
+  const poll = () => {
+    if (window.ignOff || ignOff) return;
+    const slow = cycle % 5 === 0; let mp = "";
+    for (const p of PIDS) {
+      if (!p.fast && !slow) continue;
+      const b = car.raw(p.n), v = p.dec2(b); live[hex2(p.n)] = v;
+      if (p.n === 0x0C || p.n === 0x0D || p.n === 0x11) mp += hex2(p.n) + b.map(hex2).join("");
+      if (p.n === 0x0C) rpmGauge.set(v);
+      else if (p.n === 0x0D) speedGauge.set(v);
+      else tiles[hex2(p.n)](v);
+    }
+    if (mp) log(`> 010C0D11  < 41${mp}`);
+    if (slow) { live.VOLT = Math.round(car.volts() * 10) / 10; tiles.VOLT(live.VOLT); }
+    cycle++;
+  };
+  poll(); pollTimer = setInterval(poll, 320);
+}
+function disconnect() {
+  session++; clearInterval(pollTimer); state = "idle"; updateButtons(); for (const k in live) delete live[k]; sharedCodes = null;
+  setStatus("idle", "Not connected", "Plug your adapter into the car and turn the ignition on, or try demo mode.");
+  Object.values(tiles).forEach(f => f(null)); rpmGauge.set(null); speedGauge.set(null); updateTells();
+}
+
+/* Overlays inside the phone */
+function overlay(html, { sheet = false } = {}) {
+  closeOverlay();
+  const s = document.createElement("div");
+  s.className = "scrim"; s.id = "overlay";
+  s.innerHTML = `<div class="${sheet ? "sheet" : "dialog"}" role="dialog" aria-modal="true">${html}</div>`;
+  s.addEventListener("click", e => { if (e.target === s) closeOverlay(); });
+  $("phone").appendChild(s);
+  const f = s.querySelector("button, input"); if (f) f.focus({ preventScroll: true });
+  return s;
+}
+function closeOverlay() { const o = $("overlay"); if (o) { o.dispatchEvent(new Event("closed")); o.remove(); } }
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeOverlay(); });
+function toast(msg) { const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; $("phone").appendChild(t); setTimeout(() => t.remove(), 3200); }
+
+function showConnectSheet() {
+  const opts = [["classic", "bt", "Bluetooth Classic", "Most ELM327 adapters. Pair it in settings first."], ["ble", "ble", "Bluetooth LE", "iPhone-compatible adapters like the Veepeak BLE+. No pairing needed."], ["wifi", "wifi", "Wi-Fi", "Join the adapter's Wi-Fi network first."]];
+  const optBtn = o => `<button class="opt" data-k="${o[0]}"><span class="ic"><svg viewBox="0 0 24 24"><path d="${ICON[o[1]]}"/></svg></span><span class="tx"><div class="tt"></div><div class="ts"></div></span><svg viewBox="0 0 24 24"><path d="${ICON.chev}"/></svg></button>`;
+  const last = lastUsed ? `<div class="lbl">Last used</div>${optBtn(["last", TYPE_ICON[lastUsed.type]])}<div class="lbl">Or connect another</div>` : "";
+  const s = overlay(`<div class="handle"></div><h2>Connect your adapter</h2><p>How does your OBD2 adapter connect?</p>` + last +
+    opts.map(o => optBtn(o).replace('<div class="tt"></div><div class="ts"></div>', `<div class="tt">${o[2]}</div><div class="ts">${o[3]}</div>`)).join(""), { sheet: true });
+  if (lastUsed) {
+    const b = s.querySelector('[data-k="last"]');
+    b.querySelector(".tt").textContent = `Reconnect to ${lastUsed.name}`;
+    b.querySelector(".ts").textContent = TYPE_LABEL[lastUsed.type];
+  }
+  s.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+    if (b.dataset.k === "last") { closeOverlay(); return startSession(lastUsed.type === "wifi" ? `Wi-Fi adapter (${lastUsed.name})` : lastUsed.name); }
+    ({ classic: pairedPicker, ble: bleScanner, wifi: wifiDialog })[b.dataset.k]();
+  });
+}
+function pairedPicker() {
+  const devices = [["VEEPEAK", "00:1D:A5:68:98:8B"], ["Galaxy Buds2", "8C:79:F5:21:4E:0A"]];
+  const s = overlay(`<h3>Choose your adapter</h3>` + devices.map((d, i) => `<button class="item" data-i="${i}">${d[0]}<small>${d[1]}</small></button>`).join("") + `<div class="btns"><button id="cancel">Cancel</button></div>`);
+  s.querySelectorAll(".item").forEach(b => b.onclick = () => { const d = devices[b.dataset.i][0]; closeOverlay(); startSession(d, () => rememberLast("classic", d), /VEEPEAK|OBD/.test(d) ? null : `Couldn't open a Bluetooth link to ${d}. Is the adapter plugged in and the ignition on?`); });
+  $("cancel").onclick = closeOverlay;
+}
+function bleScanner() {
+  const s = overlay(`<h3 id="bleTitle"><span class="spin" aria-hidden="true"></span>Searching for adapters…</h3><div id="bleList"></div><div class="btns"><button id="cancel">Cancel</button></div>`);
+  $("cancel").onclick = closeOverlay;
+  const found = [["Mi Smart Band 7", "E8:7F:2C:90:44:B1", 600], ["VEEPEAK", "D0:5F:B8:33:A1:04", 1100]];
+  const timers = found.map(([name, addr, ms]) => setTimeout(() => {
+    const b = document.createElement("button"); b.className = "item"; b.innerHTML = `${name}<small>${addr}</small>`;
+    b.onclick = () => { closeOverlay(); startSession(name, () => rememberLast("ble", name), /VEEPEAK|OBD|VLINK/i.test(name) ? null : `${name} doesn't look like an OBD2 adapter (no serial service found). Try the Bluetooth Classic option.`); };
+    const list = $("bleList"); if (!list) return;
+    /OBD|ELM|VLINK|VEEPEAK|VGATE/i.test(name) ? list.prepend(b) : list.append(b);
+  }, ms));
+  timers.push(setTimeout(() => { if ($("bleTitle")) $("bleTitle").textContent = "Choose your adapter"; }, 3200));
+  s.addEventListener("closed", () => timers.forEach(clearTimeout));
+}
+function wifiDialog() {
+  overlay(`<h3>Wi-Fi adapter</h3><p class="msg">Join the adapter's Wi-Fi network first (often WiFi_OBDII or V-LINK). If Android says it has no internet, choose to stay connected.</p>
+    <form id="wifiForm" novalidate>
+      <div class="field" id="hostF"><label for="host">IP address</label><input id="host" value="192.168.0.10" inputmode="url" autocomplete="off"></div>
+      <div class="field" id="portF"><label for="port">Port</label><input id="port" value="35000" inputmode="numeric" autocomplete="off"></div>
+      <div class="btns"><button type="button" id="wifiSettings">Wi-Fi settings</button><button type="button" id="cancel">Cancel</button><button type="submit">Connect</button></div>
+    </form>`);
+  $("cancel").onclick = closeOverlay;
+  $("wifiSettings").onclick = () => toast("Opens Android's Wi-Fi settings");
+  const setErr = (fid, msg) => { const f = $(fid); f.classList.toggle("err", !!msg); f.querySelector(".e")?.remove(); if (msg) f.insertAdjacentHTML("beforeend", `<div class="e">${msg}</div>`); };
+  $("host").oninput = () => setErr("hostF"); $("port").oninput = () => setErr("portF");
+  $("wifiForm").onsubmit = e => {
+    e.preventDefault();
+    const host = $("host").value.trim(), port = Number($("port").value.trim());
+    if (!host) return setErr("hostF", "Enter the adapter's IP address");
+    if (!Number.isInteger(port) || port < 1 || port > 65535) return setErr("portF", "Enter a port between 1 and 65535");
+    closeOverlay(); startSession(`Wi-Fi adapter (${host}:${port})`, () => rememberLast("wifi", `${host}:${port}`));
+  };
+}
+
+/* Diagnostics */
+/* Mirrors ObdSession.readCodes(): the result is shared, so the phone shows codes read from the car screen too */
+async function fetchCodes() {
+  const id = session;
+  log("> 03"); await wait(450); if (id !== session) return null;
+  log("< " + (car.cleared ? "4300" : "430201330420")); logCodes(car.cleared ? [] : ["P0133", "P0420"], "stored"); log("> 07"); await wait(350); if (id !== session) return null;
+  log("< " + (car.cleared ? "4700" : "47010171")); logCodes(car.cleared ? [] : ["P0171"], "pending");
+  sharedCodes = car.cleared ? [] : [["P0133", false], ["P0420", false], ["P0171", true]];
+  showCodes(sharedCodes);
+  return sharedCodes;
+}
+async function readCodes() {
+  $("dtcList").innerHTML = ""; setDtcStatus("Reading trouble codes…", "Asking the engine computer for stored and pending codes.");
+  await fetchCodes();
+}
+function showCodes(codes) {
+  setBadge(codes.length); updateTells();
+  if (!codes.length) { $("dtcList").innerHTML = ""; return setDtcStatus("No trouble codes", "The engine computer has no stored or pending faults.", "ok"); }
+  const stored = codes.filter(c => !c[1]).length;
+  setDtcStatus(`${codes.length} trouble codes`, stored ? "Stored codes are keeping the check-engine light on." : "Pending codes only, so the light isn't on yet.", stored ? "on" : null);
+  $("dtcList").innerHTML = codes.map(([c, p], i) => `<div class="code ${p ? "pending" : "stored"}" style="animation-delay:${i * 60}ms"><span class="plate-code xb">${c}</span><div><div class="t">${DESCR[c]}</div><div class="s">${p ? "Pending, not yet confirmed" : "Stored, check-engine light on"}</div></div></div>`).join("");
+}
+async function readVin() {
+  const id = session;
+  $("vin").textContent = "Reading…"; log("> 0902"); await wait(500); if (id !== session) return;
+  log("< " + VIN_FRAMES);
+  showVin(DEMO_VIN);
+}
+
+$("connectBtn").onclick = () => state === "idle" ? showConnectSheet() : disconnect();
+$("demoBtn").onclick = () => startSession("Demo vehicle");
+$("readBtn").onclick = readCodes; $("vinBtn").onclick = readVin;
+
+const tickClock = () => { const d = new Date(); $("clock").textContent = d.getHours().toString().padStart(2, "0") + ":" + d.getMinutes().toString().padStart(2, "0"); };
+tickClock(); setInterval(tickClock, 15000);
+
+clearReadings(); updateButtons();
+/* Open in a realistic working state: connected to the demo car */
+startSession("Demo vehicle");
+
+/* ===== Android Auto: mirrors car/DashboardScreen.kt and car/CodesScreen.kt ===== */
+let carScreen = "dash", carCodes = null;
+const CAR_ICONS = {
+  speed: "M20.38,8.57l-1.23,1.85a8,8 0,0 1,-0.22 7.58H5.07A8,8 0,0 1,15.58 6.85l1.85,-1.23A10,10 0,0 0,3.35 19a2,2 0,0 0,1.72 1h13.85a2,2 0,0 0,1.74 -1a10,10 0,0 0,-0.27 -10.44zM10.59,15.41a2,2 0,0 0,2.83 0l5.66,-8.49 -8.49,5.66a2,2 0,0 0,0 2.83z",
+  thermo: "M15,13V5c0,-1.66 -1.34,-3 -3,-3S9,3.34 9,5v8c-1.21,0.91 -2,2.37 -2,4 0,2.76 2.24,5 5,5s5,-2.24 5,-5c0,-1.63 -0.79,-3.09 -2,-4zM11,5c0,-0.55 0.45,-1 1,-1s1,0.45 1,1h-1v1h1v2h-1v1h1v2h-2V5z",
+  throttle: "M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM12,20c-4.41,0 -8,-3.59 -8,-8s3.59,-8 8,-8 8,3.59 8,8 -3.59,8 -8,8zM13,7h-2v6l5.25,3.15 0.75,-1.23 -4,-2.42z",
+  fuel: "M19.77,7.23l0.01,-0.01 -3.72,-3.72L15,4.56l2.11,2.11c-0.94,0.36 -1.61,1.26 -1.61,2.33 0,1.38 1.12,2.5 2.5,2.5 0.36,0 0.69,-0.08 1,-0.21v7.21c0,0.55 -0.45,1 -1,1s-1,-0.45 -1,-1V14c0,-1.1 -0.9,-2 -2,-2h-1V5c0,-1.1 -0.9,-2 -2,-2H6c-1.1,0 -2,0.9 -2,2v16h10v-7.5h1.5v5c0,1.38 1.12,2.5 2.5,2.5s2.5,-1.12 2.5,-2.5V9c0,-0.69 -0.28,-1.32 -0.73,-1.77zM12,10H6V5h6v5zM18,10c-0.55,0 -1,-0.45 -1,-1s0.45,-1 1,-1 1,0.45 1,1 -0.45,1 -1,1z",
+  battery: "M15.67,4H14V2h-4v2H8.33C7.6,4 7,4.6 7,5.33v15.33C7,21.4 7.6,22 8.33,22h7.33c0.74,0 1.34,-0.6 1.34,-1.33V5.33C17,4.6 16.4,4 15.67,4z",
+  back: "M20,11H7.83l5.59,-5.59L12,4l-8,8 8,8 1.41,-1.41L7.83,13H20v-2z",
+};
+const svgI = d => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+const CAR_READINGS = [[0x0C, "speed"], [0x0D, "speed"], [0x05, "thermo"], [0x11, "throttle"], [0x2F, "fuel"]];
+function carToast(msg) { const t = document.createElement("div"); t.className = "car-toast"; t.textContent = msg; $("car").appendChild(t); setTimeout(() => t.remove(), 3000); }
+function carHead(title, { back = false, actions = [] } = {}) {
+  return `<div class="car-head">${back ? `<button class="hi" data-act="back" aria-label="Back">${svgI(CAR_ICONS.back)}</button>` : `<span class="hi">${svgI(CAR_ICONS.speed)}</span>`}<h4>${title}</h4>${actions.map(([id, label]) => `<button class="car-act" data-act="${id}">${label}</button>`).join("")}</div>`;
+}
+/* Livery accents for the car: the same colours, brightened where needed to pass Android Auto's 4.5:1 contrast rule on black */
+const CAR_ACCENT = { asphalt: ["#FF5A1F", "#120500"], endurance: ["#FFD000", "#0A1424"], kerb: ["#FF4A4F", "#1A0002"], pitlane: ["#FF5A52", "#1A0201"], drift: ["#FF2E88", "#1A0010"], apex: ["#D7FF1F", "#0D1100"], telemetry: ["#FF453A", "#FFFFFF"], cockpit: ["#7FA6FF", "#050B1E"] };
+const CAR_ROUNDEL = { asphalt: "#F4F4F1", endurance: "#FFD000", kerb: "#F5F5F3", pitlane: "#F1F2F4", drift: "#F6F4F7", apex: "#D7FF1F", telemetry: "#E9EBEE", cockpit: "#EEF2FA" };
+function carRoundel(frac, size = 64) {
+  const [acc] = CAR_ACCENT[themeId] || CAR_ACCENT.asphalt, n = 12, step = 270 / n; let s = "";
+  for (let i = 0; i < n; i++) { const lit = (i + 1) / n <= frac + 1e-4; s += `<path d="${arcPath(32, 32, 28, 135 + i * step + 1.5, 135 + (i + 1) * step - 1.5)}" stroke="${!lit ? "#3C4043" : i >= 10 ? "#F28B82" : acc}" stroke-width="7" fill="none"/>`; }
+  return `<svg class="roundel" viewBox="0 0 64 64" aria-hidden="true">${s}<circle cx="32" cy="32" r="18" fill="${CAR_ROUNDEL[themeId] || "#F4F4F1"}"/></svg>`;
+}
+function renderCar() {
+  const main = $("carMain"); if (!main || $("car").hidden) return;
+  const [acc, onAcc] = CAR_ACCENT[themeId] || CAR_ACCENT.asphalt;
+  $("car").style.setProperty("--car-accent", acc); $("car").style.setProperty("--car-on-accent", onAcc);
+  const connected = state === "connected";
+  if (!connected && carScreen === "codes") carScreen = "dash";
+  let html;
+  if (carScreen === "codes") {
+    let body;
+    if (!carCodes || carCodes.loading) body = `<div class="car-empty"><div class="car-spin" aria-label="Loading"></div></div>`;
+    else if (!carCodes.codes.length) body = `<div class="car-empty">No trouble codes</div>`;
+    else body = `<div class="car-list">${carCodes.codes.map(([c, p]) => `<div class="car-row has-plate"><span class="car-plate ${p ? "pending" : "stored"}">${c}</span><div><div class="t">${DESCR[c]}</div><div class="x">${p ? "Pending, not yet confirmed" : "Stored, check-engine light on"}</div></div></div>`).join("")}</div>`;
+    html = carHead("Trouble codes", { back: true, actions: [["readAgain", "Read again"]] }) + body;
+  } else if (connected) {
+    const name = (statusNow.title || "").replace(/^Connected to /, "") || "Live data";
+    const fmt = (n, v) => { const p = PIDS.find(x => x.n === n); if (v == null) return "—"; return n === 0x0C ? Math.round(v).toLocaleString("en-US") : `${v.toFixed(p.dec)} ${p.unit}`; };
+    const items = CAR_READINGS.map(([n, ic]) => {
+      const p = PIDS.find(x => x.n === n), v = live[hex2(n)], hot = v != null && p.warn != null && v >= p.warn;
+      const label = n === 0x0C ? "rpm" : p.label;
+      const img = n === 0x0C ? carRoundel(v == null ? 0 : Math.min(1, v / 8000)) : svgI(CAR_ICONS[ic]);
+      return `<div class="car-item${hot ? " hot" : ""}">${img}<div class="t">${fmt(n, v)}</div><div class="x${hot ? " hot" : ""}">${hot ? label + ", high" : label}</div></div>`;
+    }).join("") + `<div class="car-item">${svgI(CAR_ICONS.battery)}<div class="t">${live.VOLT != null ? live.VOLT.toFixed(1) + " V" : "—"}</div><div class="x">Battery</div></div>`;
+    const codesLabel = sharedCodes == null ? "Codes" : sharedCodes.length ? `Codes (${sharedCodes.length})` : "No codes";
+    html = carHead(name, { actions: [["codes", codesLabel], ["disconnect", "Disconnect"]] }) + `<div class="car-grid">${items}</div>`;
+  } else {
+    const last = lastUsed ? (lastUsed.type === "wifi" ? `Wi-Fi adapter (${lastUsed.name})` : lastUsed.name) : null;
+    const msg = state === "connecting" || state === "waiting" ? `${statusNow.title}\n${statusNow.detail}` : statusNow.kind === "error" ? `${statusNow.title}\n${statusNow.detail}` : last ? `Not connected. Tap Connect to use ${last}.` : "Not connected. Pair your adapter in OBD2 Reader on your phone first.";
+    const btns = state === "connecting" || state === "waiting" ? "" : `<div class="row">${last ? `<button class="car-btn-p" data-act="connect">Connect</button>` : ""}<button class="${last ? "car-btn-s" : "car-btn-p"}" data-act="demo">Demo</button></div>`;
+    html = carHead("OBD2 Reader") + `<div class="car-msg">${carRoundel(0).replace('class="roundel"', 'class="car-logo"')}<p>${msg.replace(/</g, "&lt;")}</p>${btns}</div>`;
+  }
+  main.innerHTML = html;
+}
+$("carMain").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const act = b.dataset.act;
+  if (act === "back") { carScreen = "dash"; }
+  else if (act === "disconnect") { disconnect(); }
+  else if (act === "demo") { startSession("Demo vehicle"); }
+  else if (act === "connect") {
+    if (!lastUsed) carToast("Open OBD2 Reader on your phone to connect");
+    else startSession(lastUsed.type === "wifi" ? `Wi-Fi adapter (${lastUsed.name})` : lastUsed.name);
+  } else if (act === "codes" || act === "readAgain") {
+    carScreen = "codes"; carCodes = { loading: true };
+    fetchCodes().then(c => { carCodes = { loading: false, codes: c || [] }; renderCar(); });
+  }
+  renderCar();
+});
+function showView(car) {
+  $("car").hidden = !car; $("carCaption").hidden = !car; $("phone").hidden = car;
+  $("viewPhone").setAttribute("aria-selected", !car); $("viewCar").setAttribute("aria-selected", car);
+  renderCar();
+}
+$("viewPhone").onclick = () => showView(false);
+$("viewCar").onclick = () => showView(true);
+/* Android Auto limits how often a screen may redraw, so the car view refreshes about once a second */
+setInterval(() => { $("carClock").textContent = $("clock").textContent; renderCar(); }, 1000);
+/* ===== 1.2.0: Graphs tab, drive recording, detailed code cards, auto-reconnect (mirrors GraphStripView.kt, Telemetry.kt, DtcLibrary.kt, ObdSession.kt) ===== */
+const DTC = {"P0133": {"title": "Oxygen sensor slow response (bank 1, sensor 1)", "meaning": "The front oxygen sensor (before the catalytic converter), which the computer uses to set the fuel mixture, is reacting too slowly to changes in the exhaust. It's usually an ageing sensor.", "sev": "MEDIUM", "sevLabel": "Check soon", "advice": "The car is usually safe to drive for now, but fuel use, emissions or performance may suffer. Get it checked in the next few weeks.", "causes": ["An old, worn-out oxygen sensor (common after 150,000 km)", "A sensor contaminated by oil burning or a coolant leak", "An exhaust leak near the sensor"], "symptoms": ["Higher fuel use", "Can lead to a catalytic converter code if ignored"], "checks": ["Check for exhaust leaks near the sensor", "Check the engine isn't burning oil or coolant", "Replace the sensor"], "system": "Engine and transmission (powertrain), generic code (same meaning on every car)"}, "P0420": {"title": "Catalytic converter efficiency below threshold (bank 1)", "meaning": "The rear oxygen sensor shows the catalytic converter isn't cleaning the exhaust as well as it should.", "sev": "LOW", "sevLabel": "Check when convenient", "advice": "Usually safe to drive. It mainly affects emissions or a minor system, but it will keep the check-engine light on.", "causes": ["An old or failing catalytic converter", "A faulty rear oxygen sensor", "An exhaust leak near the sensors", "A misfire or oil burning that has damaged the converter"], "symptoms": ["Usually none", "Sometimes a rotten-egg smell or reduced power if the converter is blocked", "May fail an emissions inspection"], "checks": ["Fix any misfire or fuel mixture codes first: they can cause this one", "Check for exhaust leaks", "Compare front and rear oxygen sensor readings", "Replace the converter only after ruling out sensors and leaks"], "system": "Engine and transmission (powertrain), generic code (same meaning on every car)"}, "P0171": {"title": "Fuel mixture too lean (bank 1)", "meaning": "The engine is getting too much air or too little fuel, and the computer has reached the limit of how much fuel it can add to compensate.", "sev": "MEDIUM", "sevLabel": "Check soon", "advice": "The car is usually safe to drive for now, but fuel use, emissions or performance may suffer. Get it checked in the next few weeks.", "causes": ["A vacuum leak, such as a split intake hose, a loose intake boot or a leaking intake gasket", "A dirty or faulty mass air flow (MAF) sensor reading less air than is really entering", "Low fuel pressure from a weak fuel pump or a blocked fuel filter", "Clogged or leaking fuel injectors", "An exhaust leak before the front oxygen sensor"], "symptoms": ["Rough or hunting idle", "Hesitation when accelerating", "Misfires if severe"], "checks": ["Listen for hissing vacuum leaks and check intake hoses", "Clean the MAF sensor", "Check fuel pressure", "Look at long-term fuel trim on the dashboard: above +10% confirms lean"], "system": "Engine and transmission (powertrain), generic code (same meaning on every car)"}};
+const CHEV_D = "M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z";
+const GCOL = { "0C": "#FF3B30", "0D": "#3D9BFF", "11": "#34D17A", "04": "#FFB000", "0F": "#34C8E0", "0B": "#B57CFF", "10": "#FF7AC6", "0E": "#E6E15A", "46": "#9AA3AD", "5C": "#FF8A3D", VOLT: "#7DD3A0" };
+const GLABEL = { "0C": "Engine speed", "0D": "Speed", "05": "Coolant", "2F": "Fuel level" };
+const CHANNELS = PIDS.map(p => ({ key: hex2(p.n), label: GLABEL[hex2(p.n)] || p.label, unit: p.unit, dec: p.dec, min: p.min, max: p.max, n: p.n }))
+  .concat([{ key: "VOLT", label: "Battery", unit: "V", dec: 1, min: 11, max: 15, n: null }]);
+const ghist = {};            /* LiveHistory: last 60 s of every reading */
+let gWindow = 30000, gPaused = false, gFrozen = 0, gChannels = ["0C", "0D", "11"], gRate = 0, gCount = 0;
+let ignOff = false, autoReconnect = true;
+try { const c = JSON.parse(localStorage.getItem("graphChannels")); if (Array.isArray(c) && c.length) gChannels = c.slice(0, 4); } catch (e) {}
+
+function sample(key, v, t) {
+  const h = ghist[key] || (ghist[key] = []);
+  h.push([t, v]); while (h.length && t - h[0][0] > 60000) h.shift();
+  gCount++;
+}
+function chVal(ch) {
+  if (ch.key === "VOLT") return car.volts();
+  const p = PIDS.find(p => p.n === ch.n); return p.dec2(car.raw(ch.n));
+}
+/* Fast polling: graphed readings in one multi-PID request every cycle, the rest every 10th (like ObdSession.pollLoop) */
+let gCycle = 0;
+setInterval(() => {
+  if (state !== "connected" || ignOff) return;
+  const now = performance.now();
+  for (const ch of CHANNELS) if (gChannels.includes(ch.key) || gCycle % 10 === 0) sample(ch.key, chVal(ch), now);
+  gCycle++;
+}, 60);
+setInterval(() => {
+  gRate = gCount / 1; gCount = 0;
+  const name = (statusNow.title || "").replace(/^Connected to /, "");
+  $("graphRate").textContent = state === "connected" && !ignOff ? `${Math.round(gRate)} readings a second from ${name}`
+    : state === "waiting" ? `${statusNow.title}. ${statusNow.detail}`
+    : state === "connecting" ? statusNow.title : "Connect on the Dashboard tab to see live graphs.";
+}, 1000);
+
+function buildChips() {
+  $("graphChips").innerHTML = CHANNELS.map(c => `<button class="chip" role="checkbox" aria-checked="${gChannels.includes(c.key)}" data-k="${c.key}" style="--c:${GCOL[c.key] || "var(--accent)"}">${c.label}</button>`).join("");
+  $("graphChips").querySelectorAll(".chip").forEach(b => b.onclick = () => {
+    const k = b.dataset.k, on = gChannels.includes(k);
+    if (!on && gChannels.length >= 4) return toast("Up to 4 graphs at once. Turn one off first.");
+    if (on && gChannels.length === 1) return;
+    gChannels = on ? gChannels.filter(x => x !== k) : gChannels.concat(k);
+    gChannels = CHANNELS.map(c => c.key).filter(x => gChannels.includes(x));
+    try { localStorage.setItem("graphChannels", JSON.stringify(gChannels)); } catch (e) {}
+    buildChips(); buildStrips();
+  });
+}
+function buildStrips() {
+  $("graphList").innerHTML = gChannels.map(k => `<div class="strip" data-k="${k}"><canvas role="img" aria-label="${CHANNELS.find(c => c.key === k).label} graph"></canvas></div>`).join("");
+}
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+  gWindow = +b.dataset.w; document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-checked", x === b));
+});
+$("graphPause").onclick = () => { gPaused = !gPaused; gFrozen = performance.now(); $("graphPause").textContent = gPaused ? "Resume" : "Pause"; };
+
+function drawStrip(el, ch) {
+  const cv = el.querySelector("canvas"), dpr = devicePixelRatio || 1, W = el.clientWidth, H = el.clientHeight;
+  if (cv.width !== W * dpr) { cv.width = W * dpr; cv.height = H * dpr; }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const css = getComputedStyle($("phone")), fg = css.getPropertyValue("--fg").trim(), fg2 = css.getPropertyValue("--fg-2").trim(), line = css.getPropertyValue("--line").trim();
+  const col = GCOL[ch.key] || css.getPropertyValue("--accent").trim();
+  g.fillStyle = col; g.fillRect(0, 0, 3, H);
+  const pad = 14, now = gPaused ? gFrozen : performance.now(), from = now - gWindow;
+  const pts = (ghist[ch.key] || []).filter(p => p[0] >= from && p[0] <= now);
+  const vals = pts.map(p => p[1]), fmt = v => v.toFixed(ch.dec);
+  g.font = "600 13px Archivo"; g.fillStyle = fg; g.textAlign = "left"; g.fillText(ch.label, pad, pad + 12);
+  g.font = "500 12px Archivo"; g.fillStyle = fg2; g.textAlign = "right"; g.fillText(ch.unit, W - pad, pad + 20);
+  const uw = g.measureText(ch.unit).width;
+  const lay = $("phone").dataset.layout;
+  g.font = lay === "telemetry" ? "700 28px Archivo" : lay === "cockpit" ? "300 28px Archivo" : "italic 850 26px Archivo";
+  g.fontStretch = lay === "telemetry" ? "condensed" : lay === "cockpit" ? "normal" : "expanded"; g.fillStyle = fg;
+  g.fillText(vals.length ? fmt(vals[vals.length - 1]) : "—", W - pad - uw - 5, pad + 20); g.fontStretch = "normal";
+  g.font = "400 11px Archivo"; g.fillStyle = fg2; g.textAlign = "left";
+  if (vals.length) g.fillText(`Min ${fmt(Math.min(...vals))}   Max ${fmt(Math.max(...vals))}`, pad, pad + 30);
+  const top = pad + 42, bottom = H - 22, left = pad, right = W - pad;
+  g.strokeStyle = line; g.lineWidth = 1;
+  for (let i = 0; i < 3; i++) { const y = top + (bottom - top) * i / 2; g.beginPath(); g.moveTo(left, y); g.lineTo(right, y); g.stroke(); }
+  const step = gWindow <= 10000 ? 2000 : gWindow <= 30000 ? 5000 : 10000; g.textAlign = "center";
+  for (let b = 0; b <= gWindow; b += step) { const x = right - (right - left) * b / gWindow; g.fillText(b ? `-${b / 1000}s` : "now", Math.min(right - 10, Math.max(left + 10, x)), H - 7); }
+  if (vals.length < 2) { g.fillText(state === "waiting" ? "Ignition off" : "Waiting for readings…", W / 2, (top + bottom) / 2); return; }
+  let lo = Math.min(...vals), hi = Math.max(...vals); const range = ch.max - ch.min;
+  if (hi - lo < range * .05) { const m = (hi + lo) / 2; lo = m - range * .025; hi = m + range * .025; }
+  const span = hi - lo; lo = Math.max(ch.min - span, lo - span * .1); hi = Math.min(ch.max + span, hi + span * .1);
+  const X = t => right - (right - left) * (now - t) / gWindow, Y = v => bottom - (bottom - top) * (v - lo) / (hi - lo);
+  g.beginPath(); pts.forEach(([t, v], i) => i ? g.lineTo(X(t), Y(v)) : g.moveTo(X(t), Y(v)));
+  const path = new Path2D(); pts.forEach(([t, v], i) => i ? path.lineTo(X(t), Y(v)) : path.moveTo(X(t), Y(v)));
+  const area = new Path2D(path); area.lineTo(X(pts[pts.length - 1][0]), bottom); area.lineTo(X(pts[0][0]), bottom); area.closePath();
+  const grad = g.createLinearGradient(0, top, 0, bottom); grad.addColorStop(0, col + "46"); grad.addColorStop(1, col + "00");
+  g.fillStyle = grad; g.fill(area); g.strokeStyle = col; g.lineWidth = 2; g.lineJoin = "round"; g.stroke(path);
+}
+(function gloop() {
+  if (!$("pageGraphs").hidden) document.querySelectorAll(".strip").forEach(el => drawStrip(el, CHANNELS.find(c => c.key === el.dataset.k)));
+  requestAnimationFrame(gloop);
+})();
+
+/* Drive recording: a CSV row every 200 ms (LogRecorder) */
+const savedDrives = [];
+let rec = null;
+function stamp(d = new Date()) { const z = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`; }
+function renderRec() {
+  $("recordLabel").textContent = rec ? "Stop recording" : "Record drive"; $("recordBtn").classList.toggle("on", !!rec);
+  if (!rec) return $("recordStatus").textContent = "Saves every reading to a CSV file you can open in Excel or Google Sheets.";
+  const s = Math.floor((Date.now() - rec.started) / 1000);
+  $("recordStatus").textContent = `Recording ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}, ${rec.rows.toLocaleString("en-AU")} rows. Saved as ${rec.name}`;
+}
+function stopRec() { if (!rec) return; if (rec.rows) savedDrives.unshift({ name: rec.name, rows: rec.rows, secs: Math.round((Date.now() - rec.started) / 1000) }); rec = null; renderRec(); }
+$("recordBtn").onclick = () => {
+  if (rec) { stopRec(); return toast("Drive saved. Open Saved drives to share it."); }
+  rec = { name: `OBD2Reader_${stamp()}.csv`, started: Date.now(), rows: 0 }; renderRec();
+};
+setInterval(() => {
+  if (!rec) return;
+  if (state === "idle") return stopRec();
+  if (state === "connected" && !ignOff) rec.rows++;
+  renderRec();
+}, 200);
+$("savedBtn").onclick = () => {
+  const body = savedDrives.length ? savedDrives.map((d, i) => `<div class="drive"><div>${d.name}<small>${Math.floor(d.secs / 60)}:${String(d.secs % 60).padStart(2, "0")} long, ${d.rows.toLocaleString("en-AU")} rows</small></div><button data-share="${i}">Share</button><button class="del" data-del="${i}">Delete</button></div>`).join("")
+    : `<p class="msg">No saved drives yet. Tap Record drive while connected.</p>`;
+  const s = overlay(`<h3>Saved drives</h3>${body}<div class="btns"><button id="cancel">Close</button></div>`);
+  $("cancel").onclick = closeOverlay;
+  s.querySelectorAll("[data-share]").forEach(b => b.onclick = () => { closeOverlay(); toast("Opens Android's share sheet: email, Drive, Messages…"); });
+  s.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { savedDrives.splice(+b.dataset.del, 1); $("savedBtn").onclick(); });
+};
+
+/* Three tabs */
+showPage = diag => showTab(diag ? "Diag" : "Dash");
+function showTab(which) {
+  ["Dash", "Graphs", "Diag"].forEach(k => { $("page" + k).hidden = k !== which; $("tab" + k).setAttribute("aria-selected", k === which); });
+}
+$("tabDash").onclick = () => showTab("Dash");
+$("tabGraphs").onclick = () => showTab("Graphs");
+$("tabDiag").onclick = () => showTab("Diag");
+
+/* Detailed code cards (DtcLibrary output exported from the app) */
+showCodes = function (codes) {
+  setBadge(codes.length); updateTells();
+  $("shareReport").hidden = !codes.length;
+  if (!codes.length) { $("dtcList").innerHTML = ""; return setDtcStatus("No trouble codes", "The engine computer has no stored or pending faults.", "ok"); }
+  const stored = codes.filter(c => !c[1]).length;
+  setDtcStatus(`${codes.length} trouble codes`, stored ? "Stored codes are keeping the check-engine light on." : "Pending codes only, so the light isn't on yet.", stored ? "on" : null);
+  const li = a => a.map(x => `<li>${x}</li>`).join("");
+  $("dtcList").innerHTML = codes.map(([c, p], i) => {
+    const d = DTC[c];
+    return `<div class="code ${p ? "pending" : "stored"} sev-${d.sev}${i === 0 ? " open" : ""}" style="animation-delay:${i * 60}ms">
+      <button class="head" aria-expanded="${i === 0}"><span class="plate-code xb">${c}</span><div><div class="t">${d.title}</div><div class="sev-line">${p ? "Pending" : "Stored"} · <b>${d.sevLabel}</b></div></div><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="${CHEV_D}"/></svg></button>
+      <div class="more"><span class="pill">${d.sevLabel}</span><p class="adv">${d.advice}</p>
+        <h4>What it means</h4><p>${d.meaning}</p>
+        ${d.symptoms.length ? `<h4>You might notice</h4><ul>${li(d.symptoms)}</ul>` : ""}
+        <h4>Common causes</h4><ul>${li(d.causes)}</ul>
+        <h4>What to check</h4><ol>${li(d.checks)}</ol>
+        <div class="sys">${d.system}</div></div></div>`;
+  }).join("");
+  $("dtcList").querySelectorAll(".code .head").forEach(h => h.onclick = () => { const c = h.parentElement; c.classList.toggle("open"); h.setAttribute("aria-expanded", c.classList.contains("open")); });
+};
+$("shareReport").onclick = () => toast("Shares a text report with every code explained, for your mechanic.");
+$("logShare").onclick = () => toast("Shares the adapter log as a text file.");
+$("logLabel").onclick = () => $("logToggle").onclick();
+$("logToggle").onclick = () => { const show = $("log").hidden; $("log").hidden = !show; $("logLabel").textContent = show ? "Hide" : "Show"; $("logToggle").setAttribute("aria-expanded", show); };
+
+/* Reconnect automatically */
+try { autoReconnect = localStorage.getItem("autoReconnect") !== "0"; } catch (e) {}
+$("reconnectSwitch").setAttribute("aria-checked", autoReconnect);
+$("reconnectSwitch").onclick = () => { autoReconnect = !autoReconnect; $("reconnectSwitch").setAttribute("aria-checked", autoReconnect); try { localStorage.setItem("autoReconnect", autoReconnect ? "1" : "0"); } catch (e) {} };
+
+/* Preview only: the demo car's ignition, to show what happens when you switch off and back on */
+function renderIgn() {
+  const b = $("ignBtn"); b.hidden = !(state === "connected" || state === "waiting") || !/Demo vehicle/.test(statusNow.title + " " + (ignName || ""));
+  b.textContent = ignOff ? "Preview only: turn the ignition back on" : "Preview only: turn the demo car's ignition off";
+}
+let ignName = "", wakeTimer = null;
+setInterval(renderIgn, 400);
+$("ignBtn").onclick = async () => {
+  const id = session;
+  if (!ignOff) {
+    ignOff = true; ignName = "Demo vehicle";
+    log("> 010C0D11  < NO DATA"); log("> 010C0D11  < NO DATA"); log("> 010C0D11  < NO DATA");
+    if (!autoReconnect) { toast("Reconnect automatically is off, so the app disconnects."); ignOff = false; return disconnect(); }
+    state = "waiting"; updateButtons();
+    for (const k in live) delete live[k];
+    Object.values(tiles).forEach(f => f(null)); rpmGauge.set(null); speedGauge.set(null);
+    setStatus("waiting", "Ignition off", "Waiting for the car. Live data comes back as soon as the ignition is on.");
+    wakeTimer = setInterval(() => { if (state === "waiting") { log("> 0100"); log("< NO DATA"); } }, 1500);
+  } else {
+    clearInterval(wakeTimer);
+    state = "connecting"; updateButtons();
+    setStatus("connecting", "Talking to the car…", "The car answered again. Reading live data.");
+    log("> 0100"); log("< 4100BE3FA813");
+    await wait(900); if (id !== session) return;
+    ignOff = false; state = "connected"; updateButtons();
+    setStatus("connected", "Connected to Demo vehicle", "ELM327 v1.5, CAN 500 kbaud");
+    ignition();
+  }
+  renderIgn();
+};
+const _disconnect = disconnect;
+disconnect = function () { clearInterval(wakeTimer); ignOff = false; ignName = ""; _disconnect(); stopRec(); renderIgn(); };
+$("connectBtn").onclick = () => state === "idle" ? showConnectSheet() : disconnect();
+
+buildChips(); buildStrips(); renderRec();
+
+/* Decoded codes in the adapter log (ObdSession.logCodes / DtcLibrary.logLine).
+   Live polling fills the log in seconds, so the last code read stays pinned above it. */
+let codeLines = [], pendingCodeLines = [];
+const clock12 = () => new Date().toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", second: "2-digit" });
+function renderLog() {
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const all = codeLines.length ? codeLines.concat([""], logLines) : logLines;
+  $("log").innerHTML = all.map(l => l.startsWith(">") ? esc(l) : `<b>${esc(l)}</b>`).join("\n");
+}
+function pushLog(line) { logLines.push(line); while (logLines.length > 60) logLines.shift(); }
+/* Plain-English line under each exchange (mirrors obd/LogTranslator.kt) */
+const SETUP = { ATE0: "Turned off echo", ATL0: "Turned off line feeds", ATS0: "Turned off spaces in replies", ATH0: "Turned off message headers", ATAT1: "Turned on adaptive timing, so replies come back faster", ATPC: "Closed the protocol before trying the next one" };
+function fmtPid(p, v) { const n = v.toLocaleString("en-US", { minimumFractionDigits: p.dec, maximumFractionDigits: p.dec }); return /^[%°]/.test(p.unit) ? n + p.unit : `${n} ${p.unit}`; }
+function translate(cmd, rsp) {
+  const r = rsp.split(" | ").pop().trim();
+  if (/NO DATA/.test(r)) return /^0[19]/.test(cmd) ? "No answer from the car. The ignition may be off, or the car doesn't support this reading" : "No answer from the car";
+  if (/UNABLE TO CONNECT/.test(r)) return "The adapter couldn't reach the car on this protocol";
+  if (cmd === "ATZ") return `Reset the adapter. It reports ${r}`;
+  if (cmd === "ATI") return `Adapter version: ${r}`;
+  if (cmd === "ATSP0") return "Set the protocol to automatic search";
+  if (cmd.startsWith("ATSP")) return "Set the protocol to " + (protoName(cmd.slice(4)) || cmd.slice(4));
+  if (cmd === "ATDPN") return "The car uses " + (protoName(r.replace(/^A/, "")) || r);
+  if (SETUP[cmd]) return SETUP[cmd];
+  if (cmd === "0902") return `VIN: ${DEMO_VIN}`;
+  if (/^01(00|20|40|60)$/.test(cmd)) {
+    const hex = r.slice(4); let c = 0; for (let i = 0; i < 31; i++) c += (parseInt(hex.slice(Math.floor(i / 4), Math.floor(i / 4) + 1), 16) >> (3 - i % 4)) & 1;
+    const b = parseInt(cmd.slice(2), 16), h = n => n.toString(16).toUpperCase().padStart(2, "0");
+    return `The car answered. It supports ${c} readings in the ${h(b + 1)}–${h(b + 31)} range`;
+  }
+  if (cmd.startsWith("01") && r.startsWith("41")) {
+    let bytes = r.slice(2).match(/../g).map(x => parseInt(x, 16)), out = [];
+    while (bytes.length) { const p = PIDS.find(p => p.n === bytes[0]); if (!p) break; const len = p.n === 0x0C || p.n === 0x10 ? 2 : 1; out.push(`${p.label}: ${fmtPid(p, p.dec2(bytes.slice(1, 1 + len)))}`); bytes = bytes.slice(1 + len); }
+    return out.join(", ") || null;
+  }
+  return null;
+}
+let heldCmd = null;
+log = function (line) {
+  let m = line.match(/^> (\S+)  < (.*)$/);
+  if (!m && line.startsWith("> ") && !line.includes("<")) { if (heldCmd) pushLog("> " + heldCmd); heldCmd = line.slice(2); return; }
+  if (!m && line.startsWith("< ") && heldCmd) { m = [null, heldCmd, line.slice(2)]; heldCmd = null; }
+  if (m) { pushLog(`> ${m[1]}  < ${m[2]}`); const t = translate(m[1], m[2]); if (t) pushLog("= " + t); }
+  else pushLog(line);
+  renderLog();
+};
+function logCodes(codes, kind) {
+  const lines = !codes.length ? [`= No ${kind} codes`]
+    : [`= ${codes.length} ${kind} ${codes.length === 1 ? "code" : "codes"}:`].concat(codes.map(c => `=   ${c}: ${DTC[c].title}. ${DTC[c].sevLabel}.`));
+  lines.forEach(l => log(l));
+  if (kind === "stored") pendingCodeLines = lines;
+  else { codeLines = [`Trouble codes read at ${clock12()}`].concat(pendingCodeLines, lines); renderLog(); }
+}
+const _disc2 = disconnect;
+disconnect = function () { codeLines = []; _disc2(); renderLog(); $("graphRate").textContent = "Connect on the Dashboard tab to see live graphs."; };
+
+window.carReady = true;
+if (location.hash === "#car") showView(true);
+</script>

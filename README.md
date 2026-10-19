@@ -102,6 +102,8 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 
 **Building:** every push to `main` runs [`.github/workflows/build.yml`](.github/workflows/build.yml). It runs the unit tests, builds a signed APK and publishes it as a GitHub release. Pushes that only change Markdown files don't build a new release. To build locally, open the project in Android Studio (JDK 17) or run `gradle assembleRelease testDebugUnitTest` with Gradle 8.7 and the Android SDK.
 
+**Preview:** [`preview/index.html`](preview/index.html) is an interactive mock-up of the app, with a demo car, every style, the Graphs and Diagnostics tabs and the Android Auto screen. Open it in a browser. It mirrors the app's layouts and logic but is a separate web page, so check changes in the app itself too.
+
 **QA:** push to the `qa` branch to run Android Lint, the unit tests and a build with compiler warnings, without publishing a release ([`.github/workflows/qa.yml`](.github/workflows/qa.yml)). The reports are committed back to `qa-reports/` on that branch.
 
 **Releasing:** bump `obdVersion` in `gradle.properties` and add an entry at the top of [`CHANGELOG.md`](CHANGELOG.md). The release notes are taken from that entry.
