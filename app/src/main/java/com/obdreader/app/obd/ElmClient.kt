@@ -22,10 +22,16 @@ class ElmClient(
 
     suspend fun command(cmd: String, timeoutMs: Long = 3000): List<String> = mutex.withLock {
         withContext(Dispatchers.IO) {
-            logger("> $cmd")
-            val raw = transport.exchange(cmd, timeoutMs)
+            val raw = try {
+                transport.exchange(cmd, timeoutMs)
+            } catch (e: AdapterTimeoutException) {
+                logger("> $cmd  < (no reply)")
+                logger("= The adapter didn't reply in time")
+                throw e
+            }
             val lines = ElmParser.cleanLines(raw, cmd)
-            logger("< " + lines.joinToString(" | ").ifEmpty { "(empty)" })
+            logger("> $cmd  < " + lines.joinToString(" | ").ifEmpty { "(empty)" })
+            LogTranslator.describe(cmd, lines)?.let { logger("= $it") }
             lines
         }
     }

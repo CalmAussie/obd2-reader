@@ -15,6 +15,9 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -309,7 +312,7 @@ class MainActivity : AppCompatActivity() {
                 launch { ObdSession.state.collect { render(it) } }
                 launch {
                     combine(ObdSession.codeLog, ObdSession.log) { codes, lines -> ObdSession.fullLog(codes, lines) }
-                        .collect { logText.text = it.joinToString("\n") }
+                        .collect { logText.text = styledLog(it) }
                 }
                 launch { LogRecorder.active.collect { renderRecording(it) } }
             }
@@ -1478,6 +1481,19 @@ class MainActivity : AppCompatActivity() {
         } else {
             bottomNav.removeBadge(R.id.nav_diagnostics)
         }
+    }
+
+    /** Raw adapter traffic stays muted; the plain-English lines and the code summary stand out. */
+    private fun styledLog(lines: List<String>): CharSequence {
+        val strong = themeColor(R.attr.obdTextPrimary)
+        val out = SpannableStringBuilder()
+        lines.forEachIndexed { i, line ->
+            if (i > 0) out.append('\n')
+            val start = out.length
+            out.append(line)
+            if (!line.startsWith(">")) out.setSpan(ForegroundColorSpan(strong), start, out.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        return out
     }
 
     private fun toggleLog() {
