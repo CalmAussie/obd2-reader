@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.2.9 (20 October 2026)
+- More efficiency while connected: buttons and status text no longer redraw the whole screen on every reading when nothing about them has changed, and the Graphs reading rate only updates while Graphs is open. The app now sits idle between readings on every tab, which saves battery and keeps it responsive on older phones.
+
 ## 1.2.8 (20 October 2026)
 - Smoother and lighter while connected: live readings only redraw the Dashboard while it's on screen. Before, every reading also relaid out the whole app behind the Graphs and Diagnostics tabs. The Dashboard catches up the moment you go back to it.
 - The install test now clears the emulator's own "isn't responding" pop-ups before it starts.
