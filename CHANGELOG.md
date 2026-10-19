@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.2.7 (20 October 2026)
+- Less battery use while connected: the rev roundel no longer animates while you're on the Graphs or Diagnostics tab. It was keeping the phone busy redrawing a dial nobody could see, which also made the app slow to respond to accessibility tools on Android 8 to 10.
+- The install test now checks the Disconnect button and taps the tabs reliably while live data is moving.
+
 ## 1.2.6 (20 October 2026)
 
 Found by the new install test, which runs the published APK on real Android system images.
