@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.2.5 (20 October 2026)
+- The APK is now signed with every Android signature scheme (v1, v2 and v3), so any browser, file manager or installer app accepts it.
+- Every release is now tested automatically: the published APK is downloaded, installed on fresh Android 8, 10, 13 and 15 emulators, opened, run with the demo car and checked for crashes.
+- The README has a QR code that downloads the APK straight to your phone, and clearer install steps. All you need is the APK.
+
 ## 1.2.4 (19 October 2026)
 
 ### Changed

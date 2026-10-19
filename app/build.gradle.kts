@@ -41,6 +41,10 @@ android {
                 storePassword = signingValue("OBD_KEYSTORE_PASSWORD", "storePassword")
                 keyAlias = signingValue("OBD_KEY_ALIAS", "keyAlias")
                 keyPassword = signingValue("OBD_KEY_PASSWORD", "keyPassword")
+                // Every signature scheme, so any installer or file manager accepts the APK.
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
             }
         }
     }
