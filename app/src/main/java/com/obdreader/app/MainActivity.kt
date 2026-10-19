@@ -101,7 +101,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -311,8 +313,14 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { ObdSession.state.collect { render(it) } }
                 launch {
-                    combine(ObdSession.codeLog, ObdSession.log) { codes, lines -> ObdSession.fullLog(codes, lines) }
-                        .collect { logText.text = styledLog(it) }
+                    // Live polling adds dozens of lines a second; redraw the log at most four
+                    // times a second, and only while it's open.
+                    combine(ObdSession.codeLog, ObdSession.log, logShown) { codes, lines, shown -> if (shown) ObdSession.fullLog(codes, lines) else null }
+                        .conflate()
+                        .collect { lines ->
+                            if (lines != null) logText.text = styledLog(lines)
+                            delay(LOG_REFRESH_MS)
+                        }
                 }
                 launch { LogRecorder.active.collect { renderRecording(it) } }
             }
@@ -320,6 +328,12 @@ class MainActivity : AppCompatActivity() {
 
         // Reconnect to the last adapter by itself when the app opens (if that's switched on).
         if (savedInstanceState == null) ObdSession.autoConnect(this)
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        // The bottom bar restores its selected tab by itself after the screen is recreated; show its page.
+        showPage(bottomNav.selectedItemId)
     }
 
     // ---------- Graphs ----------
@@ -408,6 +422,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderRecording(r: LogRecorder.Recording?) {
+        recordBtn.isEnabled = r != null || ObdSession.state.value.isConnected
         recordBtn.text = getString(if (r == null) R.string.record_drive else R.string.stop_recording)
         recordBtn.kind = if (r == null) SkewButton.Kind.PRIMARY else SkewButton.Kind.DANGER
         recordStatus.text = if (r == null) getString(R.string.record_hint) else {
@@ -429,7 +444,7 @@ class MainActivity : AppCompatActivity() {
         }
         val names = files.map { f ->
             val kb = (f.length() + 1023) / 1024
-            "${f.nameWithoutExtension.removePrefix("OBD2Reader_").replace('_', ' ')}, $kb KB"
+            "${driveLabel(f)}, $kb KB"
         }.toTypedArray()
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.saved_drives)
@@ -438,14 +453,27 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    /** "19 Oct 2026, 10:37 pm" from a recording's file name (OBD2Reader_2026-10-19_223705.csv). */
+    private fun driveLabel(f: java.io.File): String {
+        val stamp = f.nameWithoutExtension.removePrefix("OBD2Reader_")
+        val parsed = listOf("yyyy-MM-dd_HHmmss", "yyyy-MM-dd_HHmm").firstNotNullOfOrNull { pattern ->
+            try { java.text.SimpleDateFormat(pattern, Locale.US).apply { isLenient = false }.parse(stamp) } catch (e: java.text.ParseException) { null }
+        }
+        return parsed?.let { java.text.SimpleDateFormat("d MMM yyyy, h:mm a", Locale.getDefault()).format(it) } ?: stamp.replace('_', ' ')
+    }
+
     private fun showDriveActions(file: java.io.File) {
         MaterialAlertDialogBuilder(this)
-            .setTitle(file.nameWithoutExtension.removePrefix("OBD2Reader_").replace('_', ' '))
+            .setTitle(driveLabel(file))
             .setMessage("A CSV file with a row every 0.2 seconds. Open it in Excel, Google Sheets or any data-logging tool.")
             .setPositiveButton(R.string.share) { _, _ -> Exports.share(this, file, "text/csv", "OBD2 Reader drive ${file.nameWithoutExtension}") }
             .setNeutralButton("Delete") { _, _ ->
-                file.delete()
-                toast("Deleted")
+                if (LogRecorder.active.value?.file == file) {
+                    toast("This drive is still recording. Stop recording first.")
+                } else {
+                    file.delete()
+                    toast("Deleted")
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -459,10 +487,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.layoutTelemetry).visibility = if (dash == DashLayout.TELEMETRY) View.VISIBLE else View.GONE
         findViewById<View>(R.id.layoutCockpit).visibility = if (dash == DashLayout.COCKPIT) View.VISIBLE else View.GONE
         // Livery stripes run across the top of each page; the title sits below them.
-        listOf(R.id.stripesDash, R.id.stripesDiag).forEach { findViewById<LiveryStripesView>(it).visibility = if (livery) View.VISIBLE else View.GONE }
+        listOf(R.id.stripesDash, R.id.stripesDiag, R.id.stripesGraphs).forEach { findViewById<LiveryStripesView>(it).visibility = if (livery) View.VISIBLE else View.GONE }
         if (livery) {
             findViewById<View>(R.id.topBar).setPadding(0, dp(92f).toInt(), 0, 0)
             findViewById<View>(R.id.titleDiagnostics).setPadding(0, dp(92f).toInt(), 0, 0)
+            findViewById<View>(R.id.titleGraphs).setPadding(0, dp(92f).toInt(), 0, 0)
         }
         if (dash == DashLayout.COCKPIT) {
             findViewById<View>(R.id.root).background = GradientDrawable().apply {
@@ -876,6 +905,12 @@ class MainActivity : AppCompatActivity() {
             if (s.isConnected) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             if (!s.isConnected && s.phase != ObdSession.Phase.WAITING && s.phase != ObdSession.Phase.CONNECTING) {
+                // Disconnected: blank the gauges so old readings aren't mistaken for live ones.
+                // Codes and the VIN stay on screen until the next connection.
+                setRpm(null); setSpeed(null)
+                tiles.values.forEach { it.setValue(null) }
+                listOf(COOLANT_KEY, FUEL_KEY, VOLTAGE_KEY).forEach { setBigReading(it, null) }
+                trace.clear()
                 lastReadings = emptyMap()
                 lastUnsupported = emptySet()
                 lastVinChecked = false
@@ -1496,9 +1531,12 @@ class MainActivity : AppCompatActivity() {
         return out
     }
 
+    private val logShown = MutableStateFlow(false)
+
     private fun toggleLog() {
         val show = logText.visibility != View.VISIBLE
         logText.visibility = if (show) View.VISIBLE else View.GONE
+        logShown.value = show
         logToggle.setText(if (show) R.string.hide else R.string.show)
     }
 
@@ -1515,6 +1553,7 @@ class MainActivity : AppCompatActivity() {
         private const val MAX_GRAPHS = 4
         private const val FUEL_KEY = "2F"
         private const val BLE_SCAN_MS = 12_000L
+        private const val LOG_REFRESH_MS = 250L
         private const val PREF_HOST = AppPrefs.HOST
         private const val PREF_PORT = AppPrefs.PORT
         private const val DEFAULT_HOST = AppPrefs.DEFAULT_HOST

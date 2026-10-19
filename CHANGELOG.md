@@ -2,6 +2,30 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.2.3 (19 October 2026)
+
+Fixes from a full QA pass (Android Lint, compiler warnings, unit tests and a code review).
+
+### Fixed
+- After disconnecting, the dashboard kept showing the last readings as if they were live. The gauges now clear; trouble codes and the VIN stay until the next connection.
+- Tapping Connect straight after Disconnect could let the old connection's clean-up overwrite the new one, showing "Not connected" while connected.
+- Disconnect now stops a Bluetooth Classic or Wi-Fi connection that's still being set up, instead of waiting for it to time out.
+- A failed Bluetooth Classic attempt is closed before the fallback is tried, which some phones need before they'll open a second link.
+- With the adapter log open, every reading redrew the whole log, which could make the app stutter. It now refreshes four times a second, and only while it's open.
+- Two drives recorded in the same minute overwrote each other. Saved drives also have readable names now, such as "19 Oct 2026, 10:37 pm".
+- A drive that's still recording can no longer be deleted.
+- The Record drive button stayed enabled after disconnecting.
+- On Android Auto, a status change that arrived just after a refresh (such as "Ignition off") could be left undrawn.
+- The VIN could be cut off on narrow phones or with large text. It now shrinks to fit.
+- If Android refuses the background connection service, the app no longer risks closing.
+
+### Changed
+- When the app reconnects by itself on opening and can't find the car, it stops after 3 minutes instead of 30, so opening it at home doesn't leave it searching. Once it has reached the car, it still keeps trying for 30 minutes after the ignition goes off.
+- Graphs use less battery: smoother drawing with no per-frame memory churn, and an idle Graphs tab no longer redraws 60 times a second.
+- The Graphs tab now has the livery stripes like the other tabs.
+- VINs from Hyundai, Kia, Genesis, SsangYong, BYD and GWM are now recognised.
+- Android 13+ themed (monochrome) app icon, and the location permission request now meets Android's rules for older phones.
+
 ## 1.2.2 (19 October 2026)
 - The adapter log is now readable: every exchange with the adapter gets a plain-English line underneath. For example, "> 010C  < 410C319E" now reads "Engine RPM: 3,176 rpm", and multi-reading replies list each reading.
 - Setup steps, the protocol found, which readings the car supports, the VIN and errors such as NO DATA or UNABLE TO CONNECT are all explained.

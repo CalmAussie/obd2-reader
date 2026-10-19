@@ -1,0 +1,38 @@
+name: QA
+
+# Push to the qa branch to run Android Lint, compiler warnings and unit tests without
+# publishing a release. Reports are committed back to qa-reports/ on the same branch.
+on:
+  push:
+    branches: [qa]
+    paths-ignore: ["qa-reports/**"]
+
+permissions:
+  contents: write
+
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+      - name: Build, test and lint
+        run: |
+          mkdir -p qa-reports
+          gradle --no-daemon --rerun-tasks assembleDebug testDebugUnitTest 2>&1 | tee qa-reports/build.log || true
+          gradle --no-daemon lintDebug -Pandroid.lint.abortOnError=false 2>&1 | tee qa-reports/lint.log || true
+          grep -E "^w: |^e: " qa-reports/build.log | sed 's#file:///home/runner/work/obd2-reader/obd2-reader/##' | sort -u > qa-reports/kotlin-warnings.txt || true
+          cp app/build/reports/lint-results-debug.xml qa-reports/ 2>/dev/null || true
+          cp app/build/reports/lint-results-debug.txt qa-reports/ 2>/dev/null || true
+          mkdir -p qa-reports/tests; cp -r app/build/test-results/testDebugUnitTest/*.xml qa-reports/tests/ 2>/dev/null || true
+      - name: Commit reports
+        run: |
+          git config user.name "qa-bot"; git config user.email "qa-bot@users.noreply.github.com"
+          git add -f qa-reports
+          git commit -m "QA reports" && git push origin HEAD:qa

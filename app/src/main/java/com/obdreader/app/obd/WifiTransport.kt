@@ -28,6 +28,7 @@ class WifiTransport(
 
     override fun open() {
         val s = wifiNetwork()?.socketFactory?.createSocket() ?: Socket()
+        socket = s // so close() (Disconnect) can abort a slow connect
         try {
             s.connect(InetSocketAddress(host, port), CONNECT_TIMEOUT_MS)
             s.tcpNoDelay = true
@@ -39,7 +40,10 @@ class WifiTransport(
                 e,
             )
         }
-        socket = s
+        if (socket !== s) { // Disconnect was tapped while connecting
+            try { s.close() } catch (ignored: IOException) {}
+            throw IOException("Disconnected")
+        }
         input = s.getInputStream()
         output = s.getOutputStream()
     }

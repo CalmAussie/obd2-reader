@@ -33,23 +33,41 @@ class BluetoothTransport(
             // Needs BLUETOOTH_SCAN on Android 12+; discovery is rarely running, so ignore.
         }
 
+        // The socket is stored before connecting so close() (Disconnect) can abort a slow connect.
         val s = try {
-            device.createRfcommSocketToServiceRecord(SPP_UUID).also { it.connect() }
+            device.createRfcommSocketToServiceRecord(SPP_UUID).also { socket = it; it.connect() }
         } catch (first: IOException) {
+            // Close the failed socket first: some Bluetooth stacks refuse a second link while it's open.
+            closeQuietly(socket)
+            if (closed) throw IOException("Disconnected")
             // Many cheap ELM327 clones only accept a raw channel-1 socket.
             try {
                 val method = device.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
-                (method.invoke(device, 1) as BluetoothSocket).also { it.connect() }
+                (method.invoke(device, 1) as BluetoothSocket).also { socket = it; it.connect() }
             } catch (second: Exception) {
+                closeQuietly(socket)
+                socket = null
                 throw IOException("Couldn't open a Bluetooth link to $name. Is the adapter plugged in and the ignition on?", first)
             }
         }
+        if (closed) { closeQuietly(s); throw IOException("Disconnected") }
         socket = s
         input = s.inputStream
         output = s.outputStream
     }
 
+    @Volatile
+    private var closed = false
+
+    private fun closeQuietly(s: BluetoothSocket?) {
+        try {
+            s?.close()
+        } catch (ignored: IOException) {
+        }
+    }
+
     override fun close() {
+        closed = true
         val s = socket
         socket = null
         input = null

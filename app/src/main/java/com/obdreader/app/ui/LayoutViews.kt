@@ -37,6 +37,7 @@ class ShiftLightsView @JvmOverloads constructor(context: Context, attrs: Attribu
     private val blue = Color.parseColor("#3D9BFF")
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val rect = RectF()
+    private val glow = RectF()
     private var lit = 0
     private var flash = false
 
@@ -68,7 +69,8 @@ class ShiftLightsView @JvmOverloads constructor(context: Context, attrs: Attribu
             val c = if (flash) blue else colours[i / 5]
             if (on) {
                 paint.color = ColorUtils.setAlphaComponent(c, 60)
-                canvas.drawRoundRect(RectF(rect.left - dp(2f), rect.top - dp(2f), rect.right + dp(2f), rect.bottom + dp(2f)), dp(4f), dp(4f), paint)
+                glow.set(rect.left - dp(2f), rect.top - dp(2f), rect.right + dp(2f), rect.bottom + dp(2f))
+                canvas.drawRoundRect(glow, dp(4f), dp(4f), paint)
             }
             paint.color = if (on) c else off
             canvas.drawRoundRect(rect, dp(2f), dp(2f), paint)

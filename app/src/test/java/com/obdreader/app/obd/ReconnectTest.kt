@@ -35,6 +35,14 @@ class ReconnectTest {
         assertFalse(ReconnectPolicy.shouldGiveUp(0, 29 * 60 * 1000L))
         assertTrue(ReconnectPolicy.shouldGiveUp(0, 30 * 60 * 1000L))
     }
+
+    @Test
+    fun anAutomaticStartThatNeverReachedTheCarGivesUpSooner() {
+        val limit = ReconnectPolicy.AUTO_START_GIVE_UP_MS
+        assertFalse(ReconnectPolicy.shouldGiveUp(0, limit - 1, limit))
+        assertTrue(ReconnectPolicy.shouldGiveUp(0, limit, limit))
+        assertTrue(limit < ReconnectPolicy.GIVE_UP_AFTER_MS)
+    }
 }
 
 class MultiPidTest {

@@ -85,7 +85,8 @@ object LogRecorder {
 
     fun start(context: Context) {
         if (job?.isActive == true) return
-        val stamp = SimpleDateFormat("yyyy-MM-dd_HHmm", Locale.US).format(Date())
+        // Seconds in the name, so two drives recorded in the same minute don't overwrite each other.
+        val stamp = SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).format(Date())
         val file = File(folder(context), "OBD2Reader_$stamp.csv")
         val started = System.currentTimeMillis()
         _active.value = Recording(file, started, 0)

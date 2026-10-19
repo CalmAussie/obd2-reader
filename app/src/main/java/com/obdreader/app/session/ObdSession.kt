@@ -31,6 +31,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -121,6 +122,9 @@ object ObdSession {
     private var transport: ObdTransport? = null
     private var job: Job? = null
 
+    /** Counts connections, so a cancelled one finishing late can't overwrite the state of the next. */
+    private var generation = 0
+
     /**
      * PIDs (by hex) the Graphs tab is showing. They're read every cycle, and everything else
      * less often, so the graphs update as fast as the adapter allows.
@@ -149,6 +153,8 @@ object ObdSession {
             isDemo = isDemo,
         )
         if (!isDemo) ObdConnectionService.start(app)
+        val gen = ++generation
+        fun isCurrent() = gen == generation
 
         job = scope.launch {
             var current = t
@@ -173,9 +179,13 @@ object ObdSession {
                         lastError = e
                     } finally {
                         current.close()
-                        client = null
-                        transport = null
+                        if (isCurrent()) {
+                            client = null
+                            transport = null
+                        }
                     }
+                    // Disconnected by the user while the link was closing: stop here, quietly.
+                    currentCoroutineContext().ensureActive()
 
                     val retry = !isDemo && AppPrefs.autoReconnect(prefs) && (everConnected || auto) && lastError !is NotAnAdapter
                     if (!retry) {
@@ -187,8 +197,13 @@ object ObdSession {
                         break
                     }
                     if (attempt == 0) waitingSince = SystemClock.elapsedRealtime()
-                    if (ReconnectPolicy.shouldGiveUp(waitingSince, SystemClock.elapsedRealtime())) {
-                        end = State(title = "Stopped reconnecting", detail = "The car didn't answer for 30 minutes. Tap Connect when you're back in the car.")
+                    val limit = if (everConnected) ReconnectPolicy.GIVE_UP_AFTER_MS else ReconnectPolicy.AUTO_START_GIVE_UP_MS
+                    if (ReconnectPolicy.shouldGiveUp(waitingSince, SystemClock.elapsedRealtime(), limit)) {
+                        end = if (everConnected) {
+                            State(title = "Stopped reconnecting", detail = "The car didn't answer for 30 minutes. Tap Connect when you're back in the car.")
+                        } else {
+                            State(detail = "Couldn't find ${t.name}. Tap Connect when you're in the car with the ignition on.")
+                        }
                         break
                     }
                     _state.update {
@@ -204,7 +219,7 @@ object ObdSession {
                     // A Bluetooth or Wi-Fi link can't be reopened once closed, so build a fresh one.
                     var next = lastAdapter(app)
                     while (next == null) {
-                        if (ReconnectPolicy.shouldGiveUp(waitingSince, SystemClock.elapsedRealtime())) break
+                        if (ReconnectPolicy.shouldGiveUp(waitingSince, SystemClock.elapsedRealtime(), limit)) break
                         _state.update { it.copy(detail = "Turn Bluetooth on. The app reconnects to ${t.name} automatically.") }
                         delay(ReconnectPolicy.delayFor(Int.MAX_VALUE))
                         next = lastAdapter(app)
@@ -212,10 +227,12 @@ object ObdSession {
                     current = next ?: current
                 }
             } finally {
-                client = null
-                transport = null
-                _state.value = end
-                ObdConnectionService.stop(app)
+                if (isCurrent()) {
+                    client = null
+                    transport = null
+                    _state.value = end
+                    ObdConnectionService.stop(app)
+                }
             }
         }
     }
