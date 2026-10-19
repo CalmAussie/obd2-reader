@@ -93,6 +93,7 @@ import com.obdreader.app.ui.VinDecalView
 import com.obdreader.app.ui.dashLayout
 import com.obdreader.app.ui.panelBackground
 import com.obdreader.app.ui.themeBool
+import com.obdreader.app.ui.applyTitleFonts
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.themeShape
 import com.obdreader.app.ui.uiTypeface
@@ -213,6 +214,7 @@ class MainActivity : AppCompatActivity() {
             isAppearanceLightNavigationBars = lightTheme
         }
         setContentView(R.layout.activity_main)
+        findViewById<View>(R.id.root).applyTitleFonts()
 
         // Edge-to-edge: pages pad below the status bar; the bottom bar pads itself above the nav bar.
         val pages = listOf(findViewById<View>(R.id.content), findViewById<View>(R.id.contentDiag), findViewById<View>(R.id.contentGraphs))
@@ -337,7 +339,7 @@ class MainActivity : AppCompatActivity() {
     private data class Channel(val key: String, val label: String, val unit: String, val decimals: Int, val min: Double, val max: Double)
 
     private val channels: List<Channel> by lazy {
-        Pids.dashboard.map { Channel(it.hex, it.label.removePrefix("Engine "), it.unit, it.decimals, it.min, it.max) } +
+        Pids.dashboard.map { Channel(it.hex, if (it.number == Pids.RPM) "RPM" else it.label, it.unit, it.decimals, it.min, it.max) } +
             Channel(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0)
     }
 
@@ -598,6 +600,7 @@ class MainActivity : AppCompatActivity() {
     private fun showConnectSheet() {
         val sheet = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.sheet_connect, null)
+        view.applyTitleFonts()
 
         fun bind(id: Int, icon: Int, title: Int, subtitle: Int, onPick: () -> Unit) {
             val card = view.findViewById<View>(id)
@@ -1179,6 +1182,7 @@ class MainActivity : AppCompatActivity() {
     private fun showCarPicker() {
         val sheet = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.sheet_car, null)
+        view.applyTitleFonts()
         val makeInput = view.findViewById<MaterialAutoCompleteTextView>(R.id.makeInput)
         val yearInput = view.findViewById<MaterialAutoCompleteTextView>(R.id.yearInput)
         val modelInput = view.findViewById<MaterialAutoCompleteTextView>(R.id.modelInput)

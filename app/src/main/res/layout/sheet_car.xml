@@ -16,6 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="?attr/obdTitleFont"
+                android:tag="@string/tag_title_font"
             android:text="@string/car_title"
             android:textColor="?attr/obdTextPrimary"
             android:textSize="20sp" />
@@ -121,6 +122,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:fontFamily="?attr/obdTitleFont"
+                android:tag="@string/tag_title_font"
                     android:textColor="?attr/obdAccent"
                     android:textSize="15sp" />
 

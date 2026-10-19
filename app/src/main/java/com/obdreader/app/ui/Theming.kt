@@ -67,6 +67,28 @@ fun Context.displayTypeface(): Typeface {
     return if (res != 0) font(res, Typeface.DEFAULT_BOLD) else font(R.font.archivo_expanded_black_italic, Typeface.DEFAULT_BOLD)
 }
 
+/** The theme's heading font (obdTitleFont). */
+fun Context.titleTypeface(): Typeface {
+    val tv = TypedValue()
+    val res = if (theme.resolveAttribute(R.attr.obdTitleFont, tv, true)) tv.resourceId else 0
+    return if (res != 0) font(res, Typeface.DEFAULT_BOLD) else displayTypeface()
+}
+
+/**
+ * Gives every view tagged @string/tag_title_font the theme's heading font. Android doesn't
+ * reliably resolve a font set through a theme attribute (?attr/obdTitleFont) in XML, which
+ * left titles in the plain body font, so it's applied here as well.
+ */
+fun android.view.View.applyTitleFonts() {
+    val tag = context.getString(R.string.tag_title_font)
+    val face = context.titleTypeface()
+    fun walk(v: android.view.View) {
+        if (v is android.widget.TextView && v.tag == tag) v.typeface = face
+        if (v is android.view.ViewGroup) for (i in 0 until v.childCount) walk(v.getChildAt(i))
+    }
+    walk(this)
+}
+
 /** Archivo at a normal width, for labels and body text. */
 fun Context.uiTypeface(weight: Int = 400): Typeface = when {
     weight >= 600 -> font(R.font.archivo_semibold, Typeface.DEFAULT_BOLD)
