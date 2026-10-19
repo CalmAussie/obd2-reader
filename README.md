@@ -30,6 +30,46 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics â
 - **Finds the right protocol:** tries every OBD2 protocol automatically. If your car won't connect, choose it under **Diagnostics â†’ Your car** (69 makes from 2000 on) so the app tries that car's usual protocol first.
 - **Background connection:** keeps working with the screen off, with a notification showing live RPM, speed and coolant.
 
+## Compatibility
+
+**Phones**
+| | |
+|---|---|
+| Android | 8.0 (Oreo) or newer |
+| Android Auto | Any car or head unit with Android Auto, wired or wireless, using the phone's Android Auto app |
+| iPhone | Not supported (Android only) |
+
+**Adapters**
+| Type | Works with | Notes |
+|---|---|---|
+| Bluetooth Classic | ELM327 v1.4 and newer, and ELM327-compatible clones and STN-based adapters | Pair in Android's Bluetooth settings first |
+| Bluetooth LE | "iPhone-compatible" ELM327 adapters, for example the Veepeak OBDCheck BLE+ | No pairing; the app finds it |
+| Wi-Fi | ELM327 Wi-Fi adapters | Default address `192.168.0.10`, port `35000`, changeable in the app |
+| Not supported | Adapters locked to their maker's own app (for example BlueDriver), and USB adapters | |
+
+**OBD2 protocols** (all nine an ELM327 supports, tried automatically)
+| Protocol | Typical cars |
+|---|---|
+| ISO 15765-4 CAN (11-bit and 29-bit, 500 and 250 kbaud) | Almost every car from 2008 on |
+| SAE J1850 PWM | 2000s Fords and Ford-based Mazdas |
+| SAE J1850 VPW | Pre-2008 GM, Chrysler, Dodge and Jeep |
+| ISO 9141-2 | 2000s Asian and European cars, including many Hondas, Mazdas and Toyotas |
+| ISO 14230-4 KWP2000 (fast and 5-baud init) | 2000s Asian and European cars |
+
+Many cheap ELM327 clones can't speak J1850 PWM or VPW. If you have a 2000s Ford or pre-2008 GM, Chrysler, Dodge or Jeep, use a genuine ELM327 or STN-based adapter.
+
+**Cars**
+| | |
+|---|---|
+| Australia | Petrol cars from about 2006, diesels from about 2007 (ADR 79). Many earlier imports also work |
+| United States | 1996 on |
+| Europe (EOBD) | Petrol from 2001, diesel from 2004 |
+| Car catalogue | 69 makes from 2000 on, to help the app pick the right protocol: Japanese, American, European and Australian brands |
+| Electric cars | Often limited or no standard engine readings. Teslas have no standard OBD2 port |
+| Japanese-market imports | Some older ones use Japan's own standard and may not connect |
+
+**What can be read:** standard (generic) OBD2 data only: live engine readings, emissions-related trouble codes (P0, P2 and generic U codes are explained in full), and the VIN. Maker-specific systems such as ABS, airbags, transmission data and service resets need the maker's own tools.
+
 ## Styles
 Tap the palette icon on the Dashboard to choose a style. Your choice is saved.
 
@@ -54,10 +94,7 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 4. Reconnect to your car. OBD2 Reader appears in Android Auto's app list.
 
 ## Good to know
-- **Older cars:** cars sold new in Australia before 2006 weren't required to have full OBD2, so some readings or codes may be missing.
-- **Cheap adapters:** many low-cost ELM327 clones can't speak SAE J1850 PWM or VPW, which most 2000s Fords and pre-2008 GM, Chrysler, Dodge and Jeep vehicles need.
-- **Electric cars** don't have to support standard OBD2 engine readings. Teslas have no standard OBD2 port.
-- **Generic OBD2 only:** the app reads engine data and emissions codes. Maker-specific systems (ABS, airbags, transmission data, service resets) need the maker's own tools.
+- **Not every reading on every car:** cars only answer the readings they support, so some tiles may stay blank. The adapter log shows what the car supports.
 - **Bluetooth LE on Android 11 and older** needs Location turned on while scanning (an Android rule).
 
 ## For developers
