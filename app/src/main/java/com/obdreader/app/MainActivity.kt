@@ -917,7 +917,9 @@ class MainActivity : AppCompatActivity() {
             lastPhase = s.phase
         }
 
-        if (s.readings !== lastReadings) {
+        // Live readings only redraw the Dashboard while it's on screen. Updating it behind another
+        // tab relaid out the whole screen 20 times a second for nothing; it catches up on return.
+        if (s.readings !== lastReadings && pageDashboard.visibility == View.VISIBLE) {
             for ((key, value) in s.readings) {
                 if (lastReadings.containsKey(key) && lastReadings[key] == value) continue
                 when (key) {
@@ -1468,6 +1470,10 @@ class MainActivity : AppCompatActivity() {
         pageDashboard.visibility = if (itemId == R.id.nav_dashboard) View.VISIBLE else View.GONE
         pageGraphs.visibility = if (itemId == R.id.nav_graphs) View.VISIBLE else View.GONE
         pageDiagnostics.visibility = if (itemId == R.id.nav_diagnostics) View.VISIBLE else View.GONE
+        if (itemId == R.id.nav_dashboard && ::graphRate.isInitialized) {
+            lastReadings = emptyMap() // redraw every reading now that the Dashboard is back
+            render(ObdSession.state.value)
+        }
         updateFocus()
         graphStrips.forEach { it.invalidate() }
     }
