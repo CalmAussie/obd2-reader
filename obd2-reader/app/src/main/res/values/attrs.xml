@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Design tokens every app theme defines. Layouts and views read these instead of fixed colours. -->
+<resources>
+    <attr name="obdBg" format="color" />
+    <attr name="obdSurface" format="color" />
+    <attr name="obdSurfaceHigh" format="color" />
+    <attr name="obdOutline" format="color" />
+    <attr name="obdTextPrimary" format="color" />
+    <attr name="obdTextSecondary" format="color" />
+    <attr name="obdAccent" format="color" />
+    <attr name="obdAccentAlt" format="color" />
+    <attr name="obdAccentContainer" format="color" />
+    <attr name="obdOnAccent" format="color" />
+    <attr name="obdTrack" format="color" />
+    <attr name="obdOk" format="color" />
+    <attr name="obdWarn" format="color" />
+    <attr name="obdWarnContainer" format="color" />
+    <attr name="obdDanger" format="color" />
+    <attr name="obdIdle" format="color" />
+
+    <attr name="obdCardRadius" format="dimension" />
+    <attr name="obdCardStroke" format="dimension" />
+    <attr name="obdButtonRadius" format="dimension" />
+    <!-- Font family for big numbers (dials and tiles), e.g. sans-serif-medium or monospace. -->
+    <attr name="obdNumberFont" format="string" />
+    <attr name="obdNumberBold" format="boolean" />
+    <attr name="obdNumberItalic" format="boolean" />
+    <attr name="obdTitleItalic" format="boolean" />
+    <!-- Shape of cards: a ShapeAppearance style (rounded or cut corners). -->
+    <attr name="obdShapeAppearance" format="reference" />
+    <attr name="obdPillBg" format="reference" />
+    <attr name="obdTitleFont" format="string" />
+    <attr name="obdIsLight" format="boolean" />
+    <!-- Dial thickness as a fraction of its width. -->
+    <attr name="obdGaugeThickness" format="float" />
+    <attr name="obdGaugeStyle" format="enum">
+        <enum name="gradient" value="0" />
+        <enum name="solid" value="1" />
+        <enum name="segmented" value="2" />
+        <enum name="angular" value="3" />
+    </attr>
+</resources>
