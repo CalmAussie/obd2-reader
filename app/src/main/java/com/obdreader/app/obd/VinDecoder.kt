@@ -93,6 +93,12 @@ object VinDecoder {
             "Bugatti" to listOf("VF9"),
             "Rover / MG Rover" to listOf("SAR"),
             "MG" to listOf("LSJ"),
+            "Hyundai" to listOf("KMH", "KMF", "5NP", "5NM", "MAL", "TMA", "NLH"),
+            "Kia" to listOf("KNA", "KNC", "KND", "KNE", "5XX", "5XY", "U5Y"),
+            "Genesis" to listOf("KMT"),
+            "SsangYong / KGM" to listOf("KPT"),
+            "BYD" to listOf("LGX", "LC0"),
+            "GWM / Haval" to listOf("LGW"),
         ).forEach { (make, codes) -> codes.forEach { put(it, make) } }
         listOf("WDB", "WDC", "WDD", "WDF", "WD3", "WD4", "4JG", "55S", "W1K", "W1N", "W1V").forEach { put(it, MERCEDES) }
     }

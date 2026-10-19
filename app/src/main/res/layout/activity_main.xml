@@ -333,6 +333,15 @@
             android:fillViewport="true"
             android:visibility="gone">
 
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <com.obdreader.app.ui.LiveryStripesView
+                android:id="@+id/stripesGraphs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
             <LinearLayout
                 android:id="@+id/contentGraphs"
                 android:layout_width="match_parent"
@@ -342,6 +351,7 @@
                 android:paddingBottom="28dp">
 
                 <TextView
+                    android:id="@+id/titleGraphs"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="?attr/obdTitleFont"
@@ -427,6 +437,7 @@
                     app:icon="@drawable/ic_share"
                     app:iconTint="?attr/obdAccent" />
             </LinearLayout>
+            </FrameLayout>
         </androidx.core.widget.NestedScrollView>
 
         <!-- ===================== Diagnostics ===================== -->
@@ -583,10 +594,13 @@
 
                         <TextView
                             android:id="@+id/vinText"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="44dp"
                             android:layout_marginTop="4dp"
+                            android:autoSizeMaxTextSize="16sp"
+                            android:autoSizeMinTextSize="10sp"
+                            android:autoSizeTextType="uniform"
                             android:fontFamily="?attr/obdTitleFont"
                             android:maxLines="1"
                             android:text="@string/dash"

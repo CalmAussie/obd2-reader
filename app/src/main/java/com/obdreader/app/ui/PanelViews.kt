@@ -287,7 +287,10 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
         isFocusable = true
     }
 
-    fun setTextSizeSp(sp: Float) { textPaint.textSize = sp * resources.displayMetrics.scaledDensity; invalidate() }
+    fun setTextSizeSp(sp: Float) {
+        textPaint.textSize = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_SP, sp, resources.displayMetrics)
+        invalidate()
+    }
 
     override fun getAccessibilityClassName(): CharSequence = Button::class.java.name
 

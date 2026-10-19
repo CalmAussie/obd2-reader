@@ -22,6 +22,8 @@ import com.obdreader.app.obd.DemoTransport
 import com.obdreader.app.obd.Pid
 import com.obdreader.app.obd.Pids
 import com.obdreader.app.session.ObdSession
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -33,17 +35,27 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
 
     private var lastPhase: ObdSession.Phase? = null
     private var lastRefresh = 0L
+    private var pending: Job? = null
 
     init {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 ObdSession.state.collect { s ->
                     // Android Auto limits how often a screen may redraw, so refresh about once a second.
+                    // A change that arrives too soon is drawn by a catch-up refresh, so the last
+                    // status (for example "Ignition off") is never left undrawn.
+                    pending?.cancel()
                     val now = SystemClock.elapsedRealtime()
                     if (s.phase != lastPhase || now - lastRefresh >= REFRESH_MS) {
                         lastPhase = s.phase
                         lastRefresh = now
                         invalidate()
+                    } else {
+                        pending = launch {
+                            delay(REFRESH_MS - (now - lastRefresh))
+                            lastRefresh = SystemClock.elapsedRealtime()
+                            invalidate()
+                        }
                     }
                 }
             }

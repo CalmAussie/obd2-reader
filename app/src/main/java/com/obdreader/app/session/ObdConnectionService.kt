@@ -41,7 +41,14 @@ class ObdConnectionService : Service() {
         super.onCreate()
         createChannel()
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE else 0
-        ServiceCompat.startForeground(this, NOTIFICATION_ID, build(ObdSession.state.value), type)
+        try {
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, build(ObdSession.state.value), type)
+        } catch (e: RuntimeException) {
+            // Android can refuse a foreground service (for example started from the background on
+            // Android 12+). The connection still works while the app or Android Auto is open.
+            stopSelf()
+            return
+        }
 
         scope.launch {
             ObdSession.state.collect { s ->
@@ -98,7 +105,6 @@ class ObdConnectionService : Service() {
     }
 
     private fun createChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(CHANNEL_ID, "Car connection", NotificationManager.IMPORTANCE_LOW).apply {
             description = "Shown while the app is connected to your car"
         }

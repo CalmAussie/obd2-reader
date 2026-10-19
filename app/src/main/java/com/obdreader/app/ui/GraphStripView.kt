@@ -64,6 +64,13 @@ class GraphStripView(
     private val path = Path()
     private val area = Path()
 
+    // Reused every frame (this view redraws up to 60 times a second).
+    private var times = LongArray(256)
+    private var values = DoubleArray(256)
+    private var fillShader: LinearGradient? = null
+    private var fillTop = -1f
+    private var fillBottom = -1f
+
     init {
         contentDescription = "$label graph"
     }
@@ -93,24 +100,34 @@ class GraphStripView(
         val from = now - windowMs
 
         // Copy the visible part of the history.
-        val times = ArrayList<Long>()
-        val values = ArrayList<Double>()
+        var n = 0
+        var vMin = Double.MAX_VALUE
+        var vMax = -Double.MAX_VALUE
         val series = LiveHistory.series(key)
         synchronized(LiveHistory) {
+            if (series.times.size > times.size) {
+                times = LongArray(series.times.size * 2)
+                values = DoubleArray(series.times.size * 2)
+            }
             for (i in series.times.indices) {
                 val t = series.times[i]
-                if (t in from..now) { times += t; values += series.values[i] }
+                if (t in from..now) {
+                    val v = series.values[i]
+                    times[n] = t; values[n] = v; n++
+                    if (v < vMin) vMin = v
+                    if (v > vMax) vMax = v
+                }
             }
         }
 
         canvas.drawText(label, pad, pad + 12 * d, labelPaint)
-        val current = values.lastOrNull()
+        val current = if (n > 0) values[n - 1] else null
         val unitW = unitPaint.measureText(unit)
         canvas.drawText(unit, w - pad, pad + 20 * d, unitPaint)
         valuePaint.color = text
         canvas.drawText(current?.let { fmt(it) } ?: "—", w - pad - unitW - 5 * d, pad + 20 * d, valuePaint)
-        if (values.isNotEmpty()) {
-            canvas.drawText("Min ${fmt(values.min())}   Max ${fmt(values.max())}", pad, pad + 30 * d, smallPaint)
+        if (n > 0) {
+            canvas.drawText("Min ${fmt(vMin)}   Max ${fmt(vMax)}", pad, pad + 30 * d, smallPaint)
         }
 
         val top = pad + 42 * d
@@ -132,9 +149,9 @@ class GraphStripView(
         }
         smallPaint.textAlign = Paint.Align.LEFT
 
-        if (values.size >= 2) {
-            var lo = values.min()
-            var hi = values.max()
+        if (n >= 2) {
+            var lo = vMin
+            var hi = vMax
             if (hi - lo < (rangeMax - rangeMin) * 0.05) {
                 val mid = (hi + lo) / 2
                 val half = (rangeMax - rangeMin) * 0.025
@@ -144,14 +161,18 @@ class GraphStripView(
             lo = max(rangeMin - span, lo - span * 0.1)
             hi = min(rangeMax + span, hi + span * 0.1)
             path.reset(); area.reset()
-            for (i in times.indices) {
+            for (i in 0 until n) {
                 val x = right - (right - left) * (now - times[i]) / windowMs.toFloat()
                 val y = (bottom - (bottom - top) * ((values[i] - lo) / (hi - lo))).toFloat()
                 if (i == 0) { path.moveTo(x, y); area.moveTo(x, bottom); area.lineTo(x, y) } else { path.lineTo(x, y); area.lineTo(x, y) }
             }
-            val lastX = right - (right - left) * (now - times.last()) / windowMs.toFloat()
+            val lastX = right - (right - left) * (now - times[n - 1]) / windowMs.toFloat()
             area.lineTo(lastX, bottom); area.close()
-            fill.shader = LinearGradient(0f, top, 0f, bottom, ColorUtils.setAlphaComponent(colour, 70), ColorUtils.setAlphaComponent(colour, 0), Shader.TileMode.CLAMP)
+            if (fillShader == null || top != fillTop || bottom != fillBottom) {
+                fillShader = LinearGradient(0f, top, 0f, bottom, ColorUtils.setAlphaComponent(colour, 70), ColorUtils.setAlphaComponent(colour, 0), Shader.TileMode.CLAMP)
+                fillTop = top; fillBottom = bottom
+            }
+            fill.shader = fillShader
             canvas.drawPath(area, fill)
             canvas.drawPath(path, line)
         } else {
@@ -159,7 +180,10 @@ class GraphStripView(
             canvas.drawText("Waiting for readings…", w / 2, (top + bottom) / 2, smallPaint)
             smallPaint.textAlign = Paint.Align.LEFT
         }
-        // Keep scrolling smoothly while the chart is on screen.
-        if (!paused && isShown) postInvalidateOnAnimation()
+        // Keep scrolling smoothly while the chart is on screen and has data; with nothing to show,
+        // just check twice a second so an idle Graphs tab doesn't use the battery.
+        if (!paused && isShown) {
+            if (n > 0) postInvalidateOnAnimation() else postInvalidateDelayed(500)
+        }
     }
 }
