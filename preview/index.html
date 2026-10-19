@@ -1252,16 +1252,16 @@ function showConnectSheet() {
 }
 function pairedPicker() {
   const devices = [["VEEPEAK", "00:1D:A5:68:98:8B"], ["Galaxy Buds2", "8C:79:F5:21:4E:0A"]];
-  const s = overlay(`<h3>Choose your adapter</h3>` + devices.map((d, i) => `<button class="item" data-i="${i}">${d[0]}<small>${d[1]}</small></button>`).join("") + `<div class="btns"><button id="cancel">Cancel</button></div>`);
+  const s = overlay(`<h3>Choose your adapter</h3>` + devices.map((d, i) => `<button class="item" data-i="${i}">${d[0]}</button>`).join("") + `<div class="btns"><button id="cancel">Cancel</button></div>`);
   s.querySelectorAll(".item").forEach(b => b.onclick = () => { const d = devices[b.dataset.i][0]; closeOverlay(); startSession(d, () => rememberLast("classic", d), /VEEPEAK|OBD/.test(d) ? null : `Couldn't open a Bluetooth link to ${d}. Is the adapter plugged in and the ignition on?`); });
   $("cancel").onclick = closeOverlay;
 }
 function bleScanner() {
   const s = overlay(`<h3 id="bleTitle"><span class="spin" aria-hidden="true"></span>Searching for adapters…</h3><div id="bleList"></div><div class="btns"><button id="cancel">Cancel</button></div>`);
   $("cancel").onclick = closeOverlay;
-  const found = [["Mi Smart Band 7", "E8:7F:2C:90:44:B1", 600], ["VEEPEAK", "D0:5F:B8:33:A1:04", 1100]];
+  const found = [["Mi Smart Band 7", "E8:7F:2C:90:44:B1", 600], ["", "40:58:99:A7:DF:33", 800], ["VEEPEAK", "D0:5F:B8:33:A1:04", 1100], ["Galaxy Buds3 Pro", "C4:1E:06:A3:B2:48", 1400]].filter(f => f[0]); /* unnamed devices are left out */
   const timers = found.map(([name, addr, ms]) => setTimeout(() => {
-    const b = document.createElement("button"); b.className = "item"; b.innerHTML = `${name}<small>${addr}</small>`;
+    const b = document.createElement("button"); b.className = "item"; b.textContent = name;
     b.onclick = () => { closeOverlay(); startSession(name, () => rememberLast("ble", name), /VEEPEAK|OBD|VLINK/i.test(name) ? null : `${name} doesn't look like an OBD2 adapter (no serial service found). Try the Bluetooth Classic option.`); };
     const list = $("bleList"); if (!list) return;
     /OBD|ELM|VLINK|VEEPEAK|VGATE/i.test(name) ? list.prepend(b) : list.append(b);

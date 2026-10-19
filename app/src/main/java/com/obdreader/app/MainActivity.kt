@@ -774,21 +774,24 @@ class MainActivity : AppCompatActivity() {
     private fun showBleScanner(adapter: BluetoothAdapter) {
         val scanner = adapter.bluetoothLeScanner ?: return toast("Bluetooth LE isn't available on this phone")
         val devices = mutableListOf<BluetoothDevice>()
+        val names = mutableListOf<String>()
+        val seenNames = mutableListOf<String>()
         val labels = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mutableListOf())
         var scanning = true
 
         val callback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 val device = result.device
-                val name = result.scanRecord?.deviceName ?: safeName(device) ?: return
+                // Only devices with a name: an adapter always has one, and a bare address means nothing to anyone.
+                val name = (result.scanRecord?.deviceName ?: safeName(device))?.trim()?.takeIf { it.isNotEmpty() } ?: return
                 runOnUiThread {
                     if (devices.any { it.address == device.address }) return@runOnUiThread
-                    val label = "$name\n${device.address}"
+                    val label = uniqueLabel(name, seenNames)
                     if (looksLikeObd(name)) {
-                        devices.add(0, device)
+                        devices.add(0, device); names.add(0, name)
                         labels.insert(label, 0)
                     } else {
-                        devices.add(device)
+                        devices.add(device); names.add(name)
                         labels.add(label)
                     }
                 }
@@ -813,7 +816,8 @@ class MainActivity : AppCompatActivity() {
             .setAdapter(labels) { _, which ->
                 stopScan()
                 val device = devices[which]
-                startSession(BleTransport(applicationContext, device)) { rememberLast(TYPE_BLE, device.address, labels.getItem(which)?.substringBefore('\n')) }
+                val name = names[which]
+                startSession(BleTransport(applicationContext, device)) { rememberLast(TYPE_BLE, device.address, name) }
             }
             .setNegativeButton("Cancel", null)
             .setOnDismissListener { stopScan() }
@@ -852,7 +856,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val labels = devices.map { "${it.name ?: "Unknown device"}\n${it.address}" }.toTypedArray()
+        val seen = mutableListOf<String>()
+        val labels = devices.map { uniqueLabel(safeName(it)?.trim()?.ifEmpty { null } ?: "Unnamed device", seen) }.toTypedArray()
         MaterialAlertDialogBuilder(this)
             .setTitle("Choose your adapter")
             .setItems(labels) { _, which ->
@@ -861,6 +866,13 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    /** The device's name, numbered if another one in the list has the same name ("OBDII", "OBDII (2)"). */
+    private fun uniqueLabel(name: String, seen: MutableList<String>): String {
+        val n = seen.count { it == name }
+        seen.add(name)
+        return if (n == 0) name else "$name (${n + 1})"
     }
 
     @SuppressLint("MissingPermission")
