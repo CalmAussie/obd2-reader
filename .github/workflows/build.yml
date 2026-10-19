@@ -3,7 +3,8 @@ name: Build APK
 on:
   push:
     branches: [main, master]
-    paths-ignore: ["**.md", "preview/**", "docs/**"]
+    # Docs, the preview and test-only files don't change the app, so they don't make a release.
+    paths-ignore: ["**.md", "preview/**", "docs/**", ".github/scripts/**", ".github/workflows/install-test.yml", ".github/workflows/qa.yml"]
   pull_request:
   workflow_dispatch:
 
