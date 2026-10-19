@@ -42,6 +42,7 @@ class DecalView(
 ) : View(context) {
 
     private var value: Double? = null
+    private val smooth = SmoothValue(tauMs = 120f, settle = 0.4f * Math.pow(10.0, -decimals.toDouble()).toFloat())
     private val skew = context.skewDegrees()
     private val radius = context.themeDimen(R.attr.obdCardRadius)
     private val surface = context.themeColor(R.attr.obdSurface)
@@ -66,6 +67,8 @@ class DecalView(
 
     fun setValue(v: Double?) {
         value = v
+        smooth.set(v?.toFloat())
+        if (!isShown) smooth.snap()
         contentDescription = if (v == null) label else "$label ${fmt(v, decimals)} $unit"
         invalidate()
     }
@@ -91,9 +94,11 @@ class DecalView(
         canvas.drawPath(stripePath, paint)
         canvas.restore()
 
+        val moving = smooth.step()
+        val shownValue = value?.let { smooth.shown.toDouble() }
         val x = o * 0.55f + dp(20f)
         canvas.drawText(label, x, dp(26f), labelPaint)
-        val v = fmt(value, decimals)
+        val v = fmt(shownValue, decimals)
         valuePaint.color = if (hot) danger else text
         val baseline = if (wide) h - dp(20f) else dp(64f)
         canvas.drawText(v, x - o * 0.25f, baseline, valuePaint)
@@ -104,10 +109,11 @@ class DecalView(
             val right = width - o - dp(14f)
             paint.color = track
             canvas.drawRect(left, y, right, y + dp(4f), paint)
-            val f = value?.let { ((it - min) / (max - min)).coerceIn(0.0, 1.0).toFloat() } ?: 0f
+            val f = shownValue?.let { ((it - min) / (max - min)).coerceIn(0.0, 1.0).toFloat() } ?: 0f
             paint.color = text
             canvas.drawRect(left, y, left + (right - left) * f, y + dp(4f), paint)
         }
+        keepAnimating(moving)
     }
 }
 
@@ -128,8 +134,10 @@ class TowerRowView(
 
     private val layout = context.dashLayout()
     private var value: Double? = null
+    private val smooth = SmoothValue(tauMs = 120f, settle = 0.4f * Math.pow(10.0, -decimals.toDouble()).toFloat())
     private var unsupported = false
     private val history = ArrayDeque<Double>()
+    private var lastPushMs = 0L
     private val skew = context.skewDegrees()
     private val radius = context.themeDimen(R.attr.obdCardRadius)
     private val surface = context.themeColor(R.attr.obdSurface)
@@ -159,8 +167,16 @@ class TowerRowView(
     fun setValue(v: Double?) {
         unsupported = false
         value = v
+        smooth.set(v?.toFloat())
+        if (!isShown) smooth.snap()
         if (v == null) history.clear() else {
-            history.addLast(v)
+            // One trace point every 320 ms however fast readings arrive, so the trace always spans 30 seconds.
+            val now = android.os.SystemClock.uptimeMillis()
+            if (history.isEmpty() || now - lastPushMs >= TRACE_STEP_MS) {
+                history.addLast(v); lastPushMs = now
+            } else {
+                history[history.size - 1] = v
+            }
             while (history.size > HISTORY) history.removeFirst()
         }
         contentDescription = if (v == null) label else "$label ${fmt(v, decimals)} $unit"
@@ -213,9 +229,11 @@ class TowerRowView(
         val unitW = unitPaint.measureText(unit)
         canvas.drawText(unit, right, top, unitPaint)
         valuePaint.color = if (hot) danger else text
-        canvas.drawText(if (unsupported) "n/a" else fmt(value, decimals), right - unitW - dp(4f), top + dp(1f), valuePaint)
+        val moving = smooth.step()
+        val shownValue = value?.let { smooth.shown.toDouble() }
+        canvas.drawText(if (unsupported) "n/a" else fmt(shownValue, decimals), right - unitW - dp(4f), top + dp(1f), valuePaint)
 
-        val f = value?.let { ((it - min) / (max - min)).coerceIn(0.0, 1.0).toFloat() } ?: 0f
+        val f = shownValue?.let { ((it - min) / (max - min)).coerceIn(0.0, 1.0).toFloat() } ?: 0f
         when (layout) {
             DashLayout.TELEMETRY -> drawTrace(canvas, x, right, dp(40f), h - dp(8f), if (hot) danger else channel)
             else -> {
@@ -231,6 +249,7 @@ class TowerRowView(
                 paint.shader = null
             }
         }
+        keepAnimating(moving)
     }
 
     private fun drawTrace(canvas: Canvas, left: Float, right: Float, top: Float, bottom: Float, color: Int) {
@@ -249,8 +268,9 @@ class TowerRowView(
     }
 
     companion object {
-        /** About 30 seconds of readings at the app's polling rate. */
+        /** 30 seconds of trace: one point every [TRACE_STEP_MS]. */
         const val HISTORY = 94
+        const val TRACE_STEP_MS = 320L
     }
 }
 

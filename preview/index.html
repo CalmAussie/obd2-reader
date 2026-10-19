@@ -654,6 +654,24 @@ const START = 135, SWEEP = 270;
 const polar = (cx, cy, r, deg) => [cx + r * Math.cos(deg * Math.PI / 180), cy + r * Math.sin(deg * Math.PI / 180)];
 const arcPath = (cx, cy, r, a0, a1) => { const [x0, y0] = polar(cx, cy, r, a0), [x1, y1] = polar(cx, cy, r, a1); return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
 let sweepAt = null;
+/* Mirrors ui/Smooth.kt: a reading glides to each new value frame by frame instead of jumping */
+const TAU = 110;
+function smoother(apply, settle = 0.01) {
+  let shown = null, target = null, raf = 0, last = 0;
+  const step = now => {
+    const dt = last ? Math.min(100, now - last) : 16; last = now;
+    shown += (target - shown) * (1 - Math.exp(-dt / TAU));
+    if (reduced || Math.abs(target - shown) <= settle) { shown = target; raf = 0; last = 0; }
+    else raf = requestAnimationFrame(step);
+    apply(shown);
+  };
+  return v => {
+    if (v == null) { target = shown = null; cancelAnimationFrame(raf); raf = 0; last = 0; apply(null); return; }
+    if (shown == null) { shown = v; apply(v); }
+    target = v;
+    if (!raf) raf = requestAnimationFrame(step);
+  };
+}
 
 /* The race-number roundel: live RPM on the disc, a flat segmented rev ring around it */
 function makeRoundel(svg) {
@@ -683,16 +701,18 @@ function makeRoundel(svg) {
   g.build();
   g.set = v => { g.target = v; };
   g.setCheck = on => tag.setAttribute("visibility", on ? "visible" : "hidden");
+  let lastFrame = 0;
   g.frame = now => {
+    const dt = lastFrame ? Math.min(100, now - lastFrame) : 16; lastFrame = now;
     let goal = g.target == null ? g.min : Math.max(g.min, Math.min(g.max, g.target));
     if (sweepAt != null && now - sweepAt < 1000) { goal = g.max * Math.sin(Math.PI * Math.min(1, (now - sweepAt) / 1000)); g.shown = goal; }
-    else g.shown = reduced ? goal : g.shown + (goal - g.shown) * 0.2;
+    else g.shown = reduced ? goal : g.shown + (goal - g.shown) * (1 - Math.exp(-dt / TAU));
     const f = frac(g.shown), shift = g.target != null && g.target >= g.warnAt;
     segs.forEach(p => {
       const lit = +p.dataset.f <= f + 0.0001;
       p.setAttribute("stroke", !lit ? (p.dataset.red === "1" ? "color-mix(in srgb, var(--red) 28%, var(--track))" : "var(--track)") : p.dataset.red === "1" || shift ? "var(--red)" : "var(--ring)");
     });
-    num.textContent = g.target == null ? "—" : Math.round(g.target / 10) * 10;
+    num.textContent = g.target == null ? "—" : Math.round(g.shown / 10) * 10;
   };
   return g;
 }
@@ -701,14 +721,17 @@ const rpmGauge = makeRoundel($("rpmGauge"));
 /* Decals: speed, coolant and fuel */
 function makeDecal(el, { min, max, dec = 0, warn = null }) {
   const v = el.querySelector(".v"), meter = el.querySelector(".meter b");
-  return {
-    set(x) {
+  const d = {
+    show(x) {
       v.firstChild.textContent = x == null ? "—" : x.toFixed(dec);
       if (meter) meter.style.width = x == null ? "0%" : (Math.max(0, Math.min(1, (x - min) / (max - min))) * 100).toFixed(1) + "%";
       el.classList.toggle("hot", x != null && warn != null && x >= warn);
     },
     build() {}, frame() {},
   };
+  const glide = smoother(x => d.show(x), 0.4 * Math.pow(10, -dec));
+  d.set = x => { glide(x); el.classList.toggle("hot", x != null && warn != null && x >= warn); };
+  return d;
 }
 const speedGauge = makeDecal($("speedDecal"), { min: 0, max: 240 });
 const coolGauge = makeDecal($("coolDecal"), { min: 40, max: 120, warn: 108 });
@@ -738,11 +761,11 @@ $("mfd").innerHTML = mfdDefs.map(p => `<div class="trow" id="mfd${p.key}"><span 
 const tiles = {};
 mfdDefs.forEach(p => {
   const el = $("mfd" + p.key), v = el.querySelector(".v"), bar = el.querySelector(".bar b");
-  tiles[p.key] = x => {
+  const glide = smoother(x => {
     v.firstChild.textContent = x == null ? "—" : x.toFixed(p.dec);
     bar.style.width = x == null ? "0%" : (Math.max(0, Math.min(1, (x - p.min) / (p.max - p.min))) * 100).toFixed(1) + "%";
-    el.classList.toggle("hot", x != null && p.warn != null && x >= p.warn);
-  };
+  }, 0.4 * Math.pow(10, -p.dec));
+  tiles[p.key] = x => { glide(x); el.classList.toggle("hot", x != null && p.warn != null && x >= p.warn); };
 });
 tiles["05"] = v => coolGauge.set(v); tiles["2F"] = v => fuelGauge.set(v);
 (function loop(now) { rpmGauge.frame(now); requestAnimationFrame(loop); })(performance.now());
@@ -750,7 +773,13 @@ tiles["05"] = v => coolGauge.set(v); tiles["2F"] = v => fuelGauge.set(v);
 /* ===== Race telemetry and digital cockpit layouts: mirror ui/TelemetryView.kt and ui/CockpitView.kt ===== */
 const HIST_LEN = 94; /* about 30 seconds of readings at the app's polling rate */
 const hist = {};
-const pushHist = (k, v) => { const a = hist[k] || (hist[k] = []); a.push(v); if (a.length > HIST_LEN) a.shift(); };
+/* One trace point every 320 ms however fast readings arrive, so traces always span 30 s (mirrors TRACE_STEP_MS) */
+const histAt = {};
+const pushHist = (k, v) => {
+  const a = hist[k] || (hist[k] = []), now = performance.now();
+  if (a.length && now - (histAt[k] || 0) < 320) { a[a.length - 1] = v; return; }
+  histAt[k] = now; a.push(v); if (a.length > HIST_LEN) a.shift();
+};
 const CHANNEL = { "11": "--ch-throttle", "04": "--ch-load", "0F": "--ch-air", "0B": "--ch-map", "10": "--ch-maf", "0E": "--ch-timing", "46": "--ch-amb", "5C": "--ch-oil", VOLT: "--ch-volt" };
 const fmtInt = v => Math.round(v).toLocaleString("en-US");
 
@@ -758,7 +787,7 @@ const fmtInt = v => Math.round(v).toLocaleString("en-US");
 $("shift").innerHTML = Array.from({ length: 15 }, (_, i) => `<i class="${i < 5 ? "g" : i < 10 ? "a" : "r"}"></i>`).join("");
 const shiftLeds = [...$("shift").children];
 function teleRpm(v) {
-  $("teleRpm").textContent = v == null ? "—" : fmtInt(v);
+  $("teleRpm").textContent = v == null ? "—" : fmtInt(Math.round(v / 10) * 10);
   const start = rpmGauge.warnAt * 0.35, f = v == null ? 0 : Math.max(0, Math.min(1, (v - start) / (rpmGauge.warnAt - start)));
   const lit = Math.round(f * 15);
   shiftLeds.forEach((l, i) => l.classList.toggle("on", i < lit));
@@ -796,11 +825,17 @@ function drawCockpit(speed, rpm) {
 let lastRpm = null, lastSpeed = null;
 {
   const r = rpmGauge.set, s = speedGauge.set;
-  rpmGauge.set = v => { r(v); lastRpm = v; teleRpm(v); drawCockpit(lastSpeed, v); };
-  speedGauge.set = v => { s(v); lastSpeed = v; $("teleSpeed").textContent = v == null ? "—" : Math.round(v); };
+  /* Telemetry numbers and the cockpit ring glide too (mirrors SmoothText and CockpitRingView) */
+  let shownRpm = null, shownSpeed = null;
+  const glideRpm = smoother(v => { shownRpm = v; teleRpm(v); drawCockpit(shownSpeed, v); }, 2);
+  const glideSpeed = smoother(v => { shownSpeed = v; $("teleSpeed").textContent = v == null ? "—" : Math.round(v); drawCockpit(v, shownRpm); }, 0.05);
+  rpmGauge.set = v => { r(v); lastRpm = v; glideRpm(v); };
+  speedGauge.set = v => { s(v); lastSpeed = v; glideSpeed(v); };
   const fix = (v, d = 0) => v == null ? "—" : v.toFixed(d);
-  tiles["05"] = v => { coolGauge.set(v); $("teleCool").textContent = fix(v); $("cpCool").textContent = fix(v); };
-  tiles["2F"] = v => { fuelGauge.set(v); $("teleFuel").textContent = fix(v); $("cpFuel").textContent = fix(v); };
+  const glideCool = smoother(v => { $("teleCool").textContent = fix(v); $("cpCool").textContent = fix(v); }, 0.05);
+  const glideFuel = smoother(v => { $("teleFuel").textContent = fix(v); $("cpFuel").textContent = fix(v); }, 0.05);
+  tiles["05"] = v => { coolGauge.set(v); glideCool(v); };
+  tiles["2F"] = v => { fuelGauge.set(v); glideFuel(v); };
   mfdDefs.forEach(p => {
     const el = $("mfd" + p.key); el.style.setProperty("--c", `var(${CHANNEL[p.key] || "--s1"})`);
     el.insertAdjacentHTML("beforeend", `<svg class="spark" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path fill="none" stroke="var(${CHANNEL[p.key] || "--s1"})" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`);
@@ -1162,7 +1197,7 @@ async function startSession(name, onConnected, failure) {
   let cycle = 0;
   const poll = () => {
     if (window.ignOff || ignOff) return;
-    const slow = cycle % 5 === 0; let mp = "";
+    const slow = cycle % 25 === 0; let mp = "";
     for (const p of PIDS) {
       if (!p.fast && !slow) continue;
       const b = car.raw(p.n), v = p.dec2(b); live[hex2(p.n)] = v;
@@ -1175,7 +1210,7 @@ async function startSession(name, onConnected, failure) {
     if (slow) { live.VOLT = Math.round(car.volts() * 10) / 10; tiles.VOLT(live.VOLT); }
     cycle++;
   };
-  poll(); pollTimer = setInterval(poll, 320);
+  poll(); pollTimer = setInterval(poll, 60); /* the Dashboard's moving readings in one request every cycle, like ObdSession.focus */
 }
 function disconnect() {
   session++; clearInterval(pollTimer); state = "idle"; updateButtons(); for (const k in live) delete live[k]; sharedCodes = null;

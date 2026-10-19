@@ -93,6 +93,7 @@ import com.obdreader.app.ui.VinDecalView
 import com.obdreader.app.ui.dashLayout
 import com.obdreader.app.ui.panelBackground
 import com.obdreader.app.ui.themeBool
+import com.obdreader.app.ui.SmoothText
 import com.obdreader.app.ui.applyTitleFonts
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.themeShape
@@ -110,6 +111,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
 
@@ -160,7 +162,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var teleFuel: TextView
     private lateinit var cockpitRing: CockpitRingView
     private val decals = mutableMapOf<String, DecalView>()
-    private val glass = mutableMapOf<String, TextView>()
+    private val glass = mutableMapOf<String, SmoothText>()
+    // Big text numbers that roll to each reading instead of jumping (the drawn dials do it themselves).
+    private lateinit var teleRpmText: SmoothText
+    private lateinit var teleSpeedText: SmoothText
+    private lateinit var teleCoolantText: SmoothText
+    private lateinit var teleFuelText: SmoothText
     private var lastRpm: Float? = null
     private var lastSpeed: Float? = null
     private var redline = 6500f
@@ -415,7 +422,13 @@ class MainActivity : AppCompatActivity() {
 
     /** While the Graphs tab is open, the graphed readings are polled first, so they update as fast as possible. */
     private fun updateFocus() {
-        ObdSession.focus = if (pageGraphs.visibility == View.VISIBLE) graphStrips.map { it.key }.toSet() else emptySet()
+        ObdSession.focus = when {
+            pageGraphs.visibility == View.VISIBLE -> graphStrips.map { it.key }.toSet()
+            // The Dashboard's moving readings, in one request per cycle (six is a CAN car's limit),
+            // so the dials update as often as the graphs do.
+            pageDashboard.visibility == View.VISIBLE -> DASHBOARD_FOCUS
+            else -> emptySet()
+        }
     }
 
     private fun renderRecording(r: LogRecorder.Recording?) {
@@ -512,6 +525,11 @@ class MainActivity : AppCompatActivity() {
         teleCoolant = findViewById(R.id.teleCoolant)
         teleFuel = findViewById(R.id.teleFuel)
         cockpitRing = findViewById(R.id.cockpitRing)
+        val blank = getString(R.string.dash)
+        teleRpmText = SmoothText(teleRpm, blank, settle = 2f) { String.format(Locale.US, "%,d", ((it / 10f).roundToInt() * 10)) }
+        teleSpeedText = SmoothText(teleSpeed, blank) { it.roundToInt().toString() }
+        teleCoolantText = SmoothText(teleCoolant, "Coolant     $blank °C") { "Coolant     ${it.roundToInt()} °C" }
+        teleFuelText = SmoothText(teleFuel, "Fuel     $blank %") { "Fuel     ${it.roundToInt()} %" }
         findViewById<View>(R.id.teleRpmBar).setBackgroundColor(Channels.RPM)
         findViewById<View>(R.id.teleSpeedBar).setBackgroundColor(Channels.SPEED)
         findViewById<View>(R.id.telePanel).background = panelBackground()
@@ -558,7 +576,9 @@ class MainActivity : AppCompatActivity() {
             row.addView(box, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
                 if (i > 0) marginStart = dp(8f).toInt()
             })
-            glass[key] = value
+            glass[key] = SmoothText(value, getString(R.string.dash), settle = if (key == VOLTAGE_KEY) 0.01f else 0.05f) {
+                if (key == VOLTAGE_KEY) String.format(Locale.US, "%.1f", it) else it.roundToInt().toString()
+            }
         }
 
         // The live-data list: everything except the readings the dashboard already shows big.
@@ -573,7 +593,7 @@ class MainActivity : AppCompatActivity() {
         lastRpm = value
         roundel.setValue(value)
         shiftLights.setRpm(value, redline)
-        teleRpm.text = value?.let { String.format(Locale.US, "%,d", it.toInt()) } ?: getString(R.string.dash)
+        teleRpmText.set(value)
         cockpitRing.set(lastSpeed, value)
         if (ObdSession.state.value.isConnected) trace.push(value, lastSpeed)
     }
@@ -581,17 +601,16 @@ class MainActivity : AppCompatActivity() {
     private fun setSpeed(value: Float?) {
         lastSpeed = value
         decals[SPEED_KEY]?.setValue(value?.toDouble())
-        teleSpeed.text = value?.let { it.toInt().toString() } ?: getString(R.string.dash)
+        teleSpeedText.set(value)
         cockpitRing.set(value, lastRpm)
     }
 
     private fun setBigReading(key: String, value: Double?) {
         decals[key]?.setValue(value)
-        val text = value?.let { String.format(Locale.US, "%.0f", it) } ?: getString(R.string.dash)
-        glass[key]?.text = if (key == VOLTAGE_KEY) value?.let { String.format(Locale.US, "%.1f", it) } ?: getString(R.string.dash) else text
+        glass[key]?.set(value?.toFloat())
         when (key) {
-            COOLANT_KEY -> teleCoolant.text = "Coolant     $text °C"
-            FUEL_KEY -> teleFuel.text = "Fuel     $text %"
+            COOLANT_KEY -> teleCoolantText.set(value?.toFloat())
+            FUEL_KEY -> teleFuelText.set(value?.toFloat())
         }
     }
 
@@ -1533,6 +1552,8 @@ class MainActivity : AppCompatActivity() {
         private const val FUEL_KEY = "2F"
         private const val BLE_SCAN_MS = 12_000L
         private const val LOG_REFRESH_MS = 250L
+        /** Engine speed, road speed, throttle, engine load, manifold pressure and airflow. */
+        private val DASHBOARD_FOCUS = setOf("0C", "0D", "11", "04", "0B", "10")
         private const val PREF_HOST = AppPrefs.HOST
         private const val PREF_PORT = AppPrefs.PORT
         private const val DEFAULT_HOST = AppPrefs.DEFAULT_HOST

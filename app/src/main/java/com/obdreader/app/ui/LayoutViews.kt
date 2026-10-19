@@ -91,7 +91,17 @@ class TraceView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
         contentDescription = "Engine speed and road speed over the last 30 seconds"
     }
 
+    private var lastPushMs = 0L
+
     fun push(r: Float?, s: Float?) {
+        // One point every 320 ms however fast readings arrive, so the trace always spans 30 seconds.
+        val now = android.os.SystemClock.uptimeMillis()
+        if (rpm.isNotEmpty() && now - lastPushMs < TowerRowView.TRACE_STEP_MS) {
+            rpm[rpm.size - 1] = r ?: 0f; speed[speed.size - 1] = s ?: 0f
+            invalidate()
+            return
+        }
+        lastPushMs = now
         rpm.addLast(r ?: 0f); speed.addLast(s ?: 0f)
         while (rpm.size > TowerRowView.HISTORY) rpm.removeFirst()
         while (speed.size > TowerRowView.HISTORY) speed.removeFirst()
@@ -132,6 +142,8 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
     var warnAt = 6500f
     private var speed: Float? = null
     private var rpm: Float? = null
+    private val smoothSpeed = SmoothValue(tauMs = 120f, settle = 0.05f)
+    private val smoothRpm = SmoothValue(tauMs = 110f, settle = 2f)
     private val s1 = context.themeColor(R.attr.obdStripe1)
     private val s2 = context.themeColor(R.attr.obdStripe2)
     private val fg = context.themeColor(R.attr.obdTextPrimary)
@@ -151,6 +163,8 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
     fun set(speed: Float?, rpm: Float?) {
         this.speed = speed
         this.rpm = rpm
+        smoothSpeed.set(speed); smoothRpm.set(rpm)
+        if (!isShown) { smoothSpeed.snap(); smoothRpm.snap() }
         contentDescription = "Speed ${speed?.roundToInt() ?: "unknown"} kilometres an hour, engine ${rpm?.roundToInt() ?: "unknown"} rpm"
         invalidate()
     }
@@ -161,6 +175,9 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     override fun onDraw(canvas: Canvas) {
+        val moving = smoothSpeed.step() or smoothRpm.step()
+        val speed = this.speed?.let { smoothSpeed.shown }
+        val rpm = this.rpm?.let { smoothRpm.shown }
         val scale = height / 230f
         canvas.save()
         canvas.translate((width - 260f * scale) / 2f, 0f)
@@ -195,8 +212,9 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
         }
         canvas.drawText(speed?.roundToInt()?.toString() ?: "—", 130f, 138f, big)
         canvas.drawText("km/h", 130f, 164f, small)
-        canvas.drawText(rpm?.let { String.format(Locale.US, "%,d rpm", it.roundToInt()) } ?: "— rpm", 130f, 212f, rpmText)
+        canvas.drawText(rpm?.let { String.format(Locale.US, "%,d rpm", ((it / 10f).roundToInt() * 10)) } ?: "— rpm", 130f, 212f, rpmText)
         canvas.restore()
+        keepAnimating(moving)
     }
 }
 
