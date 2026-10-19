@@ -260,7 +260,7 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
     enum class Kind { PRIMARY, OUTLINE, DANGER }
 
     var text: String = ""
-        set(value) { field = value; contentDescription = value; invalidate() }
+        set(value) { field = value; contentDescription = value; requestLayout(); invalidate() }
     var kind = Kind.PRIMARY
         set(value) { field = value; invalidate() }
     /** Uses the theme's big display font, for the main Connect button. */
@@ -305,8 +305,19 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val w = if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED) (textPaint.measureText(text) + dp(48f)).toInt() else MeasureSpec.getSize(widthMeasureSpec)
-        val h = if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY) MeasureSpec.getSize(heightMeasureSpec) else dp(52f).toInt()
+        // wrap_content (AT_MOST) means "as wide as the label", not "all the space offered": taking
+        // it all squeezed the Connect button beside the Demo button to nothing on Android 9 and newer.
+        val wanted = (textPaint.measureText(text) + dp(48f)).toInt()
+        val w = when (MeasureSpec.getMode(widthMeasureSpec)) {
+            MeasureSpec.EXACTLY -> MeasureSpec.getSize(widthMeasureSpec)
+            MeasureSpec.AT_MOST -> minOf(wanted, MeasureSpec.getSize(widthMeasureSpec))
+            else -> wanted
+        }
+        val h = when (MeasureSpec.getMode(heightMeasureSpec)) {
+            MeasureSpec.EXACTLY -> MeasureSpec.getSize(heightMeasureSpec)
+            MeasureSpec.AT_MOST -> minOf(dp(52f).toInt(), MeasureSpec.getSize(heightMeasureSpec))
+            else -> dp(52f).toInt()
+        }
         setMeasuredDimension(w, h)
     }
 

@@ -40,15 +40,39 @@ PY
 }
 alive() { adb shell pidof $PKG > /dev/null; }
 
+# Fails if a button is missing or squeezed too small to tap (at least 40% of the width or 200 px).
+check_button() {
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+  adb shell cat /sdcard/ui.xml > "$OUT/ui-start.xml"
+  python3 - "$1" "$OUT/ui-start.xml" <<'PY'
+import re, sys
+want, path = sys.argv[1].lower(), sys.argv[2]
+xml = open(path, encoding='utf-8', errors='ignore').read()
+for n in re.findall(r'<node [^>]*>', xml):
+    d = (re.search(r'content-desc="([^"]*)"', n) or [None, ''])[1].lower()
+    t = (re.search(r' text="([^"]*)"', n) or [None, ''])[1].lower()
+    if want in (d, t):
+        x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
+        sys.exit(0 if (x2 - x1) >= 200 and (y2 - y1) >= 40 else 1)
+sys.exit(2)
+PY
+}
+FAIL=0
 shot 1-opened
-alive && log "open: OK" || log "open: FAILED (app not running)"
-tap_text "Demo car" && log "demo: tapped" || log "demo: button not found"
+alive && log "open: OK" || { log "open: FAILED (app not running)"; FAIL=1; }
+for b in "Connect" "Demo car"; do
+  check_button "$b"; r=$?
+  case $r in 0) log "button '$b': visible";; 1) log "button '$b': FAILED (too small to tap)"; FAIL=1;; *) log "button '$b': FAILED (missing)"; FAIL=1;; esac
+done
+tap_text "Demo car" && log "demo: started" || { log "demo: FAILED (button not found)"; FAIL=1; }
 sleep 8
 tap_text "Allow" > /dev/null || true
 shot 2-demo-dashboard
-tap_text "Graphs" && sleep 4 && shot 3-graphs || log "graphs tab not found"
-tap_text "Diagnostics" && sleep 1 && tap_text "Read codes" && sleep 3 && shot 4-diagnostics || log "diagnostics tab not found"
-tap_text "Dashboard" && sleep 1
+check_button "Disconnect" && log "button 'Disconnect': visible" || { log "button 'Disconnect': FAILED"; FAIL=1; }
+# Diagnostics before Graphs: the graphs animate constantly, which can stop Android's UI dump.
+tap_text "Diagnostics" && sleep 1 && tap_text "Read codes" && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
+tap_text "Graphs" && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
+adb shell input keyevent KEYCODE_BACK; sleep 1
 
 alive && log "still running after tour: OK" || log "still running after tour: FAILED"
 adb logcat -d > "$OUT/logcat.txt"
@@ -56,3 +80,4 @@ if grep -q "FATAL EXCEPTION" "$OUT/logcat.txt" && grep -A3 "FATAL EXCEPTION" "$O
   log "crashes: FOUND"; grep -A20 "FATAL EXCEPTION" "$OUT/logcat.txt" > "$OUT/crash.txt"; exit 1
 fi
 log "crashes: none"
+exit $FAIL

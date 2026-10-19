@@ -2,6 +2,18 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.2.6 (20 October 2026)
+
+Found by the new install test, which runs the published APK on real Android system images.
+
+### Fixed
+- **The Connect button was missing on Android 9 and newer.** The Demo car button took the whole row, so the only way to connect was through Android Auto or the notification. Connect and Disconnect now show beside Demo car on every Android version.
+- Page titles, the trouble-code banner, the VIN and the big telemetry numbers showed in the plain body font instead of the style's heading font (wide italic, condensed or light).
+- The Graphs chip for engine load read "load". It now reads "Engine load".
+
+### Changed
+- The install test also fails if the Connect, Demo car or Disconnect button is missing or too small to tap.
+
 ## 1.2.5 (20 October 2026)
 - The APK is now signed with every Android signature scheme (v1, v2 and v3), so any browser, file manager or installer app accepts it.
 - Every release is now tested automatically: the published APK is downloaded, installed on fresh Android 8, 10, 13 and 15 emulators, opened, run with the demo car and checked for crashes.
