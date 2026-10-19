@@ -5,7 +5,6 @@
     <string name="disconnect">Disconnect</string>
     <string name="live_data">Live data</string>
     <string name="read_codes">Read codes</string>
-    <string name="clear_codes">Clear</string>
     <string name="vin">VIN</string>
     <string name="vin_unknown">—</string>
     <string name="dtc_hint">Connect on the Dashboard tab to read trouble codes.</string>
@@ -66,8 +65,8 @@
     <string name="help_car_body">Check the ignition is on and the adapter\'s light is lit. Then, on the Diagnostics tab, tap Your car and choose your car\'s make, year and model, so the app tries its usual protocol first. Cars sold in Australia before 2006 may not fully support OBD2, and some cheap adapters can\'t talk to older Fords, GM and Chrysler cars.</string>
     <string name="help_auto_title">Android Auto</string>
     <string name="help_auto_body">Android Auto only shows apps from the Play Store until you allow others. To turn that on:\n1. Open Android Auto\'s settings on your phone (search \"Android Auto\" in Settings).\n2. Scroll to the bottom and tap Version about 10 times, then confirm to turn on developer mode.\n3. Tap the three-dot menu at the top right, then Developer settings, and turn on Unknown sources.\n4. Reconnect to your car. OBD2 Reader appears in Android Auto\'s app list.\n\nConnect to your adapter from the phone first, or tap Connect on the car screen to reconnect to the last one.</string>
-    <string name="help_safety_title">Clearing codes</string>
-    <string name="help_safety_body">Clearing trouble codes turns off the check-engine light but doesn\'t fix the fault, and it resets emissions readiness. Only clear codes parked with the engine off.</string>
+    <string name="help_safety_title">Read-only</string>
+    <string name="help_safety_body">OBD2 Reader only reads from your car. It never clears trouble codes, turns off the check-engine light or changes any setting, and it blocks any command that could. After a repair, a workshop scan tool can clear the codes.</string>
     <string name="help_version">OBD2 Reader %1$s</string>
     <string name="engine_speed">Engine speed</string>
     <string name="speed">Speed</string>

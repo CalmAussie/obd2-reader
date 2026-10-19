@@ -15,8 +15,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 /**
- * Trouble codes in the car. Reading is allowed here; clearing codes is left to the
- * phone, because it should be done parked with the engine off.
+ * Trouble codes in the car. The app is read-only, so codes are only ever read, never cleared.
  */
 class CodesScreen(carContext: CarContext) : Screen(carContext) {
 
@@ -65,14 +64,6 @@ class CodesScreen(carContext: CarContext) : Screen(carContext) {
                 codes.stored.forEach { list.addItem(row(it, "Stored, check-engine light on")) }
                 codes.pending.forEach { list.addItem(row(it, "Pending, not yet confirmed")) }
             }
-        }
-        if (codes != null && codes.total > 0) {
-            list.addItem(
-                Row.Builder()
-                    .setTitle("Clearing codes")
-                    .addText("Clear codes from your phone, parked with the engine off.")
-                    .build(),
-            )
         }
         return builder.setSingleList(list.build()).build()
     }

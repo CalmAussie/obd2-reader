@@ -354,15 +354,6 @@ object ObdSession {
         return codes
     }
 
-    suspend fun clearCodes(): Boolean {
-        val c = client ?: throw IOException("Not connected")
-        val ok = c.clearDtcs()
-        if (!ok) appendLog("= The car didn't confirm clearing the codes")
-        if (ok) _codeLog.value = listOf("Trouble codes cleared at " + SimpleDateFormat("h:mm:ss a", Locale.getDefault()).format(Date()))
-        if (ok) _state.update { it.copy(codes = null) }
-        return ok
-    }
-
     suspend fun readVin(): String? {
         val c = client ?: throw IOException("Not connected")
         val vin = c.readVin()

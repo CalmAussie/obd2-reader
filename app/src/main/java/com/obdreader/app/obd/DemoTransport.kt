@@ -14,7 +14,6 @@ class DemoTransport : ObdTransport {
 
     private val start = System.currentTimeMillis()
     @Volatile private var open = false
-    @Volatile private var codesCleared = false
 
     override fun open() {
         Thread.sleep(400)
@@ -36,9 +35,8 @@ class DemoTransport : ObdTransport {
             cmd == "ATDP" -> "AUTO, ISO 15765-4 (CAN 11/500)"
             cmd == "ATRV" -> String.format(Locale.US, "%.1fV", 14.1 + 0.2 * sin(seconds()))
             cmd.startsWith("AT") -> "OK"
-            cmd == "03" -> if (codesCleared) "4300" else "430201330420"
-            cmd == "07" -> if (codesCleared) "4700" else "47010171"
-            cmd == "04" -> { codesCleared = true; "44" }
+            cmd == "03" -> "430201330420"
+            cmd == "07" -> "47010171"
             cmd == "0902" -> vinFrames("1FAHP3F20CL123456")
             cmd.length == 4 && cmd.startsWith("01") -> pid(cmd.substring(2).toInt(16))?.let { "41${cmd.substring(2)}$it" } ?: "NO DATA"
             // Several PIDs in one request, as CAN cars allow.

@@ -21,6 +21,10 @@ class ElmClient(
         private set
 
     suspend fun command(cmd: String, timeoutMs: Long = 3000): List<String> = mutex.withLock {
+        if (!ReadOnlyGuard.isAllowed(cmd)) {
+            logger("= Blocked '$cmd': OBD2 Reader only reads from the car")
+            throw ReadOnlyException(cmd)
+        }
         withContext(Dispatchers.IO) {
             val raw = try {
                 transport.exchange(cmd, timeoutMs)
@@ -171,10 +175,6 @@ class ElmClient(
         val (cmd, header) = if (pending) "07" to "47" else "03" to "43"
         return ElmParser.parseDtcs(command(cmd, 6000), header, isCan)
     }
-
-    /** Mode 04: clears stored codes and turns off the check-engine light. */
-    suspend fun clearDtcs(): Boolean =
-        ElmParser.extractData(command("04", 6000), "44") != null
 
     suspend fun readVin(): String? = ElmParser.parseVin(command("0902", 6000))
 

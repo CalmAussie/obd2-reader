@@ -23,7 +23,8 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics â
 ## What it does
 - **Live data:** RPM, speed, coolant, fuel, throttle, engine load, intake air, manifold pressure, MAF, timing advance, ambient and oil temperature, and battery voltage. Readings past their limit turn red.
 - **Graphs and drive logs:** live charts for up to four readings at once, fast multi-reading polling, and CSV recording of whole drives that you can share to Excel or Google Sheets.
-- **Trouble codes, explained:** reads stored and pending codes and explains each one: what it means, how urgent it is, symptoms, common causes and what to check. Share the lot as a report for your mechanic. Clears codes after a confirmation.
+- **Trouble codes, explained:** reads stored and pending codes and explains each one: what it means, how urgent it is, symptoms, common causes and what to check. Share the lot as a report for your mechanic.
+- **Read-only:** the app never clears codes, turns off the check-engine light or changes anything in the car. Every command is checked before it's sent, and anything that isn't a read is blocked.
 - **Reconnects by itself:** picks the adapter back up when you open the app, start Android Auto or turn the ignition back on.
 - **Readable adapter log:** every message to and from the adapter is explained in plain English (for example "Engine RPM: 3,176 rpm" under the raw reply), with the latest trouble codes and their definitions pinned at the top. Share it as a text file when troubleshooting.
 - **Vehicle ID:** reads the VIN and shows the make and model year.
@@ -85,7 +86,7 @@ Tap the palette icon on the Dashboard to choose a style. Your choice is saved.
 | Digital cockpit | One big speed in a glowing ring, on layered glass |
 
 ## Android Auto
-The car screen shows live RPM, speed, coolant, throttle, fuel and battery, and lists trouble codes. It uses your style's colours, but its background, fonts and layout are always Android Auto's own. Clearing codes is only possible on the phone, parked with the engine off.
+The car screen shows live RPM, speed, coolant, throttle, fuel and battery, and lists trouble codes. It uses your style's colours, but its background, fonts and layout are always Android Auto's own.
 
 Android Auto only shows Play Store apps until you allow others. On your phone:
 1. Open Android Auto's settings (search "Android Auto" in Settings).
