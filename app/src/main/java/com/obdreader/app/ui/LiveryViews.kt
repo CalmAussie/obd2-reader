@@ -111,13 +111,19 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
         target = value
         if (sweeping) return
         animator?.cancel()
+        contentDescription = value?.let { "Engine speed ${it.roundToInt()} rpm" } ?: "Engine speed"
+        // Off screen (another tab, or the screen is off): jump straight to the value. Animating
+        // there kept the phone busy redrawing something nobody could see.
+        if (!isShown) {
+            shown = (value ?: 0f).coerceIn(0f, max)
+            return
+        }
         animator = ValueAnimator.ofFloat(shown, (value ?: 0f).coerceIn(0f, max)).apply {
             duration = 300
             interpolator = DecelerateInterpolator()
             addUpdateListener { shown = it.animatedValue as Float; invalidate() }
             start()
         }
-        contentDescription = value?.let { "Engine speed ${it.roundToInt()} rpm" } ?: "Engine speed"
     }
 
     /** Sweeps the ring to the end stop and back, like a car's self-test when you turn the key. */
