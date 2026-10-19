@@ -635,9 +635,8 @@ class MainActivity : AppCompatActivity() {
         val lastName = prefs.getString(PREF_LAST_NAME, null)
         if (lastType != null && lastName != null) {
             val (icon, typeLabel) = when (lastType) {
-                TYPE_BLE -> R.drawable.ic_bluetooth_le to getString(R.string.opt_ble_title)
                 TYPE_WIFI -> R.drawable.ic_wifi to getString(R.string.opt_wifi_title)
-                else -> R.drawable.ic_bluetooth to getString(R.string.opt_classic_title)
+                else -> R.drawable.ic_bluetooth to getString(R.string.opt_bluetooth_title)
             }
             val card = view.findViewById<View>(R.id.optionLast)
             view.findViewById<View>(R.id.lastLabel).visibility = View.VISIBLE
@@ -651,8 +650,7 @@ class MainActivity : AppCompatActivity() {
                 reconnectLast()
             }
         }
-        bind(R.id.optionClassic, R.drawable.ic_bluetooth, R.string.opt_classic_title, R.string.opt_classic_sub) { connectClassic() }
-        bind(R.id.optionBle, R.drawable.ic_bluetooth_le, R.string.opt_ble_title, R.string.opt_ble_sub) { connectBle() }
+        bind(R.id.optionBluetooth, R.drawable.ic_bluetooth, R.string.opt_bluetooth_title, R.string.opt_bluetooth_sub) { connectBluetooth() }
         bind(R.id.optionWifi, R.drawable.ic_wifi, R.string.opt_wifi_title, R.string.opt_wifi_sub) { connectWifi() }
 
         sheet.setContentView(view)
@@ -717,22 +715,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun connectClassic() {
-        val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            arrayOf(Manifest.permission.BLUETOOTH_CONNECT)
-        } else {
-            emptyArray()
-        }
-        withPermissions(perms) { withBluetoothOn { showPairedPicker(it) } }
-    }
-
-    private fun connectBle() {
+    /**
+     * One Bluetooth option for every adapter: the permissions both kinds need, then a single
+     * list of paired and nearby adapters, whichever kind of Bluetooth they use.
+     */
+    private fun connectBluetooth() {
         val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
         } else {
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
         }
-        withPermissions(perms) { withBluetoothOn { showBleScanner(it) } }
+        withPermissions(perms) { withBluetoothOn { showBluetoothPicker(it) } }
     }
 
     private fun connectWifi() {
@@ -770,102 +763,149 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** A device in the Bluetooth list, and how to talk to it. */
+    private class Found(val device: BluetoothDevice, val name: String, var ble: Boolean, val paired: Boolean)
+
+    /**
+     * Lists paired adapters straight away, then adds nearby ones as they're found: Bluetooth LE
+     * adapters (the "iPhone-compatible" kind) from an LE scan, and unpaired Bluetooth Classic
+     * adapters from a normal search. Tapping one connects the right way for its kind, pairing a
+     * Classic adapter first if it needs it. People only ever see names.
+     */
     @SuppressLint("MissingPermission")
-    private fun showBleScanner(adapter: BluetoothAdapter) {
-        val scanner = adapter.bluetoothLeScanner ?: return toast("Bluetooth LE isn't available on this phone")
-        val devices = mutableListOf<BluetoothDevice>()
-        val names = mutableListOf<String>()
-        val seenNames = mutableListOf<String>()
+    private fun showBluetoothPicker(adapter: BluetoothAdapter) {
+        val found = mutableListOf<Found>()
         val labels = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mutableListOf())
-        var scanning = true
+        var searching = true
 
-        val callback = object : ScanCallback() {
-            override fun onScanResult(callbackType: Int, result: ScanResult) {
-                val device = result.device
-                // Only devices with a name: an adapter always has one, and a bare address means nothing to anyone.
-                val name = (result.scanRecord?.deviceName ?: safeName(device))?.trim()?.takeIf { it.isNotEmpty() } ?: return
-                runOnUiThread {
-                    if (devices.any { it.address == device.address }) return@runOnUiThread
-                    val label = uniqueLabel(name, seenNames)
-                    if (looksLikeObd(name)) {
-                        devices.add(0, device); names.add(0, name)
-                        labels.insert(label, 0)
-                    } else {
-                        devices.add(device); names.add(name)
-                        labels.add(label)
-                    }
-                }
+        fun relabel() {
+            val seen = mutableListOf<String>()
+            labels.setNotifyOnChange(false)
+            labels.clear()
+            found.forEach { labels.add(uniqueLabel(it.name, seen)) }
+            labels.notifyDataSetChanged()
+        }
+        fun add(device: BluetoothDevice, rawName: String?, ble: Boolean, paired: Boolean) {
+            val name = rawName?.trim()?.takeIf { it.isNotEmpty() } ?: return // nameless devices are never adapters
+            val existing = found.firstOrNull { it.device.address == device.address }
+            if (existing != null) return
+            val item = Found(device, name, ble, paired)
+            // Likely adapters first, then paired devices, then everything else in the order found.
+            val index = when {
+                looksLikeObd(name) -> found.indexOfFirst { !looksLikeObd(it.name) }.let { if (it < 0) found.size else it }
+                paired -> found.indexOfFirst { !looksLikeObd(it.name) && !it.paired }.let { if (it < 0) found.size else it }
+                else -> found.size
             }
+            found.add(index, item)
+            relabel()
+        }
 
-            override fun onScanFailed(errorCode: Int) {
-                runOnUiThread { toast("Bluetooth LE scan failed (code $errorCode)") }
+        // Paired devices: an LE-only device talks over LE, everything else over Classic.
+        adapter.bondedDevices.orEmpty().forEach { d ->
+            add(d, safeName(d), ble = d.type == BluetoothDevice.DEVICE_TYPE_LE, paired = true)
+        }
+
+        // Nearby Bluetooth LE adapters.
+        val scanner = adapter.bluetoothLeScanner
+        val leCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                val d = result.device
+                val name = result.scanRecord?.deviceName ?: safeName(d)
+                runOnUiThread { add(d, name, ble = true, paired = false) }
+            }
+        }
+        // Nearby unpaired Bluetooth Classic adapters.
+        val classicReceiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(context: android.content.Context, intent: Intent) {
+                if (intent.action != BluetoothDevice.ACTION_FOUND) return
+                val d = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+                } else {
+                    @Suppress("DEPRECATION") intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                } ?: return
+                if (d.type == BluetoothDevice.DEVICE_TYPE_LE) return // the LE scan covers these
+                val name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME) ?: safeName(d)
+                add(d, name, ble = false, paired = d.bondState == BluetoothDevice.BOND_BONDED)
             }
         }
 
-        fun stopScan() {
-            if (!scanning) return
-            scanning = false
-            try {
-                scanner.stopScan(callback)
-            } catch (ignored: Exception) {
-            }
+        fun stopSearching() {
+            if (!searching) return
+            searching = false
+            try { scanner?.stopScan(leCallback) } catch (ignored: Exception) {}
+            try { adapter.cancelDiscovery() } catch (ignored: Exception) {}
+            try { unregisterReceiver(classicReceiver) } catch (ignored: Exception) {}
         }
 
         val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle("Searching for adapters…")
+            .setTitle(getString(R.string.searching_adapters))
             .setAdapter(labels) { _, which ->
-                stopScan()
-                val device = devices[which]
-                val name = names[which]
-                startSession(BleTransport(applicationContext, device)) { rememberLast(TYPE_BLE, device.address, name) }
+                stopSearching()
+                connectFound(adapter, found[which])
             }
             .setNegativeButton("Cancel", null)
-            .setOnDismissListener { stopScan() }
+            .setOnDismissListener { stopSearching() }
             .show()
 
-        val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
         try {
-            scanner.startScan(null, settings, callback)
+            ContextCompat.registerReceiver(this, classicReceiver, android.content.IntentFilter(BluetoothDevice.ACTION_FOUND), ContextCompat.RECEIVER_EXPORTED)
+            adapter.startDiscovery()
+            scanner?.startScan(null, ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build(), leCallback)
         } catch (e: SecurityException) {
-            dialog.dismiss()
-            toast("Bluetooth scan permission was refused")
-            return
+            stopSearching()
+            if (found.isEmpty()) { dialog.dismiss(); toast("Bluetooth permission was refused"); return }
         }
 
         lifecycleScope.launch {
             delay(BLE_SCAN_MS)
-            stopScan()
+            stopSearching()
             if (dialog.isShowing) {
-                dialog.setTitle(if (devices.isEmpty()) "No adapters found. Is the ignition on?" else "Choose your adapter")
+                dialog.setTitle(if (found.isEmpty()) getString(R.string.no_adapters_found) else getString(R.string.choose_adapter))
             }
         }
     }
 
+    /** Connects to a device from the Bluetooth list, pairing a Classic adapter first if it isn't paired yet. */
     @SuppressLint("MissingPermission")
-    private fun showPairedPicker(adapter: BluetoothAdapter) {
-        val devices: List<BluetoothDevice> = adapter.bondedDevices.orEmpty()
-            .sortedByDescending { looksLikeObd(it.name) }
-
-        if (devices.isEmpty()) {
-            MaterialAlertDialogBuilder(this)
-                .setTitle("No paired adapters")
-                .setMessage("Plug the adapter into the car, turn the ignition on, then pair it in Android's Bluetooth settings (PIN is usually 1234 or 0000).\n\nIf it never shows up there, it's probably a Bluetooth LE adapter. Use that option instead.")
-                .setPositiveButton("Bluetooth settings") { _, _ -> startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS)) }
-                .setNegativeButton("Cancel", null)
-                .show()
+    private fun connectFound(adapter: BluetoothAdapter, f: Found) {
+        val d = f.device
+        if (f.ble) {
+            startSession(BleTransport(applicationContext, d)) { rememberLast(TYPE_BLE, d.address, f.name) }
             return
         }
-
-        val seen = mutableListOf<String>()
-        val labels = devices.map { uniqueLabel(safeName(it)?.trim()?.ifEmpty { null } ?: "Unnamed device", seen) }.toTypedArray()
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Choose your adapter")
-            .setItems(labels) { _, which ->
-                val device = devices[which]
-                startSession(BluetoothTransport(device, adapter)) { rememberLast(TYPE_CLASSIC, device.address, safeName(device)) }
+        if (d.bondState == BluetoothDevice.BOND_BONDED) {
+            startSession(BluetoothTransport(d, adapter)) { rememberLast(TYPE_CLASSIC, d.address, f.name) }
+            return
+        }
+        // Not paired: Android asks for the PIN (usually 1234 or 0000), then the app connects.
+        val receiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(context: android.content.Context, intent: Intent) {
+                val dev = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+                } else {
+                    @Suppress("DEPRECATION") intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                }
+                if (dev?.address != d.address) return
+                when (intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE)) {
+                    BluetoothDevice.BOND_BONDED -> {
+                        try { unregisterReceiver(this) } catch (ignored: Exception) {}
+                        startSession(BluetoothTransport(d, adapter)) { rememberLast(TYPE_CLASSIC, d.address, f.name) }
+                    }
+                    BluetoothDevice.BOND_NONE -> {
+                        try { unregisterReceiver(this) } catch (ignored: Exception) {}
+                        toast("Pairing with ${f.name} didn't finish. The PIN is usually 1234 or 0000.")
+                    }
+                }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
+        ContextCompat.registerReceiver(this, receiver, android.content.IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
+        if (!d.createBond()) {
+            try { unregisterReceiver(receiver) } catch (ignored: Exception) {}
+            // Some adapters refuse to pair from an app; a direct connection may still work.
+            startSession(BluetoothTransport(d, adapter)) { rememberLast(TYPE_CLASSIC, d.address, f.name) }
+        } else {
+            toast("Pairing with ${f.name}. If asked for a PIN, try 1234 or 0000.")
+        }
     }
 
     /** The device's name, numbered if another one in the list has the same name ("OBDII", "OBDII (2)"). */

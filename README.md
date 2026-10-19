@@ -1,6 +1,6 @@
 # OBD2 Reader
 
-An Android app that reads live engine data and trouble codes from a cheap ELM327 OBD2 adapter, over Bluetooth, Bluetooth LE or Wi-Fi. It also has an Android Auto screen.
+An Android app that reads live engine data and trouble codes from a cheap ELM327 OBD2 adapter, over Bluetooth or Wi-Fi. It also has an Android Auto screen.
 
 **[Download the latest APK](https://github.com/CalmAussie/obd2-reader/releases/latest/download/OBD2Reader.apk)** · [All releases](https://github.com/CalmAussie/obd2-reader/releases) · [Changelog](CHANGELOG.md)
 
@@ -21,8 +21,7 @@ Every release is checked automatically: the published APK is downloaded, install
 ## Use it
 1. Plug the adapter into the OBD2 port (under the dashboard, driver's side) and turn the ignition on.
 2. Open the app, tap **Connect** and choose how your adapter connects:
-   - **Bluetooth Classic:** most ELM327 adapters. Pair it in Android's Bluetooth settings first (PIN `1234` or `0000`).
-   - **Bluetooth LE:** iPhone-compatible adapters such as the Veepeak OBDCheck BLE+. No pairing needed.
+   - **Bluetooth:** the app lists paired and nearby adapters by name, whichever kind of Bluetooth they use (Classic or LE). If yours needs pairing, Android asks for the PIN, usually `1234` or `0000`.
    - **Wi-Fi:** join the adapter's Wi-Fi network first. The usual address is `192.168.0.10`, port `35000`.
 3. No adapter? Tap **Demo car** to try the app with a simulated car.
 4. After the first time, the app reconnects by itself whenever you open it or turn the ignition on.
@@ -52,8 +51,8 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics �
 **Adapters**
 | Type | Works with | Notes |
 |---|---|---|
-| Bluetooth Classic | ELM327 v1.4 and newer, and ELM327-compatible clones and STN-based adapters | Pair in Android's Bluetooth settings first |
-| Bluetooth LE | "iPhone-compatible" ELM327 adapters, for example the Veepeak OBDCheck BLE+ | No pairing; the app finds it |
+| Bluetooth Classic | ELM327 v1.4 and newer, and ELM327-compatible clones and STN-based adapters | Listed under Bluetooth; the app pairs it if needed |
+| Bluetooth LE | "iPhone-compatible" ELM327 adapters, for example the Veepeak OBDCheck BLE+ | Listed under Bluetooth; no pairing needed |
 | Wi-Fi | ELM327 Wi-Fi adapters | Default address `192.168.0.10`, port `35000`, changeable in the app |
 | Not supported | Adapters locked to their maker's own app (for example BlueDriver), and USB adapters | |
 
@@ -105,7 +104,7 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 
 ## Good to know
 - **Not every reading on every car:** cars only answer the readings they support, so some tiles may stay blank. The adapter log shows what the car supports.
-- **Bluetooth LE on Android 11 and older** needs Location turned on while scanning (an Android rule).
+- **Finding adapters on Android 11 and older** needs Location turned on while searching (an Android rule).
 
 ## For developers
 
