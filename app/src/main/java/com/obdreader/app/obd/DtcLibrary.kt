@@ -557,8 +557,12 @@ object DtcLibrary {
 
     private val CODE = Regex("^[PCBU][0-9A-F]{4}$")
 
-    /** Full explanation of [raw], from the catalogue or worked out from the code's structure. */
-    fun lookup(raw: String): DtcInfo {
+    /**
+     * Full explanation of [raw], from the catalogue or worked out from the code's structure.
+     * [make] is the user's car (or the make read from the VIN): manufacturer-specific codes mean
+     * different things on different brands, so they're explained for that make.
+     */
+    fun lookup(raw: String, make: String? = null): DtcInfo {
         val code = raw.trim().uppercase(Locale.US)
         catalogue[code]?.let { return it.copy(system = systemOf(code)) }
         if (!CODE.matches(code)) {
@@ -567,16 +571,34 @@ object DtcLibrary {
         val system = systemOf(code)
         val manufacturer = system.endsWith("manufacturer-specific code")
         val area = subsystem(code)
+        val brand = make?.substringBefore(" (")?.substringBefore(" / ")?.trim()?.takeIf { it.isNotEmpty() }
         val title = when {
             area != null -> "Fault in ${area.substringBefore(",").substringBefore(" or ")}"
+            manufacturer && brand != null -> "$brand-specific code"
             manufacturer -> "Manufacturer-specific code"
             else -> system.substringBefore(",")
         }
-        val meaning = buildString {
-            if (manufacturer) {
-                append("This code's meaning is set by the car's maker, so it varies between brands. ")
-                append("Search for \"$code\" with your make and model, or ask a dealer or specialist.")
+        if (manufacturer) {
+            val meaning = if (brand != null) {
+                "$brand sets the meaning of this code, and the same code means something different on other brands. " +
+                    "Look it up for your $brand model to find exactly which part or circuit it points to."
             } else {
+                "This code's meaning is set by the car's maker, so it varies between brands. " +
+                    "Choose your car under Diagnostics, Your car, and the app will say which maker's list to look it up in."
+            }
+            val checks = if (brand != null) {
+                listOf(
+                    "Search for \"$code $brand\" with your model and year, or check a $brand workshop manual",
+                    "A $brand dealer or specialist can read the exact fault with $brand's own diagnostic tool",
+                    "Read codes again after a few drives to see if it returns",
+                )
+            } else {
+                listOf("Choose your car so the app can name the maker", "Search for \"$code\" with your make and model", "Read codes again after a few drives to see if it returns")
+            }
+            return DtcInfo(code, title, meaning, Severity.UNKNOWN, system = system, known = false, checks = checks)
+        }
+        val meaning = buildString {
+            run {
                 append("This is a generic code")
                 if (area != null) append(" in the group for $area")
                 append(". The app doesn't have its exact definition yet; search for \"$code\" to find it.")
@@ -587,11 +609,11 @@ object DtcLibrary {
     }
 
     /** Short name for [code], for lists and the car screen. */
-    fun title(code: String): String = lookup(code).title
+    fun title(code: String, make: String? = null): String = lookup(code, make).title
 
     /** One line for the adapter log: the code, what it is and how urgent it is. */
-    fun logLine(code: String): String {
-        val d = lookup(code)
+    fun logLine(code: String, make: String? = null): String {
+        val d = lookup(code, make)
         val urgency = if (d.severity == Severity.UNKNOWN) "Urgency varies by car" else d.severity.label
         return "${d.code}: ${d.title}. $urgency."
     }

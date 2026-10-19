@@ -2,6 +2,26 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.4.0 (20 October 2026)
+
+### Your car comes first
+- The first time you open the app, it asks for your car (make, year, model and engine) before anything else. If you skip it, it asks again when you tap Connect. Choose **Not listed** if your car isn't there.
+- Trouble codes are now explained for your car. Manufacturer-specific codes (P1, B1, C1, U1 and similar) mean different things on each brand, so they're named for your make, for example "Toyota-specific code", with where to look it up. If you haven't chosen a car, the make read from the VIN is used.
+- Your car also sets the rev dial's redline and the protocol tried first, as before.
+
+### Driving score
+- A new **Driving score** card on the Dashboard rates the current drive out of 100, in the style you choose:
+  - **Efficiency:** gentle acceleration, low revs, little idling, anticipating stops and moderate cruising speed.
+  - **Everyday:** smooth acceleration, gentle braking and relaxed revs.
+  - **Racing:** for track days. Using the top of the rev range at full throttle, committed acceleration, not hitting the limiter, not labouring the engine and keeping temperatures in check. Shows your best 0 to 100 km/h time for the drive.
+- Each part of the score has a bar, and the card shows a tip for the part that would help most. The score appears after about half a minute of driving and starts again with each new connection.
+- Scores are worked out on your phone and never saved.
+
+### Telemetry is only saved when you choose
+- Nothing about your drives is saved unless you tap **Record drive**. Live graphs and the driving score are kept in memory only, for the current drive.
+- Recorded drives are now left out of phone and Google backups, and out of moving to a new phone, so they stay on the phone unless you share them.
+- Reports and logs you share are temporary copies, deleted the next time the app opens.
+
 ## 1.3.3 (20 October 2026)
 - One **Bluetooth** option instead of separate Bluetooth Classic and Bluetooth LE choices. It lists your paired adapters straight away, then adds nearby ones as it finds them, whichever kind of Bluetooth they use, by name only.
 - Tapping an adapter connects the right way for its kind. A Classic adapter that isn't paired yet gets paired first: Android asks for the PIN (usually 1234 or 0000), then the app connects, so there's no need to visit Android's Bluetooth settings.

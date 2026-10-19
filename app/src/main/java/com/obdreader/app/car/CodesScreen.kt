@@ -9,7 +9,7 @@ import androidx.car.app.model.ListTemplate
 import androidx.car.app.model.Row
 import androidx.car.app.model.Template
 import androidx.lifecycle.lifecycleScope
-import com.obdreader.app.obd.DtcDescriptions
+import com.obdreader.app.obd.DtcLibrary
 import com.obdreader.app.session.ObdSession
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -70,7 +70,7 @@ class CodesScreen(carContext: CarContext) : Screen(carContext) {
 
     /** Each code on the same plate as the phone's Diagnostics tab, beside its description. */
     private fun row(code: String, kind: String) = Row.Builder()
-        .setTitle(DtcDescriptions.describe(code))
+        .setTitle(DtcLibrary.title(code, ObdSession.carMake(carContext)))
         .addText("$code, $kind")
         .setImage(CarLivery.plate(carContext, code, stored = kind.startsWith("Stored")), Row.IMAGE_TYPE_LARGE)
         .build()

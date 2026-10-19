@@ -159,6 +159,11 @@ object Exports {
         context.startActivity(Intent.createChooser(send, subject).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
+    /** Deletes the temporary copies made for sharing, so a report or log isn't kept after it's been sent. */
+    fun cleanUp(context: Context) {
+        File(context.cacheDir, "exports").listFiles()?.forEach { it.delete() }
+    }
+
     private fun exportFile(context: Context, name: String): File =
         File(File(context.cacheDir, "exports").apply { mkdirs() }, name)
 
@@ -182,7 +187,7 @@ object Exports {
             }
             appendLine("${codes.total} trouble codes (${codes.stored.size} stored, ${codes.pending.size} pending)")
             fun section(code: String, stored: Boolean) {
-                val d = DtcLibrary.lookup(code)
+                val d = DtcLibrary.lookup(code, ObdSession.carMake(context))
                 appendLine()
                 appendLine("$code  ${d.title}")
                 appendLine("Status: " + if (stored) "Stored, check-engine light on" else "Pending, not yet confirmed")
@@ -211,5 +216,55 @@ object Exports {
             lines.forEach { appendLine(it) }
         }
         return exportFile(context, "OBD2Reader_adapter_log.txt").apply { writeText(text) }
+    }
+}
+
+/**
+ * Scores the current drive (see [DrivingScore]) from the live readings, in memory only: nothing
+ * about the drive is saved. A new connection starts a new drive.
+ */
+object DriveScorer {
+
+    private val score = com.obdreader.app.obd.DrivingScore()
+    private val _results = MutableStateFlow<Map<com.obdreader.app.obd.DrivingScore.Style, com.obdreader.app.obd.DrivingScore.Result>>(emptyMap())
+    val results: StateFlow<Map<com.obdreader.app.obd.DrivingScore.Style, com.obdreader.app.obd.DrivingScore.Result>> = _results.asStateFlow()
+
+    private var started = false
+    private val latest = mutableMapOf<String, Double>()
+    private var lastPublish = 0L
+
+    /** Sets the redline used by the Racing score (from the car the user chose). */
+    fun setRedline(rpm: Float) { score.redline = rpm }
+
+    fun start() {
+        if (started) return
+        started = true
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+        scope.launch {
+            var last: ObdSession.Phase? = null
+            ObdSession.state.collect { s ->
+                if (s.phase == ObdSession.Phase.CONNECTING && (last == null || last == ObdSession.Phase.IDLE || last == ObdSession.Phase.ERROR)) {
+                    score.reset(); latest.clear(); publish(force = true)
+                }
+                last = s.phase
+            }
+        }
+        scope.launch {
+            ObdSession.samples.collect { s ->
+                latest[s.key] = s.value
+                // Speed drives the clock: every speed reading is one moment of the drive.
+                if (s.key == "0D") {
+                    score.update(s.timeMs, s.value, latest["0C"], latest["11"], latest["04"], latest["05"], latest["5C"])
+                    publish()
+                }
+            }
+        }
+    }
+
+    private fun publish(force: Boolean = false) {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (!force && now - lastPublish < 500) return
+        lastPublish = now
+        _results.value = com.obdreader.app.obd.DrivingScore.Style.values().associateWith { score.result(it) }
     }
 }

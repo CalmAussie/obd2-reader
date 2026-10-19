@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older. Settings (your car, style, adapter) can be backed up; recorded drives
+     and shared files never leave the phone unless you share them yourself. -->
+<full-backup-content>
+    <exclude domain="file" path="logs/" />
+    <exclude domain="root" path="cache/" />
+</full-backup-content>

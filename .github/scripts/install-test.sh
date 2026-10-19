@@ -96,6 +96,16 @@ tap_tab() {
   [ -n "$xy" ] && adb shell input tap $xy && sleep 1
 }
 FAIL=0
+# First launch asks for the car before anything else.
+sleep 2
+if tap_text "First, choose your car" > /dev/null 2>&1 || grep -q "First, choose your car" "$OUT/ui.xml" 2>/dev/null; then
+  adb exec-out screencap -p > "$OUT/0-choose-car.png"
+  log "car picker: shown first"
+  tap_text "Not listed" || { log "car picker: FAILED (no Not listed button)"; FAIL=1; }
+  sleep 1
+else
+  log "car picker: FAILED (not shown on first launch)"; FAIL=1
+fi
 remember_tabs
 shot 1-opened
 alive && log "open: OK" || { log "open: FAILED (app not running)"; FAIL=1; }

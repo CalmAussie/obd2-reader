@@ -141,6 +141,7 @@ object ObdSession {
     fun connect(context: Context, t: ObdTransport, onConnected: (() -> Unit)? = null, auto: Boolean = false) {
         if (isActive) return
         val app = context.applicationContext
+        appContext = app
         val prefs = AppPrefs.of(app)
         val isDemo = t is DemoTransport
         _log.value = emptyList()
@@ -339,6 +340,13 @@ object ObdSession {
 
     fun lastAdapterName(context: Context): String? = AppPrefs.of(context).getString(AppPrefs.LAST_NAME, null)
 
+    /** The car's make, for explaining manufacturer-specific codes: the car the user chose, else the VIN's maker. */
+    fun carMake(context: Context?): String? =
+        context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.make }
+            ?: _state.value.vin?.let { com.obdreader.app.obd.VinDecoder.decode(it).make }
+
+    private var appContext: Context? = null
+
     // ---------- Requests while connected ----------
 
     suspend fun readCodes(): Codes {
@@ -457,7 +465,7 @@ object ObdSession {
     private fun logCodes(codes: List<String>, pending: Boolean): List<String> {
         val kind = if (pending) "pending" else "stored"
         val lines = if (codes.isEmpty()) listOf("= No $kind codes")
-        else listOf("= ${codes.size} $kind ${if (codes.size == 1) "code" else "codes"}:") + codes.map { "=   " + DtcLibrary.logLine(it) }
+        else listOf("= ${codes.size} $kind ${if (codes.size == 1) "code" else "codes"}:") + codes.map { "=   " + DtcLibrary.logLine(it, carMake(appContext)) }
         lines.forEach { appendLog(it) }
         return lines
     }
