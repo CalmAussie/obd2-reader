@@ -1,0 +1,79 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      # The same signing key must be used for every build, or phones refuse to install an update
+      # over an older version. It lives in repository secrets (see README, "Sharing the APK").
+      - name: Set up the release signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.OBD_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "OBD_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "Signing with your release key."
+          else
+            echo "::warning::The OBD_KEYSTORE_BASE64 secret isn't set, so this APK is signed with a temporary key. It installs fine, but anyone updating to a later build must uninstall the old one first. See README, Sharing the APK."
+          fi
+
+      - name: Run unit tests
+        run: gradle --no-daemon testDebugUnitTest
+
+      - name: Build the APK
+        env:
+          OBD_KEYSTORE_PASSWORD: ${{ secrets.OBD_KEYSTORE_PASSWORD }}
+          OBD_KEY_ALIAS: ${{ secrets.OBD_KEY_ALIAS }}
+          OBD_KEY_PASSWORD: ${{ secrets.OBD_KEY_PASSWORD }}
+        run: gradle --no-daemon assembleRelease
+
+      - name: Check the APK is signed and installable
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk OBD2Reader.apk
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs OBD2Reader.apk
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt2 | sort | tail -1)
+          if "$AAPT" dump badging OBD2Reader.apk | grep -q "testOnly"; then
+            echo "::error::APK is marked test-only and won't install from a file."; exit 1
+          fi
+          "$AAPT" dump badging OBD2Reader.apk | head -3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OBD2Reader-apk
+          path: OBD2Reader.apk
+
+      # Every build on main becomes a release, so there's always a direct download link:
+      # https://github.com/<you>/<repo>/releases/latest/download/OBD2Reader.apk
+      - name: Publish a release
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: OBD2 Reader 1.0.${{ github.run_number }}
+          body_path: .github/release-notes.md
+          files: OBD2Reader.apk
+          make_latest: true
