@@ -57,7 +57,41 @@ for n in re.findall(r'<node [^>]*>', xml):
 sys.exit(2)
 PY
 }
+# Size of a view by its id, from the window's view hierarchy. Unlike a UI dump, this works while
+# the dashboard is animating live data.
+view_width() {
+  adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
+  python3 - "$1" "$OUT/views.txt" <<'PY'
+import re, sys
+for line in open(sys.argv[2], encoding='utf-8', errors='ignore'):
+    if ('app:id/' + sys.argv[1]) in line:
+        m = re.search(r' (-?\d+),(-?\d+)-(-?\d+),(-?\d+) ', line)
+        if m:
+            x1, y1, x2, y2 = map(int, m.groups()); print(x2 - x1); sys.exit(0)
+print(0)
+PY
+}
+# Where the bottom tabs are, read once while the screen is still: tapping them later works
+# even while live data is animating.
+remember_tabs() {
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+  adb shell cat /sdcard/ui.xml > "$OUT/ui-tabs.xml"
+  python3 - "$OUT/ui-tabs.xml" <<'PY' > "$OUT/tabs.txt"
+import re, sys
+xml = open(sys.argv[1], encoding='utf-8', errors='ignore').read()
+for n in re.findall(r'<node [^>]*>', xml):
+    d = (re.search(r'content-desc="([^"]*)"', n) or [None, ''])[1]
+    if d in ('Dashboard', 'Graphs', 'Diagnostics'):
+        x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
+        print(d, (x1 + x2) // 2, (y1 + y2) // 2)
+PY
+}
+tap_tab() {
+  local xy=$(grep "^$1 " "$OUT/tabs.txt" | cut -d' ' -f2-)
+  [ -n "$xy" ] && adb shell input tap $xy && sleep 1
+}
 FAIL=0
+remember_tabs
 shot 1-opened
 alive && log "open: OK" || { log "open: FAILED (app not running)"; FAIL=1; }
 for b in "Connect" "Demo car"; do
@@ -68,10 +102,10 @@ tap_text "Demo car" && log "demo: started" || { log "demo: FAILED (button not fo
 sleep 8
 tap_text "Allow" > /dev/null || true
 shot 2-demo-dashboard
-check_button "Disconnect" && log "button 'Disconnect': visible" || { log "button 'Disconnect': FAILED"; FAIL=1; }
-# Diagnostics before Graphs: the graphs animate constantly, which can stop Android's UI dump.
-tap_text "Diagnostics" && sleep 1 && tap_text "Read codes" && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
-tap_text "Graphs" && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
+W=$(view_width connectButton)
+[ "${W:-0}" -ge 200 ] && log "button 'Disconnect': visible (${W}px)" || { log "button 'Disconnect': FAILED (${W:-0}px wide)"; FAIL=1; }
+tap_tab Diagnostics && tap_text "Read codes" && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
+tap_tab Graphs && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
 adb shell input keyevent KEYCODE_BACK; sleep 1
 
 alive && log "still running after tour: OK" || log "still running after tour: FAILED"
