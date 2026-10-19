@@ -1,4 +1,4 @@
-**Download `OBD2Reader.apk` below** and open it on your Android phone (Android 8 or newer).
+**Download `OBD2Reader.apk` below** and open it on your Android phone (Android 8 or newer). That's all you need: no Play Store, account or other app.
 
 **Installing**
 1. Open the downloaded file. If your phone asks, allow your browser or file app to **install unknown apps**, then go back and tap **Install**.

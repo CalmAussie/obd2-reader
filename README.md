@@ -5,9 +5,18 @@ An Android app that reads live engine data and trouble codes from a cheap ELM327
 **[Download the latest APK](https://github.com/CalmAussie/obd2-reader/releases/latest/download/OBD2Reader.apk)** · [All releases](https://github.com/CalmAussie/obd2-reader/releases) · [Changelog](CHANGELOG.md)
 
 ## Install
-1. On your Android phone (Android 8 or newer), open the APK. If asked, allow your browser or file app to **install unknown apps**.
-2. If Google Play Protect warns about an unknown developer, tap **More details → Install anyway**. Every app from outside the Play Store gets this warning.
-3. To update, install a newer APK over the old one. Your settings are kept.
+All you need is the APK. There's no Play Store listing, account, sign-in or other app to install, and it works offline.
+
+<img src="docs/download-qr.png" width="140" align="right" alt="QR code linking to the APK download">
+
+1. On your Android phone (Android 8 or newer), tap **[Download the latest APK](https://github.com/CalmAussie/obd2-reader/releases/latest/download/OBD2Reader.apk)**, or scan the QR code with the phone's camera.
+2. Open the downloaded file. If asked, allow your browser or file app to **install unknown apps**, then tap **Install**.
+3. If Google Play Protect warns about an unknown developer, tap **More details → Install anyway**. Every app from outside the Play Store gets this warning.
+4. Open OBD2 Reader. Tap **Demo car** to try it straight away, or plug in an adapter and tap **Connect**.
+
+To update, install a newer APK over the old one. Your settings are kept.
+
+Every release is checked automatically: the published APK is downloaded, installed on fresh Android 8, 10, 13 and 15 phones (emulators), opened, run with the demo car and checked for crashes.
 
 ## Use it
 1. Plug the adapter into the OBD2 port (under the dashboard, driver's side) and turn the ignition on.
@@ -103,6 +112,8 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 **Building:** every push to `main` runs [`.github/workflows/build.yml`](.github/workflows/build.yml). It runs the unit tests, builds a signed APK and publishes it as a GitHub release. Pushes that only change Markdown files don't build a new release. To build locally, open the project in Android Studio (JDK 17) or run `gradle assembleRelease testDebugUnitTest` with Gradle 8.7 and the Android SDK.
 
 **Preview:** [`preview/index.html`](preview/index.html) is an interactive mock-up of the app, with a demo car, every style, the Graphs and Diagnostics tabs and the Android Auto screen. Open it in a browser. It mirrors the app's layouts and logic but is a separate web page, so check changes in the app itself too.
+
+**Install test:** [`.github/workflows/install-test.yml`](.github/workflows/install-test.yml) runs after every release. It installs the published APK on emulators (Android 8, 10, 13 and 15), starts the demo car, visits every tab and fails on any crash. Screenshots and results are pushed to the `install-test-reports` branch.
 
 **QA:** push to the `qa` branch to run Android Lint, the unit tests and a build with compiler warnings, without publishing a release ([`.github/workflows/qa.yml`](.github/workflows/qa.yml)). The reports are committed back to `qa-reports/` on that branch.
 
