@@ -117,7 +117,7 @@ class ElmClient(
         isCan = ElmParser.isCanProtocol(code)
         val described = ObdProtocols.byCode(code)?.name ?: command("ATDP").firstOrNull().orEmpty()
         return SessionInfo(
-            summary = listOf(version, described).filter { it.isNotBlank() }.joinToString(" · "),
+            summary = listOf(version, described).filter { it.isNotBlank() }.joinToString(", "),
             protocolCode = ObdProtocols.byCode(code)?.code,
         )
     }

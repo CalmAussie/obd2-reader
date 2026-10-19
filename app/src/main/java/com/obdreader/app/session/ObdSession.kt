@@ -125,7 +125,7 @@ object ObdSession {
                 _state.update {
                     it.copy(
                         phase = Phase.CONNECTED,
-                        title = "Connected · ${t.name}",
+                        title = "Connected to ${t.name}",
                         detail = info.summary,
                         summary = info.summary,
                         protocolCode = info.protocolCode,

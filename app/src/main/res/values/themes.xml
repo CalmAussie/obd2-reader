@@ -1,291 +1,374 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- ===== Midnight (default): charcoal and cyan, soft rounded cards, gradient dials ===== -->
-    <style name="Theme.ObdReader" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="obdShapeAppearance">@style/ShapeAppearance.Obd.Midnight</item>
+    <!-- Shared by every dark theme -->
+    <style name="Base.ObdReader.Dark" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:fontFamily">@font/archivo</item>
+        <item name="fontFamily">@font/archivo</item>
+        <item name="obdTitleFont">@font/archivo_expanded_black_italic</item>
+        <item name="obdDisplayFont">@font/archivo_expanded_black_italic</item>
+        <item name="obdShapeAppearance">@style/ShapeAppearance.Obd.Card</item>
         <item name="obdPillBg">@drawable/bg_pill</item>
-        <item name="obdNumberItalic">false</item>
-        <item name="obdTitleItalic">false</item>
-        <item name="obdBg">@color/midnight_bg</item>
-        <item name="obdSurface">@color/midnight_surface</item>
-        <item name="obdSurfaceHigh">@color/midnight_surface_high</item>
-        <item name="obdOutline">@color/midnight_outline</item>
-        <item name="obdTextPrimary">@color/midnight_text</item>
-        <item name="obdTextSecondary">@color/midnight_text2</item>
-        <item name="obdAccent">@color/midnight_accent</item>
-        <item name="obdAccentAlt">@color/midnight_accent_alt</item>
-        <item name="obdAccentContainer">@color/midnight_accent_container</item>
-        <item name="obdOnAccent">@color/midnight_on_accent</item>
-        <item name="obdTrack">@color/midnight_track</item>
-        <item name="obdOk">@color/midnight_ok</item>
-        <item name="obdWarn">@color/midnight_warn</item>
-        <item name="obdWarnContainer">@color/midnight_warn_container</item>
-        <item name="obdDanger">@color/midnight_danger</item>
-        <item name="obdIdle">@color/midnight_idle</item>
-        <item name="obdCardRadius">24dp</item>
-        <item name="obdCardStroke">1dp</item>
-        <item name="obdButtonRadius">18dp</item>
-        <item name="obdNumberFont">sans-serif-medium</item>
-        <item name="obdNumberBold">false</item>
-        <item name="obdTitleFont">sans-serif-medium</item>
+        <item name="obdCardStroke">0dp</item>
         <item name="obdIsLight">false</item>
-        <item name="obdGaugeThickness">0.07</item>
-        <item name="obdGaugeStyle">gradient</item>
-
-        <item name="colorPrimary">@color/midnight_accent</item>
-        <item name="colorOnPrimary">@color/midnight_on_accent</item>
-        <item name="colorPrimaryContainer">@color/midnight_accent_container</item>
-        <item name="colorOnPrimaryContainer">@color/midnight_accent</item>
-        <item name="colorSecondaryContainer">@color/midnight_surface_high</item>
-        <item name="colorOnSecondaryContainer">@color/midnight_text</item>
-        <item name="colorSurface">@color/midnight_surface</item>
-        <item name="colorOnSurface">@color/midnight_text</item>
-        <item name="colorOnSurfaceVariant">@color/midnight_text2</item>
-        <item name="colorOutline">@color/midnight_outline</item>
-        <item name="colorError">@color/midnight_danger</item>
-        <item name="android:colorBackground">@color/midnight_bg</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-    </style>
-
-    <!-- ===== Racing: black, orange and yellow, sharp corners, bold condensed numbers ===== -->
-    <style name="Theme.ObdReader.Racing" parent="Theme.ObdReader">
-        <item name="obdShapeAppearance">@style/ShapeAppearance.Obd.Racing</item>
-        <item name="obdBg">@color/racing_bg</item>
-        <item name="obdSurface">@color/racing_surface</item>
-        <item name="obdSurfaceHigh">@color/racing_surface_high</item>
-        <item name="obdOutline">@color/racing_outline</item>
-        <item name="obdTextPrimary">@color/racing_text</item>
-        <item name="obdTextSecondary">@color/racing_text2</item>
-        <item name="obdAccent">@color/racing_accent</item>
-        <item name="obdAccentAlt">@color/racing_accent_alt</item>
-        <item name="obdAccentContainer">@color/racing_accent_container</item>
-        <item name="obdOnAccent">@color/racing_on_accent</item>
-        <item name="obdTrack">@color/racing_track</item>
-        <item name="obdOk">@color/racing_ok</item>
-        <item name="obdWarn">@color/racing_warn</item>
-        <item name="obdWarnContainer">@color/racing_warn_container</item>
-        <item name="obdDanger">@color/racing_danger</item>
-        <item name="obdIdle">@color/racing_idle</item>
-        <item name="obdCardRadius">6dp</item>
-        <item name="obdCardStroke">0dp</item>
-        <item name="obdButtonRadius">6dp</item>
-        <item name="obdNumberFont">sans-serif-condensed</item>
-        <item name="obdNumberBold">true</item>
-        <item name="obdTitleFont">sans-serif-condensed</item>
-        <item name="obdGaugeThickness">0.11</item>
-        <item name="obdGaugeStyle">solid</item>
-
-        <item name="colorPrimary">@color/racing_accent</item>
-        <item name="colorOnPrimary">@color/racing_on_accent</item>
-        <item name="colorPrimaryContainer">@color/racing_accent_container</item>
-        <item name="colorOnPrimaryContainer">@color/racing_accent</item>
-        <item name="colorSecondaryContainer">@color/racing_surface_high</item>
-        <item name="colorOnSecondaryContainer">@color/racing_text</item>
-        <item name="colorSurface">@color/racing_surface</item>
-        <item name="colorOnSurface">@color/racing_text</item>
-        <item name="colorOnSurfaceVariant">@color/racing_text2</item>
-        <item name="colorOutline">@color/racing_outline</item>
-        <item name="colorError">@color/racing_danger</item>
-        <item name="android:colorBackground">@color/racing_bg</item>
-    </style>
-
-    <!-- ===== Retro LCD: phosphor green on black, square edges, monospace, segmented dials ===== -->
-    <style name="Theme.ObdReader.Lcd" parent="Theme.ObdReader">
-        <item name="obdShapeAppearance">@style/ShapeAppearance.Obd.Lcd</item>
-        <item name="obdBg">@color/lcd_bg</item>
-        <item name="obdSurface">@color/lcd_surface</item>
-        <item name="obdSurfaceHigh">@color/lcd_surface_high</item>
-        <item name="obdOutline">@color/lcd_outline</item>
-        <item name="obdTextPrimary">@color/lcd_text</item>
-        <item name="obdTextSecondary">@color/lcd_text2</item>
-        <item name="obdAccent">@color/lcd_accent</item>
-        <item name="obdAccentAlt">@color/lcd_accent_alt</item>
-        <item name="obdAccentContainer">@color/lcd_accent_container</item>
-        <item name="obdOnAccent">@color/lcd_on_accent</item>
-        <item name="obdTrack">@color/lcd_track</item>
-        <item name="obdOk">@color/lcd_ok</item>
-        <item name="obdWarn">@color/lcd_warn</item>
-        <item name="obdWarnContainer">@color/lcd_warn_container</item>
-        <item name="obdDanger">@color/lcd_danger</item>
-        <item name="obdIdle">@color/lcd_idle</item>
+        <item name="obdKerb">false</item>
+        <item name="obdSkew">12.0</item>
+        <item name="obdLayout">livery</item>
         <item name="obdCardRadius">4dp</item>
-        <item name="obdCardStroke">1dp</item>
         <item name="obdButtonRadius">4dp</item>
-        <item name="obdNumberFont">monospace</item>
-        <item name="obdNumberBold">false</item>
-        <item name="obdTitleFont">monospace</item>
-        <item name="obdGaugeThickness">0.08</item>
-        <item name="obdGaugeStyle">segmented</item>
-
-        <item name="colorPrimary">@color/lcd_accent</item>
-        <item name="colorOnPrimary">@color/lcd_on_accent</item>
-        <item name="colorPrimaryContainer">@color/lcd_accent_container</item>
-        <item name="colorOnPrimaryContainer">@color/lcd_accent</item>
-        <item name="colorSecondaryContainer">@color/lcd_surface_high</item>
-        <item name="colorOnSecondaryContainer">@color/lcd_text</item>
-        <item name="colorSurface">@color/lcd_surface</item>
-        <item name="colorOnSurface">@color/lcd_text</item>
-        <item name="colorOnSurfaceVariant">@color/lcd_text2</item>
-        <item name="colorOutline">@color/lcd_outline</item>
-        <item name="colorError">@color/lcd_danger</item>
-        <item name="android:colorBackground">@color/lcd_bg</item>
-    </style>
-
-    <!-- ===== Daylight: light theme for bright sun, white cards, blue accents ===== -->
-    <style name="Theme.ObdReader.Daylight" parent="Theme.Material3.Light.NoActionBar">
-        <item name="obdShapeAppearance">@style/ShapeAppearance.Obd.Daylight</item>
-        <item name="obdPillBg">@drawable/bg_pill</item>
-        <item name="obdNumberItalic">false</item>
-        <item name="obdTitleItalic">false</item>
-        <item name="obdBg">@color/daylight_bg</item>
-        <item name="obdSurface">@color/daylight_surface</item>
-        <item name="obdSurfaceHigh">@color/daylight_surface_high</item>
-        <item name="obdOutline">@color/daylight_outline</item>
-        <item name="obdTextPrimary">@color/daylight_text</item>
-        <item name="obdTextSecondary">@color/daylight_text2</item>
-        <item name="obdAccent">@color/daylight_accent</item>
-        <item name="obdAccentAlt">@color/daylight_accent_alt</item>
-        <item name="obdAccentContainer">@color/daylight_accent_container</item>
-        <item name="obdOnAccent">@color/daylight_on_accent</item>
-        <item name="obdTrack">@color/daylight_track</item>
-        <item name="obdOk">@color/daylight_ok</item>
-        <item name="obdWarn">@color/daylight_warn</item>
-        <item name="obdWarnContainer">@color/daylight_warn_container</item>
-        <item name="obdDanger">@color/daylight_danger</item>
-        <item name="obdIdle">@color/daylight_idle</item>
-        <item name="obdCardRadius">20dp</item>
-        <item name="obdCardStroke">1dp</item>
-        <item name="obdButtonRadius">14dp</item>
-        <item name="obdNumberFont">sans-serif-medium</item>
-        <item name="obdNumberBold">false</item>
-        <item name="obdTitleFont">sans-serif-medium</item>
-        <item name="obdIsLight">true</item>
-        <item name="obdGaugeThickness">0.07</item>
-        <item name="obdGaugeStyle">gradient</item>
-
-        <item name="colorPrimary">@color/daylight_accent</item>
-        <item name="colorOnPrimary">@color/daylight_on_accent</item>
-        <item name="colorPrimaryContainer">@color/daylight_accent_container</item>
-        <item name="colorOnPrimaryContainer">@color/daylight_accent</item>
-        <item name="colorSecondaryContainer">@color/daylight_surface_high</item>
-        <item name="colorOnSecondaryContainer">@color/daylight_text</item>
-        <item name="colorSurface">@color/daylight_surface</item>
-        <item name="colorOnSurface">@color/daylight_text</item>
-        <item name="colorOnSurfaceVariant">@color/daylight_text2</item>
-        <item name="colorOutline">@color/daylight_outline</item>
-        <item name="colorError">@color/daylight_danger</item>
-        <item name="android:colorBackground">@color/daylight_bg</item>
+        <item name="obdOk">#2FD573</item>
+        <item name="obdWarn">#FFB000</item>
+        <item name="obdWarnContainer">#3A2A08</item>
+        <item name="obdDanger">#FF3B2F</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
-    <!-- ===== Apex: carbon black and volt yellow, cut corners, slanted bold numbers, sharp-edged dials ===== -->
-    <style name="Theme.ObdReader.Apex" parent="Theme.ObdReader">
-        <item name="obdBg">@color/apex_bg</item>
-        <item name="obdSurface">@color/apex_surface</item>
-        <item name="obdSurfaceHigh">@color/apex_surface_high</item>
-        <item name="obdOutline">@color/apex_outline</item>
-        <item name="obdTextPrimary">@color/apex_text</item>
-        <item name="obdTextSecondary">@color/apex_text2</item>
-        <item name="obdAccent">@color/apex_accent</item>
-        <item name="obdAccentAlt">@color/apex_accent_alt</item>
-        <item name="obdAccentContainer">@color/apex_accent_container</item>
-        <item name="obdOnAccent">@color/apex_on_accent</item>
-        <item name="obdTrack">@color/apex_track</item>
-        <item name="obdOk">@color/apex_ok</item>
-        <item name="obdWarn">@color/apex_warn</item>
-        <item name="obdWarnContainer">@color/apex_warn_container</item>
-        <item name="obdDanger">@color/apex_danger</item>
-        <item name="obdIdle">@color/apex_idle</item>
-        <item name="obdCardRadius">16dp</item>
+    <!-- Shared by the light theme -->
+    <style name="Base.ObdReader.Light" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:fontFamily">@font/archivo</item>
+        <item name="fontFamily">@font/archivo</item>
+        <item name="obdTitleFont">@font/archivo_expanded_black_italic</item>
+        <item name="obdDisplayFont">@font/archivo_expanded_black_italic</item>
+        <item name="obdShapeAppearance">@style/ShapeAppearance.Obd.Card</item>
+        <item name="obdPillBg">@drawable/bg_pill</item>
         <item name="obdCardStroke">0dp</item>
-        <item name="obdButtonRadius">10dp</item>
-        <item name="obdNumberFont">sans-serif-condensed</item>
-        <item name="obdNumberBold">true</item>
-        <item name="obdNumberItalic">true</item>
-        <item name="obdTitleFont">sans-serif-condensed</item>
-        <item name="obdTitleItalic">true</item>
-        <item name="obdGaugeThickness">0.10</item>
-        <item name="obdGaugeStyle">angular</item>
-        <item name="obdShapeAppearance">@style/ShapeAppearance.Obd.Apex</item>
-        <item name="obdPillBg">@drawable/bg_pill_sharp</item>
+        <item name="obdIsLight">true</item>
+        <item name="obdKerb">false</item>
+        <item name="obdSkew">12.0</item>
+        <item name="obdLayout">livery</item>
+        <item name="obdCardRadius">4dp</item>
+        <item name="obdButtonRadius">4dp</item>
+        <item name="obdOk">#2FD573</item>
+        <item name="obdWarn">#FFB000</item>
+        <item name="obdWarnContainer">#FFEFD2</item>
+        <item name="obdDanger">#FF3B2F</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
 
-        <!-- Cut corners on every Material component: buttons, fields, dialogs, sheets -->
+    <!-- Asphalt (default): signal orange and white stripes on dark tarmac grey -->
+    <style name="Theme.ObdReader" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#131417</item>
+        <item name="obdSurface">#1C1D21</item>
+        <item name="obdSurfaceHigh">#26272C</item>
+        <item name="obdOutline">#303137</item>
+        <item name="obdTextPrimary">#F4F4F1</item>
+        <item name="obdTextSecondary">#92949B</item>
+        <item name="obdAccent">#FF5A1F</item>
+        <item name="obdAccentAlt">#F4F4F1</item>
+        <item name="obdAccentContainer">#26272C</item>
+        <item name="obdOnAccent">#120500</item>
+        <item name="obdTrack">#2A2B30</item>
+        <item name="obdIdle">#92949B</item>
+        <item name="obdStripe1">#FF5A1F</item>
+        <item name="obdStripe2">#F4F4F1</item>
+        <item name="obdRoundel">#F4F4F1</item>
+        <item name="obdRoundelInk">#0E0F11</item>
+        <item name="obdRing">#FF5A1F</item>
+        <item name="colorPrimary">#FF5A1F</item>
+        <item name="colorOnPrimary">#120500</item>
+        <item name="colorPrimaryContainer">#26272C</item>
+        <item name="colorOnPrimaryContainer">#F4F4F1</item>
+        <item name="colorSecondaryContainer">#26272C</item>
+        <item name="colorOnSecondaryContainer">#F4F4F1</item>
+        <item name="colorSurface">#1C1D21</item>
+        <item name="colorOnSurface">#F4F4F1</item>
+        <item name="colorOnSurfaceVariant">#92949B</item>
+        <item name="colorOutline">#92949B</item>
+        <item name="colorError">#FF3B2F</item>
+        <item name="android:colorBackground">#131417</item>
+    </style>
+
+    <!-- Endurance: night-race navy and yellow -->
+    <style name="Theme.ObdReader.Endurance" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#0A1424</item>
+        <item name="obdSurface">#111E33</item>
+        <item name="obdSurfaceHigh">#1A2A44</item>
+        <item name="obdOutline">#22344F</item>
+        <item name="obdTextPrimary">#F2F5FA</item>
+        <item name="obdTextSecondary">#8796AD</item>
+        <item name="obdAccent">#FFD000</item>
+        <item name="obdAccentAlt">#F2F5FA</item>
+        <item name="obdAccentContainer">#1A2A44</item>
+        <item name="obdOnAccent">#0A1424</item>
+        <item name="obdTrack">#1C2B45</item>
+        <item name="obdIdle">#8796AD</item>
+        <item name="obdStripe1">#FFD000</item>
+        <item name="obdStripe2">#F2F5FA</item>
+        <item name="obdRoundel">#FFD000</item>
+        <item name="obdRoundelInk">#0A1424</item>
+        <item name="obdRing">#FFD000</item>
+        <item name="colorPrimary">#FFD000</item>
+        <item name="colorOnPrimary">#0A1424</item>
+        <item name="colorPrimaryContainer">#1A2A44</item>
+        <item name="colorOnPrimaryContainer">#F2F5FA</item>
+        <item name="colorSecondaryContainer">#1A2A44</item>
+        <item name="colorOnSecondaryContainer">#F2F5FA</item>
+        <item name="colorSurface">#111E33</item>
+        <item name="colorOnSurface">#F2F5FA</item>
+        <item name="colorOnSurfaceVariant">#8796AD</item>
+        <item name="colorOutline">#8796AD</item>
+        <item name="colorError">#FF3B2F</item>
+        <item name="android:colorBackground">#0A1424</item>
+    </style>
+
+    <!-- Kerb: red and white kerb stripes -->
+    <style name="Theme.ObdReader.Kerb" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#16171A</item>
+        <item name="obdSurface">#1F2024</item>
+        <item name="obdSurfaceHigh">#292A2F</item>
+        <item name="obdOutline">#323339</item>
+        <item name="obdTextPrimary">#F5F5F3</item>
+        <item name="obdTextSecondary">#96989E</item>
+        <item name="obdAccent">#E4161B</item>
+        <item name="obdAccentAlt">#F5F5F3</item>
+        <item name="obdAccentContainer">#292A2F</item>
+        <item name="obdOnAccent">#FFFFFF</item>
+        <item name="obdTrack">#2C2D32</item>
+        <item name="obdIdle">#96989E</item>
+        <item name="obdStripe1">#E4161B</item>
+        <item name="obdStripe2">#F5F5F3</item>
+        <item name="obdRoundel">#F5F5F3</item>
+        <item name="obdRoundelInk">#0F1012</item>
+        <item name="obdRing">#E4161B</item>
+        <item name="obdKerb">true</item>
+        <item name="colorPrimary">#E4161B</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#292A2F</item>
+        <item name="colorOnPrimaryContainer">#F5F5F3</item>
+        <item name="colorSecondaryContainer">#292A2F</item>
+        <item name="colorOnSecondaryContainer">#F5F5F3</item>
+        <item name="colorSurface">#1F2024</item>
+        <item name="colorOnSurface">#F5F5F3</item>
+        <item name="colorOnSurfaceVariant">#96989E</item>
+        <item name="colorOutline">#96989E</item>
+        <item name="colorError">#FF3B2F</item>
+        <item name="android:colorBackground">#16171A</item>
+    </style>
+
+    <!-- Pit lane: a light livery in black and race red -->
+    <style name="Theme.ObdReader.Pitlane" parent="Base.ObdReader.Light">
+        <item name="obdBg">#EEEFF1</item>
+        <item name="obdSurface">#FFFFFF</item>
+        <item name="obdSurfaceHigh">#F6F6F7</item>
+        <item name="obdOutline">#D6D8DC</item>
+        <item name="obdTextPrimary">#101114</item>
+        <item name="obdTextSecondary">#5D6168</item>
+        <item name="obdAccent">#E10600</item>
+        <item name="obdAccentAlt">#E10600</item>
+        <item name="obdAccentContainer">#F6F6F7</item>
+        <item name="obdOnAccent">#FFFFFF</item>
+        <item name="obdTrack">#DCDEE2</item>
+        <item name="obdIdle">#5D6168</item>
+        <item name="obdStripe1">#101114</item>
+        <item name="obdStripe2">#E10600</item>
+        <item name="obdRoundel">#101114</item>
+        <item name="obdRoundelInk">#FFFFFF</item>
+        <item name="obdRing">#E10600</item>
+        <item name="obdWarn">#E39600</item>
+        <item name="obdDanger">#D9180F</item>
+        <item name="obdOk">#11A150</item>
+        <item name="colorPrimary">#E10600</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#F6F6F7</item>
+        <item name="colorOnPrimaryContainer">#101114</item>
+        <item name="colorSecondaryContainer">#F6F6F7</item>
+        <item name="colorOnSecondaryContainer">#101114</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#101114</item>
+        <item name="colorOnSurfaceVariant">#5D6168</item>
+        <item name="colorOutline">#5D6168</item>
+        <item name="colorError">#D9180F</item>
+        <item name="android:colorBackground">#EEEFF1</item>
+    </style>
+
+    <!-- Drift: hot pink and teal -->
+    <style name="Theme.ObdReader.Drift" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#0F0F12</item>
+        <item name="obdSurface">#18181D</item>
+        <item name="obdSurfaceHigh">#222228</item>
+        <item name="obdOutline">#2C2C34</item>
+        <item name="obdTextPrimary">#F6F4F7</item>
+        <item name="obdTextSecondary">#9693A0</item>
+        <item name="obdAccent">#FF2E88</item>
+        <item name="obdAccentAlt">#19D3C5</item>
+        <item name="obdAccentContainer">#222228</item>
+        <item name="obdOnAccent">#1A0010</item>
+        <item name="obdTrack">#26262D</item>
+        <item name="obdIdle">#9693A0</item>
+        <item name="obdStripe1">#FF2E88</item>
+        <item name="obdStripe2">#19D3C5</item>
+        <item name="obdRoundel">#F6F4F7</item>
+        <item name="obdRoundelInk">#0F0F12</item>
+        <item name="obdRing">#FF2E88</item>
+        <item name="colorPrimary">#FF2E88</item>
+        <item name="colorOnPrimary">#1A0010</item>
+        <item name="colorPrimaryContainer">#222228</item>
+        <item name="colorOnPrimaryContainer">#F6F4F7</item>
+        <item name="colorSecondaryContainer">#222228</item>
+        <item name="colorOnSecondaryContainer">#F6F4F7</item>
+        <item name="colorSurface">#18181D</item>
+        <item name="colorOnSurface">#F6F4F7</item>
+        <item name="colorOnSurfaceVariant">#9693A0</item>
+        <item name="colorOutline">#9693A0</item>
+        <item name="colorError">#FF3B2F</item>
+        <item name="android:colorBackground">#0F0F12</item>
+    </style>
+
+    <!-- Apex: volt yellow on carbon black, sharply raked -->
+    <style name="Theme.ObdReader.Apex" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#0E0F11</item>
+        <item name="obdSurface">#17191C</item>
+        <item name="obdSurfaceHigh">#202328</item>
+        <item name="obdOutline">#2A2D33</item>
+        <item name="obdTextPrimary">#F3F5F7</item>
+        <item name="obdTextSecondary">#8A9099</item>
+        <item name="obdAccent">#D7FF1F</item>
+        <item name="obdAccentAlt">#F3F5F7</item>
+        <item name="obdAccentContainer">#202328</item>
+        <item name="obdOnAccent">#0D1100</item>
+        <item name="obdTrack">#24272C</item>
+        <item name="obdIdle">#8A9099</item>
+        <item name="obdStripe1">#D7FF1F</item>
+        <item name="obdStripe2">#F3F5F7</item>
+        <item name="obdRoundel">#D7FF1F</item>
+        <item name="obdRoundelInk">#0E0F11</item>
+        <item name="obdRing">#D7FF1F</item>
+        <item name="obdDanger">#FF3346</item>
+        <item name="obdSkew">18.0</item>
+        <item name="obdCardRadius">0dp</item>
+        <item name="obdButtonRadius">0dp</item>
+        <item name="obdShapeAppearance">@style/ShapeAppearance.Obd.Apex</item>
         <item name="shapeAppearanceCornerExtraSmall">@style/ShapeAppearance.Obd.Cut.4</item>
         <item name="shapeAppearanceCornerSmall">@style/ShapeAppearance.Obd.Cut.8</item>
         <item name="shapeAppearanceCornerMedium">@style/ShapeAppearance.Obd.Cut.12</item>
         <item name="shapeAppearanceCornerLarge">@style/ShapeAppearance.Obd.Cut.16</item>
         <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.Obd.Cut.16</item>
-
-        <item name="colorPrimary">@color/apex_accent</item>
-        <item name="colorOnPrimary">@color/apex_on_accent</item>
-        <item name="colorPrimaryContainer">@color/apex_accent_container</item>
-        <item name="colorOnPrimaryContainer">@color/apex_accent</item>
-        <item name="colorSecondaryContainer">@color/apex_surface_high</item>
-        <item name="colorOnSecondaryContainer">@color/apex_text</item>
-        <item name="colorSurface">@color/apex_surface</item>
-        <item name="colorOnSurface">@color/apex_text</item>
-        <item name="colorOnSurfaceVariant">@color/apex_text2</item>
-        <item name="colorOutline">@color/apex_outline</item>
-        <item name="colorError">@color/apex_danger</item>
-        <item name="android:colorBackground">@color/apex_bg</item>
+        <item name="colorPrimary">#D7FF1F</item>
+        <item name="colorOnPrimary">#0D1100</item>
+        <item name="colorPrimaryContainer">#202328</item>
+        <item name="colorOnPrimaryContainer">#F3F5F7</item>
+        <item name="colorSecondaryContainer">#202328</item>
+        <item name="colorOnSecondaryContainer">#F3F5F7</item>
+        <item name="colorSurface">#17191C</item>
+        <item name="colorOnSurface">#F3F5F7</item>
+        <item name="colorOnSurfaceVariant">#8A9099</item>
+        <item name="colorOutline">#8A9099</item>
+        <item name="colorError">#FF3346</item>
+        <item name="android:colorBackground">#0E0F11</item>
     </style>
 
-    <!-- ===== Card shapes per theme ===== -->
-    <style name="ShapeAppearance.Obd.Midnight" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">24dp</item>
+    <!-- Race telemetry: a data-logger screen with a colour per channel -->
+    <style name="Theme.ObdReader.Telemetry" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#0C0D0F</item>
+        <item name="obdSurface">#141518</item>
+        <item name="obdSurfaceHigh">#1C1D21</item>
+        <item name="obdOutline">#26282C</item>
+        <item name="obdTextPrimary">#E9EBEE</item>
+        <item name="obdTextSecondary">#7F848C</item>
+        <item name="obdAccent">#FF3B30</item>
+        <item name="obdAccentAlt">#E9EBEE</item>
+        <item name="obdAccentContainer">#1C1D21</item>
+        <item name="obdOnAccent">#FFFFFF</item>
+        <item name="obdTrack">#1F2125</item>
+        <item name="obdIdle">#7F848C</item>
+        <item name="obdStripe1">#FF3B30</item>
+        <item name="obdStripe2">#E9EBEE</item>
+        <item name="obdRoundel">#E9EBEE</item>
+        <item name="obdRoundelInk">#0C0D0F</item>
+        <item name="obdRing">#FF3B30</item>
+        <item name="obdSkew">0.0</item>
+        <item name="obdCardRadius">2dp</item>
+        <item name="obdButtonRadius">2dp</item>
+        <item name="obdLayout">telemetry</item>
+        <item name="obdDisplayFont">@font/archivo_condensed_bold</item>
+        <item name="obdTitleFont">@font/archivo_condensed_bold</item>
+        <item name="colorPrimary">#FF3B30</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#1C1D21</item>
+        <item name="colorOnPrimaryContainer">#E9EBEE</item>
+        <item name="colorSecondaryContainer">#1C1D21</item>
+        <item name="colorOnSecondaryContainer">#E9EBEE</item>
+        <item name="colorSurface">#1C1D21</item>
+        <item name="colorOnSurface">#E9EBEE</item>
+        <item name="colorOnSurfaceVariant">#7F848C</item>
+        <item name="colorOutline">#7F848C</item>
+        <item name="colorError">#FF3B2F</item>
+        <item name="android:colorBackground">#0C0D0F</item>
     </style>
-    <style name="ShapeAppearance.Obd.Racing" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">6dp</item>
+
+    <!-- Digital cockpit: calm and premium, a glowing ring on layered glass -->
+    <style name="Theme.ObdReader.Cockpit" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#05070C</item>
+        <item name="obdSurface">#14FFFFFF</item>
+        <item name="obdSurfaceHigh">#141924</item>
+        <item name="obdOutline">#17FFFFFF</item>
+        <item name="obdTextPrimary">#EEF2FA</item>
+        <item name="obdTextSecondary">#8890A0</item>
+        <item name="obdAccent">#7FA6FF</item>
+        <item name="obdAccentAlt">#3FE0D0</item>
+        <item name="obdAccentContainer">#141924</item>
+        <item name="obdOnAccent">#050B1E</item>
+        <item name="obdTrack">#14FFFFFF</item>
+        <item name="obdIdle">#8890A0</item>
+        <item name="obdStripe1">#5B8CFF</item>
+        <item name="obdStripe2">#3FE0D0</item>
+        <item name="obdRoundel">#EEF2FA</item>
+        <item name="obdRoundelInk">#05070C</item>
+        <item name="obdRing">#5B8CFF</item>
+        <item name="obdSkew">0.0</item>
+        <item name="obdCardRadius">16dp</item>
+        <item name="obdButtonRadius">16dp</item>
+        <item name="obdLayout">cockpit</item>
+        <item name="obdDisplayFont">@font/archivo_light</item>
+        <item name="obdTitleFont">@font/archivo_light</item>
+        <item name="colorPrimary">#7FA6FF</item>
+        <item name="colorOnPrimary">#050B1E</item>
+        <item name="colorPrimaryContainer">#141924</item>
+        <item name="colorOnPrimaryContainer">#EEF2FA</item>
+        <item name="colorSecondaryContainer">#141924</item>
+        <item name="colorOnSecondaryContainer">#EEF2FA</item>
+        <item name="colorSurface">#141924</item>
+        <item name="colorOnSurface">#EEF2FA</item>
+        <item name="colorOnSurfaceVariant">#8890A0</item>
+        <item name="colorOutline">#8890A0</item>
+        <item name="colorError">#FF3B2F</item>
+        <item name="android:colorBackground">#05070C</item>
     </style>
-    <style name="ShapeAppearance.Obd.Daylight" parent="">
+
+    <!-- ===== Shapes ===== -->
+    <style name="ShapeAppearance.Obd.Card" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">20dp</item>
+        <item name="cornerSize">?attr/obdCardRadius</item>
     </style>
-    <style name="ShapeAppearance.Obd.Lcd" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">4dp</item>
-    </style>
-    <!-- Big cuts on opposite corners give the angular, sporty silhouette. -->
     <style name="ShapeAppearance.Obd.Apex" parent="">
         <item name="cornerFamily">cut</item>
-        <item name="cornerSizeTopLeft">18dp</item>
-        <item name="cornerSizeBottomRight">18dp</item>
-        <item name="cornerSizeTopRight">3dp</item>
-        <item name="cornerSizeBottomLeft">3dp</item>
+        <item name="cornerSizeTopLeft">14dp</item>
+        <item name="cornerSizeBottomRight">14dp</item>
+        <item name="cornerSizeTopRight">0dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
     </style>
-    <style name="ShapeAppearance.Obd.Cut.4" parent="">
-        <item name="cornerFamily">cut</item>
-        <item name="cornerSize">4dp</item>
-    </style>
-    <style name="ShapeAppearance.Obd.Cut.8" parent="">
-        <item name="cornerFamily">cut</item>
-        <item name="cornerSize">8dp</item>
-    </style>
-    <style name="ShapeAppearance.Obd.Cut.12" parent="">
-        <item name="cornerFamily">cut</item>
-        <item name="cornerSize">12dp</item>
-    </style>
-    <style name="ShapeAppearance.Obd.Cut.16" parent="">
-        <item name="cornerFamily">cut</item>
-        <item name="cornerSize">16dp</item>
-    </style>
+    <style name="ShapeAppearance.Obd.Cut.4" parent=""><item name="cornerFamily">cut</item><item name="cornerSize">4dp</item></style>
+    <style name="ShapeAppearance.Obd.Cut.8" parent=""><item name="cornerFamily">cut</item><item name="cornerSize">8dp</item></style>
+    <style name="ShapeAppearance.Obd.Cut.12" parent=""><item name="cornerFamily">cut</item><item name="cornerSize">12dp</item></style>
+    <style name="ShapeAppearance.Obd.Cut.16" parent=""><item name="cornerFamily">cut</item><item name="cornerSize">16dp</item></style>
 
     <!-- ===== Shared component styles (read the tokens above) ===== -->
     <style name="ObdSectionTitle">
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:textColor">?attr/obdTextSecondary</item>
-        <item name="android:letterSpacing">0.08</item>
+        <item name="android:fontFamily">@font/archivo_semibold</item>
+    </style>
+
+    <style name="ObdHeading">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">?attr/obdTextPrimary</item>
         <item name="android:fontFamily">?attr/obdTitleFont</item>
-        <item name="android:textAllCaps">true</item>
     </style>
 
     <style name="ObdCard" parent="Widget.Material3.CardView.Filled">
-        <item name="cardBackgroundColor">?attr/obdSurface</item>
+        <item name="cardBackgroundColor">?attr/obdSurfaceHigh</item>
         <item name="shapeAppearance">?attr/obdShapeAppearance</item>
         <item name="cardElevation">0dp</item>
         <item name="strokeColor">?attr/obdOutline</item>
@@ -294,5 +377,13 @@
 
     <style name="ObdNavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">?attr/obdAccentContainer</item>
+    </style>
+
+    <!-- Android Auto: accent colours for the car screen's buttons (the livery colours are applied per screen in code) -->
+    <style name="CarAppTheme">
+        <item name="carColorPrimary">#FF5A1F</item>
+        <item name="carColorPrimaryDark">#FF5A1F</item>
+        <item name="carColorSecondary">#F4F4F1</item>
+        <item name="carColorSecondaryDark">#F4F4F1</item>
     </style>
 </resources>

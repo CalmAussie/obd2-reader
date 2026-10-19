@@ -62,7 +62,7 @@ class CodesScreen(carContext: CarContext) : Screen(carContext) {
             error != null -> list.setNoItemsMessage("Couldn't read codes: $error")
             codes == null || codes.total == 0 -> list.setNoItemsMessage("No trouble codes")
             else -> {
-                codes.stored.forEach { list.addItem(row(it, "Stored, check-engine light")) }
+                codes.stored.forEach { list.addItem(row(it, "Stored, check-engine light on")) }
                 codes.pending.forEach { list.addItem(row(it, "Pending, not yet confirmed")) }
             }
         }
@@ -77,8 +77,10 @@ class CodesScreen(carContext: CarContext) : Screen(carContext) {
         return builder.setSingleList(list.build()).build()
     }
 
+    /** Each code on the same plate as the phone's Diagnostics tab, beside its description. */
     private fun row(code: String, kind: String) = Row.Builder()
-        .setTitle("$code · ${DtcDescriptions.describe(code)}")
-        .addText(kind)
+        .setTitle(DtcDescriptions.describe(code))
+        .addText("$code, $kind")
+        .setImage(CarLivery.plate(carContext, code, stored = kind.startsWith("Stored")), Row.IMAGE_TYPE_LARGE)
         .build()
 }

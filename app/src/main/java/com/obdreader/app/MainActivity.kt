@@ -61,14 +61,29 @@ import com.obdreader.app.obd.ObdProtocols
 import com.obdreader.app.obd.VehicleCatalog
 import com.obdreader.app.obd.VinDecoder
 import com.obdreader.app.obd.WifiTransport
-import com.obdreader.app.ui.GaugeView
 import com.google.android.material.card.MaterialCardView
 import com.obdreader.app.ui.AppThemes
+import com.obdreader.app.ui.Channels
+import com.obdreader.app.ui.CockpitRingView
+import com.obdreader.app.ui.DashLayout
+import com.obdreader.app.ui.DecalView
+import com.obdreader.app.ui.LiveryStripesView
+import com.obdreader.app.ui.MilBannerView
+import com.obdreader.app.ui.PlateView
+import com.obdreader.app.ui.RoundelView
+import com.obdreader.app.ui.ShiftLightsView
+import com.obdreader.app.ui.SkewButton
+import com.obdreader.app.ui.StartLightsView
 import com.obdreader.app.ui.ThemeSwatchView
+import com.obdreader.app.ui.TowerRowView
+import com.obdreader.app.ui.TraceView
+import com.obdreader.app.ui.VinDecalView
+import com.obdreader.app.ui.dashLayout
+import com.obdreader.app.ui.panelBackground
 import com.obdreader.app.ui.themeBool
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.themeShape
-import com.obdreader.app.ui.TileView
+import com.obdreader.app.ui.uiTypeface
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -84,22 +99,18 @@ class MainActivity : AppCompatActivity() {
 
     private enum class Status { IDLE, CONNECTING, CONNECTED, ERROR }
 
-    private lateinit var statusDot: View
     private lateinit var statusText: TextView
-    private lateinit var statusDot2: View
     private lateinit var statusText2: TextView
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var pageDashboard: View
     private lateinit var pageDiagnostics: View
     private lateinit var statusDetail: TextView
-    private lateinit var connectBtn: MaterialButton
-    private lateinit var demoBtn: MaterialButton
-    private lateinit var readDtcBtn: MaterialButton
-    private lateinit var clearDtcBtn: MaterialButton
+    private lateinit var connectBtn: SkewButton
+    private lateinit var demoBtn: SkewButton
+    private lateinit var readDtcBtn: SkewButton
+    private lateinit var clearDtcBtn: SkewButton
     private lateinit var vinBtn: MaterialButton
-    private lateinit var rpmGauge: GaugeView
-    private lateinit var speedGauge: GaugeView
-    private lateinit var grid: GridLayout
+    private lateinit var towerList: LinearLayout
     private lateinit var vinText: TextView
     private lateinit var vehicleText: TextView
     private lateinit var protocolText: TextView
@@ -107,11 +118,30 @@ class MainActivity : AppCompatActivity() {
     private lateinit var carSetting: TextView
     private lateinit var chooseCarButton: MaterialButton
     private lateinit var dtcStatus: TextView
+    private lateinit var dtcSub: TextView
+    private lateinit var milBanner: MilBannerView
     private lateinit var dtcContainer: LinearLayout
     private lateinit var logText: TextView
     private lateinit var logToggle: TextView
 
-    private val tiles = mutableMapOf<String, TileView>()
+    // The three dashboards; only the one the chosen style uses is shown.
+    private lateinit var dash: DashLayout
+    private lateinit var roundel: RoundelView
+    private lateinit var startLights: StartLightsView
+    private lateinit var shiftLights: ShiftLightsView
+    private lateinit var trace: TraceView
+    private lateinit var teleRpm: TextView
+    private lateinit var teleSpeed: TextView
+    private lateinit var teleCoolant: TextView
+    private lateinit var teleFuel: TextView
+    private lateinit var cockpitRing: CockpitRingView
+    private val decals = mutableMapOf<String, DecalView>()
+    private val glass = mutableMapOf<String, TextView>()
+    private var lastRpm: Float? = null
+    private var lastSpeed: Float? = null
+    private var redline = 6500f
+
+    private val tiles = mutableMapOf<String, TowerRowView>()
     private var lastPhase: ObdSession.Phase? = null
     private var lastReadings: Map<String, Double?> = emptyMap()
     private var lastUnsupported: Set<String> = emptySet()
@@ -170,10 +200,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        statusDot = findViewById(R.id.statusDot)
         statusText = findViewById(R.id.statusText)
         statusDetail = findViewById(R.id.statusDetail)
-        statusDot2 = findViewById(R.id.statusDot2)
         statusText2 = findViewById(R.id.statusText2)
         bottomNav = findViewById(R.id.bottomNav)
         pageDashboard = findViewById(R.id.pageDashboard)
@@ -183,9 +211,7 @@ class MainActivity : AppCompatActivity() {
         readDtcBtn = findViewById(R.id.readDtcButton)
         clearDtcBtn = findViewById(R.id.clearDtcButton)
         vinBtn = findViewById(R.id.vinButton)
-        rpmGauge = findViewById(R.id.rpmGauge)
-        speedGauge = findViewById(R.id.speedGauge)
-        grid = findViewById(R.id.gaugeGrid)
+        towerList = findViewById(R.id.gaugeGrid)
         vinText = findViewById(R.id.vinText)
         vehicleText = findViewById(R.id.vehicleText)
         protocolText = findViewById(R.id.protocolText)
@@ -198,16 +224,22 @@ class MainActivity : AppCompatActivity() {
         chooseCarButton.setOnClickListener { showCarPicker() }
         updateCarSetting()
         dtcStatus = findViewById(R.id.dtcStatus)
+        dtcSub = findViewById(R.id.dtcSub)
+        milBanner = findViewById(R.id.milBanner)
         dtcContainer = findViewById(R.id.dtcContainer)
         logText = findViewById(R.id.logText)
         logToggle = findViewById(R.id.logToggle)
 
-        setupGauges()
-        applyRedline() // after setupGauges, which sets the default range
-        Pids.dashboard.filter { it.number != Pids.RPM && it.number != Pids.SPEED }.forEach { pid ->
-            addTile(pid.hex, TileView(this, pid.label, pid.unit, pid.min, pid.max, pid.warnAbove, pid.decimals))
-        }
-        addTile(VOLTAGE_KEY, TileView(this, "Battery", "V", 11.0, 15.0, 15.0, 1))
+        setupDashboard()
+        applyRedline()
+
+        connectBtn.display = true
+        connectBtn.setTextSizeSp(19f)
+        demoBtn.text = getString(R.string.demo_car)
+        demoBtn.kind = SkewButton.Kind.OUTLINE
+        readDtcBtn.text = getString(R.string.read_codes)
+        clearDtcBtn.text = getString(R.string.clear_codes)
+        clearDtcBtn.kind = SkewButton.Kind.DANGER
 
         connectBtn.setOnClickListener { if (ObdSession.isActive) disconnect() else showConnectSheet() }
         demoBtn.setOnClickListener { if (!ObdSession.isActive) startSession(DemoTransport()) }
@@ -217,11 +249,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.logCard).setOnClickListener { toggleLog() }
         findViewById<View>(R.id.helpRow).setOnClickListener { showHelp() }
         findViewById<View>(R.id.themeButton).setOnClickListener { showThemePicker() }
-        if (themeBool(R.attr.obdTitleItalic)) {
-            listOf(R.id.titleDashboard, R.id.titleDiagnostics).forEach { id ->
-                findViewById<TextView>(id).let { it.setTypeface(it.typeface, android.graphics.Typeface.BOLD_ITALIC) }
-            }
-        }
 
         bottomNav.setOnItemSelectedListener { item ->
             showPage(diagnostics = item.itemId == R.id.nav_diagnostics)
@@ -249,21 +276,121 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupGauges() {
-        Pids.dashboard.first { it.number == Pids.RPM }.let { p ->
-            rpmGauge.label = "RPM"
-            rpmGauge.unit = "× 1000"
-            rpmGauge.min = 0f
-            rpmGauge.max = (p.max / 1000).toFloat()
-            rpmGauge.warnAt = ((p.warnAbove ?: Double.MAX_VALUE) / 1000).toFloat()
-            rpmGauge.decimals = 1
+    /** Shows the chosen style's dashboard and builds its readings. */
+    private fun setupDashboard() {
+        dash = dashLayout()
+        val livery = dash == DashLayout.LIVERY
+        findViewById<View>(R.id.layoutLivery).visibility = if (livery) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.layoutTelemetry).visibility = if (dash == DashLayout.TELEMETRY) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.layoutCockpit).visibility = if (dash == DashLayout.COCKPIT) View.VISIBLE else View.GONE
+        // Livery stripes run across the top of each page; the title sits below them.
+        listOf(R.id.stripesDash, R.id.stripesDiag).forEach { findViewById<LiveryStripesView>(it).visibility = if (livery) View.VISIBLE else View.GONE }
+        if (livery) {
+            findViewById<View>(R.id.topBar).setPadding(0, dp(92f).toInt(), 0, 0)
+            findViewById<View>(R.id.titleDiagnostics).setPadding(0, dp(92f).toInt(), 0, 0)
         }
-        Pids.dashboard.first { it.number == Pids.SPEED }.let { p ->
-            speedGauge.label = "Speed"
-            speedGauge.unit = p.unit
-            speedGauge.min = p.min.toFloat()
-            speedGauge.max = p.max.toFloat()
-            speedGauge.decimals = 0
+        if (dash == DashLayout.COCKPIT) {
+            findViewById<View>(R.id.root).background = GradientDrawable().apply {
+                gradientType = GradientDrawable.RADIAL_GRADIENT
+                colors = intArrayOf(android.graphics.Color.parseColor("#13203F"), android.graphics.Color.parseColor("#070A12"), themeColor(R.attr.obdBg))
+                gradientRadius = resources.displayMetrics.heightPixels * 0.7f
+                setGradientCenter(0.5f, 0.15f)
+            }
+        }
+        listOf(R.id.carRow, R.id.protocolRow, R.id.logCard, R.id.helpRow).forEach { findViewById<View>(it).background = panelBackground() }
+        val vinDecal = findViewById<VinDecalView>(R.id.vinDecal)
+        vinText.setTextColor(vinDecal.inkColor)
+        findViewById<TextView>(R.id.vinLabel).setTextColor(androidx.core.graphics.ColorUtils.setAlphaComponent(vinDecal.inkColor, 180))
+
+        roundel = findViewById(R.id.rpmRoundel)
+        startLights = findViewById(R.id.startLights)
+        shiftLights = findViewById(R.id.shiftLights)
+        trace = findViewById(R.id.teleTrace)
+        teleRpm = findViewById(R.id.teleRpm)
+        teleSpeed = findViewById(R.id.teleSpeed)
+        teleCoolant = findViewById(R.id.teleCoolant)
+        teleFuel = findViewById(R.id.teleFuel)
+        cockpitRing = findViewById(R.id.cockpitRing)
+        findViewById<View>(R.id.teleRpmBar).setBackgroundColor(Channels.RPM)
+        findViewById<View>(R.id.teleSpeedBar).setBackgroundColor(Channels.SPEED)
+        findViewById<View>(R.id.telePanel).background = panelBackground()
+        teleCoolant.background = panelBackground()
+        teleFuel.background = panelBackground()
+        findViewById<TextView>(R.id.teleLegend).text = android.text.SpannableStringBuilder().apply {
+            fun key(label: String, colour: Int) {
+                val start = length
+                append("■ ")
+                setSpan(android.text.style.ForegroundColorSpan(colour), start, length, 0)
+                append(label).append("     ")
+            }
+            key("rpm", Channels.RPM); key("km/h", Channels.SPEED); append("Last 30 s")
+        }
+
+        fun pid(n: Int) = Pids.dashboard.first { it.number == n }
+        val speed = pid(Pids.SPEED)
+        val coolant = pid(0x05)
+        val fuel = pid(0x2F)
+        fun decal(holder: Int, key: String, p: Pid, label: String, wide: Boolean) {
+            val d = DecalView(this, label, p.unit, p.min, if (key == SPEED_KEY) 240.0 else p.max, p.warnAbove, p.decimals, wide)
+            findViewById<android.widget.FrameLayout>(holder).addView(d)
+            decals[key] = d
+        }
+        decal(R.id.decalSpeed, SPEED_KEY, speed, "Speed", true)
+        decal(R.id.decalCoolant, COOLANT_KEY, coolant, "Coolant", false)
+        decal(R.id.decalFuel, FUEL_KEY, fuel, "Fuel", false)
+
+        // Cockpit glass panels: coolant, fuel and battery.
+        val row = findViewById<LinearLayout>(R.id.glassRow)
+        listOf(Triple(COOLANT_KEY, "Coolant", "°C"), Triple(FUEL_KEY, "Fuel", "%"), Triple(VOLTAGE_KEY, "Battery", "V")).forEachIndexed { i, (key, label, unit) ->
+            val box = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                background = panelBackground(stroke = true)
+                setPadding(dp(12f).toInt(), dp(12f).toInt(), dp(12f).toInt(), dp(10f).toInt())
+            }
+            box.addView(TextView(this).apply { text = label; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+            val value = TextView(this).apply {
+                text = getString(R.string.dash); setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f); setTextColor(themeColor(R.attr.obdTextPrimary))
+                typeface = uiTypeface(500); fontFeatureSettings = "tnum"
+            }
+            box.addView(value)
+            box.addView(TextView(this).apply { text = unit; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+            row.addView(box, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                if (i > 0) marginStart = dp(8f).toInt()
+            })
+            glass[key] = value
+        }
+
+        // The live-data list: everything except the readings the dashboard already shows big.
+        val shownBig = setOf(RPM_KEY, SPEED_KEY, COOLANT_KEY, FUEL_KEY)
+        Pids.dashboard.filter { it.hex !in shownBig }.forEach { p ->
+            addTile(p.hex, TowerRowView(this, p.label, p.unit, p.min, p.max, p.warnAbove, p.decimals, Channels.forKey(p.hex, themeColor(R.attr.obdStripe1))))
+        }
+        addTile(VOLTAGE_KEY, TowerRowView(this, "Battery", "V", 11.0, 15.0, 15.0, 1, Channels.forKey(VOLTAGE_KEY, themeColor(R.attr.obdStripe1))))
+    }
+
+    private fun setRpm(value: Float?) {
+        lastRpm = value
+        roundel.setValue(value)
+        shiftLights.setRpm(value, redline)
+        teleRpm.text = value?.let { String.format(Locale.US, "%,d", it.toInt()) } ?: getString(R.string.dash)
+        cockpitRing.set(lastSpeed, value)
+        if (ObdSession.state.value.isConnected) trace.push(value, lastSpeed)
+    }
+
+    private fun setSpeed(value: Float?) {
+        lastSpeed = value
+        decals[SPEED_KEY]?.setValue(value?.toDouble())
+        teleSpeed.text = value?.let { it.toInt().toString() } ?: getString(R.string.dash)
+        cockpitRing.set(value, lastRpm)
+    }
+
+    private fun setBigReading(key: String, value: Double?) {
+        decals[key]?.setValue(value)
+        val text = value?.let { String.format(Locale.US, "%.0f", it) } ?: getString(R.string.dash)
+        glass[key]?.text = if (key == VOLTAGE_KEY) value?.let { String.format(Locale.US, "%.1f", it) } ?: getString(R.string.dash) else text
+        when (key) {
+            COOLANT_KEY -> teleCoolant.text = "Coolant     $text °C"
+            FUEL_KEY -> teleFuel.text = "Fuel     $text %"
         }
     }
 
@@ -550,7 +677,14 @@ class MainActivity : AppCompatActivity() {
         updateButtons(connected = s.isConnected, busy = s.phase == ObdSession.Phase.CONNECTING)
 
         if (s.phase != lastPhase) {
-            if (s.phase == ObdSession.Phase.CONNECTING) clearReadings()
+            if (s.phase == ObdSession.Phase.CONNECTING) {
+                clearReadings()
+                startLights.start()
+            } else {
+                startLights.out()
+            }
+            // Lights out, then the rev ring sweeps: like a car's self-test when you turn the key.
+            if (s.isConnected && lastPhase == ObdSession.Phase.CONNECTING) roundel.sweep()
             if (s.isConnected) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             if (!s.isConnected) {
@@ -566,8 +700,10 @@ class MainActivity : AppCompatActivity() {
             for ((key, value) in s.readings) {
                 if (lastReadings.containsKey(key) && lastReadings[key] == value) continue
                 when (key) {
-                    RPM_KEY -> rpmGauge.setValue(value?.let { (it / 1000).toFloat() })
-                    SPEED_KEY -> speedGauge.setValue(value?.toFloat())
+                    RPM_KEY -> setRpm(value?.toFloat())
+                    SPEED_KEY -> setSpeed(value?.toFloat())
+                    COOLANT_KEY, FUEL_KEY -> setBigReading(key, value)
+                    VOLTAGE_KEY -> { setBigReading(key, value); tiles[key]?.setValue(value) }
                     else -> tiles[key]?.setValue(value)
                 }
             }
@@ -578,7 +714,7 @@ class MainActivity : AppCompatActivity() {
             lastUnsupported = s.unsupported
         }
         if (s.isConnected) {
-            protocolText.text = ObdProtocols.byCode(s.protocolCode)?.name ?: s.summary.orEmpty()
+            protocolText.text = "Protocol: " + (ObdProtocols.byCode(s.protocolCode)?.name ?: s.summary.orEmpty())
         }
         if (s.vinChecked && !lastVinChecked) {
             showVin(s.vin)
@@ -595,13 +731,13 @@ class MainActivity : AppCompatActivity() {
         if (ObdSession.client == null) return
         lifecycleScope.launch {
             dtcContainer.removeAllViews()
-            setDtcStatus("Reading trouble codes…", null)
+            setDtcStatus("Reading trouble codes…", "Asking the engine computer for stored and pending codes.")
             try {
                 renderCodes(ObdSession.readCodes())
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                setDtcStatus("Couldn't read codes: ${e.message}", R.attr.obdDanger)
+                setDtcStatus("Couldn't read codes", e.message ?: "The adapter didn't answer.")
             }
         }
     }
@@ -609,10 +745,15 @@ class MainActivity : AppCompatActivity() {
     private fun renderCodes(codes: ObdSession.Codes) {
         dtcContainer.removeAllViews()
         setCodeBadge(codes.total)
+        roundel.checkEngine = codes.stored.isNotEmpty()
         if (codes.total == 0) {
-            setDtcStatus("No trouble codes", R.attr.obdOk)
+            setDtcStatus("No trouble codes", "The engine computer has no stored or pending faults.", MilBannerView.State.OK)
         } else {
-            setDtcStatus(if (codes.total == 1) "1 trouble code found" else "${codes.total} trouble codes found", R.attr.obdWarn)
+            setDtcStatus(
+                if (codes.total == 1) "1 trouble code" else "${codes.total} trouble codes",
+                if (codes.stored.isNotEmpty()) "Stored codes are keeping the check-engine light on." else "Pending codes only, so the light isn't on yet.",
+                if (codes.stored.isNotEmpty()) MilBannerView.State.ON else MilBannerView.State.NONE,
+            )
             codes.stored.forEach { addDtcRow(it, pending = false) }
             codes.pending.forEach { addDtcRow(it, pending = true) }
         }
@@ -630,19 +771,20 @@ class MainActivity : AppCompatActivity() {
     private fun clearDtcs() {
         if (ObdSession.client == null) return
         lifecycleScope.launch {
-            setDtcStatus("Clearing…", null)
+            setDtcStatus("Clearing codes…")
             try {
                 if (ObdSession.clearCodes()) {
                     dtcContainer.removeAllViews()
                     setCodeBadge(0)
-                    setDtcStatus("Codes cleared. Read again to confirm.", R.attr.obdOk)
+                    roundel.checkEngine = false
+                    setDtcStatus("Codes cleared", "Read codes again to confirm they've gone.", MilBannerView.State.OK)
                 } else {
-                    setDtcStatus("The car refused the request. Some cars need the engine off.", R.attr.obdWarn)
+                    setDtcStatus("The car refused to clear codes", "Some cars only allow it with the engine off and the ignition on.")
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                setDtcStatus("Couldn't clear codes: ${e.message}", R.attr.obdDanger)
+                setDtcStatus("Couldn't clear codes", e.message ?: "The adapter didn't answer.")
             }
         }
     }
@@ -650,22 +792,22 @@ class MainActivity : AppCompatActivity() {
     private fun readVin() {
         if (ObdSession.client == null) return
         lifecycleScope.launch {
-            vinText.text = "VIN  reading…"
+            vinText.text = "Reading…"
             try {
                 showVin(ObdSession.readVin())
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                vinText.text = "VIN  error (${e.message})"
+                vinText.text = "Couldn't read it"
             }
         }
     }
 
     private fun showVin(vin: String?) {
-        vinText.text = "VIN  " + (vin ?: "not reported by this car")
+        vinText.text = vin ?: "Not reported"
         val info = vin?.let { VinDecoder.decode(it) }
         vehicleText.text = when {
-            info?.make != null && info.modelYear != null -> "${info.make} · ${info.modelYear} model year"
+            info?.make != null && info.modelYear != null -> "${info.make}, ${info.modelYear} model year"
             info?.make != null -> info.make
             vin != null -> "Make not recognised from VIN"
             savedCar() != null -> "Your car: ${savedCar()?.label}. It doesn't report a VIN."
@@ -694,7 +836,7 @@ class MainActivity : AppCompatActivity() {
             setText(R.string.help_title)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
             setTextColor(themeColor(R.attr.obdTextPrimary))
-            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+            typeface = uiTypeface(600)
         })
         val sections = listOf(
             R.string.help_start_title to R.string.help_start_body,
@@ -708,7 +850,7 @@ class MainActivity : AppCompatActivity() {
                 setText(title)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
                 setTextColor(themeColor(R.attr.obdAccent))
-                typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+                typeface = uiTypeface(600)
                 setPadding(0, dp(18f).toInt(), 0, dp(6f).toInt())
             })
             list.addView(TextView(this).apply {
@@ -741,7 +883,7 @@ class MainActivity : AppCompatActivity() {
             setText(R.string.appearance)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
             setTextColor(themeColor(R.attr.obdTextPrimary))
-            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+            typeface = uiTypeface(600)
         })
         list.addView(TextView(this).apply {
             setText(R.string.appearance_subtitle)
@@ -751,13 +893,22 @@ class MainActivity : AppCompatActivity() {
         })
 
         for (theme in AppThemes.ALL) {
+            if (theme == AppThemes.ALL.first() || theme.ownLayout && theme == AppThemes.ALL.first { it.ownLayout }) {
+                list.addView(TextView(this).apply {
+                    setText(if (theme.ownLayout) R.string.themes_layouts else R.string.themes_liveries)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                    setTextColor(themeColor(R.attr.obdTextSecondary))
+                    typeface = uiTypeface(600)
+                    setPadding(dp(2f).toInt(), dp(10f).toInt(), 0, dp(8f).toInt())
+                })
+            }
             val selected = theme.id == current.id
             val row = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
                 setPadding(dp(12f).toInt(), dp(12f).toInt(), dp(14f).toInt(), dp(12f).toInt())
             }
-            row.addView(ThemeSwatchView(this, theme), LinearLayout.LayoutParams(dp(84f).toInt(), dp(60f).toInt()))
+            row.addView(ThemeSwatchView(this, theme), LinearLayout.LayoutParams(dp(72f).toInt(), dp(54f).toInt()))
             row.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 setPadding(dp(14f).toInt(), 0, dp(8f).toInt(), 0)
@@ -765,7 +916,7 @@ class MainActivity : AppCompatActivity() {
                     text = theme.name
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
                     setTextColor(themeColor(R.attr.obdTextPrimary))
-                    typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+                    typeface = uiTypeface(600)
                 })
                 addView(TextView(context).apply {
                     text = theme.description
@@ -823,9 +974,13 @@ class MainActivity : AppCompatActivity() {
     /** Scales the RPM dial to the chosen engine's redline, or the default 8,000 / 6,500 rpm. */
     private fun applyRedline() {
         val redline = savedCar()?.let { VehicleCatalog.recommend(it).redline }
-        rpmGauge.max = if (redline == null) 8f else (redline / 1000 + 2).toFloat()
-        rpmGauge.warnAt = (redline ?: 6500) / 1000f
-        rpmGauge.invalidate()
+        val max = if (redline == null) 8000f else ((redline / 1000 + 2) * 1000).toFloat()
+        this.redline = (redline ?: 6500).toFloat()
+        roundel.max = max
+        roundel.warnAt = this.redline
+        cockpitRing.rpmMax = max
+        cockpitRing.warnAt = this.redline
+        trace.rpmMax = max
     }
 
     private fun updateCarSetting() {
@@ -957,107 +1112,91 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun setDtcStatus(text: String, colorRes: Int?) {
-        dtcStatus.text = text
-        dtcStatus.setTextColor(this.themeColor(colorRes ?: R.attr.obdTextPrimary))
-        if (colorRes == R.attr.obdOk) {
-            val icon = ContextCompat.getDrawable(this, R.drawable.ic_check)?.mutate()
-            icon?.setTint(this.themeColor(R.attr.obdOk))
-            dtcStatus.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
-        } else {
-            dtcStatus.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, null, null)
-        }
+    /** The check-engine banner: [state] ON turns it amber, OK marks it green. */
+    private fun setDtcStatus(title: String, sub: String = "", state: MilBannerView.State = MilBannerView.State.NONE) {
+        milBanner.state = state
+        val ink = milBanner.inkColor(themeColor(R.attr.obdTextPrimary))
+        val inkSub = milBanner.inkColor(themeColor(R.attr.obdTextSecondary))
+        dtcStatus.text = title
+        dtcStatus.setTextColor(ink)
+        dtcSub.text = sub
+        dtcSub.setTextColor(inkSub)
+        dtcSub.visibility = if (sub.isEmpty()) View.GONE else View.VISIBLE
+        val lamp = findViewById<ImageView>(R.id.milLamp)
+        lamp.imageTintList = ColorStateList.valueOf(
+            when (state) {
+                MilBannerView.State.ON -> if (dash == DashLayout.COCKPIT) themeColor(R.attr.obdWarn) else ink
+                MilBannerView.State.OK -> themeColor(R.attr.obdOk)
+                MilBannerView.State.NONE -> themeColor(R.attr.obdTextSecondary)
+            },
+        )
     }
 
     private fun addDtcRow(code: String, pending: Boolean) {
         val row = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, dp(12f).toInt(), 0, 0)
-        }
-        val chip = TextView(this).apply {
-            text = code
-            typeface = android.graphics.Typeface.MONOSPACE
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            setTextColor(context.themeColor(if (pending) R.attr.obdTextSecondary else R.attr.obdWarn))
-            background = GradientDrawable().apply {
-                cornerRadius = dp(8f)
-                setColor(context.themeColor(if (pending) R.attr.obdSurfaceHigh else R.attr.obdWarnContainer))
-            }
-            setPadding(dp(10f).toInt(), dp(5f).toInt(), dp(10f).toInt(), dp(5f).toInt())
+            setPadding(0, dp(10f).toInt(), 0, 0)
         }
         val text = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(12f).toInt(), 0, 0, 0)
+            setPadding(dp(14f).toInt(), 0, 0, 0)
             addView(TextView(context).apply {
                 this.text = DtcDescriptions.describe(code)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                 setTextColor(context.themeColor(R.attr.obdTextPrimary))
             })
             addView(TextView(context).apply {
-                this.text = if (pending) "Pending, not yet confirmed" else "Stored, check-engine light"
+                this.text = if (pending) "Pending, not yet confirmed" else "Stored, check-engine light on"
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                 setTextColor(context.themeColor(R.attr.obdTextSecondary))
             })
         }
-        row.addView(chip)
+        row.addView(PlateView(this, code, stored = !pending))
         row.addView(text, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         dtcContainer.addView(row)
     }
 
     // ---------- UI helpers ----------
 
-    private fun addTile(key: String, tile: TileView) {
-        val margin = dp(5f).toInt()
-        val params = GridLayout.LayoutParams(
-            GridLayout.spec(GridLayout.UNDEFINED, 1f),
-            GridLayout.spec(GridLayout.UNDEFINED, 1f),
-        ).apply {
-            width = 0
-            height = ViewGroup.LayoutParams.WRAP_CONTENT
-            setMargins(margin, margin, margin, margin)
-        }
-        grid.addView(tile, params)
+    private fun addTile(key: String, tile: TowerRowView) {
+        towerList.addView(tile, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            bottomMargin = dp(4f).toInt()
+        })
         tiles[key] = tile
     }
 
     private fun clearReadings() {
         tiles.values.forEach { it.setValue(null) }
-        rpmGauge.setValue(null)
-        speedGauge.setValue(null)
+        setRpm(null)
+        setSpeed(null)
+        listOf(COOLANT_KEY, FUEL_KEY, VOLTAGE_KEY).forEach { setBigReading(it, null) }
+        trace.clear()
+        roundel.checkEngine = false
         vinText.setText(R.string.vin_unknown)
         vehicleText.setText(R.string.vehicle_unknown)
         protocolText.setText(R.string.protocol_unknown)
         dtcContainer.removeAllViews()
         setCodeBadge(0)
-        setDtcStatus(getString(R.string.dtc_hint), null)
+        setDtcStatus(getString(R.string.engine_not_checked), getString(R.string.dtc_hint))
     }
 
     private fun setStatus(status: Status, title: String, detail: String) {
-        val color = when (status) {
-            Status.IDLE -> R.attr.obdIdle
-            Status.CONNECTING -> R.attr.obdWarn
-            Status.CONNECTED -> R.attr.obdOk
-            Status.ERROR -> R.attr.obdDanger
-        }
-        val tint = ColorStateList.valueOf(this.themeColor(color))
-        statusDot.backgroundTintList = tint
-        statusDot2.backgroundTintList = tint
         statusText.text = title
         statusText2.text = title
         chooseCarButton.visibility = if (status == Status.ERROR) View.VISIBLE else View.GONE
         statusDetail.text = detail
+        statusDetail.visibility = if (detail.isEmpty()) View.GONE else View.VISIBLE
     }
 
     private fun updateButtons(connected: Boolean, busy: Boolean = false) {
         val active = connected || busy
-        connectBtn.setText(if (active) R.string.disconnect else R.string.connect)
-        connectBtn.setIconResource(if (active) R.drawable.ic_close else R.drawable.ic_bluetooth)
+        connectBtn.text = getString(if (active) R.string.disconnect else R.string.connect)
+        connectBtn.kind = if (active) SkewButton.Kind.OUTLINE else SkewButton.Kind.PRIMARY
         demoBtn.isEnabled = !active
         readDtcBtn.isEnabled = connected
         clearDtcBtn.isEnabled = connected
         vinBtn.isEnabled = connected
-        clearDtcBtn.alpha = if (connected) 1f else 0.5f
     }
 
     private fun showPage(diagnostics: Boolean) {
@@ -1093,6 +1232,8 @@ class MainActivity : AppCompatActivity() {
         private const val VOLTAGE_KEY = ObdSession.VOLTAGE_KEY
         private val RPM_KEY = String.format(Locale.US, "%02X", Pids.RPM)
         private val SPEED_KEY = String.format(Locale.US, "%02X", Pids.SPEED)
+        private const val COOLANT_KEY = "05"
+        private const val FUEL_KEY = "2F"
         private const val BLE_SCAN_MS = 12_000L
         private const val PREF_HOST = AppPrefs.HOST
         private const val PREF_PORT = AppPrefs.PORT
