@@ -16,12 +16,15 @@ An Android app that reads live engine data and trouble codes from a cheap ELM327
    - **Bluetooth LE:** iPhone-compatible adapters such as the Veepeak OBDCheck BLE+. No pairing needed.
    - **Wi-Fi:** join the adapter's Wi-Fi network first. The usual address is `192.168.0.10`, port `35000`.
 3. No adapter? Tap **Demo car** to try the app with a simulated car.
+4. After the first time, the app reconnects by itself whenever you open it or turn the ignition on.
 
 Help, including Android Auto setup, is also inside the app under **Diagnostics → Help**.
 
 ## What it does
 - **Live data:** RPM, speed, coolant, fuel, throttle, engine load, intake air, manifold pressure, MAF, timing advance, ambient and oil temperature, and battery voltage. Readings past their limit turn red.
-- **Trouble codes:** reads stored and pending codes with plain-English descriptions, and clears them after a confirmation.
+- **Graphs and drive logs:** live charts for up to four readings at once, fast multi-reading polling, and CSV recording of whole drives that you can share to Excel or Google Sheets.
+- **Trouble codes, explained:** reads stored and pending codes and explains each one: what it means, how urgent it is, symptoms, common causes and what to check. Share the lot as a report for your mechanic. Clears codes after a confirmation.
+- **Reconnects by itself:** picks the adapter back up when you open the app, start Android Auto or turn the ignition back on.
 - **Vehicle ID:** reads the VIN and shows the make and model year.
 - **Finds the right protocol:** tries every OBD2 protocol automatically. If your car won't connect, choose it under **Diagnostics → Your car** (69 makes from 2000 on) so the app tries that car's usual protocol first.
 - **Background connection:** keeps working with the screen off, with a notification showing live RPM, speed and coolant.
@@ -68,8 +71,8 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 
 | Folder | What's in it |
 |---|---|
-| `obd/` | Adapter connections (Bluetooth, BLE, Wi-Fi, demo), the ELM327 client and parser, PIDs, protocols, the car catalogue and VIN decoder |
-| `session/` | The shared connection used by the phone and the car, and the background service |
+| `obd/` | Adapter connections (Bluetooth, BLE, Wi-Fi, demo), the ELM327 client and parser, PIDs, protocols, trouble-code explanations, reconnect timing, the car catalogue and VIN decoder |
+| `session/` | The shared connection used by the phone and the car, the background service, graph history, drive recording and exports |
 | `ui/` | Styles and the custom views for each dashboard layout |
 | `car/` | The Android Auto screens |
 | `MainActivity.kt` | The Dashboard and Diagnostics tabs, permissions and pickers |

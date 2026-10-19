@@ -21,6 +21,10 @@ class ObdCarAppService : CarAppService() {
         }
 
     override fun onCreateSession(): Session = object : Session() {
-        override fun onCreateScreen(intent: Intent): Screen = DashboardScreen(carContext)
+        override fun onCreateScreen(intent: Intent): Screen {
+            // Plugging the phone into the car usually means the ignition is on: connect straight away.
+            com.obdreader.app.session.ObdSession.autoConnect(carContext)
+            return DashboardScreen(carContext)
+        }
     }
 }
