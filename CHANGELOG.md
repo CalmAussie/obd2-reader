@@ -2,6 +2,14 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.3.0 (20 October 2026)
+
+### Smoother Dashboard
+- Every figure on the Dashboard now glides to each new reading instead of jumping: the rev roundel and its number, the speed, coolant and fuel decals, every row in the live-data list, the race-telemetry numbers and the digital cockpit's ring and glass panels. Digits roll and bars and rings sweep, frame by frame, like the Graphs tab.
+- The Dashboard's moving readings (engine speed, road speed, throttle, engine load, manifold pressure and airflow) are now asked for together in one request every cycle while the Dashboard is open, so they update as often as the graphs do. Slower readings like coolant and fuel still update every second or so.
+- The 30-second traces in Race telemetry still span 30 seconds, however fast readings arrive.
+- Off screen, nothing animates, so this doesn't cost battery on other tabs or with the screen off.
+
 ## 1.2.9 (20 October 2026)
 - More efficiency while connected: buttons and status text no longer redraw the whole screen on every reading when nothing about them has changed, and the Graphs reading rate only updates while Graphs is open. The app now sits idle between readings on every tab, which saves battery and keeps it responsive on older phones.
 

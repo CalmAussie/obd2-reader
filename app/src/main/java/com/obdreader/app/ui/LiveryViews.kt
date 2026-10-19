@@ -10,7 +10,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.View
-import android.view.animation.DecelerateInterpolator
 import androidx.core.graphics.ColorUtils
 import com.obdreader.app.R
 import kotlin.math.PI
@@ -74,6 +73,7 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
 
     private var target: Float? = null
     private var shown = 0f
+    private val smooth = SmoothValue(tauMs = 110f, settle = 2f)
     private var animator: ValueAnimator? = null
     private var sweeping = false
 
@@ -109,21 +109,13 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
 
     fun setValue(value: Float?) {
         target = value
-        if (sweeping) return
-        animator?.cancel()
+        smooth.set(value)
         contentDescription = value?.let { "Engine speed ${it.roundToInt()} rpm" } ?: "Engine speed"
-        // Off screen (another tab, or the screen is off): jump straight to the value. Animating
-        // there kept the phone busy redrawing something nobody could see.
-        if (!isShown) {
-            shown = (value ?: 0f).coerceIn(0f, max)
-            return
-        }
-        animator = ValueAnimator.ofFloat(shown, (value ?: 0f).coerceIn(0f, max)).apply {
-            duration = 300
-            interpolator = DecelerateInterpolator()
-            addUpdateListener { shown = it.animatedValue as Float; invalidate() }
-            start()
-        }
+        if (sweeping) return
+        // Off screen (another tab, or the screen is off): jump straight to the value, so nothing
+        // keeps redrawing a dial nobody can see.
+        if (!isShown) smooth.snap()
+        invalidate()
     }
 
     /** Sweeps the ring to the end stop and back, like a car's self-test when you turn the key. */
@@ -139,6 +131,7 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
             addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
                     sweeping = false
+                    smooth.from(0f) // the sweep ends at zero; glide up to the live reading from there
                     setValue(target)
                 }
             })
@@ -162,6 +155,8 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
         canvas.translate((width - size) / 2f, 0f)
         canvas.scale(size / 240f, size / 240f)
 
+        val moving = !sweeping && smooth.step()
+        if (!sweeping) shown = if (target == null) 0f else smooth.shown.coerceIn(0f, max)
         val n = (max / 500f).roundToInt().coerceAtLeast(1)
         val step = 270f / n
         val frac = (shown / max).coerceIn(0f, 1f)
@@ -186,7 +181,7 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
         }
         fill.color = disc
         canvas.drawCircle(120f, 120f, 80f, fill)
-        val text = target?.let { ((it / 10f).roundToInt() * 10).toString() } ?: "—"
+        val text = if (target == null) "—" else ((smooth.shown / 10f).roundToInt() * 10).toString()
         canvas.drawText(text, 120f, 138f, numPaint)
         canvas.drawText("rpm", 120f, 162f, subPaint)
         if (checkEngine) {
@@ -199,6 +194,7 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
         canvas.drawText("0", 120f + 118f * cos(a0).toFloat(), 232f, edgePaint)
         canvas.drawText("${(max / 1000).roundToInt()}k", 120f + 118f * cos(a1).toFloat(), 232f, edgePaint)
         canvas.restore()
+        keepAnimating(moving)
     }
 }
 
