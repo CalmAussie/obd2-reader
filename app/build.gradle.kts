@@ -17,8 +17,10 @@ fun signingValue(env: String, prop: String): String? =
 
 val releaseStoreFile = signingValue("OBD_KEYSTORE_FILE", "storeFile")?.let { rootProject.file(it) }?.takeIf { it.exists() }
 
-// Every GitHub build gets a higher version number, so a newer APK installs as an update.
+// Every GitHub build gets a higher version code, so a newer APK installs as an update.
+// The version name comes from gradle.properties and matches CHANGELOG.md.
 val buildNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+val appVersion = (findProperty("obdVersion") as String?) ?: "1.0"
 
 android {
     namespace = "com.obdreader.app"
@@ -29,7 +31,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = buildNumber
-        versionName = "1.0.$buildNumber"
+        versionName = appVersion
     }
 
     signingConfigs {

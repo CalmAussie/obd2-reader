@@ -85,14 +85,27 @@ jobs:
           name: OBD2Reader-apk
           path: OBD2Reader.apk
 
+      # Release notes: the newest CHANGELOG.md entry, then how to install.
+      - name: Write release notes
+        if: github.event_name != 'pull_request'
+        run: |
+          VERSION=$(grep '^obdVersion=' gradle.properties | cut -d= -f2)
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+          {
+            echo "## What's new"
+            awk '/^## /{n++} n==1 && !/^## /{print} n==2{exit}' CHANGELOG.md
+            echo
+            cat .github/release-notes.md
+          } > release-body.md
+
       # Every build on main becomes a release, so there's always a direct download link:
       # https://github.com/<you>/<repo>/releases/latest/download/OBD2Reader.apk
       - name: Publish a release
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: OBD2 Reader 1.0.${{ github.run_number }}
-          body_path: .github/release-notes.md
+          tag_name: v${{ env.APP_VERSION }}-build${{ github.run_number }}
+          name: OBD2 Reader ${{ env.APP_VERSION }} (build ${{ github.run_number }})
+          body_path: release-body.md
           files: OBD2Reader.apk
           make_latest: true

@@ -2,74 +2,87 @@ package com.obdreader.app.ui
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.RadialGradient
 import android.graphics.RectF
+import android.graphics.Shader
+import android.view.ContextThemeWrapper
 import android.view.View
+import com.obdreader.app.R
 
-/** A tiny picture of a theme for the picker: its background, a card, a dial and a line of text. */
-class ThemeSwatchView(context: Context, private val theme: AppThemes.AppTheme) : View(context) {
+/** A small picture of a style for the picker, drawn with that style's own colours. */
+class ThemeSwatchView(context: Context, theme: AppThemes.AppTheme) : View(context) {
 
-    private val density = resources.displayMetrics.density
-    private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeCap = if (theme.segmented || theme.cut) Paint.Cap.BUTT else Paint.Cap.ROUND
-    }
-    private val box = RectF()
-    private val arc = RectF()
-    private val path = Path()
+    private val t = ContextThemeWrapper(context, theme.style)
+    private val layout = t.dashLayout()
+    private val bg = t.themeColor(R.attr.obdBg)
+    private val s1 = t.themeColor(R.attr.obdStripe1)
+    private val s2 = t.themeColor(R.attr.obdStripe2)
+    private val kerb = t.themeBool(R.attr.obdKerb)
+    private val roundel = t.themeColor(R.attr.obdRoundel)
+    private val ink = t.themeColor(R.attr.obdRoundelInk)
+    private val fg = t.themeColor(R.attr.obdTextPrimary)
+    private val display = t.displayTypeface()
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { textAlign = Paint.Align.CENTER }
+    private val rect = RectF()
 
-    /** Draws [box] with the theme's corners: rounded, or cut on the top-left and bottom-right. */
-    private fun shape(canvas: Canvas, r: Float, paint: Paint) {
-        if (!theme.cut) {
-            canvas.drawRoundRect(box, r, r, paint)
-            return
-        }
-        path.reset()
-        path.moveTo(box.left + r, box.top)
-        path.lineTo(box.right, box.top)
-        path.lineTo(box.right, box.bottom - r)
-        path.lineTo(box.right - r, box.bottom)
-        path.lineTo(box.left, box.bottom)
-        path.lineTo(box.left, box.top + r)
-        path.close()
-        canvas.drawPath(path, paint)
+    init {
+        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
     }
 
     override fun onDraw(canvas: Canvas) {
         val w = width.toFloat()
         val h = height.toFloat()
-        val r = theme.previewRadiusDp * density
-
-        fill.color = theme.previewBg
-        box.set(0f, 0f, w, h)
-        shape(canvas, r, fill)
-
-        fill.color = theme.previewSurface
-        box.set(w * 0.08f, h * 0.12f, w * 0.92f, h * 0.88f)
-        shape(canvas, r * 0.8f, fill)
-
-        // Dial
-        val d = h * 0.5f
-        arc.set(w * 0.16f, h * 0.24f, w * 0.16f + d, h * 0.24f + d)
-        stroke.strokeWidth = h * 0.09f
-        stroke.color = theme.previewSurface xor 0x00202020
-        canvas.drawArc(arc, 135f, 270f, false, stroke)
-        stroke.color = theme.previewAccent
-        if (theme.segmented) {
-            for (i in 0 until 6) canvas.drawArc(arc, 135f + i * 30f, 20f, false, stroke)
-        } else {
-            canvas.drawArc(arc, 135f, 170f, false, stroke)
+        val u = w / 72f
+        rect.set(0f, 0f, w, h)
+        paint.shader = if (layout == DashLayout.COCKPIT) RadialGradient(w / 2, h * 0.3f, w * 0.8f, Color.parseColor("#16244A"), bg, Shader.TileMode.CLAMP) else null
+        paint.color = bg
+        canvas.drawRoundRect(rect, 4 * u, 4 * u, paint)
+        paint.shader = null
+        when (layout) {
+            DashLayout.LIVERY -> {
+                canvas.save()
+                canvas.clipRect(rect)
+                canvas.skew(0f, -0.21f)
+                if (kerb) {
+                    for (i in 0 until 6) { paint.color = if (i % 2 == 0) s1 else s2; canvas.drawRect(i * 14 * u, 18 * u, (i + 1) * 14 * u, 27 * u, paint) }
+                } else {
+                    paint.color = s1; canvas.drawRect(0f, 18 * u, w, 27 * u, paint)
+                    paint.color = s2; canvas.drawRect(0f, 30 * u, w, 34 * u, paint)
+                }
+                canvas.restore()
+                paint.color = roundel
+                canvas.drawCircle(50 * u, 34 * u, 13 * u, paint)
+                text.typeface = display; text.textSize = 13 * u; text.color = ink
+                canvas.drawText("42", 50 * u, 39 * u, text)
+            }
+            DashLayout.TELEMETRY -> {
+                val leds = intArrayOf(Color.parseColor("#34D17A"), Color.parseColor("#FFB000"), Color.parseColor("#FF3B30"))
+                for (i in 0 until 9) { paint.color = leds[i / 3]; canvas.drawRoundRect(RectF((6 + i * 6.8f) * u, 7 * u, (11 + i * 6.8f) * u, 11 * u), u, u, paint) }
+                text.typeface = display; text.textSize = 15 * u; text.color = fg; text.textAlign = Paint.Align.LEFT
+                canvas.drawText("3420", 7 * u, 31 * u, text)
+                text.textAlign = Paint.Align.CENTER
+                paint.style = Paint.Style.STROKE; paint.strokeWidth = 1.6f * u
+                paint.color = Channels.RPM
+                canvas.drawLines(floatArrayOf(6f, 46f, 16f, 40f, 16f, 40f, 24f, 43f, 24f, 43f, 34f, 33f, 34f, 33f, 44f, 38f, 44f, 38f, 54f, 30f, 54f, 30f, 66f, 35f).map { it * u }.toFloatArray(), paint)
+                paint.color = Channels.SPEED
+                canvas.drawLines(floatArrayOf(6f, 49f, 18f, 46f, 18f, 46f, 30f, 47f, 30f, 47f, 42f, 42f, 42f, 42f, 54f, 44f, 54f, 44f, 66f, 41f).map { it * u }.toFloatArray(), paint)
+                paint.style = Paint.Style.FILL
+            }
+            DashLayout.COCKPIT -> {
+                val ring = RectF(17 * u, 10 * u, 55 * u, 48 * u)
+                paint.style = Paint.Style.STROKE; paint.strokeWidth = 3 * u; paint.strokeCap = Paint.Cap.ROUND
+                paint.color = Color.argb(30, 255, 255, 255)
+                canvas.drawArc(ring, 140f, 260f, false, paint)
+                paint.shader = LinearGradient(17 * u, 0f, 55 * u, 0f, s1, s2, Shader.TileMode.CLAMP)
+                canvas.drawArc(ring, 140f, 160f, false, paint)
+                paint.shader = null; paint.style = Paint.Style.FILL; paint.strokeCap = Paint.Cap.BUTT
+                text.typeface = t.uiTypeface(300); text.textSize = 14 * u; text.color = fg
+                canvas.drawText("87", 36 * u, 34 * u, text)
+            }
         }
-
-        // Text lines
-        fill.color = theme.previewText
-        val x = w * 0.16f + d + w * 0.08f
-        box.set(x, h * 0.34f, w * 0.84f, h * 0.34f + h * 0.08f)
-        canvas.drawRoundRect(box, h * 0.04f, h * 0.04f, fill)
-        fill.color = theme.previewAccentAlt
-        box.set(x, h * 0.52f, x + (w * 0.84f - x) * 0.6f, h * 0.52f + h * 0.08f)
-        canvas.drawRoundRect(box, h * 0.04f, h * 0.04f, fill)
     }
 }

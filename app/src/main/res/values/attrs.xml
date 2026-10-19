@@ -18,25 +18,29 @@
     <attr name="obdDanger" format="color" />
     <attr name="obdIdle" format="color" />
 
+    <!-- Livery: the two stripe colours, the race-number roundel and its rev ring -->
+    <attr name="obdStripe1" format="color" />
+    <attr name="obdStripe2" format="color" />
+    <attr name="obdKerb" format="boolean" />
+    <attr name="obdRoundel" format="color" />
+    <attr name="obdRoundelInk" format="color" />
+    <attr name="obdRing" format="color" />
+    <!-- How far panels and buttons lean, in degrees (0 for the telemetry and cockpit layouts). -->
+    <attr name="obdSkew" format="float" />
+    <!-- Which dashboard this theme uses. -->
+    <attr name="obdLayout" format="enum">
+        <enum name="livery" value="0" />
+        <enum name="telemetry" value="1" />
+        <enum name="cockpit" value="2" />
+    </attr>
+    <!-- Font for big numbers and headings. -->
+    <attr name="obdDisplayFont" format="reference" />
+
     <attr name="obdCardRadius" format="dimension" />
     <attr name="obdCardStroke" format="dimension" />
     <attr name="obdButtonRadius" format="dimension" />
-    <!-- Font family for big numbers (dials and tiles), e.g. sans-serif-medium or monospace. -->
-    <attr name="obdNumberFont" format="string" />
-    <attr name="obdNumberBold" format="boolean" />
-    <attr name="obdNumberItalic" format="boolean" />
-    <attr name="obdTitleItalic" format="boolean" />
-    <!-- Shape of cards: a ShapeAppearance style (rounded or cut corners). -->
+    <attr name="obdTitleFont" format="reference|string" />
     <attr name="obdShapeAppearance" format="reference" />
     <attr name="obdPillBg" format="reference" />
-    <attr name="obdTitleFont" format="string" />
     <attr name="obdIsLight" format="boolean" />
-    <!-- Dial thickness as a fraction of its width. -->
-    <attr name="obdGaugeThickness" format="float" />
-    <attr name="obdGaugeStyle" format="enum">
-        <enum name="gradient" value="0" />
-        <enum name="solid" value="1" />
-        <enum name="segmented" value="2" />
-        <enum name="angular" value="3" />
-    </attr>
 </resources>

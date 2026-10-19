@@ -1,10 +1,9 @@
 package com.obdreader.app.ui
 
-import android.graphics.Color
 import androidx.annotation.StyleRes
 import com.obdreader.app.R
 
-/** The app's selectable looks. Colours here only draw the picker's previews; the real values live in themes.xml. */
+/** The styles a user can pick: six livery colourways, plus two layouts of their own. */
 object AppThemes {
 
     data class AppTheme(
@@ -12,49 +11,36 @@ object AppThemes {
         val name: String,
         val description: String,
         @StyleRes val style: Int,
-        val previewBg: Int,
-        val previewSurface: Int,
-        val previewAccent: Int,
-        val previewAccentAlt: Int,
-        val previewText: Int,
-        val previewRadiusDp: Float,
-        val segmented: Boolean = false,
-        /** Cut (angled) corners instead of rounded ones. */
-        val cut: Boolean = false,
+        /** True for the telemetry and cockpit layouts, which change the dashboard's layout too. */
+        val ownLayout: Boolean = false,
     )
 
     val ALL: List<AppTheme> = listOf(
+        AppTheme("asphalt", "Asphalt", "Signal orange and white stripes on dark tarmac grey.", R.style.Theme_ObdReader),
+        AppTheme("endurance", "Endurance", "Night-race navy with yellow, like a Le Mans prototype after dark.", R.style.Theme_ObdReader_Endurance),
+        AppTheme("kerb", "Kerb", "Red and white kerb stripes, straight off the apex of a corner.", R.style.Theme_ObdReader_Kerb),
+        AppTheme("pitlane", "Pit lane", "A light livery in black and race red. Easiest to read in sunlight.", R.style.Theme_ObdReader_Pitlane),
+        AppTheme("drift", "Drift", "Hot pink and teal, from the drift and street scene.", R.style.Theme_ObdReader_Drift),
+        AppTheme("apex", "Apex", "Volt yellow on carbon black with sharp, raked edges.", R.style.Theme_ObdReader_Apex),
         AppTheme(
-            "midnight", "Midnight", "Charcoal and cyan with soft rounded cards. Easy on the eyes at night.",
-            R.style.Theme_ObdReader,
-            Color.parseColor("#0B0F14"), Color.parseColor("#141A21"), Color.parseColor("#3DDCF0"), Color.parseColor("#7C8CFF"),
-            Color.parseColor("#E9EEF3"), 12f,
+            "telemetry", "Race telemetry",
+            "A data-logger screen: shift lights, big numbers and a live 30-second trace for every reading.",
+            R.style.Theme_ObdReader_Telemetry, ownLayout = true,
         ),
         AppTheme(
-            "racing", "Racing", "Black with orange and yellow, sharp corners and bold, condensed numbers.",
-            R.style.Theme_ObdReader_Racing,
-            Color.parseColor("#09090A"), Color.parseColor("#141416"), Color.parseColor("#FF6A00"), Color.parseColor("#FFD60A"),
-            Color.parseColor("#F7F7F7"), 3f,
-        ),
-        AppTheme(
-            "apex", "Apex", "Carbon black and volt yellow, cut-off corners and slanted bold numbers, like a race-car display.",
-            R.style.Theme_ObdReader_Apex,
-            Color.parseColor("#0D0E11"), Color.parseColor("#17191E"), Color.parseColor("#D4FF1E"), Color.parseColor("#00D1FF"),
-            Color.parseColor("#F3F5F8"), 9f, cut = true,
-        ),
-        AppTheme(
-            "daylight", "Daylight", "A light theme with white cards and blue accents, for reading in bright sun.",
-            R.style.Theme_ObdReader_Daylight,
-            Color.parseColor("#F3F5F8"), Color.parseColor("#FFFFFF"), Color.parseColor("#1660D4"), Color.parseColor("#0EA5E9"),
-            Color.parseColor("#111827"), 10f,
-        ),
-        AppTheme(
-            "lcd", "Retro LCD", "Phosphor green on black, square edges, monospace digits and segmented dials.",
-            R.style.Theme_ObdReader_Lcd,
-            Color.parseColor("#040905"), Color.parseColor("#0A140C"), Color.parseColor("#3CFF6E"), Color.parseColor("#3CFF6E"),
-            Color.parseColor("#A4FFB8"), 2f, segmented = true,
+            "cockpit", "Digital cockpit",
+            "Calm and premium, like a modern EV: one big speed in a glowing ring, on layered glass.",
+            R.style.Theme_ObdReader_Cockpit, ownLayout = true,
         ),
     )
 
-    fun byId(id: String?): AppTheme = ALL.firstOrNull { it.id == id } ?: ALL.first()
+    /** Themes from earlier versions, mapped to their closest new style. */
+    private val OLD = mapOf(
+        "midnight" to "asphalt", "racing" to "asphalt", "daylight" to "pitlane", "lcd" to "drift",
+    )
+
+    fun byId(id: String?): AppTheme {
+        val key = OLD[id] ?: id
+        return ALL.firstOrNull { it.id == key } ?: ALL.first()
+    }
 }
