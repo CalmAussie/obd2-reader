@@ -32,7 +32,7 @@ All you need is the APK. There's no Play Store listing, account, sign-in or othe
 1. On your Android phone (Android 8 or newer), tap **[Download the latest APK](https://github.com/CalmAussie/obd2-reader/releases/latest/download/OBD2Reader.apk)**, or scan the QR code with the phone's camera.
 2. Open the downloaded file. If asked, allow your browser or file app to **install unknown apps**, then tap **Install**.
 3. If Google Play Protect warns about an unknown developer, tap **More details â†’ Install anyway**. Every app from outside the Play Store gets this warning.
-4. Open OBD2 Reader. Tap **Demo car** to try it straight away, or plug in an adapter and tap **Connect**.
+4. Open OBD2 Reader and choose your car (or **Not listed**). Then tap **Demo car** to try it straight away, or plug in an adapter and tap **Connect**.
 
 To update, install a newer APK over the old one. Your settings are kept.
 
@@ -50,7 +50,9 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics â
 
 ## What it does
 - **Live data:** RPM, speed, coolant, fuel, throttle, engine load, intake air, manifold pressure, MAF, timing advance, ambient and oil temperature, and battery voltage. Readings past their limit turn red.
-- **Graphs and drive logs:** live charts for up to four readings at once, fast multi-reading polling, and CSV recording of whole drives that you can share to Excel or Google Sheets.
+- **Your car first:** the app asks for your car's make, year and model when you first open it, so manufacturer-specific trouble codes are explained for your brand, the rev dial uses your engine's redline, and your car's protocol is tried first.
+- **Driving score:** rates the current drive out of 100 for **Efficiency**, **Everyday** driving or **Racing** (track days), with a score for each habit and a tip for what would help most.
+- **Graphs and drive logs:** live charts for up to four readings at once, fast multi-reading polling, and CSV recording of whole drives that you can share to Excel or Google Sheets. Drives are only recorded when you tap **Record drive**, and recordings are never included in backups.
 - **Trouble codes, explained:** reads stored and pending codes and explains each one: what it means, how urgent it is, symptoms, common causes and what to check. Share the lot as a report for your mechanic.
 - **Read-only:** the app never clears codes, turns off the check-engine light or changes anything in the car. Every command is checked before it's sent, and anything that isn't a read is blocked.
 - **Reconnects by itself:** picks the adapter back up when you open the app, start Android Auto or turn the ignition back on.

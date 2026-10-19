@@ -95,6 +95,9 @@ import com.obdreader.app.ui.panelBackground
 import com.obdreader.app.ui.themeBool
 import com.obdreader.app.ui.SmoothText
 import com.obdreader.app.ui.applyTitleFonts
+import com.obdreader.app.ui.displayTypeface
+import com.obdreader.app.session.DriveScorer
+import com.obdreader.app.obd.DrivingScore
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.themeShape
 import com.obdreader.app.ui.uiTypeface
@@ -271,7 +274,13 @@ class MainActivity : AppCompatActivity() {
         demoBtn.kind = SkewButton.Kind.OUTLINE
         readDtcBtn.text = getString(R.string.read_codes)
 
-        connectBtn.setOnClickListener { if (ObdSession.isActive) disconnect() else showConnectSheet() }
+        connectBtn.setOnClickListener {
+            when {
+                ObdSession.isActive -> disconnect()
+                needsCar() -> showCarPicker(firstRun = true) { showConnectSheet() }
+                else -> showConnectSheet()
+            }
+        }
         demoBtn.setOnClickListener { if (!ObdSession.isActive) startSession(DemoTransport()) }
         readDtcBtn.setOnClickListener { readDtcs() }
         vinBtn.setOnClickListener { readVin() }
@@ -294,6 +303,8 @@ class MainActivity : AppCompatActivity() {
             setOnClickListener { findViewById<MaterialSwitch>(R.id.reconnectSwitch).toggle() }
         }
         setupGraphs()
+        setupScore()
+        if (savedInstanceState == null) Exports.cleanUp(this) // shared reports and logs are temporary copies
 
         bottomNav.setOnItemSelectedListener { item ->
             showPage(item.itemId)
@@ -327,17 +338,129 @@ class MainActivity : AppCompatActivity() {
                         }
                 }
                 launch { LogRecorder.active.collect { renderRecording(it) } }
+                launch { DriveScorer.results.collect { renderScore() } }
             }
         }
 
         // Reconnect to the last adapter by itself when the app opens (if that's switched on).
         if (savedInstanceState == null) ObdSession.autoConnect(this)
+        // The car comes first: it decides how fault codes are explained, the redline and the protocol.
+        if (savedInstanceState == null && needsCar()) showCarPicker(firstRun = true)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         // The bottom bar restores its selected tab by itself after the screen is recreated; show its page.
         showPage(bottomNav.selectedItemId)
+    }
+
+    // ---------- Driving score ----------
+
+    private lateinit var scoreCard: LinearLayout
+    private var scoreStyle = DrivingScore.Style.EVERYDAY
+
+    private fun setupScore() {
+        scoreCard = findViewById(R.id.scoreCard)
+        scoreCard.background = panelBackground()
+        DriveScorer.start()
+        scoreStyle = DrivingScore.Style.values().firstOrNull { it.name == prefs.getString(PREF_SCORE_STYLE, null) } ?: DrivingScore.Style.EVERYDAY
+        val ids = mapOf(DrivingScore.Style.EFFICIENCY to R.id.styleEfficiency, DrivingScore.Style.EVERYDAY to R.id.styleEveryday, DrivingScore.Style.RACING to R.id.styleRacing)
+        findViewById<MaterialButtonToggleGroup>(R.id.scoreStyle).apply {
+            ids.values.forEach { id ->
+                findViewById<MaterialButton>(id).apply {
+                    setTextColor(ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()), intArrayOf(themeColor(R.attr.obdOnAccent), themeColor(R.attr.obdTextPrimary))))
+                    backgroundTintList = ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()), intArrayOf(themeColor(R.attr.obdAccent), android.graphics.Color.TRANSPARENT))
+                    strokeColor = ColorStateList.valueOf(themeColor(R.attr.obdOutline))
+                }
+            }
+            check(ids.getValue(scoreStyle))
+            addOnButtonCheckedListener { _, id, checked ->
+                if (!checked) return@addOnButtonCheckedListener
+                scoreStyle = ids.entries.first { it.value == id }.key
+                prefs.edit().putString(PREF_SCORE_STYLE, scoreStyle.name).apply()
+                renderScore()
+            }
+        }
+        renderScore()
+    }
+
+    /** The chosen style's score: the number, what it means, each part with a bar, and the tip that would help most. */
+    private fun renderScore() {
+        if (!::scoreCard.isInitialized) return
+        val r = DriveScorer.results.value[scoreStyle]
+        val connected = ObdSession.state.value.isConnected || ObdSession.state.value.phase == ObdSession.Phase.WAITING
+        scoreCard.removeAllViews()
+        val head = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.BOTTOM }
+        head.addView(TextView(this).apply {
+            text = r?.score?.toString() ?: getString(R.string.dash)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 48f)
+            typeface = displayTypeface()
+            includeFontPadding = false
+            setTextColor(r?.score?.let { scoreColour(it) } ?: themeColor(R.attr.obdTextPrimary))
+        })
+        head.addView(TextView(this).apply {
+            text = "/100"
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setTextColor(themeColor(R.attr.obdTextSecondary))
+            setPadding(dp(6f).toInt(), 0, 0, dp(6f).toInt())
+        })
+        scoreCard.addView(head)
+        scoreCard.addView(TextView(this).apply {
+            text = when {
+                r == null || (r.drivingSeconds == 0 && !connected) -> getString(R.string.score_not_connected)
+                r.score == null -> getString(R.string.score_waiting)
+                else -> scoreStyle.blurb
+            }
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setTextColor(themeColor(R.attr.obdTextSecondary))
+            setPadding(0, dp(4f).toInt(), 0, dp(6f).toInt())
+        })
+        val parts = r?.parts ?: DrivingScore().result(scoreStyle).parts
+        for (p in parts) {
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(8f).toInt(), 0, dp(3f).toInt()) }
+            row.addView(TextView(this).apply {
+                text = p.name
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTextColor(themeColor(R.attr.obdTextPrimary))
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            row.addView(TextView(this).apply {
+                text = if (r?.score == null || p.score == null) getString(R.string.dash) else p.score.toString()
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                typeface = uiTypeface(600)
+                fontFeatureSettings = "tnum"
+                setTextColor(themeColor(R.attr.obdTextPrimary))
+            })
+            scoreCard.addView(row)
+            scoreCard.addView(com.google.android.material.progressindicator.LinearProgressIndicator(this).apply {
+                max = 100
+                progress = if (r?.score == null) 0 else p.score ?: 0
+                trackCornerRadius = dp(2f).toInt()
+                trackThickness = dp(4f).toInt()
+                setIndicatorColor(p.score?.let { scoreColour(it) } ?: themeColor(R.attr.obdAccent))
+                trackColor = themeColor(R.attr.obdTrack)
+            })
+        }
+        val weakest = if (r?.score == null) null else r.parts.filter { it.score != null }.minByOrNull { it.score!! }?.takeIf { it.score!! < 90 }
+        val extra = listOfNotNull(
+            weakest?.let { "Tip: ${it.tip}" },
+            r?.best0to100?.takeIf { scoreStyle == DrivingScore.Style.RACING }?.let { String.format(Locale.US, "Best 0 to 100 km/h this drive: %.1f s", it) },
+            if (scoreStyle == DrivingScore.Style.RACING) getString(R.string.score_racing_note) else null,
+        )
+        for (line in extra) {
+            scoreCard.addView(TextView(this).apply {
+                text = line
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                setTextColor(themeColor(R.attr.obdTextSecondary))
+                setLineSpacing(0f, 1.15f)
+                setPadding(0, dp(12f).toInt(), 0, 0)
+            })
+        }
+    }
+
+    private fun scoreColour(score: Int): Int = when {
+        score >= 80 -> themeColor(R.attr.obdOk)
+        score >= 55 -> themeColor(R.attr.obdWarn)
+        else -> themeColor(R.attr.obdDanger)
     }
 
     // ---------- Graphs ----------
@@ -958,6 +1081,7 @@ class MainActivity : AppCompatActivity() {
         recordBtn.isEnabled = s.isConnected || LogRecorder.active.value != null
 
         if (s.phase != lastPhase) {
+            renderScore()
             if (s.phase == ObdSession.Phase.CONNECTING) {
                 if (lastPhase != ObdSession.Phase.WAITING) clearReadings()
                 startLights.start()
@@ -1241,6 +1365,7 @@ class MainActivity : AppCompatActivity() {
         val redline = savedCar()?.let { VehicleCatalog.recommend(it).redline }
         val max = if (redline == null) 8000f else ((redline / 1000 + 2) * 1000).toFloat()
         this.redline = (redline ?: 6500).toFloat()
+        DriveScorer.setRedline(this.redline)
         roundel.max = max
         roundel.warnAt = this.redline
         cockpitRing.rpmMax = max
@@ -1252,10 +1377,19 @@ class MainActivity : AppCompatActivity() {
         carSetting.text = savedCar()?.label ?: getString(R.string.car_not_set)
     }
 
-    private fun showCarPicker() {
+    /** No car chosen yet, and the user hasn't said theirs isn't listed. */
+    private fun needsCar(): Boolean = savedCar() == null && !prefs.getBoolean(PREF_CAR_ASKED, false)
+
+    private fun showCarPicker(firstRun: Boolean = false, onDone: (() -> Unit)? = null) {
         val sheet = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.sheet_car, null)
         view.applyTitleFonts()
+        if (firstRun) {
+            view.findViewById<TextView>(R.id.carTitle).setText(R.string.car_first_title)
+            view.findViewById<TextView>(R.id.carSubtitle).setText(R.string.car_first_subtitle)
+            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.carClear).setText(R.string.car_skip)
+            sheet.setCanceledOnTouchOutside(false)
+        }
         val makeInput = view.findViewById<MaterialAutoCompleteTextView>(R.id.makeInput)
         val yearInput = view.findViewById<MaterialAutoCompleteTextView>(R.id.yearInput)
         val modelInput = view.findViewById<MaterialAutoCompleteTextView>(R.id.modelInput)
@@ -1336,16 +1470,24 @@ class MainActivity : AppCompatActivity() {
                 .putString(PREF_CAR_ENGINE, car.engine)
                 .remove(PREF_LAST_PROTOCOL) // the remembered protocol may belong to a different car
                 .apply()
+            prefs.edit().putBoolean(PREF_CAR_ASKED, true).apply()
             updateCarSetting()
             applyRedline()
             sheet.dismiss()
-            toast(if (ObdSession.client != null) "Saved. Disconnect and connect again to use it." else "Saved. Tap Connect to try again.")
+            if (lastCodes != null) lastCodes?.let { renderCodes(it) } // re-explain codes for the new make
+            when {
+                onDone != null -> onDone()
+                firstRun -> toast("Saved. Tap Connect when you're in the car, or try the demo car.")
+                else -> toast(if (ObdSession.client != null) "Saved. Disconnect and connect again to use it." else "Saved. Tap Connect to try again.")
+            }
         }
         view.findViewById<View>(R.id.carClear).setOnClickListener {
-            prefs.edit().remove(PREF_CAR_MAKE).remove(PREF_CAR_YEAR).remove(PREF_CAR_MODEL).remove(PREF_CAR_ENGINE).apply()
+            prefs.edit().remove(PREF_CAR_MAKE).remove(PREF_CAR_YEAR).remove(PREF_CAR_MODEL).remove(PREF_CAR_ENGINE)
+                .putBoolean(PREF_CAR_ASKED, true).apply()
             updateCarSetting()
             applyRedline()
             sheet.dismiss()
+            onDone?.invoke()
         }
 
         sheet.setContentView(view)
@@ -1403,7 +1545,7 @@ class MainActivity : AppCompatActivity() {
      * what you might notice, common causes and what to check first.
      */
     private fun addDtcRow(code: String, pending: Boolean) {
-        val info = DtcLibrary.lookup(code)
+        val info = DtcLibrary.lookup(code, ObdSession.carMake(this))
         val pad = dp(14f).toInt()
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -1615,6 +1757,8 @@ class MainActivity : AppCompatActivity() {
         private const val PREF_CAR_YEAR = AppPrefs.CAR_YEAR
         private const val PREF_CAR_MODEL = AppPrefs.CAR_MODEL
         private const val PREF_CAR_ENGINE = AppPrefs.CAR_ENGINE
+        private const val PREF_CAR_ASKED = "car_asked"
+        private const val PREF_SCORE_STYLE = "score_style"
         private const val PREF_PROTOCOL = AppPrefs.PROTOCOL
         private const val PREF_LAST_PROTOCOL = AppPrefs.LAST_PROTOCOL
         private const val PREF_LAST_TYPE = AppPrefs.LAST_TYPE

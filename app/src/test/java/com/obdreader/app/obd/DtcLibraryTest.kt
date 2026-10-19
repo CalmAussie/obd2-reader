@@ -45,7 +45,7 @@ class DtcLibraryTest {
         val maker = DtcLibrary.lookup("P1456")
         assertFalse(maker.known)
         assertTrue(maker.system.endsWith("manufacturer-specific code"))
-        assertTrue(maker.meaning.contains("P1456"))
+        assertTrue(maker.checks.any { it.contains("P1456") })
 
         val generic = DtcLibrary.lookup("p0699")
         assertEquals("P0699", generic.code)
@@ -61,5 +61,16 @@ class DtcLibraryTest {
     @Test
     fun logLineHasCodeDefinitionAndUrgency() {
         assertEquals("P0420: Catalytic converter efficiency below threshold (bank 1). Check when convenient.", DtcLibrary.logLine("P0420"))
+    }
+
+    @Test
+    fun manufacturerCodesAreExplainedForTheChosenMake() {
+        val d = DtcLibrary.lookup("P1135", "Toyota")
+        assertEquals("Toyota-specific code", d.title)
+        assertTrue(d.meaning.startsWith("Toyota sets the meaning"))
+        assertTrue(d.checks.first().contains("P1135 Toyota"))
+        assertEquals("Manufacturer-specific code", DtcLibrary.lookup("P1135").title)
+        // Generic codes mean the same on every car, so the make doesn't change them.
+        assertEquals(DtcLibrary.lookup("P0420").title, DtcLibrary.lookup("P0420", "Ford").title)
     }
 }

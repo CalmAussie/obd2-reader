@@ -317,6 +317,54 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="28dp"
                         android:layout_marginBottom="10dp"
+                        android:text="@string/driving_score" />
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/scoreStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:selectionRequired="true"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/styleEfficiency"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/style_efficiency" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/styleEveryday"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/style_everyday" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/styleRacing"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/style_racing" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                    <LinearLayout
+                        android:id="@+id/scoreCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical"
+                        android:padding="16dp" />
+
+                    <TextView
+                        style="@style/ObdHeading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="28dp"
+                        android:layout_marginBottom="10dp"
                         android:text="@string/live_data" />
 
                     <LinearLayout
