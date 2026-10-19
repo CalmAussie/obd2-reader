@@ -21,6 +21,7 @@ import com.obdreader.app.obd.ObdTransport
 import com.obdreader.app.obd.Pid
 import com.obdreader.app.obd.Pids
 import com.obdreader.app.obd.ReconnectPolicy
+import com.obdreader.app.obd.DtcLibrary
 import com.obdreader.app.obd.VehicleCatalog
 import com.obdreader.app.obd.WifiTransport
 import kotlinx.coroutines.CancellationException
@@ -41,6 +42,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * The one connection to the car, shared by the phone screens, the Android Auto
@@ -94,6 +98,17 @@ object ObdSession {
     private val _log = MutableStateFlow<List<String>>(emptyList())
     val log: StateFlow<List<String>> = _log.asStateFlow()
 
+    /**
+     * The last trouble-code read, decoded. Live polling fills the log within seconds, so this is
+     * kept separately and shown above the log, and included when the log is shared.
+     */
+    private val _codeLog = MutableStateFlow<List<String>>(emptyList())
+    val codeLog: StateFlow<List<String>> = _codeLog.asStateFlow()
+
+    /** The decoded codes followed by the raw adapter conversation, as shown and shared. */
+    fun fullLog(codes: List<String> = _codeLog.value, lines: List<String> = _log.value): List<String> =
+        if (codes.isEmpty()) lines else codes + "" + lines
+
     private val _samples = MutableSharedFlow<Sample>(extraBufferCapacity = 512)
     /** Every reading as it arrives, with its time. */
     val samples: SharedFlow<Sample> = _samples.asSharedFlow()
@@ -125,6 +140,7 @@ object ObdSession {
         val prefs = AppPrefs.of(app)
         val isDemo = t is DemoTransport
         _log.value = emptyList()
+        _codeLog.value = emptyList()
         _state.value = State(
             phase = Phase.CONNECTING,
             title = "Connecting to ${t.name}…",
@@ -310,7 +326,13 @@ object ObdSession {
 
     suspend fun readCodes(): Codes {
         val c = client ?: throw IOException("Not connected")
-        val codes = Codes(c.readDtcs(pending = false), c.readDtcs(pending = true))
+        val stored = c.readDtcs(pending = false)
+        val storedLines = logCodes(stored, pending = false)
+        val pending = c.readDtcs(pending = true)
+        val pendingLines = logCodes(pending, pending = true)
+        val time = SimpleDateFormat("h:mm:ss a", Locale.getDefault()).format(Date())
+        _codeLog.value = listOf("Trouble codes read at $time") + storedLines + pendingLines
+        val codes = Codes(stored, pending)
         _state.update { it.copy(codes = codes) }
         return codes
     }
@@ -318,6 +340,9 @@ object ObdSession {
     suspend fun clearCodes(): Boolean {
         val c = client ?: throw IOException("Not connected")
         val ok = c.clearDtcs()
+        val line = if (ok) "= Codes cleared" else "= The car didn't confirm clearing the codes"
+        appendLog(line)
+        if (ok) _codeLog.value = listOf("Trouble codes cleared at " + SimpleDateFormat("h:mm:ss a", Locale.getDefault()).format(Date()))
         if (ok) _state.update { it.copy(codes = null) }
         return ok
     }
@@ -419,6 +444,15 @@ object ObdSession {
             cycle++
             delay(if (focused.isNotEmpty()) 10 else 40)
         }
+    }
+
+    /** Writes each decoded trouble code and its meaning under the raw reply, so the log reads on its own. */
+    private fun logCodes(codes: List<String>, pending: Boolean): List<String> {
+        val kind = if (pending) "pending" else "stored"
+        val lines = if (codes.isEmpty()) listOf("= No $kind codes")
+        else listOf("= ${codes.size} $kind ${if (codes.size == 1) "code" else "codes"}:") + codes.map { "=   " + DtcLibrary.logLine(it) }
+        lines.forEach { appendLog(it) }
+        return lines
     }
 
     private fun appendLog(line: String) {

@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.2.1 (19 October 2026)
+- The adapter log now shows each trouble code with its definition and urgency right under the car's raw reply, for example "P0420: Catalytic converter efficiency below threshold (bank 1). Check when convenient."
+- The latest code read stays pinned at the top of the log, so live data doesn't push it out of view, and it's included when you share the log.
+
 ## 1.2.0 (19 October 2026)
 
 ### Trouble codes explained

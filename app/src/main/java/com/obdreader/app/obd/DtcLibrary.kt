@@ -588,4 +588,11 @@ object DtcLibrary {
 
     /** Short name for [code], for lists and the car screen. */
     fun title(code: String): String = lookup(code).title
+
+    /** One line for the adapter log: the code, what it is and how urgent it is. */
+    fun logLine(code: String): String {
+        val d = lookup(code)
+        val urgency = if (d.severity == Severity.UNKNOWN) "Urgency varies by car" else d.severity.label
+        return "${d.code}: ${d.title}. $urgency."
+    }
 }
