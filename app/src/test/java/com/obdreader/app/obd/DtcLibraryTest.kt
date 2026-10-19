@@ -57,4 +57,9 @@ class DtcLibraryTest {
         assertTrue(DtcLibrary.lookup("U3000").system.contains("generic"))
         assertEquals("Unrecognised code", DtcLibrary.lookup("XYZ").title)
     }
+
+    @Test
+    fun logLineHasCodeDefinitionAndUrgency() {
+        assertEquals("P0420: Catalytic converter efficiency below threshold (bank 1). Check when convenient.", DtcLibrary.logLine("P0420"))
+    }
 }

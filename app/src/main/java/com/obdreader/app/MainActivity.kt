@@ -98,6 +98,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -269,7 +270,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.helpRow).setOnClickListener { showHelp() }
         findViewById<View>(R.id.themeButton).setOnClickListener { showThemePicker() }
         findViewById<View>(R.id.logShare).setOnClickListener {
-            Exports.share(this, Exports.adapterLog(this, ObdSession.log.value, ObdSession.state.value), "text/plain", "OBD2 Reader adapter log")
+            Exports.share(this, Exports.adapterLog(this, ObdSession.fullLog(), ObdSession.state.value), "text/plain", "OBD2 Reader adapter log")
         }
         shareReportBtn = findViewById(R.id.shareReportButton)
         shareReportBtn.setOnClickListener {
@@ -306,7 +307,10 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { ObdSession.state.collect { render(it) } }
-                launch { ObdSession.log.collect { logText.text = it.joinToString("\n") } }
+                launch {
+                    combine(ObdSession.codeLog, ObdSession.log) { codes, lines -> ObdSession.fullLog(codes, lines) }
+                        .collect { logText.text = it.joinToString("\n") }
+                }
                 launch { LogRecorder.active.collect { renderRecording(it) } }
             }
         }
