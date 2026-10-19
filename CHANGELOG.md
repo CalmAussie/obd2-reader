@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.3.2 (20 October 2026)
+- Choosing an adapter now lists each device by name only, without its Bluetooth address. Devices with no name are left out, adapters that look like OBD2 adapters stay at the top, and two devices with the same name are numbered, for example "OBDII" and "OBDII (2)".
+
 ## 1.3.1 (20 October 2026)
 
 ### Android Auto
