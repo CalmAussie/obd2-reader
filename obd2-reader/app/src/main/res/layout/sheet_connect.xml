@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="28dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="?attr/obdTitleFont"
+        android:text="@string/sheet_title"
+        android:textColor="?attr/obdTextPrimary"
+        android:textSize="20sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/sheet_subtitle"
+        android:textColor="?attr/obdTextSecondary"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/lastLabel"
+        style="@style/ObdSectionTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/last_used"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/optionLast"
+        layout="@layout/item_connect_option"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/otherLabel"
+        style="@style/ObdSectionTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/other_adapter"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/optionClassic"
+        layout="@layout/item_connect_option" />
+
+    <include
+        android:id="@+id/optionBle"
+        layout="@layout/item_connect_option" />
+
+    <include
+        android:id="@+id/optionWifi"
+        layout="@layout/item_connect_option" />
+</LinearLayout>
