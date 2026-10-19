@@ -45,14 +45,18 @@ jobs:
           fi
 
       - name: Run unit tests
-        run: gradle --no-daemon testDebugUnitTest
+        run: |
+          gradle --no-daemon testDebugUnitTest 2>&1 | tee -a build.log
+          exit ${PIPESTATUS[0]}
 
       - name: Build the APK
         env:
           OBD_KEYSTORE_PASSWORD: ${{ secrets.OBD_KEYSTORE_PASSWORD }}
           OBD_KEY_ALIAS: ${{ secrets.OBD_KEY_ALIAS }}
           OBD_KEY_PASSWORD: ${{ secrets.OBD_KEY_PASSWORD }}
-        run: gradle --no-daemon assembleRelease
+        run: |
+          gradle --no-daemon assembleRelease 2>&1 | tee -a build.log
+          exit ${PIPESTATUS[0]}
 
       - name: Check the APK is signed and installable
         run: |
@@ -64,6 +68,17 @@ jobs:
             echo "::error::APK is marked test-only and won't install from a file."; exit 1
           fi
           "$AAPT" dump badging OBD2Reader.apk | head -3
+
+      # Puts compiler errors and failed tests on the run's summary page, so they're readable
+      # without downloading the full log.
+      - name: Report build errors
+        if: failure()
+        run: |
+          [ -f build.log ] || exit 0
+          grep -E "^e: |error:|ERROR:|FAILED|Exception|expected:<|What went wrong" build.log \
+            | grep -v "^> Task" | awk '!seen[$0]++' | head -45 \
+            | sed -e 's#file:///home/runner/work/obd2-reader/obd2-reader/##' -e 's/^/::error::/'
+          grep -A6 "What went wrong" build.log | head -20 | tr '\n' ' ' | sed 's/^/::error::/' ; echo
 
       - uses: actions/upload-artifact@v4
         with:
