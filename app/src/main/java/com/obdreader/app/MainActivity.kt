@@ -878,12 +878,12 @@ class MainActivity : AppCompatActivity() {
         }
         setStatus(status, s.title, s.detail)
         updateButtons(connected = s.isConnected, busy = s.phase == ObdSession.Phase.CONNECTING || s.phase == ObdSession.Phase.WAITING)
-        graphRate.text = when {
+        if (pageGraphs.visibility == View.VISIBLE) graphRate.setIfChanged(when {
             s.isConnected && s.rate > 0 -> String.format(Locale.US, "%.0f readings a second from %s", s.rate, s.adapterName ?: "the car")
             s.isConnected -> "Connected. Readings appear here as they arrive."
             s.phase == ObdSession.Phase.WAITING -> s.title + ". " + s.detail
             else -> getString(R.string.graphs_hint)
-        }
+        })
         recordBtn.isEnabled = s.isConnected || LogRecorder.active.value != null
 
         if (s.phase != lastPhase) {
@@ -937,7 +937,7 @@ class MainActivity : AppCompatActivity() {
             lastUnsupported = s.unsupported
         }
         if (s.isConnected) {
-            protocolText.text = "Protocol: " + (ObdProtocols.byCode(s.protocolCode)?.name ?: s.summary.orEmpty())
+            protocolText.setIfChanged("Protocol: " + (ObdProtocols.byCode(s.protocolCode)?.name ?: s.summary.orEmpty()))
         }
         if (s.vinChecked && !lastVinChecked) {
             showVin(s.vin)
@@ -1450,10 +1450,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setStatus(status: Status, title: String, detail: String) {
-        statusText.text = title
-        statusText2.text = title
+        statusText.setIfChanged(title)
+        statusText2.setIfChanged(title)
         chooseCarButton.visibility = if (status == Status.ERROR) View.VISIBLE else View.GONE
-        statusDetail.text = detail
+        statusDetail.setIfChanged(detail)
         statusDetail.visibility = if (detail.isEmpty()) View.GONE else View.VISIBLE
     }
 
@@ -1470,7 +1470,7 @@ class MainActivity : AppCompatActivity() {
         pageDashboard.visibility = if (itemId == R.id.nav_dashboard) View.VISIBLE else View.GONE
         pageGraphs.visibility = if (itemId == R.id.nav_graphs) View.VISIBLE else View.GONE
         pageDiagnostics.visibility = if (itemId == R.id.nav_diagnostics) View.VISIBLE else View.GONE
-        if (itemId == R.id.nav_dashboard && ::graphRate.isInitialized) {
+        if (itemId != R.id.nav_diagnostics && ::graphRate.isInitialized) {
             lastReadings = emptyMap() // redraw every reading now that the Dashboard is back
             render(ObdSession.state.value)
         }
@@ -1512,6 +1512,11 @@ class MainActivity : AppCompatActivity() {
         logText.visibility = if (show) View.VISIBLE else View.GONE
         logShown.value = show
         logToggle.setText(if (show) R.string.hide else R.string.show)
+    }
+
+    /** Setting the same text again still makes Android lay the screen out again; skip it. */
+    private fun TextView.setIfChanged(value: CharSequence) {
+        if (text.toString() != value.toString()) text = value
     }
 
     private fun dp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, resources.displayMetrics)

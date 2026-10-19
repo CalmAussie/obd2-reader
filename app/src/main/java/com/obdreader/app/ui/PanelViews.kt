@@ -260,9 +260,9 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
     enum class Kind { PRIMARY, OUTLINE, DANGER }
 
     var text: String = ""
-        set(value) { field = value; contentDescription = value; requestLayout(); invalidate() }
+        set(value) { if (value != field) { field = value; contentDescription = value; requestLayout(); invalidate() } }
     var kind = Kind.PRIMARY
-        set(value) { field = value; invalidate() }
+        set(value) { if (value != field) { field = value; invalidate() } }
     /** Uses the theme's big display font, for the main Connect button. */
     var display = false
         set(value) { field = value; textPaint.typeface = if (value) context.displayTypeface() else context.uiTypeface(600); invalidate() }
@@ -295,6 +295,7 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
     override fun getAccessibilityClassName(): CharSequence = Button::class.java.name
 
     override fun setEnabled(enabled: Boolean) {
+        if (enabled == isEnabled) return
         super.setEnabled(enabled)
         alpha = if (enabled) 1f else 0.38f
     }
