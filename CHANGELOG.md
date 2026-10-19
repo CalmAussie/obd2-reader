@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.4.2 (20 October 2026)
+- Fixed: on some phones the "First, choose your car" step could disappear if Android rebuilt the screen just after the app opened (for example after a system setting changed). It now comes back until you've chosen your car or tapped **Not listed**.
+
 ## 1.4.1 (20 October 2026)
 - The demo car now reports a VIN for the car you chose, so its make and year match **Your car** on the Diagnostics tab. (It always said it was a 2012 Ford before.)
 - With a real car, if the VIN's make or year doesn't match the car you chose, Diagnostics says so and offers **Set my car to** the VIN's make and year. Fault codes are explained for the car you choose, so it's worth keeping them in step.
