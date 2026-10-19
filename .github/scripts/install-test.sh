@@ -7,6 +7,11 @@ PKG=com.obdreader.app
 log() { echo "$*" | tee -a "$OUT/result.txt"; }
 
 adb wait-for-device
+# Emulators often show "Pixel Launcher isn't responding" just after booting. Hide system error
+# dialogs (app crashes are still caught from the log) and give the launcher time to settle.
+adb shell settings put global hide_error_dialogs 1
+sleep 20
+adb shell input keyevent KEYCODE_HOME
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
