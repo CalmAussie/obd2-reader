@@ -6,56 +6,80 @@ import androidx.car.app.CarToast
 import androidx.car.app.Screen
 import androidx.car.app.model.Action
 import androidx.car.app.model.ActionStrip
-import androidx.car.app.model.CarColor
-import androidx.car.app.model.CarIcon
 import androidx.car.app.model.GridItem
 import androidx.car.app.model.GridTemplate
 import androidx.car.app.model.ItemList
-import androidx.car.app.model.MessageTemplate
 import androidx.car.app.model.Template
-import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.obdreader.app.R
 import com.obdreader.app.obd.DemoTransport
-import com.obdreader.app.obd.Pid
 import com.obdreader.app.obd.Pids
 import com.obdreader.app.session.ObdSession
-import kotlinx.coroutines.Job
+import com.obdreader.app.ui.SmoothValue
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 /**
- * The Android Auto screen: big, glanceable live readings while driving, built from
- * Android Auto's driving-safe templates (no custom drawing is allowed in the car).
+ * The Android Auto screen: big, glanceable live readings while driving, built from Android
+ * Auto's driving-safe templates.
+ *
+ * Two Android Auto rules shape it:
+ * - A screen may only send 5 *new* templates before the car closes the app with an error.
+ *   An update only counts as a refresh (free) if the title, the number of tiles and each tile's
+ *   title stay the same. So there's one grid for every state (not connected, connecting,
+ *   live, ignition off) with fixed tile titles; the live numbers are drawn into the tiles'
+ *   images, and the status goes in the first tile's text.
+ * - The car throttles how often the screen redraws. Within that, the screen refreshes several
+ *   times a second, and each reading glides between refreshes, like the phone's Dashboard.
  */
 class DashboardScreen(carContext: CarContext) : Screen(carContext) {
 
+    private class Tile(val key: String, val title: String, val unit: String, val decimals: Int, val min: Float, val max: Float, val warnAt: Float?) {
+        val smooth = SmoothValue(tauMs = 140f, settle = if (decimals > 0) 0.05f else 0.5f, maxStepMs = 300L, firstStepMs = REFRESH_MS)
+    }
+
+    private val tiles: List<Tile> by lazy {
+        fun pid(n: Int) = Pids.dashboard.first { it.number == n }
+        fun tile(n: Int, title: String, max: Float? = null) = pid(n).let {
+            Tile(it.hex, title, it.unit, it.decimals, it.min.toFloat(), max ?: it.max.toFloat(), it.warnAbove?.toFloat())
+        }
+        listOf(
+            tile(Pids.RPM, "Engine speed"),
+            tile(Pids.SPEED, "Speed", 240f),
+            tile(0x05, "Coolant"),
+            tile(0x11, "Throttle"),
+            tile(0x2F, "Fuel"),
+            Tile(ObdSession.VOLTAGE_KEY, "Battery", "V", 1, 11f, 15f, null),
+        )
+    }
+
     private var lastPhase: ObdSession.Phase? = null
-    private var lastRefresh = 0L
-    private var pending: Job? = null
+    private var lastTitle: String? = null
 
     init {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                ObdSession.state.collect { s ->
-                    // Android Auto limits how often a screen may redraw, so refresh about once a second.
-                    // A change that arrives too soon is drawn by a catch-up refresh, so the last
-                    // status (for example "Ignition off") is never left undrawn.
-                    pending?.cancel()
-                    val now = SystemClock.elapsedRealtime()
-                    if (s.phase != lastPhase || now - lastRefresh >= REFRESH_MS) {
-                        lastPhase = s.phase
-                        lastRefresh = now
-                        invalidate()
-                    } else {
-                        pending = launch {
-                            delay(REFRESH_MS - (now - lastRefresh))
-                            lastRefresh = SystemClock.elapsedRealtime()
+                // Status changes: redraw straight away, and say the important ones out loud as a toast.
+                launch {
+                    ObdSession.state.collect { s ->
+                        if (s.phase != lastPhase || s.title != lastTitle) {
+                            if (s.phase == ObdSession.Phase.ERROR && lastPhase != null) {
+                                CarToast.makeText(carContext, "${s.title}. ${s.detail}", CarToast.LENGTH_LONG).show()
+                            }
+                            lastPhase = s.phase
+                            lastTitle = s.title
                             invalidate()
                         }
+                    }
+                }
+                // Live readings: refresh several times a second while connected, so values glide.
+                launch {
+                    while (isActive) {
+                        delay(REFRESH_MS)
+                        if (ObdSession.state.value.isConnected || tiles.any { it.smooth.target != null && it.smooth.shown != it.smooth.target }) invalidate()
                     }
                 }
             }
@@ -64,47 +88,78 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
 
     override fun onGetTemplate(): Template {
         val s = ObdSession.state.value
-        return if (s.isConnected) liveTemplate(s) else notConnectedTemplate(s)
-    }
-
-    private fun notConnectedTemplate(s: ObdSession.State): Template {
-        val last = ObdSession.lastAdapterName(carContext)
-        val message = when (s.phase) {
-            ObdSession.Phase.CONNECTING, ObdSession.Phase.WAITING -> "${s.title}\n${s.detail}"
-            ObdSession.Phase.ERROR -> "${s.title}\n${s.detail}"
-            else -> if (last != null) "Not connected. Tap Connect to use $last." else "Not connected. Pair your adapter in OBD2 Reader on your phone first."
-        }
-        val builder = MessageTemplate.Builder(message)
-            .setTitle("OBD2 Reader")
-            .setHeaderAction(Action.APP_ICON)
-            .setIcon(CarLivery.roundel(carContext, 0f))
-
-        if (s.phase == ObdSession.Phase.WAITING) {
-            builder.addAction(
-                Action.Builder()
-                    .setTitle("Stop")
-                    .setOnClickListener { ObdSession.disconnect() }
-                    .build(),
-            )
-        } else if (s.phase != ObdSession.Phase.CONNECTING) {
-            if (last != null) {
-                builder.addAction(
-                    Action.Builder()
-                        .setTitle("Connect")
-                        .setBackgroundColor(CarLivery.accent(carContext))
-                        .setOnClickListener { connectLast() }
-                        .build(),
+        val now = SystemClock.uptimeMillis()
+        val items = ItemList.Builder()
+        tiles.forEachIndexed { i, t ->
+            val raw = s.readings[t.key]
+            t.smooth.set(raw?.toFloat())
+            t.smooth.step(now)
+            val shown = if (raw == null) null else t.smooth.shown
+            val unsupported = t.key in s.unsupported
+            val high = raw != null && t.warnAt != null && raw >= t.warnAt
+            val text = when {
+                i == 0 && !s.isConnected -> statusLine(s)
+                unsupported -> "Not supported"
+                high -> "High"
+                else -> t.unit
+            }
+            val image = if (t.key == HEX_RPM) {
+                CarLivery.roundel(carContext, ((shown ?: 0f) / t.max).coerceIn(0f, 1f), shown?.let { String.format(Locale.US, "%,d", ((it / 10f).toInt() * 10)) } ?: "—")
+            } else {
+                CarLivery.readingTile(
+                    carContext,
+                    value = if (unsupported) "n/a" else shown?.let { String.format(Locale.US, "%.${t.decimals}f", it) } ?: "—",
+                    fraction = shown?.let { ((it - t.min) / (t.max - t.min)).coerceIn(0f, 1f) },
+                    high = high,
                 )
             }
-            builder.addAction(
-                Action.Builder()
-                    .setTitle("Demo")
-                    .apply { if (last == null) setBackgroundColor(CarLivery.accent(carContext)) }
-                    .setOnClickListener { ObdSession.connect(carContext, DemoTransport()) }
+            items.addItem(
+                GridItem.Builder()
+                    .setTitle(t.title) // fixed, so every update is a free refresh
+                    .setText(text)
+                    .setImage(image, GridItem.IMAGE_TYPE_LARGE)
                     .build(),
             )
         }
-        return builder.build()
+        return GridTemplate.Builder()
+            .setTitle("OBD2 Reader") // fixed for the same reason
+            .setHeaderAction(Action.APP_ICON)
+            .setActionStrip(actions(s))
+            .setSingleList(items.build())
+            .build()
+    }
+
+    private fun statusLine(s: ObdSession.State): String = when (s.phase) {
+        ObdSession.Phase.CONNECTING -> "Connecting…"
+        ObdSession.Phase.WAITING -> s.title // "Ignition off" or "Waiting for the car"
+        ObdSession.Phase.ERROR -> s.title
+        else -> if (ObdSession.lastAdapterName(carContext) != null) "Not connected" else "Pair on phone"
+    }
+
+    private fun actions(s: ObdSession.State): ActionStrip {
+        val strip = ActionStrip.Builder()
+        when (s.phase) {
+            ObdSession.Phase.CONNECTED -> {
+                val codes = s.codes
+                strip.addAction(
+                    Action.Builder()
+                        .setTitle(when { codes == null -> "Codes"; codes.total == 0 -> "No codes"; else -> "Codes (${codes.total})" })
+                        .setOnClickListener { screenManager.push(CodesScreen(carContext)) }
+                        .build(),
+                )
+                strip.addAction(Action.Builder().setTitle("Disconnect").setOnClickListener { ObdSession.disconnect() }.build())
+            }
+            ObdSession.Phase.CONNECTING, ObdSession.Phase.WAITING -> {
+                strip.addAction(Action.Builder().setTitle("Stop").setOnClickListener { ObdSession.disconnect() }.build())
+            }
+            else -> {
+                if (ObdSession.lastAdapterName(carContext) != null) {
+                    strip.addAction(Action.Builder().setTitle("Connect").setOnClickListener { connectLast() }.build())
+                }
+                strip.addAction(Action.Builder().setTitle("Demo").setOnClickListener { ObdSession.connect(carContext, DemoTransport()) }.build())
+            }
+        }
+        return strip.build()
     }
 
     private fun connectLast() {
@@ -116,89 +171,9 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
         }
     }
 
-    private fun liveTemplate(s: ObdSession.State): Template {
-        val items = ItemList.Builder()
-        for ((pid, icon) in CAR_READINGS) {
-            items.addItem(gridItem(s, pid, icon))
-        }
-        items.addItem(
-            GridItem.Builder()
-                .setTitle(s.readings[ObdSession.VOLTAGE_KEY]?.let { String.format(Locale.US, "%.1f V", it) } ?: "—")
-                .setText("Battery")
-                .setImage(icon(R.drawable.ic_car_battery, false), GridItem.IMAGE_TYPE_ICON)
-                .build(),
-        )
-
-        val codes = s.codes
-        val codesLabel = when {
-            codes == null -> "Codes"
-            codes.total == 0 -> "No codes"
-            else -> "Codes (${codes.total})"
-        }
-        val actions = ActionStrip.Builder()
-            .addAction(
-                Action.Builder()
-                    .setTitle(codesLabel)
-                    .setOnClickListener { screenManager.push(CodesScreen(carContext)) }
-                    .build(),
-            )
-            .addAction(
-                Action.Builder()
-                    .setTitle("Disconnect")
-                    .setOnClickListener { ObdSession.disconnect() }
-                    .build(),
-            )
-            .build()
-
-        return GridTemplate.Builder()
-            .setTitle(s.adapterName ?: "Live data")
-            .setHeaderAction(Action.APP_ICON)
-            .setActionStrip(actions)
-            .setSingleList(items.build())
-            .build()
-    }
-
-    private fun gridItem(s: ObdSession.State, pid: Pid, iconRes: Int): GridItem {
-        val value = s.readings[pid.hex]
-        val unsupported = pid.hex in s.unsupported
-        val warn = value != null && pid.warnAbove != null && value >= pid.warnAbove
-        val title = when {
-            unsupported -> "n/a"
-            value == null -> "—"
-            pid.number == Pids.RPM -> String.format(Locale.US, "%,.0f", value)
-            else -> String.format(Locale.US, "%.${pid.decimals}f %s", value, pid.unit)
-        }
-        val label = if (pid.number == Pids.RPM) "rpm" else pid.label
-        val builder = GridItem.Builder()
-            .setTitle(title)
-            .setText(if (warn) "$label, high" else label)
-        // Engine speed gets the phone's rev roundel as a picture; the rest get livery-coloured icons.
-        if (pid.number == Pids.RPM) {
-            val fraction = ((value ?: 0.0) / pid.max).coerceIn(0.0, 1.0).toFloat()
-            builder.setImage(CarLivery.roundel(carContext, fraction), GridItem.IMAGE_TYPE_LARGE)
-        } else {
-            builder.setImage(icon(iconRes, warn), GridItem.IMAGE_TYPE_ICON)
-        }
-        return builder.build()
-    }
-
-    private fun icon(res: Int, warn: Boolean) = CarIcon.Builder(IconCompat.createWithResource(carContext, res))
-        .setTint(if (warn) CarColor.RED else CarLivery.accent(carContext))
-        .build()
-
     companion object {
-        private const val REFRESH_MS = 1000L
-
-        /** The readings shown in the car, chosen for a glance while driving. */
-        private val CAR_READINGS: List<Pair<Pid, Int>> by lazy {
-            fun p(number: Int) = Pids.dashboard.first { it.number == number }
-            listOf(
-                p(Pids.RPM) to R.drawable.ic_car_speed,
-                p(Pids.SPEED) to R.drawable.ic_car_speed,
-                p(0x05) to R.drawable.ic_car_thermo,
-                p(0x11) to R.drawable.ic_car_throttle,
-                p(0x2F) to R.drawable.ic_car_fuel,
-            )
-        }
+        /** About 5 refreshes a second: smooth to the eye, and within what Android Auto shows. */
+        private const val REFRESH_MS = 200L
+        private val HEX_RPM = String.format(Locale.US, "%02X", Pids.RPM)
     }
 }

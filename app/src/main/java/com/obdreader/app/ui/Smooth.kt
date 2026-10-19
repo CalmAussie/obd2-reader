@@ -16,6 +16,10 @@ class SmoothValue(
     private val tauMs: Float = 110f,
     /** Close enough to stop animating, in the reading's own units. */
     private val settle: Float = 0.01f,
+    /** Longest gap between steps that's counted in full (frames on the phone, refreshes in the car). */
+    private val maxStepMs: Long = 100L,
+    /** The step counted after a pause: one frame on the phone, one refresh in the car. */
+    private val firstStepMs: Long = 16L,
 ) {
     var target: Float? = null
         private set
@@ -46,7 +50,7 @@ class SmoothValue(
     fun step(nowMs: Long = SystemClock.uptimeMillis()): Boolean {
         val t = target ?: return false
         if (abs(t - shown) <= settle) { shown = t; lastMs = 0L; return false }
-        val dt = if (lastMs == 0L) 16L else (nowMs - lastMs).coerceIn(0L, 100L)
+        val dt = if (lastMs == 0L) firstStepMs else (nowMs - lastMs).coerceIn(0L, maxStepMs)
         lastMs = nowMs
         shown += (t - shown) * (1f - exp(-dt / tauMs))
         if (abs(t - shown) <= settle) { shown = t; lastMs = 0L; return false }
