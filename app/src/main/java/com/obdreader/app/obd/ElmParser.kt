@@ -72,6 +72,27 @@ object ElmParser {
         return null
     }
 
+    /**
+     * Parses a reply to a multi-PID request such as "010C0D11" (CAN cars answer up to six PIDs
+     * in one message). [lengths] gives each PID's data length in bytes, so the reply can be split
+     * into "PID, data" pairs. Returns the data bytes for every PID found.
+     */
+    fun parseMultiPid(lines: List<String>, lengths: Map<Int, Int>): Map<Int, IntArray> {
+        val result = mutableMapOf<Int, IntArray>()
+        for (p in payloads(lines)) {
+            val bytes = toBytes(dataAfter(p, "41") ?: continue)
+            var i = 0
+            while (i < bytes.size) {
+                val pid = bytes[i]
+                val len = lengths[pid] ?: break
+                if (i + 1 + len > bytes.size) break
+                result[pid] = bytes.copyOfRange(i + 1, i + 1 + len)
+                i += 1 + len
+            }
+        }
+        return result
+    }
+
     /** Decodes a PID-support bitmask (reply to 0100 / 0120 / 0140...). */
     fun supportedFromBitmask(bytes: IntArray, base: Int): Set<Int> {
         val result = mutableSetOf<Int>()

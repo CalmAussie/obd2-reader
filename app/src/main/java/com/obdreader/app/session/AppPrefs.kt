@@ -20,6 +20,7 @@ object AppPrefs {
     const val LAST_NAME = "last_name"
     const val HOST = "wifi_host"
     const val PORT = "wifi_port"
+    const val AUTO_RECONNECT = "auto_reconnect"
 
     const val TYPE_CLASSIC = "classic"
     const val TYPE_BLE = "ble"
@@ -29,6 +30,9 @@ object AppPrefs {
 
     fun of(context: Context): SharedPreferences =
         context.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+
+    /** "Reconnect automatically": on unless the user turns it off. */
+    fun autoReconnect(prefs: SharedPreferences): Boolean = prefs.getBoolean(AUTO_RECONNECT, true)
 
     fun savedCar(prefs: SharedPreferences): VehicleCatalog.Car? {
         val make = prefs.getString(CAR_MAKE, null) ?: return null

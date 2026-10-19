@@ -41,6 +41,11 @@ class DemoTransport : ObdTransport {
             cmd == "04" -> { codesCleared = true; "44" }
             cmd == "0902" -> vinFrames("1FAHP3F20CL123456")
             cmd.length == 4 && cmd.startsWith("01") -> pid(cmd.substring(2).toInt(16))?.let { "41${cmd.substring(2)}$it" } ?: "NO DATA"
+            // Several PIDs in one request, as CAN cars allow.
+            cmd.length > 4 && cmd.startsWith("01") && cmd.length % 2 == 0 -> {
+                val parts = cmd.substring(2).chunked(2).mapNotNull { p -> pid(p.toInt(16))?.let { p + it } }
+                if (parts.isEmpty()) "NO DATA" else "41" + parts.joinToString("")
+            }
             else -> "NO DATA"
         }
         return "$body\r\r"

@@ -37,8 +37,17 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.obdreader.app.obd.DtcLibrary
 import com.obdreader.app.session.AppPrefs
+import com.obdreader.app.session.Exports
+import com.obdreader.app.session.LiveHistory
+import com.obdreader.app.session.LogRecorder
 import com.obdreader.app.session.ObdSession
+import com.obdreader.app.ui.GraphStripView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -104,6 +113,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var pageDashboard: View
     private lateinit var pageDiagnostics: View
+    private lateinit var pageGraphs: View
+    private lateinit var graphList: LinearLayout
+    private lateinit var graphRate: TextView
+    private lateinit var recordBtn: SkewButton
+    private lateinit var recordStatus: TextView
+    private lateinit var shareReportBtn: MaterialButton
+    private val graphStrips = mutableListOf<GraphStripView>()
+    private var graphWindowMs = 30_000L
+    private var graphsPaused = false
     private lateinit var statusDetail: TextView
     private lateinit var connectBtn: SkewButton
     private lateinit var demoBtn: SkewButton
@@ -192,7 +210,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Edge-to-edge: pages pad below the status bar; the bottom bar pads itself above the nav bar.
-        val pages = listOf(findViewById<View>(R.id.content), findViewById<View>(R.id.contentDiag))
+        val pages = listOf(findViewById<View>(R.id.content), findViewById<View>(R.id.contentDiag), findViewById<View>(R.id.contentGraphs))
         val basePadTop = pages.first().paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root)) { _, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -206,6 +224,7 @@ class MainActivity : AppCompatActivity() {
         bottomNav = findViewById(R.id.bottomNav)
         pageDashboard = findViewById(R.id.pageDashboard)
         pageDiagnostics = findViewById(R.id.pageDiagnostics)
+        pageGraphs = findViewById(R.id.pageGraphs)
         connectBtn = findViewById(R.id.connectButton)
         demoBtn = findViewById(R.id.demoButton)
         readDtcBtn = findViewById(R.id.readDtcButton)
@@ -249,15 +268,31 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.logCard).setOnClickListener { toggleLog() }
         findViewById<View>(R.id.helpRow).setOnClickListener { showHelp() }
         findViewById<View>(R.id.themeButton).setOnClickListener { showThemePicker() }
+        findViewById<View>(R.id.logShare).setOnClickListener {
+            Exports.share(this, Exports.adapterLog(this, ObdSession.log.value, ObdSession.state.value), "text/plain", "OBD2 Reader adapter log")
+        }
+        shareReportBtn = findViewById(R.id.shareReportButton)
+        shareReportBtn.setOnClickListener {
+            Exports.share(this, Exports.codeReport(this, ObdSession.state.value, savedCar()?.label), "text/plain", "OBD2 Reader trouble code report")
+        }
+        findViewById<MaterialSwitch>(R.id.reconnectSwitch).apply {
+            isChecked = AppPrefs.autoReconnect(prefs)
+            setOnCheckedChangeListener { _, on -> prefs.edit().putBoolean(AppPrefs.AUTO_RECONNECT, on).apply() }
+        }
+        findViewById<View>(R.id.reconnectRow).apply {
+            background = panelBackground()
+            setOnClickListener { findViewById<MaterialSwitch>(R.id.reconnectSwitch).toggle() }
+        }
+        setupGraphs()
 
         bottomNav.setOnItemSelectedListener { item ->
-            showPage(diagnostics = item.itemId == R.id.nav_diagnostics)
+            showPage(item.itemId)
             true
         }
-        // Back from Diagnostics returns to the Dashboard instead of closing the app.
+        // Back from another tab returns to the Dashboard instead of closing the app.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (pageDiagnostics.visibility == View.VISIBLE) {
+                if (pageDiagnostics.visibility == View.VISIBLE || pageGraphs.visibility == View.VISIBLE) {
                     bottomNav.selectedItemId = R.id.nav_dashboard
                 } else {
                     isEnabled = false
@@ -272,8 +307,141 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { ObdSession.state.collect { render(it) } }
                 launch { ObdSession.log.collect { logText.text = it.joinToString("\n") } }
+                launch { LogRecorder.active.collect { renderRecording(it) } }
             }
         }
+
+        // Reconnect to the last adapter by itself when the app opens (if that's switched on).
+        if (savedInstanceState == null) ObdSession.autoConnect(this)
+    }
+
+    // ---------- Graphs ----------
+
+    /** The channels that can be graphed, with a colour each so stacked charts are easy to tell apart. */
+    private data class Channel(val key: String, val label: String, val unit: String, val decimals: Int, val min: Double, val max: Double)
+
+    private val channels: List<Channel> by lazy {
+        Pids.dashboard.map { Channel(it.hex, it.label.removePrefix("Engine "), it.unit, it.decimals, it.min, it.max) } +
+            Channel(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0)
+    }
+
+    private fun setupGraphs() {
+        graphList = findViewById(R.id.graphList)
+        graphRate = findViewById(R.id.graphRate)
+        recordBtn = findViewById(R.id.recordButton)
+        recordStatus = findViewById(R.id.recordStatus)
+        LiveHistory.start()
+
+        val chips = findViewById<ChipGroup>(R.id.graphChips)
+        val chosen = (prefs.getString(PREF_GRAPHS, null) ?: "0C,0D,11").split(",").filter { it.isNotEmpty() }.toMutableSet()
+        for (ch in channels) {
+            chips.addView(Chip(this).apply {
+                text = ch.label
+                isCheckable = true
+                isChecked = ch.key in chosen
+                setOnCheckedChangeListener { button, on ->
+                    if (on && chosen.size >= MAX_GRAPHS) {
+                        button.isChecked = false
+                        toast("Up to $MAX_GRAPHS graphs at once, so each one stays fast")
+                        return@setOnCheckedChangeListener
+                    }
+                    if (on) chosen += ch.key else chosen -= ch.key
+                    prefs.edit().putString(PREF_GRAPHS, chosen.joinToString(",")).apply()
+                    buildGraphs(chosen)
+                }
+            })
+        }
+        findViewById<MaterialButtonToggleGroup>(R.id.graphWindow).apply {
+            check(R.id.window30)
+            addOnButtonCheckedListener { _, id, checked ->
+                if (!checked) return@addOnButtonCheckedListener
+                graphWindowMs = when (id) { R.id.window10 -> 10_000L; R.id.window60 -> 60_000L; else -> 30_000L }
+                graphStrips.forEach { it.windowMs = graphWindowMs }
+            }
+        }
+        val pause = findViewById<MaterialButton>(R.id.graphPause)
+        pause.setOnClickListener {
+            graphsPaused = !graphsPaused
+            pause.setText(if (graphsPaused) R.string.resume else R.string.pause)
+            graphStrips.forEach { it.paused = graphsPaused }
+        }
+        recordBtn.text = getString(R.string.record_drive)
+        recordBtn.setOnClickListener {
+            if (LogRecorder.active.value != null) LogRecorder.stop() else LogRecorder.start(this)
+        }
+        findViewById<View>(R.id.savedLogsButton).setOnClickListener { showSavedDrives() }
+        buildGraphs(chosen)
+    }
+
+    private fun buildGraphs(keys: Set<String>) {
+        graphList.removeAllViews()
+        graphStrips.clear()
+        val fallback = themeColor(R.attr.obdAccent)
+        for (ch in channels.filter { it.key in keys }) {
+            val colour = when (ch.key) {
+                RPM_KEY -> Channels.RPM
+                SPEED_KEY -> Channels.SPEED
+                else -> Channels.forKey(ch.key, fallback)
+            }
+            val strip = GraphStripView(this, ch.key, ch.label, ch.unit, ch.decimals, ch.min, ch.max, colour).apply {
+                windowMs = graphWindowMs
+                paused = graphsPaused
+            }
+            graphList.addView(strip, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                bottomMargin = dp(8f).toInt()
+            })
+            graphStrips += strip
+        }
+        updateFocus()
+    }
+
+    /** While the Graphs tab is open, the graphed readings are polled first, so they update as fast as possible. */
+    private fun updateFocus() {
+        ObdSession.focus = if (pageGraphs.visibility == View.VISIBLE) graphStrips.map { it.key }.toSet() else emptySet()
+    }
+
+    private fun renderRecording(r: LogRecorder.Recording?) {
+        recordBtn.text = getString(if (r == null) R.string.record_drive else R.string.stop_recording)
+        recordBtn.kind = if (r == null) SkewButton.Kind.PRIMARY else SkewButton.Kind.DANGER
+        recordStatus.text = if (r == null) getString(R.string.record_hint) else {
+            val secs = (System.currentTimeMillis() - r.startedMs) / 1000
+            String.format(Locale.US, "Recording %d:%02d, %,d rows. Saved as %s", secs / 60, secs % 60, r.rows, r.file.name)
+        }
+    }
+
+    /** Lists recorded drives: tap one to share it, or delete it. */
+    private fun showSavedDrives() {
+        val files = LogRecorder.saved(this)
+        if (files.isEmpty()) {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.saved_drives)
+                .setMessage("No drives recorded yet. Connect, open Graphs and tap Record drive.")
+                .setPositiveButton("OK", null)
+                .show()
+            return
+        }
+        val names = files.map { f ->
+            val kb = (f.length() + 1023) / 1024
+            "${f.nameWithoutExtension.removePrefix("OBD2Reader_").replace('_', ' ')}, $kb KB"
+        }.toTypedArray()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.saved_drives)
+            .setItems(names) { _, i -> showDriveActions(files[i]) }
+            .setNegativeButton("Close", null)
+            .show()
+    }
+
+    private fun showDriveActions(file: java.io.File) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(file.nameWithoutExtension.removePrefix("OBD2Reader_").replace('_', ' '))
+            .setMessage("A CSV file with a row every 0.2 seconds. Open it in Excel, Google Sheets or any data-logging tool.")
+            .setPositiveButton(R.string.share) { _, _ -> Exports.share(this, file, "text/csv", "OBD2 Reader drive ${file.nameWithoutExtension}") }
+            .setNeutralButton("Delete") { _, _ ->
+                file.delete()
+                toast("Deleted")
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     /** Shows the chosen style's dashboard and builds its readings. */
@@ -671,23 +839,36 @@ class MainActivity : AppCompatActivity() {
             ObdSession.Phase.IDLE -> Status.IDLE
             ObdSession.Phase.CONNECTING -> Status.CONNECTING
             ObdSession.Phase.CONNECTED -> Status.CONNECTED
+            ObdSession.Phase.WAITING -> Status.CONNECTING
             ObdSession.Phase.ERROR -> Status.ERROR
         }
         setStatus(status, s.title, s.detail)
-        updateButtons(connected = s.isConnected, busy = s.phase == ObdSession.Phase.CONNECTING)
+        updateButtons(connected = s.isConnected, busy = s.phase == ObdSession.Phase.CONNECTING || s.phase == ObdSession.Phase.WAITING)
+        graphRate.text = when {
+            s.isConnected && s.rate > 0 -> String.format(Locale.US, "%.0f readings a second from %s", s.rate, s.adapterName ?: "the car")
+            s.isConnected -> "Connected. Readings appear here as they arrive."
+            s.phase == ObdSession.Phase.WAITING -> s.title + ". " + s.detail
+            else -> getString(R.string.graphs_hint)
+        }
+        recordBtn.isEnabled = s.isConnected || LogRecorder.active.value != null
 
         if (s.phase != lastPhase) {
             if (s.phase == ObdSession.Phase.CONNECTING) {
-                clearReadings()
+                if (lastPhase != ObdSession.Phase.WAITING) clearReadings()
                 startLights.start()
             } else {
                 startLights.out()
             }
+            if (s.phase == ObdSession.Phase.WAITING) {
+                setRpm(null); setSpeed(null)
+                tiles.values.forEach { it.setValue(null) }
+                listOf(COOLANT_KEY, FUEL_KEY, VOLTAGE_KEY).forEach { setBigReading(it, null) }
+            }
             // Lights out, then the rev ring sweeps: like a car's self-test when you turn the key.
-            if (s.isConnected && lastPhase == ObdSession.Phase.CONNECTING) roundel.sweep()
+            if (s.isConnected && (lastPhase == ObdSession.Phase.CONNECTING || lastPhase == ObdSession.Phase.WAITING)) roundel.sweep()
             if (s.isConnected) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            if (!s.isConnected) {
+            if (!s.isConnected && s.phase != ObdSession.Phase.WAITING && s.phase != ObdSession.Phase.CONNECTING) {
                 lastReadings = emptyMap()
                 lastUnsupported = emptySet()
                 lastVinChecked = false
@@ -723,6 +904,7 @@ class MainActivity : AppCompatActivity() {
         val codes = s.codes
         if (codes != null && codes != lastCodes) renderCodes(codes)
         lastCodes = codes
+        shareReportBtn.visibility = if (codes != null) View.VISIBLE else View.GONE
     }
 
     // ---------- Diagnostics ----------
@@ -1132,29 +1314,102 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * One trouble code: its plate and name, then (tap to open) how urgent it is, what it means,
+     * what you might notice, common causes and what to check first.
+     */
     private fun addDtcRow(code: String, pending: Boolean) {
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, dp(10f).toInt(), 0, 0)
-        }
-        val text = LinearLayout(this).apply {
+        val info = DtcLibrary.lookup(code)
+        val pad = dp(14f).toInt()
+        val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(14f).toInt(), 0, 0, 0)
+            background = panelBackground()
+            setPadding(pad, pad, pad, pad)
+            isClickable = true
+            isFocusable = true
+        }
+        val head = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        val names = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(14f).toInt(), 0, dp(6f).toInt(), 0)
             addView(TextView(context).apply {
-                this.text = DtcDescriptions.describe(code)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                text = info.title
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                typeface = uiTypeface(500)
                 setTextColor(context.themeColor(R.attr.obdTextPrimary))
             })
             addView(TextView(context).apply {
-                this.text = if (pending) "Pending, not yet confirmed" else "Stored, check-engine light on"
+                text = (if (pending) "Pending, not yet confirmed" else "Stored, check-engine light on") + ". " + info.severity.label + "."
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                 setTextColor(context.themeColor(R.attr.obdTextSecondary))
+                setPadding(0, dp(2f).toInt(), 0, 0)
             })
         }
-        row.addView(PlateView(this, code, stored = !pending))
-        row.addView(text, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-        dtcContainer.addView(row)
+        val chevron = ImageView(this).apply {
+            setImageResource(R.drawable.ic_chevron_right)
+            imageTintList = ColorStateList.valueOf(themeColor(R.attr.obdTextSecondary))
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }
+        head.addView(PlateView(this, code, stored = !pending))
+        head.addView(names, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        head.addView(chevron, LinearLayout.LayoutParams(dp(22f).toInt(), dp(22f).toInt()))
+        card.addView(head)
+
+        val details = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dp(12f).toInt(), 0, 0)
+            visibility = View.GONE
+        }
+        val severityColour = when (info.severity) {
+            DtcLibrary.Severity.HIGH -> themeColor(R.attr.obdDanger)
+            DtcLibrary.Severity.MEDIUM -> themeColor(R.attr.obdWarn)
+            DtcLibrary.Severity.LOW -> themeColor(R.attr.obdOk)
+            DtcLibrary.Severity.UNKNOWN -> themeColor(R.attr.obdTextSecondary)
+        }
+        details.addView(TextView(this).apply {
+            text = info.severity.label
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            typeface = uiTypeface(600)
+            setTextColor(severityColour)
+            background = GradientDrawable().apply {
+                cornerRadius = dp(4f)
+                setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(severityColour, 40))
+            }
+            setPadding(dp(10f).toInt(), dp(4f).toInt(), dp(10f).toInt(), dp(4f).toInt())
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        fun para(text: String, secondary: Boolean = true) = details.addView(TextView(this).apply {
+            this.text = text
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setLineSpacing(0f, 1.15f)
+            setTextColor(themeColor(if (secondary) R.attr.obdTextSecondary else R.attr.obdTextPrimary))
+            setPadding(0, dp(6f).toInt(), 0, 0)
+        })
+        fun heading(text: String) = details.addView(TextView(this).apply {
+            this.text = text
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            typeface = uiTypeface(600)
+            setTextColor(themeColor(R.attr.obdTextPrimary))
+            setPadding(0, dp(14f).toInt(), 0, 0)
+        })
+        para(info.severity.advice)
+        heading("What it means")
+        para(info.meaning, secondary = false)
+        if (info.symptoms.isNotEmpty()) { heading("You might notice"); para(info.symptoms.joinToString("\n") { "•  $it" }) }
+        if (info.causes.isNotEmpty()) { heading("Common causes"); para(info.causes.joinToString("\n") { "•  $it" }) }
+        if (info.checks.isNotEmpty()) { heading("What to check"); para(info.checks.mapIndexed { i, c -> "${i + 1}.  $c" }.joinToString("\n")) }
+        if (info.system.isNotEmpty()) para("$code: ${info.system}.")
+        card.addView(details)
+
+        fun setOpen(open: Boolean) {
+            details.visibility = if (open) View.VISIBLE else View.GONE
+            chevron.rotation = if (open) 90f else 0f
+            card.contentDescription = "$code, ${info.title}. ${if (open) "Tap to hide details" else "Tap for details"}"
+        }
+        setOpen(dtcContainer.childCount == 0) // the first code opens straight away
+        card.setOnClickListener { setOpen(details.visibility != View.VISIBLE) }
+        dtcContainer.addView(card, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(8f).toInt()
+        })
     }
 
     // ---------- UI helpers ----------
@@ -1199,9 +1454,12 @@ class MainActivity : AppCompatActivity() {
         vinBtn.isEnabled = connected
     }
 
-    private fun showPage(diagnostics: Boolean) {
-        pageDashboard.visibility = if (diagnostics) View.GONE else View.VISIBLE
-        pageDiagnostics.visibility = if (diagnostics) View.VISIBLE else View.GONE
+    private fun showPage(itemId: Int) {
+        pageDashboard.visibility = if (itemId == R.id.nav_dashboard) View.VISIBLE else View.GONE
+        pageGraphs.visibility = if (itemId == R.id.nav_graphs) View.VISIBLE else View.GONE
+        pageDiagnostics.visibility = if (itemId == R.id.nav_diagnostics) View.VISIBLE else View.GONE
+        updateFocus()
+        graphStrips.forEach { it.invalidate() }
     }
 
     /** Shows the number of trouble codes on the Diagnostics tab, so they're visible from the Dashboard. */
@@ -1233,6 +1491,8 @@ class MainActivity : AppCompatActivity() {
         private val RPM_KEY = String.format(Locale.US, "%02X", Pids.RPM)
         private val SPEED_KEY = String.format(Locale.US, "%02X", Pids.SPEED)
         private const val COOLANT_KEY = "05"
+        private const val PREF_GRAPHS = "graph_channels"
+        private const val MAX_GRAPHS = 4
         private const val FUEL_KEY = "2F"
         private const val BLE_SCAN_MS = 12_000L
         private const val PREF_HOST = AppPrefs.HOST

@@ -143,6 +143,17 @@ class ElmClient(
         return pid.decode(bytes)
     }
 
+    /**
+     * Reads up to six PIDs in one request, which CAN cars support. This is much faster than
+     * asking for each PID in turn. Returns the values found; PIDs the car didn't include are missing.
+     */
+    suspend fun readPids(pids: List<Pid>): Map<Pid, Double> {
+        require(pids.size in 1..MAX_MULTI_PIDS)
+        val lines = command("01" + pids.joinToString("") { it.hex })
+        val raw = ElmParser.parseMultiPid(lines, pids.associate { it.number to it.bytes })
+        return pids.mapNotNull { p -> raw[p.number]?.let { p to p.decode(it) } }.toMap()
+    }
+
     suspend fun readVoltage(): Double? =
         command("ATRV").firstOrNull()
             ?.uppercase(Locale.US)
@@ -160,4 +171,12 @@ class ElmClient(
         ElmParser.extractData(command("04", 6000), "44") != null
 
     suspend fun readVin(): String? = ElmParser.parseVin(command("0902", 6000))
+
+    /** Asks the car whether it's awake (used while waiting for the ignition). */
+    suspend fun probe(): Boolean = ElmParser.extractData(command("0100", 2000), "4100") != null
+
+    companion object {
+        /** The most PIDs a CAN car answers in one mode 01 request. */
+        const val MAX_MULTI_PIDS = 6
+    }
 }

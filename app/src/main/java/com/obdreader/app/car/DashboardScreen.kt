@@ -58,7 +58,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
     private fun notConnectedTemplate(s: ObdSession.State): Template {
         val last = ObdSession.lastAdapterName(carContext)
         val message = when (s.phase) {
-            ObdSession.Phase.CONNECTING -> "${s.title}\n${s.detail}"
+            ObdSession.Phase.CONNECTING, ObdSession.Phase.WAITING -> "${s.title}\n${s.detail}"
             ObdSession.Phase.ERROR -> "${s.title}\n${s.detail}"
             else -> if (last != null) "Not connected. Tap Connect to use $last." else "Not connected. Pair your adapter in OBD2 Reader on your phone first."
         }
@@ -67,7 +67,14 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
             .setHeaderAction(Action.APP_ICON)
             .setIcon(CarLivery.roundel(carContext, 0f))
 
-        if (s.phase != ObdSession.Phase.CONNECTING) {
+        if (s.phase == ObdSession.Phase.WAITING) {
+            builder.addAction(
+                Action.Builder()
+                    .setTitle("Stop")
+                    .setOnClickListener { ObdSession.disconnect() }
+                    .build(),
+            )
+        } else if (s.phase != ObdSession.Phase.CONNECTING) {
             if (last != null) {
                 builder.addAction(
                     Action.Builder()
