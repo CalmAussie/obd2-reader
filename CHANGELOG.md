@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.3.3 (20 October 2026)
+- One **Bluetooth** option instead of separate Bluetooth Classic and Bluetooth LE choices. It lists your paired adapters straight away, then adds nearby ones as it finds them, whichever kind of Bluetooth they use, by name only.
+- Tapping an adapter connects the right way for its kind. A Classic adapter that isn't paired yet gets paired first: Android asks for the PIN (usually 1234 or 0000), then the app connects, so there's no need to visit Android's Bluetooth settings.
+- The in-app Help and the README are updated to match.
+
 ## 1.3.2 (20 October 2026)
 - Choosing an adapter now lists each device by name only, without its Bluetooth address. Devices with no name are left out, adapters that look like OBD2 adapters stay at the top, and two devices with the same name are numbered, for example "OBDII" and "OBDII (2)".
 

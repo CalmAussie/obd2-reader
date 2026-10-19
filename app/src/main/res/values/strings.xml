@@ -13,10 +13,11 @@
     <string name="hide">Hide</string>
     <string name="sheet_title">Connect your adapter</string>
     <string name="sheet_subtitle">How does your OBD2 adapter connect?</string>
-    <string name="opt_classic_title">Bluetooth Classic</string>
-    <string name="opt_classic_sub">Most ELM327 adapters. Pair it in settings first.</string>
-    <string name="opt_ble_title">Bluetooth LE</string>
-    <string name="opt_ble_sub">iPhone-compatible adapters like the Veepeak BLE+. No pairing needed.</string>
+    <string name="opt_bluetooth_title">Bluetooth</string>
+    <string name="opt_bluetooth_sub">Most adapters. The app finds yours, and pairs it if needed.</string>
+    <string name="searching_adapters">Searching for adapters…</string>
+    <string name="choose_adapter">Choose your adapter</string>
+    <string name="no_adapters_found">No adapters found. Is the ignition on?</string>
     <string name="opt_wifi_title">Wi-Fi</string>
     <string name="opt_wifi_sub">Join the adapter\'s Wi-Fi network first.</string>
     <string name="wifi_host">IP address</string>
@@ -60,7 +61,7 @@
     <string name="help_start_title">Getting connected</string>
     <string name="help_start_body">1. Plug your ELM327 adapter into the car\'s OBD2 port, usually under the dashboard near the steering wheel.\n2. Turn the ignition on (the engine can be off).\n3. Tap Connect and choose how your adapter connects.\n\nNo adapter? Tap Demo to try the app with a simulated car.</string>
     <string name="help_adapters_title">Adapter types</string>
-    <string name="help_adapters_body">Bluetooth Classic: pair it in your phone\'s Bluetooth settings first. The PIN is usually 1234 or 0000.\n\nBluetooth LE (for example the Veepeak OBDCheck BLE+): don\'t pair it in settings. The app finds it for you.\n\nWi-Fi: join the adapter\'s Wi-Fi network in your phone\'s settings first, then connect. The usual address is 192.168.0.10, port 35000.</string>
+    <string name="help_adapters_body">Bluetooth: tap Connect, then Bluetooth. The app lists your adapter by name, whatever kind of Bluetooth it uses. If it needs pairing, Android asks for a PIN: it\'s usually 1234 or 0000.\n\nWi-Fi: join the adapter\'s Wi-Fi network in your phone\'s settings first, then connect. The usual address is 192.168.0.10, port 35000.</string>
     <string name="help_car_title">If it won\'t connect</string>
     <string name="help_car_body">Check the ignition is on and the adapter\'s light is lit. Then, on the Diagnostics tab, tap Your car and choose your car\'s make, year and model, so the app tries its usual protocol first. Cars sold in Australia before 2006 may not fully support OBD2, and some cheap adapters can\'t talk to older Fords, GM and Chrysler cars.</string>
     <string name="help_auto_title">Android Auto</string>

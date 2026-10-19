@@ -1150,7 +1150,7 @@ $("themeBtn").onclick = showThemePicker;
 /* Mirrors MainActivity.showHelp() and the help_* strings */
 const HELP = [
   ["Getting connected", "1. Plug your ELM327 adapter into the car's OBD2 port, usually under the dashboard near the steering wheel.\n2. Turn the ignition on (the engine can be off).\n3. Tap Connect and choose how your adapter connects.\n\nNo adapter? Tap Demo to try the app with a simulated car."],
-  ["Adapter types", "Bluetooth Classic: pair it in your phone's Bluetooth settings first. The PIN is usually 1234 or 0000.\n\nBluetooth LE (for example the Veepeak OBDCheck BLE+): don't pair it in settings. The app finds it for you.\n\nWi-Fi: join the adapter's Wi-Fi network in your phone's settings first, then connect. The usual address is 192.168.0.10, port 35000."],
+  ["Adapter types", "Bluetooth: tap Connect, then Bluetooth. The app lists your adapter by name, whatever kind of Bluetooth it uses. If it needs pairing, Android asks for a PIN: it's usually 1234 or 0000.\n\nWi-Fi: join the adapter's Wi-Fi network in your phone's settings first, then connect. The usual address is 192.168.0.10, port 35000."],
   ["If it won't connect", "Check the ignition is on and the adapter's light is lit. Then, on the Diagnostics tab, tap Your car and choose your car's make, year and model, so the app tries its usual protocol first. Cars sold in Australia before 2006 may not fully support OBD2, and some cheap adapters can't talk to older Fords, GM and Chrysler cars."],
   ["Android Auto", "Android Auto only shows apps from the Play Store until you allow others. To turn that on:\n1. Open Android Auto's settings on your phone (search \"Android Auto\" in Settings).\n2. Scroll to the bottom and tap Version about 10 times, then confirm to turn on developer mode.\n3. Tap the three-dot menu at the top right, then Developer settings, and turn on Unknown sources.\n4. Reconnect to your car. OBD2 Reader appears in Android Auto's app list.\n\nConnect to your adapter from the phone first, or tap Connect on the car screen to reconnect to the last one."],
   ["Read-only", "OBD2 Reader only reads from your car. It never clears trouble codes, turns off the check-engine light or changes any setting, and it blocks any command that could. After a repair, a workshop scan tool can clear the codes."],
@@ -1166,8 +1166,8 @@ try { let saved = localStorage.getItem("theme"); saved = OLD_THEMES[saved] || sa
 let lastUsed = null;
 try { lastUsed = JSON.parse(localStorage.getItem("lastAdapter") || "null"); } catch (e) {}
 function rememberLast(type, name) { lastUsed = { type, name }; try { localStorage.setItem("lastAdapter", JSON.stringify(lastUsed)); } catch (e) {} }
-const TYPE_LABEL = { classic: "Bluetooth Classic", ble: "Bluetooth LE", wifi: "Wi-Fi" };
-const TYPE_ICON = { classic: "bt", ble: "ble", wifi: "wifi" };
+const TYPE_LABEL = { classic: "Bluetooth", ble: "Bluetooth", wifi: "Wi-Fi" };
+const TYPE_ICON = { classic: "bt", ble: "bt", wifi: "wifi" };
 
 async function startSession(name, onConnected, failure) {
   if (state !== "idle") return;
@@ -1235,7 +1235,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") closeOverlay
 function toast(msg) { const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; $("phone").appendChild(t); setTimeout(() => t.remove(), 3200); }
 
 function showConnectSheet() {
-  const opts = [["classic", "bt", "Bluetooth Classic", "Most ELM327 adapters. Pair it in settings first."], ["ble", "ble", "Bluetooth LE", "iPhone-compatible adapters like the Veepeak BLE+. No pairing needed."], ["wifi", "wifi", "Wi-Fi", "Join the adapter's Wi-Fi network first."]];
+  const opts = [["bt", "bt", "Bluetooth", "Most adapters. The app finds yours, and pairs it if needed."], ["wifi", "wifi", "Wi-Fi", "Join the adapter's Wi-Fi network first."]];
   const optBtn = o => `<button class="opt" data-k="${o[0]}"><span class="ic"><svg viewBox="0 0 24 24"><path d="${ICON[o[1]]}"/></svg></span><span class="tx"><div class="tt"></div><div class="ts"></div></span><svg viewBox="0 0 24 24"><path d="${ICON.chev}"/></svg></button>`;
   const last = lastUsed ? `<div class="lbl">Last used</div>${optBtn(["last", TYPE_ICON[lastUsed.type]])}<div class="lbl">Or connect another</div>` : "";
   const s = overlay(`<div class="handle"></div><h2>Connect your adapter</h2><p>How does your OBD2 adapter connect?</p>` + last +
@@ -1247,7 +1247,7 @@ function showConnectSheet() {
   }
   s.querySelectorAll(".opt").forEach(b => b.onclick = () => {
     if (b.dataset.k === "last") { closeOverlay(); return startSession(lastUsed.type === "wifi" ? `Wi-Fi adapter (${lastUsed.name})` : lastUsed.name); }
-    ({ classic: pairedPicker, ble: bleScanner, wifi: wifiDialog })[b.dataset.k]();
+    ({ bt: btPicker, wifi: wifiDialog })[b.dataset.k]();
   });
 }
 function pairedPicker() {
@@ -1719,6 +1719,31 @@ renderCar = function () {
   main.innerHTML = carHead("OBD2 Reader", { actions }) + `<div class="car-grid">${items}</div>`;
 };
 setInterval(() => { if (!$("car").hidden && state === "connected") renderCar(); }, 200);
+
+/* ===== 1.3.3: one Bluetooth option (mirrors MainActivity.showBluetoothPicker) =====
+   Paired adapters straight away, then nearby Classic and LE adapters as they're found; names only. */
+function btPicker() {
+  const s = overlay(`<h3 id="btTitle"><span class="spin" aria-hidden="true"></span>Searching for adapters…</h3><div id="btList"></div><div class="btns"><button id="cancel">Cancel</button></div>`);
+  $("cancel").onclick = closeOverlay;
+  const seen = [];
+  const label = n => { const c = seen.filter(x => x === n).length; seen.push(n); return c ? `${n} (${c + 1})` : n; };
+  const isObd = n => /OBD|ELM|VLINK|VEEPEAK|VGATE|ICAR|KONNWEI/i.test(n);
+  const add = (name, kind) => {
+    const list = $("btList"); if (!list || !name) return;
+    const b = document.createElement("button"); b.className = "item"; b.textContent = label(name);
+    b.onclick = () => {
+      closeOverlay();
+      const ok = isObd(name);
+      if (kind === "unpaired") toast(`Pairing with ${name}. If asked for a PIN, try 1234 or 0000.`);
+      startSession(name, () => rememberLast(kind === "ble" ? "ble" : "classic", name), ok ? null : `Couldn't open a Bluetooth link to ${name}. Is the adapter plugged in and the ignition on?`);
+    };
+    isObd(name) ? list.prepend(b) : list.append(b);
+  };
+  [["VEEPEAK", "paired"], ["Galaxy Buds2", "paired"]].forEach(([n, k]) => add(n, k));
+  const timers = [["Mi Smart Band 7", "ble", 700], ["", "ble", 900], ["OBDII", "unpaired", 1500]].map(([n, k, ms]) => setTimeout(() => add(n, k), ms));
+  timers.push(setTimeout(() => { if ($("btTitle")) $("btTitle").textContent = "Choose your adapter"; }, 3200));
+  s.addEventListener("closed", () => timers.forEach(clearTimeout));
+}
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);
