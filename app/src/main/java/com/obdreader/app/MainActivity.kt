@@ -344,14 +344,15 @@ class MainActivity : AppCompatActivity() {
 
         // Reconnect to the last adapter by itself when the app opens (if that's switched on).
         if (savedInstanceState == null) ObdSession.autoConnect(this)
-        // The car comes first: it decides how fault codes are explained, the redline and the protocol.
-        if (savedInstanceState == null && needsCar()) showCarPicker(firstRun = true)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         // The bottom bar restores its selected tab by itself after the screen is recreated; show its page.
         showPage(bottomNav.selectedItemId)
+        // The car comes first: it decides how fault codes are explained, the redline and the protocol.
+        // Checked here rather than only on a fresh start, so it comes back if the screen is recreated.
+        if (needsCar() && !carPickerShowing) showCarPicker(firstRun = true)
     }
 
     // ---------- Driving score ----------
@@ -1412,8 +1413,12 @@ class MainActivity : AppCompatActivity() {
     /** No car chosen yet, and the user hasn't said theirs isn't listed. */
     private fun needsCar(): Boolean = savedCar() == null && !prefs.getBoolean(PREF_CAR_ASKED, false)
 
+    private var carPickerShowing = false
+
     private fun showCarPicker(firstRun: Boolean = false, onDone: (() -> Unit)? = null) {
         val sheet = BottomSheetDialog(this)
+        carPickerShowing = true
+        sheet.setOnDismissListener { carPickerShowing = false }
         val view = layoutInflater.inflate(R.layout.sheet_car, null)
         view.applyTitleFonts()
         if (firstRun) {
