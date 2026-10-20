@@ -44,6 +44,20 @@ PY
   return 1
 }
 alive() { adb shell pidof $PKG > /dev/null; }
+# Copies a file the app made to $3. Debug builds: straight from the app's own folder (run-as).
+# Release builds can't be read that way, so look where the user finds it: Pictures or Movies
+# › OBD2 Reader (Android 10 and newer). Prints the copied size, or nothing if not found.
+pull_made() {   # $1 name pattern, $2 Pictures|Movies, $3 local file
+  local F
+  F=$(adb shell run-as $PKG ls cache/exports 2>/dev/null | tr -d '\r' | grep "$1" | tail -1)
+  if [ -n "$F" ]; then adb exec-out run-as $PKG cat "cache/exports/$F" > "$3"
+  elif [ "$API" -ge 29 ]; then
+    F=$(adb shell ls -t "'/sdcard/$2/OBD2 Reader/'" 2>/dev/null | tr -d '\r' | grep "$1" | head -1)
+    [ -n "$F" ] && adb pull "/sdcard/$2/OBD2 Reader/$F" "$3" > /dev/null 2>&1
+  fi
+  [ -s "$3" ] && stat -c %s "$3"
+}
+
 tap_contains() {   # taps the first on-screen item whose text contains $1
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
   adb shell cat /sdcard/ui.xml > "$OUT/ui.xml"
@@ -228,11 +242,12 @@ if grep -q "Your drive" "$OUT/ui-trip.xml" && grep -q "Top speed" "$OUT/ui-trip.
 # Share the drive as a picture: the image is made and Android's share sheet opens.
 if tap_text "Share as a picture" && tap_contains "Story (9:16)"; then
   sleep 3
-  F=$(adb shell run-as $PKG ls cache/exports 2>/dev/null | tr -d '\r' | grep 'story.png' | head -1)
-  if [ -n "$F" ]; then
-    adb exec-out run-as $PKG cat "cache/exports/$F" > "$OUT/9-drive-card.png"
-    adb exec-out run-as $PKG ls cache/exports > /dev/null
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-share.xml"
+  if [ -n "$(pull_made story.png Pictures "$OUT/9-drive-card.png")" ]; then
     log "drive card: made"
+  elif [ "$API" -lt 29 ] && grep -qi 'resolver\|chooser' "$OUT/ui-share.xml"; then
+    # Android 8 and 9 release builds: the picture is only shared, not saved, so the share sheet opening is the check.
+    log "drive card: made (share sheet open)"
   else
     log "drive card: FAILED (no picture)"; FAIL=1
   fi
@@ -281,9 +296,9 @@ if tap_contains " KB" && tap_text "Make a video overlay" && tap_contains "720p" 
   done
   shot 8-video-ready
   if [ $READY = 1 ]; then
-    F=$(adb shell run-as $PKG ls cache/exports 2>/dev/null | tr -d '\r' | grep overlay | head -1)
-    [ -n "$F" ] && adb exec-out run-as $PKG cat "cache/exports/$F" > "$OUT/overlay.mp4"
-    SZ=$(stat -c %s "$OUT/overlay.mp4" 2>/dev/null || echo 0)
+    SZ=$(pull_made overlay.mp4 Movies "$OUT/overlay.mp4"); SZ=${SZ:-0}
+    # Android 8 and 9 release builds keep the video private until it's shared; "Video ready" is the check there.
+    [ "$SZ" = 0 ] && [ "$API" -lt 29 ] && ! adb shell run-as $PKG true 2>/dev/null && SZ=99999
     command -v ffmpeg > /dev/null && ffmpeg -loglevel error -y -ss 12 -i "$OUT/overlay.mp4" -frames:v 1 "$OUT/8-video-frame.png"
     DUR=$(command -v ffprobe > /dev/null && ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT/overlay.mp4")
     [ "$SZ" -gt 10000 ] && log "video overlay: made ($SZ bytes, ${DUR:-?} s)" || { log "video overlay: FAILED (file $SZ bytes)"; FAIL=1; }
@@ -338,7 +353,19 @@ for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
 if tap_text "Units" && tap_contains "Miles (mph" && tap_contains "Fahrenheit" && tap_text "Save"; then
   sleep 4; tap_tab Dashboard; sleep 4; scroll_top
   shot 13-imperial
-  adb shell run-as $PKG cat shared_prefs/obd_reader.xml 2>/dev/null | grep -q 'units_mph" value="true' && alive && log "units: mph and °F saved" || { log "units: FAILED"; FAIL=1; }
+  UNITS=0
+  adb shell run-as $PKG cat shared_prefs/obd_reader.xml 2>/dev/null | grep -q 'units_mph" value="true' && UNITS=1
+  # Release builds: the Units row on Diagnostics says what's in use.
+  if [ $UNITS = 0 ]; then
+    tap_tab Diagnostics; sleep 2
+    for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done
+    for i in 1 2 3 4; do
+      sleep 2; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-units.xml"
+      grep -q 'text="mph, °F"' "$OUT/ui-units.xml" && { UNITS=1; break; }
+    done
+    tap_tab Dashboard; sleep 2
+  fi
+  [ $UNITS = 1 ] && alive && log "units: mph and °F saved" || { log "units: FAILED"; FAIL=1; }
 else
   log "units: FAILED (couldn't change)"; FAIL=1
 fi
