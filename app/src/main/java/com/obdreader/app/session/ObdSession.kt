@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import com.obdreader.app.obd.AdapterTimeoutException
+import com.obdreader.app.obd.ThrottleCalibration
 import com.obdreader.app.obd.BleTransport
 import com.obdreader.app.obd.BluetoothTransport
 import com.obdreader.app.obd.DemoTransport
@@ -144,6 +145,8 @@ object ObdSession {
         appContext = app
         val prefs = AppPrefs.of(app)
         val isDemo = t is DemoTransport
+        throttleKey = if (isDemo) null else "throttle_closed_" + (AppPrefs.savedCar(prefs)?.label ?: "unknown")
+        throttle = ThrottleCalibration(throttleKey?.let { k -> prefs.getFloat(k, -1f).takeIf { it >= 0f }?.toDouble() })
         _log.value = emptyList()
         _codeLog.value = emptyList()
         _state.value = State(
@@ -352,6 +355,10 @@ object ObdSession {
 
     private var appContext: Context? = null
 
+    /** Throttle measured from its closed position, so it reads 0% with your foot off. Learnt per car. */
+    private var throttle = ThrottleCalibration()
+    private var throttleKey: String? = null
+
     // ---------- Requests while connected ----------
 
     suspend fun readCodes(): Codes {
@@ -438,6 +445,10 @@ object ObdSession {
                 if (++timeouts >= 5) throw IOException("The adapter stopped responding.")
             }
 
+            values[ThrottleCalibration.KEY]?.let { raw ->
+                values[ThrottleCalibration.KEY] = throttle.adjust(raw)
+                if (throttle.changed) throttleKey?.let { k -> appContext?.let { AppPrefs.of(it).edit().putFloat(k, throttle.closed!!.toFloat()).apply() } }
+            }
             val t = now()
             for ((k, v) in values) {
                 if (v != null) {

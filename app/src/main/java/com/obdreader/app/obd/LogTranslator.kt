@@ -60,7 +60,8 @@ object LogTranslator {
             val n = h.toIntOrNull(16) ?: return@mapNotNull null
             val pid = pidsByNumber[n] ?: return@mapNotNull null
             val data = values[n] ?: return@mapNotNull null
-            "${pid.label}: ${format(pid, pid.decode(data))}"
+            // The log shows what the car sent; throttle is the raw sensor, before the app measures it from closed.
+            "${if (n == 0x11) "Throttle sensor" else pid.label}: ${format(pid, pid.decode(data))}"
         }.joinToString(", ").ifEmpty { null }
     }
 
