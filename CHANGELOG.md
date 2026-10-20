@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.5.0 (20 October 2026)
+- New **Cyberpunk** style: neon magenta and cyan on a night-city black, with sharp raked edges, a wide upright display font, and a neon glow on the rev ring, its disc and the livery stripes. Android Auto picks up its magenta and cyan too. Choose it with the palette button on the Dashboard.
+
 ## 1.4.2 (20 October 2026)
 - Fixed: on some phones the "First, choose your car" step could disappear if Android rebuilt the screen just after the app opened (for example after a system setting changed). It now comes back until you've chosen your car or tapped **Not listed**.
 
