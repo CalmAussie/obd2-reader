@@ -45,11 +45,8 @@ class ShiftLightsView @JvmOverloads constructor(context: Context, attrs: Attribu
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
     }
 
-    /** Lights start at 35% of the redline and are all on just below it. */
     fun setRpm(rpm: Float?, redline: Float) {
-        val start = redline * 0.35f
-        val f = rpm?.let { ((it - start) / (redline - start)).coerceIn(0f, 1f) } ?: 0f
-        val newLit = (f * 15).roundToInt()
+        val newLit = ShiftLights.lit(rpm, redline)
         val newFlash = rpm != null && rpm >= redline
         if (newLit != lit || newFlash != flash) { lit = newLit; flash = newFlash; invalidate() }
     }

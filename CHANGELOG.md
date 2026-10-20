@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.6.1 (20 October 2026)
+- Fixed: on the **Race telemetry** layout, the shift lights across the top stayed dark in normal driving. They only started at about a third of the redline (around 2,300 rpm on most petrol cars), so at idle and everyday revs nothing lit up. They now cover the whole rev range: one light at idle, climbing one light at a time as the revs rise, all 15 just below your car's redline, and flashing blue at the redline as before.
+
 ## 1.6.0 (20 October 2026)
 - **Cyberpunk** is now a dashboard layout of its own, alongside Race telemetry and Digital cockpit, instead of a livery colourway. It's a neon heads-up display: a segmented rev bar that climbs from cyan to magenta and turns red past your car's redline, the speed in big digits split into magenta and cyan ghosts, a strip of bars showing the last 15 seconds of revs, and glowing cut-corner readouts for coolant, fuel and battery, all over faint scanlines on a magenta-hazed night-city black. The live-data list and panels pick up its neon edges too.
 - If you already chose Cyberpunk, you'll see the new layout straight away.
