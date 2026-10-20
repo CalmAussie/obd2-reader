@@ -63,6 +63,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.obdreader.app.obd.AdapterTimeoutException
 import com.obdreader.app.obd.BleTransport
 import com.obdreader.app.obd.BluetoothTransport
+import com.obdreader.app.obd.CarSupport
 import com.obdreader.app.obd.DemoTransport
 import com.obdreader.app.obd.DtcDescriptions
 import com.obdreader.app.obd.ElmClient
@@ -260,6 +261,7 @@ class MainActivity : AppCompatActivity() {
         carSetting = findViewById(R.id.carSetting)
         chooseCarButton = findViewById(R.id.chooseCarButton)
         findViewById<View>(R.id.carRow).setOnClickListener { showCarPicker() }
+        findViewById<View>(R.id.carExpect).setOnClickListener { savedCar()?.let { showExpectations(it) } }
         chooseCarButton.setOnClickListener { showCarPicker() }
         updateCarSetting()
         dtcStatus = findViewById(R.id.dtcStatus)
@@ -1451,7 +1453,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateCarSetting() {
-        carSetting.text = savedCar()?.label ?: getString(R.string.car_not_set)
+        val car = savedCar()
+        carSetting.text = car?.label ?: getString(R.string.car_not_set)
+        findViewById<View>(R.id.carExpect).visibility = if (car != null && CarSupport.expectations(car).isNotEmpty()) View.VISIBLE else View.GONE
     }
 
     /** No car chosen yet, and the user hasn't said theirs isn't listed. */
@@ -1557,11 +1561,15 @@ class MainActivity : AppCompatActivity() {
             sheet.dismiss()
             if (lastCodes != null) lastCodes?.let { renderCodes(it) } // re-explain codes for the new make
             showVinMismatch(ObdSession.state.value.vin?.let { VinDecoder.decode(it) })
-            when {
-                onDone != null -> onDone()
-                firstRun -> toast("Saved. Tap Connect when you're in the car, or try the demo car.")
-                else -> toast(if (ObdSession.client != null) "Saved. Disconnect and connect again to use it." else "Saved. Tap Connect to try again.")
+            val after = {
+                when {
+                    onDone != null -> onDone()
+                    firstRun -> toast("Saved. Tap Connect when you're in the car, or try the demo car.")
+                    else -> toast(if (ObdSession.client != null) "Saved. Disconnect and connect again to use it." else "Saved. Tap Connect to try again.")
+                }
             }
+            // What may not work with this car, before anything else happens.
+            if (!showExpectations(car, after)) after()
         }
         view.findViewById<View>(R.id.carClear).setOnClickListener {
             prefs.edit().remove(PREF_CAR_MAKE).remove(PREF_CAR_YEAR).remove(PREF_CAR_MODEL).remove(PREF_CAR_ENGINE)
@@ -1576,6 +1584,60 @@ class MainActivity : AppCompatActivity() {
         sheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
         sheet.behavior.skipCollapsed = true
         sheet.show()
+    }
+
+    /**
+     * A popup listing the readings and features that may not work with [car], each with why.
+     * Returns false (and shows nothing) when there's nothing to warn about. [onClose] runs when
+     * it's closed.
+     */
+    private fun showExpectations(car: VehicleCatalog.Car, onClose: (() -> Unit)? = null): Boolean {
+        val items = CarSupport.expectations(car)
+        if (items.isEmpty()) return false
+        val pad = dp(24f).toInt()
+        val list = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, dp(4f).toInt(), pad, dp(8f).toInt())
+        }
+        list.addView(TextView(this).apply {
+            text = "Based on what cars like yours usually report. When you connect, the app asks your car and shows everything it does report."
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setTextColor(themeColor(R.attr.obdTextSecondary))
+        })
+        items.forEach { item ->
+            val colour = when (item.level) {
+                CarSupport.Level.UNLIKELY -> themeColor(R.attr.obdDanger)
+                CarSupport.Level.MAYBE -> themeColor(R.attr.obdWarn)
+                CarSupport.Level.LIMITED -> themeColor(R.attr.obdTextSecondary)
+            }
+            list.addView(TextView(this).apply {
+                text = item.name
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                typeface = uiTypeface(600)
+                setTextColor(themeColor(R.attr.obdTextPrimary))
+                setPadding(0, dp(18f).toInt(), 0, 0)
+            })
+            list.addView(TextView(this).apply {
+                text = item.level.label
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                typeface = uiTypeface(600)
+                setTextColor(colour)
+                setPadding(0, dp(2f).toInt(), 0, dp(2f).toInt())
+            })
+            list.addView(TextView(this).apply {
+                text = item.reason
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTextColor(themeColor(R.attr.obdTextSecondary))
+                setLineSpacing(0f, 1.15f)
+            })
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("What may not work with your ${car.label}")
+            .setView(android.widget.ScrollView(this).apply { addView(list) })
+            .setPositiveButton("Got it", null)
+            .setOnDismissListener { onClose?.invoke() }
+            .show()
+        return true
     }
 
     // ---------- Protocol setting ----------

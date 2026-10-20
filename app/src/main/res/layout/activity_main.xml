@@ -785,6 +785,20 @@
                             android:text="@string/car_help"
                             android:textColor="?attr/obdTextSecondary"
                             android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/carExpect"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:minHeight="48dp"
+                            android:gravity="center_vertical"
+                            android:background="?attr/selectableItemBackground"
+                            android:fontFamily="@font/archivo_medium"
+                            android:text="@string/car_expect"
+                            android:textColor="?attr/obdAccent"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
                     </LinearLayout>
 
                     <LinearLayout
