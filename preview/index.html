@@ -866,11 +866,15 @@ function makeRoundel(svg) {
 const rpmGauge = makeRoundel($("rpmGauge"));
 
 /* Decals: speed, coolant and fuel */
+/* A reading the car doesn't give, while connected, says N/A (mirrors MainActivity.showNoReading);
+   before connecting it's a dash. The unit beside it is hidden for N/A. */
+const naText = () => (typeof state !== "undefined" && state === "connected") ? "N/A" : "—";
+function noUnit(el, x) { const u = el && el.querySelector("small"); if (u) u.hidden = x == null && naText() === "N/A"; }
 function makeDecal(el, { min, max, dec = 0, warn = null }) {
   const v = el.querySelector(".v"), meter = el.querySelector(".meter b");
   const d = {
     show(x) {
-      v.firstChild.textContent = x == null ? "—" : x.toFixed(dec);
+      v.firstChild.textContent = x == null ? naText() : x.toFixed(dec); noUnit(v, x);
       if (meter) meter.style.width = x == null ? "0%" : (Math.max(0, Math.min(1, (x - min) / (max - min))) * 100).toFixed(1) + "%";
       el.classList.toggle("hot", x != null && warn != null && x >= warn);
     },
@@ -909,7 +913,7 @@ const tiles = {};
 mfdDefs.forEach(p => {
   const el = $("mfd" + p.key), v = el.querySelector(".v"), bar = el.querySelector(".bar b");
   const glide = smoother(x => {
-    v.firstChild.textContent = x == null ? "—" : x.toFixed(p.dec);
+    v.firstChild.textContent = x == null ? naText() : x.toFixed(p.dec); noUnit(v, x);
     bar.style.width = x == null ? "0%" : (Math.max(0, Math.min(1, (x - p.min) / (p.max - p.min))) * 100).toFixed(1) + "%";
   }, 0.4 * Math.pow(10, -p.dec));
   tiles[p.key] = x => { glide(x); el.classList.toggle("hot", x != null && p.warn != null && x >= p.warn); };
@@ -1006,7 +1010,7 @@ function drawCyber(speed, rpm) {
 /* Neon readouts: value, plus a ten-segment bar (mirrors CyberChipView) */
 document.querySelectorAll(".cy-chip i").forEach(i => i.innerHTML = Array.from({ length: 10 }, (_, k) => `<u style="--m:${Math.round(k / 9 * 100)}%"></u>`).join(""));
 function cyChip(key, id, v, d, lo, hi, warn) {
-  $(id).textContent = v == null ? "—" : v.toFixed(d);
+  $(id).textContent = v == null ? naText() : v.toFixed(d); noUnit($(id).parentNode, v);
   const chip = $("cyChip" + key), f = v == null ? 0 : Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
   chip.classList.toggle("hot", v != null && warn != null && v >= warn);
   [...chip.querySelectorAll("u")].forEach((u, k) => u.classList.toggle("on", v != null && (k + 0.5) / 10 <= f + 0.05));
@@ -1022,9 +1026,10 @@ let lastRpm = null, lastSpeed = null;
   const glideSpeed = smoother(v => { shownSpeed = v; $("teleSpeed").textContent = v == null ? "—" : Math.round(v); drawCockpit(v, shownRpm); drawCyber(v, shownRpm); }, 0.05);
   rpmGauge.set = v => { r(v); lastRpm = v; glideRpm(v); };
   speedGauge.set = v => { s(v); lastSpeed = v; glideSpeed(v); };
-  const fix = (v, d = 0) => v == null ? "—" : v.toFixed(d);
-  const glideCool = smoother(v => { $("teleCool").textContent = fix(v); $("cpCool").textContent = fix(v); cyChip("05", "cyCool", v, 0, 40, 120, 108); }, 0.05);
-  const glideFuel = smoother(v => { $("teleFuel").textContent = fix(v); $("cpFuel").textContent = fix(v); cyChip("2F", "cyFuel", v, 0, 0, 100, null); }, 0.05);
+  const fix = (v, d = 0) => v == null ? naText() : v.toFixed(d);
+  const put = (id, v, d = 0) => { $(id).textContent = fix(v, d); noUnit($(id).parentNode, v); };
+  const glideCool = smoother(v => { put("teleCool", v); put("cpCool", v); cyChip("05", "cyCool", v, 0, 40, 120, 108); }, 0.05);
+  const glideFuel = smoother(v => { put("teleFuel", v); put("cpFuel", v); cyChip("2F", "cyFuel", v, 0, 0, 100, null); }, 0.05);
   tiles["05"] = v => { coolGauge.set(v); glideCool(v); };
   tiles["2F"] = v => { fuelGauge.set(v); glideFuel(v); };
   mfdDefs.forEach(p => {
@@ -1035,7 +1040,7 @@ let lastRpm = null, lastSpeed = null;
       base(v);
       if (v == null) { hist[p.key] = []; path.setAttribute("d", ""); }
       else { pushHist(p.key, v); path.setAttribute("d", sparkPath(hist[p.key], p.min, p.max, 300, 30)); }
-      if (p.key === "VOLT") { $("cpVolt").textContent = v == null ? "—" : v.toFixed(1); cyChip("VOLT", "cyVolt", v, 1, 11, 15, null); }
+      if (p.key === "VOLT") { put("cpVolt", v, 1); cyChip("VOLT", "cyVolt", v, 1, 11, 15, null); }
     };
   });
 }
@@ -1399,7 +1404,7 @@ async function startSession(name, onConnected, failure) {
     const slow = cycle % 25 === 0; let mp = "";
     for (const p of PIDS) {
       if (!p.fast && !slow) continue;
-      const b = car.raw(p.n), v = p.dec2(b); live[hex2(p.n)] = v;
+      const b = car.raw(p.n), v = (p.n === 0x2F && typeof simNoFuel !== "undefined" && simNoFuel) ? null : p.dec2(b); live[hex2(p.n)] = v;
       if (p.n === 0x0C || p.n === 0x0D || p.n === 0x11) mp += hex2(p.n) + b.map(hex2).join("");
       if (p.n === 0x0C) rpmGauge.set(v);
       else if (p.n === 0x0D) speedGauge.set(v);
@@ -1917,7 +1922,7 @@ renderCar = function () {
     const high = raw != null && t.warn != null && raw >= t.warn;
     const text = i === 0 && !connected ? status : high ? "High" : t.key === "0D" && sc.top != null ? `Top ${Math.round(uVal("0D", sc.top))} ${t.unit}` : t.unit;
     const img = t.key === "0C" ? carRoundelNum(Math.min(1, (shown || 0) / t.max), shown == null ? "—" : (Math.floor(shown / 10) * 10).toLocaleString("en-US"))
-      : carTile(shown == null ? "—" : shown.toFixed(t.dec), shown == null ? null : Math.max(0, Math.min(1, (shown - t.min) / (t.max - t.min))), high);
+      : carTile(shown == null ? naText() : shown.toFixed(t.dec), shown == null ? null : Math.max(0, Math.min(1, (shown - t.min) / (t.max - t.min))), high);
     return `<div class="car-item${high ? " hot" : ""}">${img}<div class="t">${t.title}</div><div class="x${high ? " hot" : ""}">${text}</div></div>`;
   }).join("");
   const codesLabel = sharedCodes == null ? "Codes" : sharedCodes.length ? `Codes (${sharedCodes.length})` : "No codes";
@@ -2500,12 +2505,23 @@ if (dashSlots.join() !== SLOT_DEFAULT.join()) {
   /* The live-data list hides what's now shown big, and shows what isn't (coolant and fuel if swapped out). */
   setInterval(() => {
     S.forEach((el, i) => {
-      const k = dashSlots[i], r = slotInfo(k), v = state === "connected" ? live[k] : null, txt = v == null ? "—" : v.toFixed(r.dec);
-      if (el.gauge) el.gauge.set(v); if (el.tele) el.tele.textContent = txt; el.cp.textContent = txt;
+      const k = dashSlots[i], r = slotInfo(k), v = state === "connected" ? live[k] : null, txt = v == null ? naText() : v.toFixed(r.dec);
+      if (el.gauge) el.gauge.set(v); if (el.tele) { el.tele.textContent = txt; noUnit(el.tele.parentNode, v); } el.cp.textContent = txt; noUnit(el.cp.parentNode, v);
       cyChip("Slot" + i, el.cyVal.id, v, r.dec, r.min, r.max, r.warn);
     });
   }, 100);
   [dashSlots[0], dashSlots[1]].forEach(k => { const row = document.getElementById("mfd" + k); if (row) row.hidden = true; });
+  /* Coolant and fuel join the list when they're not a main readout, as in the app. */
+  ["05", "2F"].filter(k => k !== dashSlots[0] && k !== dashSlots[1]).forEach(k => {
+    const r = slotInfo(k);
+    $("mfd").insertAdjacentHTML("afterbegin", `<div class="trow" id="mfd${k}"><span class="tab"></span><span class="l">${r.label}</span><span class="v xb">—<small>${r.unit}</small></span><span class="bar"><b></b></span></div>`);
+    const row = $("mfd" + k), v = row.querySelector(".v"), bar = row.querySelector(".bar b");
+    const glide = smoother(x => {
+      v.firstChild.textContent = x == null ? naText() : x.toFixed(r.dec); noUnit(v, x);
+      bar.style.width = x == null ? "0%" : (Math.max(0, Math.min(1, (x - r.min) / (r.max - r.min))) * 100).toFixed(1) + "%";
+    }, 0.4 * Math.pow(10, -r.dec));
+    tiles[k] = x => { glide(x); row.classList.toggle("hot", x != null && r.warn != null && x >= r.warn); };
+  });
 }
 $("alertsRow").insertAdjacentHTML("beforebegin", `<button class="setting" id="slotsRow"><div class="r"><span>Dashboard readouts</span><span id="slotsSetting"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div><div class="h">Choose what the Dashboard's main readouts show, for example intake air instead of fuel.</div></button>`);
 $("slotsSetting").textContent = dashSlots.map(k => slotInfo(k).label).join(", ");
@@ -2577,24 +2593,14 @@ $("unitsRow").onclick = () => {
 };
 
 
-/* ===== N/A for readings the car doesn't give (mirrors MainActivity.showNoReading) =====
-   Preview only: make the demo car stop reporting fuel level, to see what the app does: every place
-   fuel is shown says N/A, never an old or made-up number. */
+/* ===== Preview only: the demo car stops sending fuel level, to show what the app does when a
+   car leaves a reading out. Every place fuel is shown says N/A, never an old or made-up number. ===== */
 let simNoFuel = false;
-{
-  const base = tiles["2F"];
-  tiles["2F"] = v => {
-    if (!simNoFuel) return base(v);
-    base(null);
-    const fd = $("fuelDecal"); if (fd) { fd.querySelector(".v").firstChild.textContent = "N/A"; fd.querySelector(".v small").hidden = true; }
-    ["teleFuel", "cpFuel", "cyFuel"].forEach(id => { const el = $(id); if (el) { el.textContent = "N/A"; const u = el.parentNode.querySelector("small"); if (u) u.hidden = true; } });
-  };
-}
 $("hotBtn").insertAdjacentHTML("afterend", `<button class="sim-btn" id="noFuelBtn" hidden>Preview only: the demo car stops reporting fuel level</button>`);
 $("noFuelBtn").onclick = () => {
   simNoFuel = !simNoFuel;
   $("noFuelBtn").textContent = simNoFuel ? "Preview only: the demo car reports fuel level again" : "Preview only: the demo car stops reporting fuel level";
-  if (!simNoFuel) { document.querySelectorAll("#fuelDecal .v small, #teleFuel ~ small, #cpFuel ~ small, #cyFuel ~ small").forEach(u => u.hidden = false); }
+  toast(simNoFuel ? "The demo car no longer answers for fuel level, so it says N/A." : "Fuel level is back.");
 };
 setInterval(() => { $("noFuelBtn").hidden = $("ignBtn").hidden; if ($("ignBtn").hidden && simNoFuel) $("noFuelBtn").click(); }, 500);
 
