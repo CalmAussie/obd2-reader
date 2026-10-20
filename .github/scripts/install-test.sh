@@ -166,7 +166,8 @@ for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk" "Asphalt"; do
   sleep 1
   for i in 1 2 3; do tap_text "$STYLE" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
   sleep 4
-  tap_text "Demo car" || { log "style $STYLE: FAILED (no Demo car)"; FAIL=1; continue; }
+  tap_text "Demo car" || { adb shell input swipe 540 1500 540 900 300; sleep 1; tap_text "Demo car"; } || { log "style $STYLE: FAILED (no Demo car)"; FAIL=1; continue; }
+  adb shell input swipe 540 900 540 1700 300   # back to the top
   sleep 8
   shot "5-$SLUG"
   adb shell settings put system user_rotation 1; sleep 5

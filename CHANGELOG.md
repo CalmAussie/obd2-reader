@@ -2,6 +2,15 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.7.2 (20 October 2026)
+- Fixed: on **Race telemetry**, the big engine-speed number could run into the speed number on smaller phones, with large text, or sideways. Both numbers now shrink just enough to fit their column, sized for the widest reading (8,888 rpm) so they don't change size as the revs change.
+- Fixed: readouts meant to fit on one line were wrapping onto a second line and pushing everything below them down:
+  - Telemetry's coolant and fuel boxes now stay on one line.
+  - The Digital cockpit's glass panels put each number and its unit on the same line.
+  - The status line under Connect is shorter ("ELM327 v1.5 · CAN 11-bit, 500 kbaud").
+  - The driving-score buttons (Efficiency, Everyday, Racing) no longer get cut short.
+- Landscape on Race telemetry: the 30-second trace shortens to fit, so the whole left column is on screen.
+
 ## 1.7.1 (20 October 2026)
 - Landscape: the tab bar is slimmer sideways (icons only), and the main dial re-fits whenever the screen's height changes, so it's never cut off at the bottom.
 

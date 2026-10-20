@@ -548,6 +548,13 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .phone.land[data-layout="livery"] .livery i:nth-child(3) { height: 4px; margin-top: 4px; }
 .phone.land[data-layout="livery"] .topbar { padding-top: 56px; }
 .phone.land[data-layout="livery"] .livery-clip { height: 110px; }
+/* Big telemetry numbers shrink to fit their column instead of overlapping (mirrors FitTextView) */
+.tele-big > div { container-type: inline-size; }
+.tele-big .tv { font-size: min(72px, 34cqw); white-space: nowrap; }
+.tele-big > div + div .tv { font-size: min(72px, 52cqw); }
+.tele-pair > div { white-space: nowrap; min-width: 0; }
+.seg button { padding: 0 4px; white-space: nowrap; }
+.land-left .tele-trace svg { height: clamp(56px, calc(var(--heroMax, 300px) - 210px), 96px); }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>

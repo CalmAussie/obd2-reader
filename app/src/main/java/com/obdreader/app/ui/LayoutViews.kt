@@ -107,8 +107,12 @@ class TraceView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
 
     fun clear() { rpm.clear(); speed.clear(); invalidate() }
 
+    /** Height in pixels; landscape shortens it so the whole telemetry column fits the screen. */
+    var fixedHeight: Int? = null
+        set(value) { if (field != value) { field = value; requestLayout() } }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), dp(96f).toInt())
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), fixedHeight ?: dp(96f).toInt())
     }
 
     override fun onDraw(canvas: Canvas) {
