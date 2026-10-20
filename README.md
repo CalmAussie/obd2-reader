@@ -56,7 +56,7 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics �
 - **Trip summary:** distance, driving and idle time, average and top speed, best 0–100 and scores when each drive ends.
 - **Driving alerts:** sound, vibration and a notification (on Android Auto too) for a hot engine or oil, a battery not charging, overcharging or low, and new trouble codes. Switch off under **Diagnostics → Alerts**.
 - **Performance timers:** 0–100 km/h, 80–120 km/h and the quarter mile (an estimate, worked out from speed), or 0–60 and 50–70 mph, with your best times.
-- **Video overlay and drive cards:** turn a recorded drive into an MP4 gauge overlay for your video editor, or a drive into a picture card for Shorts, TikTok, Reels or Instagram.
+- **Video overlay and drive cards:** turn a recorded drive into an MP4 gauge overlay for your video editor ([how to use it](#video-overlay)), or a drive into a picture card for Shorts, TikTok, Reels or Instagram.
 - **Your readouts, your units:** choose which readings fill the Dashboard's main readouts, and km/h or mph and °C or °F separately.
 - **N/A, never a guess:** a reading the car doesn't report, or stops answering, says N/A rather than a dash or an old number.
 - **Your car first:** the app asks for your car's make, year and model when you first open it, so manufacturer-specific trouble codes are explained for your brand, the rev dial uses your engine's redline, and your car's protocol is tried first. It then lists any readings that may not work on a car like yours, and why.
@@ -109,6 +109,30 @@ Many cheap ELM327 clones can't speak J1850 PWM or VPW. If you have a 2000s Ford 
 | Japanese-market imports | Some older ones use Japan's own standard and may not connect |
 
 **What can be read:** standard (generic) OBD2 data: live engine readings, emissions-related trouble codes from the engine and, on many cars, the automatic transmission (about 370 common generic P0, P2 and U0 codes are explained in full; other generic codes are named by system; manufacturer-specific codes are identified but not explained), and the VIN. When a car leaves out a reading, a close standard one is used where there is one, and labelled. **Diagnostics → Scan what your car reports** lists everything your car reports. Other systems, such as ABS, airbags and body electrics, and service resets need the maker's own tools or a scanner made for your make.
+
+## Video overlay
+Turn a recorded drive into a video of your gauges (shift lights, rev arc, rpm, speed, top speed, throttle and a 30-second trace) to lay over dash-cam, GoPro or phone footage in a video editor.
+
+**Record the drive**
+1. Start your camera recording first.
+2. In OBD2 Reader, connect to the car, open the **Graphs** tab and tap **Record drive**. The overlay's clock starts at 0:00 the moment you tap it, so film the phone as you tap (or say "now") to make lining up easy later.
+3. Drive, then tap **Stop recording**.
+
+**Make the video**
+1. On the **Graphs** tab, tap **Saved drives**, choose the drive, then **Make a video overlay**.
+2. Choose a background:
+   - **Green screen:** remove it in your editor with chroma key.
+   - **Black:** use your editor's **Screen** blend mode to drop the black.
+3. Choose a size: **1080p** (sharper) or **720p** (quicker to make). Then tap **Make video**.
+4. Keep the app open while it works; it shows the progress and roughly how long is left.
+5. The video is saved to **Movies › OBD2 Reader** on Android 10 and newer, where your editor can find it. On older phones, tap **Share** to send it to your editor, Drive or Files.
+
+**In your editor**
+1. Put your camera footage on the main track and the overlay on the track above it.
+2. Remove the background: chroma key on green (for example CapCut's **Chroma key**, Premiere Pro's **Ultra Key** or DaVinci Resolve's **3D Keyer**), or set the overlay's blend mode to **Screen** for black.
+3. Line the overlay up with your footage: slide it until its 0:00 sits on the moment you tapped **Record drive**.
+
+The overlay is 30 frames a second, 16:9, with the gauges along the bottom, so it fits over landscape footage. It uses the colours of the style you've chosen, and your units (km/h or mph).
 
 ## Styles
 Tap the palette icon on the Dashboard to choose a style. Your choice is saved. Every style also works in landscape: turn your phone sideways and the Dashboard puts the main dial on the left and the other readouts, Connect and status on the right. The first six are colourways of the livery dashboard; the last three each have a dashboard layout of their own.
