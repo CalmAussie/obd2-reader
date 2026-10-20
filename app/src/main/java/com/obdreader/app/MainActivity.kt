@@ -1911,10 +1911,20 @@ class MainActivity : AppCompatActivity() {
             roundel.maxSize = max
             cockpitRing.maxSize = max
             cyberHud.maxSize = max
-            // Telemetry: the trace takes whatever height is left under the big numbers.
-            trace.fixedHeight = if (landscape && dash == DashLayout.TELEMETRY && h > 0) {
-                val panel = findViewById<View>(R.id.telePanel)
-                (max - panel.top - (panel.height - trace.height)).coerceIn(dp(56f).toInt(), dp(96f).toInt())
+            // Telemetry: the trace takes whatever height is left under the big numbers. On a short
+            // screen where that's too little, it moves under both columns at full width instead.
+            val panel = findViewById<View>(R.id.telePanel)
+            val inLeft = panel.parent === findViewById<View>(R.id.layoutTelemetry)
+            trace.fixedHeight = if (landscape && dash == DashLayout.TELEMETRY && h > 0 && inLeft) {
+                val room = max - panel.top - (panel.height - trace.height)
+                if (room < dp(56f)) {
+                    landRow?.let { row ->
+                        val content = row.parent as ViewGroup
+                        move(panel, content, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(12f).toInt() })
+                        content.removeView(panel); content.addView(panel, content.indexOfChild(row) + 1)
+                    }
+                    null
+                } else room.coerceAtMost(dp(96f).toInt())
             } else null
         }
         // Fit again once the new arrangement has been laid out.

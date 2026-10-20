@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.7.3 (20 October 2026)
+- Landscape on **Race telemetry**, small phones: when there isn't room for the 30-second trace under the big numbers, it moves below both columns at full width instead of being cut off.
+
 ## 1.7.2 (20 October 2026)
 - Fixed: on **Race telemetry**, the big engine-speed number could run into the speed number on smaller phones, with large text, or sideways. Both numbers now shrink just enough to fit their column, sized for the widest reading (8,888 rpm) so they don't change size as the revs change.
 - Fixed: readouts meant to fit on one line were wrapping onto a second line and pushing everything below them down:
