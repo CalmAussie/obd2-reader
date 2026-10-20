@@ -1793,7 +1793,7 @@ function translate(cmd, rsp) {
   }
   if (cmd.startsWith("01") && r.startsWith("41")) {
     let bytes = r.slice(2).match(/../g).map(x => parseInt(x, 16)), out = [];
-    while (bytes.length) { const p = PIDS.find(p => p.n === bytes[0]); if (!p) break; const len = p.n === 0x0C || p.n === 0x10 ? 2 : 1; out.push(`${p.label}: ${fmtPid(p, p.dec2(bytes.slice(1, 1 + len)))}`); bytes = bytes.slice(1 + len); }
+    while (bytes.length) { const p = PIDS.find(p => p.n === bytes[0]); if (!p) break; const len = p.n === 0x0C || p.n === 0x10 ? 2 : 1; out.push(p.n === 0x11 ? `Throttle sensor: ${fmtPid(p, bytes[1] * 100 / 255)}` : `${p.label}: ${fmtPid(p, p.dec2(bytes.slice(1, 1 + len)))}`); bytes = bytes.slice(1 + len); }
     return out.join(", ") || null;
   }
   return null;
@@ -2107,6 +2107,20 @@ $("rotateBtn").onclick = () => {
   requestAnimationFrame(fitLandHero);
 };
 window.addEventListener("resize", () => { if (landscape) fitLandHero(); });
+
+
+/* ===== 1.7.4: throttle measured from closed (mirrors obd/ThrottleCalibration.kt) =====
+   The raw sensor reads about 12-20% with your foot off; the app learns that closed position and
+   shows 0% at idle, 100% wide open. The adapter log still shows the raw sensor reading. */
+{
+  const thr = PIDS.find(p => p.n === 0x11);
+  let closed = null;
+  thr.dec2 = b => {
+    const raw = b[0] * 100 / 255;
+    if (raw <= 35 && (closed == null || raw < closed)) closed = raw;
+    return closed == null ? raw : Math.max(0, Math.min(100, (raw - closed) / (100 - closed) * 100));
+  };
+}
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

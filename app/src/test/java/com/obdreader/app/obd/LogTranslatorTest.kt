@@ -16,7 +16,7 @@ class LogTranslatorTest {
 
     @Test
     fun multiPidReplyListsEveryReading() {
-        assertEquals("Engine RPM: 850 rpm, Speed: 0 km/h, Throttle: 12%",
+        assertEquals("Engine RPM: 850 rpm, Speed: 0 km/h, Throttle sensor: 12%",
             LogTranslator.describe("010C0D11", listOf("410C0D480D00111F")))
     }
 
