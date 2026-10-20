@@ -77,6 +77,7 @@ import com.obdreader.app.obd.VehicleCatalog
 import com.obdreader.app.obd.TripSummary
 import com.obdreader.app.obd.Units
 import com.obdreader.app.obd.CarCoverage
+import com.obdreader.app.obd.ChargingStatus
 import com.obdreader.app.obd.PerformanceTimer
 import com.obdreader.app.obd.DriveTrack
 import com.obdreader.app.session.OverlayExporter
@@ -192,6 +193,8 @@ class MainActivity : AppCompatActivity() {
     private val teleLabels = mutableMapOf<String, String>()
     private val glassUnits = mutableMapOf<String, TextView>()
     private var lastStandIns: Map<String, String> = emptyMap()
+    private var lastCharging: ChargingStatus.State? = null
+    private val glassLabels = mutableMapOf<String, TextView>()
 
     /** A reading the dashboard can show in one of its main readouts. */
     private data class Readout(val key: String, val label: String, val unit: String, val decimals: Int, val min: Double, val max: Double, val warn: Double?)
@@ -748,6 +751,8 @@ class MainActivity : AppCompatActivity() {
             heading("Not reported by your car")
             missing.forEach { p -> line("${p.label}" + (CarCoverage.STAND_INS.firstOrNull { it.forHex == p.hex && it.pid.number in scan.supported }?.let { " (using ${it.note.substringBefore(",")})" } ?: "")) }
         }
+        heading("Battery")
+        batteryLines(scan).forEach { (t, found) -> line(t, secondary = !found) }
         if (scan.enhanced.isNotEmpty()) {
             heading("Manufacturer readings (experimental)")
             line("Known readings for your make, tried read-only. An answer means your car has it; send this scan to have it added.")
@@ -763,6 +768,8 @@ class MainActivity : AppCompatActivity() {
                     appendLine("Protocol: ${ObdProtocols.byCode(ObdSession.state.value.protocolCode)?.name ?: "unknown"}")
                     appendLine(); appendLine("Standard readings:")
                     readings.forEach { appendLine(String.format(Locale.US, "  %02X  %s", it, CarCoverage.name(it))) }
+                    appendLine(); appendLine("Battery:")
+                    batteryLines(scan).forEach { (t, _) -> appendLine("  $t") }
                     if (scan.enhanced.isNotEmpty()) {
                         appendLine(); appendLine("Manufacturer readings:")
                         scan.enhanced.forEach { (e, d) -> appendLine("  ${e.request} ${e.name} [${e.header ?: "default"}]: ${d ?: "no answer"}") }
@@ -777,6 +784,22 @@ class MainActivity : AppCompatActivity() {
         sheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
         sheet.behavior.skipCollapsed = true
         sheet.show()
+    }
+
+    /** What the scan found about the battery, as (text, found) lines. */
+    private fun batteryLines(scan: ObdSession.Scan): List<Pair<String, Boolean>> = buildList {
+        add("✓  Battery voltage: measured by the adapter, on every car" to true)
+        add("·  12-volt battery current: not part of standard OBD2. Some cars measure it in a maker-specific module, which the app can't read yet, so the Dashboard estimates charging from voltage instead." to false)
+        val pack = scan.battery[0x9A]
+        add(when {
+            0x9A !in scan.supported -> "·  Hybrid/EV battery data (PID 9A): not offered by this car" to false
+            pack != null -> "✓  Hybrid/EV battery data (PID 9A): offered. Raw: $pack. Send this scan so it can be decoded for your car." to true
+            else -> "·  Hybrid/EV battery data (PID 9A): listed, but no answer" to false
+        })
+        if (0x5B in scan.supported) {
+            val life = scan.battery[0x5B]?.split(" ")?.firstOrNull()?.toIntOrNull(16)?.let { (it * 100.0 / 255).roundToInt() }
+            add((if (life != null) "✓  Hybrid battery remaining life: $life%" else "·  Hybrid battery remaining life: listed, but no answer") to (life != null))
+        }
     }
 
     // ---------- Dashboard readouts ----------
@@ -1273,8 +1296,9 @@ class MainActivity : AppCompatActivity() {
             val gap = if (r.label.length > 8) "   " else "     "
             (view as FitTextView).sample = "${r.label}${gap}888.8 ${r.unit}"
             teleLabels[key] = "${r.label}$gap"
+            if (key == VOLTAGE_KEY) (view as FitTextView).sample = "Battery · charging weakly 88.8 ${r.unit}"
             teleTexts[key] = SmoothText(view, "${r.label}$gap$blank ${r.unit}", settle = if (r.decimals > 0) 0.01f else 0.05f) {
-                "${r.label}$gap${String.format(Locale.US, "%.${r.decimals}f", it)} ${r.unit}"
+                "${teleLabels[key].orEmpty()}${String.format(Locale.US, "%.${r.decimals}f", it)} ${r.unit}"
             }
         }
         findViewById<View>(R.id.teleRpmBar).setBackgroundColor(Channels.RPM)
@@ -1315,7 +1339,11 @@ class MainActivity : AppCompatActivity() {
                 background = panelBackground(stroke = true)
                 setPadding(dp(12f).toInt(), dp(12f).toInt(), dp(12f).toInt(), dp(10f).toInt())
             }
-            box.addView(TextView(this).apply { text = label; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+            box.addView(TextView(this).apply {
+                text = label; maxLines = 2; ellipsize = android.text.TextUtils.TruncateAt.END
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                glassLabels[key] = this
+            })
             // The number and its unit share one line, like the other styles' readouts.
             val line = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; isBaselineAligned = true }
             val value = TextView(this).apply {
@@ -1329,7 +1357,8 @@ class MainActivity : AppCompatActivity() {
                 setPadding(dp(4f).toInt(), 0, 0, 0)
             })
             box.addView(line)
-            row.addView(box, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+            // Match the row's height, so a two-line label (the battery's status) keeps the panels even.
+            row.addView(box, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
                 if (i > 0) marginStart = dp(8f).toInt()
             })
             glass[key] = SmoothText(value, getString(R.string.dash), settle = if (r.decimals > 0) 0.01f else 0.05f) {
@@ -1385,6 +1414,19 @@ class MainActivity : AppCompatActivity() {
         cockpitRing.top = t?.toFloat()
         cyberHud.top = t?.toFloat()
         findViewById<TextView>(R.id.teleSpeedUnit).setIfChanged(t?.let { "${Units.speedUnit} · top ${it.roundToInt()}" } ?: Units.speedUnit)
+    }
+
+    /** Shows the estimated charging status beside the battery voltage, wherever the battery is shown. */
+    private fun showCharging(state: ChargingStatus.State?) {
+        val k = VOLTAGE_KEY
+        tiles[k]?.labelOverride = state?.let { ChargingStatus.label(it) }
+        decals[k]?.labelOverride = state?.let { ChargingStatus.label(it, roomy = false) }
+        glassLabels[k]?.text = ChargingStatus.label(state, roomy = false)
+        cyberChips[k]?.labelOverride = state?.short
+        if (k in teleLabels) {
+            teleLabels[k] = ChargingStatus.label(state, roomy = false) + "   "
+            ObdSession.state.value.readings[k]?.let { teleTexts[k]?.set(it.toFloat()) }
+        }
     }
 
     /** No reading from the car for [key]: every place it's shown says N/A, never a stale or made-up number. */
@@ -1812,9 +1854,14 @@ class MainActivity : AppCompatActivity() {
         }
         // A stand-in reading is labelled for what it really is.
         if (s.standIns != lastStandIns) {
-            tiles.forEach { (k, t) -> t.labelOverride = s.standIns[k] }
-            decals.forEach { (k, d) -> d.labelOverride = s.standIns[k] }
+            tiles.forEach { (k, t) -> if (k != VOLTAGE_KEY) t.labelOverride = s.standIns[k] }
+            decals.forEach { (k, d) -> if (k != VOLTAGE_KEY) d.labelOverride = s.standIns[k] }
             lastStandIns = s.standIns
+        }
+        // Battery: whether it looks like it's charging, estimated from voltage and engine speed.
+        if (s.charging != lastCharging) {
+            showCharging(s.charging)
+            lastCharging = s.charging
         }
         if (s.unsupported != lastUnsupported) {
             s.unsupported.forEach { tiles[it]?.setUnsupported() }
@@ -1956,6 +2003,7 @@ class MainActivity : AppCompatActivity() {
             R.string.help_car_title to R.string.help_car_body,
             R.string.help_auto_title to R.string.help_auto_body,
             R.string.help_codes_title to R.string.help_codes_body,
+            R.string.help_battery_title to R.string.help_battery_body,
             R.string.help_safety_title to R.string.help_safety_body,
         )
         for ((title, body) in sections) {

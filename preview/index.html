@@ -786,7 +786,7 @@ const car = {
       case 0x5C: return one(Math.min(102, 40 + t * 1.2) + 40);
     }
   },
-  volts() { return 14.1 + 0.2 * Math.sin(this.t()); },
+  volts() { return (typeof simNoCharge !== "undefined" && simNoCharge) ? 12.3 + 0.05 * Math.sin(this.t()) : 14.1 + 0.2 * Math.sin(this.t()); },
 };
 
 /* ===== Livery dashboard: mirrors ui/RoundelView.kt, StartLightsView.kt, DecalView.kt and TowerRowView.kt ===== */
@@ -1356,6 +1356,7 @@ const HELP = [
   ["If it won't connect", "Check the ignition is on and the adapter's light is lit. Then, on the Diagnostics tab, tap Your car and choose your car's make, year and model, so the app tries its usual protocol first. Cars sold in Australia before 2006 may not fully support OBD2, and some cheap adapters can't talk to older Fords, GM and Chrysler cars."],
   ["Android Auto", "Android Auto only shows apps from the Play Store until you allow others. To turn that on:\n1. Open Android Auto's settings on your phone (search \"Android Auto\" in Settings).\n2. Scroll to the bottom and tap Version about 10 times, then confirm to turn on developer mode.\n3. Tap the three-dot menu at the top right, then Developer settings, and turn on Unknown sources.\n4. Reconnect to your car. OBD2 Reader appears in Android Auto's app list.\n\nConnect to your adapter from the phone first, or tap Connect on the car screen to reconnect to the last one."],
   ["What codes it reads", "OBD2 Reader reads the trouble codes the engine computer, and on many cars the automatic transmission, report through the OBD2 port. It doesn't read other systems such as ABS, airbags or body electrics; those need the maker's tool or a scanner made for your make.\n\nCommon generic codes (P0, P2 and U0) are explained in full, with causes and what to check. Other generic codes are named by the system they belong to. Manufacturer-specific codes (such as P1 codes) are marked as such, with where to look them up for your make, because their meaning differs between brands."],
+  ["Battery status", "Beside the battery voltage, the app shows whether the battery looks like it's charging. Standard OBD2 has no battery-current (amps) reading, so this is an estimate from the voltage and engine speed, marked (est.).\n\nEngine running: 13.2 V or more is charging; 12.8 to 13.2 V is charging weakly (normal on cars with smart charging, which lower the voltage while cruising); under 12.8 V is not charging; over 15.2 V is overcharging. Engine off: under 12.2 V means the battery is low.\n\nScan what your car reports, on this tab, shows whether your car offers any battery readings of its own."],
   ["Read-only", "OBD2 Reader only reads from your car. It never clears trouble codes, turns off the check-engine light or changes any setting, and it blocks any command that could. After a repair, a workshop scan tool can clear the codes."],
 ];
 function showHelp() {
@@ -1920,7 +1921,7 @@ renderCar = function () {
   const items = CAR_TILES.map((t, i) => {
     const raw = connected ? uVal(t.key, live[t.key]) : null, shown = carGlide(t.key, raw, now);
     const high = raw != null && t.warn != null && raw >= t.warn;
-    const text = i === 0 && !connected ? status : high ? "High" : t.key === "0D" && sc.top != null ? `Top ${Math.round(uVal("0D", sc.top))} ${t.unit}` : t.unit;
+    const text = i === 0 && !connected ? status : high ? "High" : t.key === "0D" && sc.top != null ? `Top ${Math.round(uVal("0D", sc.top))} ${t.unit}` : t.key === "VOLT" && connected && chgShown ? `${t.unit} · ${CHG[chgShown]} (est.)` : t.unit;
     const img = t.key === "0C" ? carRoundelNum(Math.min(1, (shown || 0) / t.max), shown == null ? "—" : (Math.floor(shown / 10) * 10).toLocaleString("en-US"))
       : carTile(shown == null ? naText() : shown.toFixed(t.dec), shown == null ? null : Math.max(0, Math.min(1, (shown - t.min) / (t.max - t.min))), high);
     return `<div class="car-item${high ? " hot" : ""}">${img}<div class="t">${t.title}</div><div class="x${high ? " hot" : ""}">${text}</div></div>`;
@@ -2547,12 +2548,13 @@ $("slotsRow").insertAdjacentHTML("beforebegin", `<button class="setting" id="sca
 $("scanRow").onclick = () => {
   if (state !== "connected") return toast("Connect to your car first.");
   const shown = new Set(PIDS.map(p => hex2(p.n)).concat(["49", "67"]));
-  const supported = Object.keys(PID_NAMES).filter(k => parseInt(k, 16) % 32 !== 0);   /* the demo car lists everything */
+  const supported = Object.keys(PID_NAMES).filter(k => parseInt(k, 16) % 32 !== 0 && k !== "5B");   /* the demo car lists everything a petrol car could */
   const ford = myCar && ["Ford", "Lincoln", "Mercury", "Mazda"].includes(myCar.make);
   const probes = ford ? [["Engine oil temperature", "221310"], ["Transmission fluid temperature", "221674"], ["Transmission fluid temperature", "2211BD"], ["Transmission fluid temperature", "221E1C"], ["Fuel level", "22F42F"]] : [];
   const row = (mark, t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${mark}  ${t}</div>`;
   const s = overlay(`<div class="handle"></div><h2>What your car reports</h2><p>${supported.length} standard readings. Ones marked ✓ are on the app's Dashboard or live-data list.</p>
     <div class="trip-h">Standard readings</div>${supported.map(k => row(shown.has(k) ? "✓" : "·", `${k}  ${PID_NAMES[k]}`, !shown.has(k))).join("")}
+    <div class="trip-h">Battery</div>${row("✓", "Battery voltage: measured by the adapter, on every car")}${row("·", "12-volt battery current: not part of standard OBD2. Some cars measure it in a maker-specific module, which the app can't read yet, so the Dashboard estimates charging from voltage instead.", true)}${row("·", "Hybrid/EV battery data (PID 9A): not offered by this car", true)}
     ${probes.length ? `<div class="trip-h">Manufacturer readings (experimental)</div><p>Known readings for your make, tried read-only. An answer means your car has it; send this scan to have it added.</p>${probes.map(([n, r]) => row("·", `${n} (${r}): no answer from the demo car`, true)).join("")}` : ""}
     <button class="primary trip-done" id="scanShare">Share scan</button>`, { sheet: true });
   $("scanShare").onclick = () => { closeOverlay(); toast("Opens Android's share sheet with the scan as a text file."); };
@@ -2603,6 +2605,43 @@ $("noFuelBtn").onclick = () => {
   toast(simNoFuel ? "The demo car no longer answers for fuel level, so it says N/A." : "Fuel level is back.");
 };
 setInterval(() => { $("noFuelBtn").hidden = $("ignBtn").hidden; if ($("ignBtn").hidden && simNoFuel) $("noFuelBtn").click(); }, 500);
+
+
+/* ===== Battery charging status (mirrors obd/ChargingStatus.kt): estimated from voltage and engine
+   speed, shown beside the battery voltage everywhere it appears, marked (est.) where there's room. ===== */
+var CHG = { CHARGING: "charging", WEAK: "charging weakly", NOT: "not charging", OVER: "overcharging", OFF: "engine off", OFF_LOW: "engine off, low" };
+function chargingOf(v, rpm) {
+  if (v == null || rpm == null) return null;
+  if (rpm > 500) return v > 15.2 ? "OVER" : v >= 13.2 ? "CHARGING" : v >= 12.8 ? "WEAK" : "NOT";
+  return v >= 12.2 ? "OFF" : "OFF_LOW";
+}
+var chgShown = null, chgCand = null, chgSince = 0, simNoCharge = false;
+const chgHold = st => (st === "NOT" || st === "WEAK") ? 20000 : st === "OVER" ? 10000 : 5000;
+/* Every label that says "Battery" (live-data list, readouts, glass panels, neon chips, telemetry). */
+const battLabels = () => [...document.querySelectorAll("#phone .l, #phone .gl, #phone .cl, #phone .tl")].filter(e => e.dataset.batt || e.textContent.startsWith("Battery"));
+function showCharging() {
+  battLabels().forEach(e => {
+    e.dataset.batt = "1";
+    const roomy = !!e.closest("#mfd");
+    e.textContent = chgShown == null ? "Battery" : e.classList.contains("cl") ? CHG[chgShown] : `Battery · ${CHG[chgShown]}${roomy ? " (est.)" : ""}`;
+  });
+}
+setInterval(() => {
+  const now = performance.now();
+  const st = state === "connected" ? chargingOf(live.VOLT, live["0C"]) : null;
+  if (st == null) { chgCand = null; if (chgShown != null) { chgShown = null; showCharging(); } return; }
+  if (st === chgShown) { chgCand = null; return; }
+  if (st !== chgCand) { chgCand = st; chgSince = now; }
+  /* The preview's demo button skips the 20-second wait, so you don't have to sit through it. */
+  if (now - chgSince >= (simNoCharge ? 1500 : chgHold(st))) { chgShown = st; chgCand = null; showCharging(); }
+}, 250);
+$("noFuelBtn").insertAdjacentHTML("afterend", `<button class="sim-btn" id="noChargeBtn" hidden>Preview only: the demo car's alternator stops charging</button>`);
+$("noChargeBtn").onclick = () => {
+  simNoCharge = !simNoCharge;
+  $("noChargeBtn").textContent = simNoCharge ? "Preview only: the alternator charges again" : "Preview only: the demo car's alternator stops charging";
+  if (!simNoCharge) setTimeout(() => { simNoCharge = false; }, 0);
+};
+setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn").hidden && simNoCharge) $("noChargeBtn").click(); }, 500);
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

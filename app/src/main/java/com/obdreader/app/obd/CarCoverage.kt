@@ -108,7 +108,7 @@ object CarCoverage {
         0x7D to "NOx emission limit status", 0x7E to "PM emission limit status", 0x7F to "Engine run time",
         0x83 to "NOx sensor", 0x84 to "Manifold surface temperature", 0x85 to "NOx reagent system", 0x86 to "Particulate matter sensor",
         0x87 to "Intake manifold pressure (absolute)", 0x8D to "Throttle position G", 0x8E to "Engine friction torque",
-        0x9D to "Engine fuel rate (multiple)", 0x9E to "Engine exhaust flow rate", 0xA4 to "Transmission gear", 0xA6 to "Odometer",
+        0x9A to "Hybrid/EV battery system data", 0x9D to "Engine fuel rate (multiple)", 0x9E to "Engine exhaust flow rate", 0xA4 to "Transmission gear", 0xA6 to "Odometer",
     )
 
     fun name(pid: Int): String = NAMES[pid] ?: String.format(Locale.US, "Reading %02X", pid)

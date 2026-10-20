@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import com.obdreader.app.obd.AdapterTimeoutException
 import com.obdreader.app.obd.ThrottleCalibration
 import com.obdreader.app.obd.CarCoverage
+import com.obdreader.app.obd.ChargingStatus
 import com.obdreader.app.obd.ElmParser
 import com.obdreader.app.obd.BleTransport
 import com.obdreader.app.obd.BluetoothTransport
@@ -80,6 +81,8 @@ object ObdSession {
         val unsupported: Set<String> = emptySet(),
         /** Readings shown through a stand-in, with the stand-in's name ("11" to "Accelerator pedal"). */
         val standIns: Map<String, String> = emptyMap(),
+        /** Whether the battery looks like it's charging, estimated from voltage and engine speed (null until known). */
+        val charging: ChargingStatus.State? = null,
         val protocolCode: String? = null,
         val summary: String? = null,
         val vin: String? = null,
@@ -222,7 +225,7 @@ object ObdSession {
                             phase = Phase.WAITING,
                             title = "Waiting for the car",
                             detail = "Turn the ignition on. The app reconnects to ${t.name} automatically.",
-                            readings = emptyMap(),
+                            readings = emptyMap(), charging = null,
                             rate = 0.0,
                         )
                     }
@@ -293,6 +296,7 @@ object ObdSession {
         standIns.forEach { appendLog("= Using ${it.note}") }
         standInFor = standIns.associate { it.pid.hex to it.forHex }
         misses.clear()
+        chargingWatch.reset()
         _state.update { it.copy(standIns = standIns.associate { s -> s.forHex to s.pid.label }) }
         val pids = base + standIns.map { it.pid }
         val covered = base.map { it.hex }.toSet() + standIns.map { it.forHex }
@@ -307,7 +311,7 @@ object ObdSession {
                 if (isDemo || !AppPrefs.autoReconnect(prefs)) throw IOException("The car stopped answering. Is the ignition off?")
                 val since = SystemClock.elapsedRealtime()
                 _state.update {
-                    it.copy(phase = Phase.WAITING, title = "Ignition off", detail = "Waiting for the car. Live data comes back as soon as the ignition is on.", readings = emptyMap(), rate = 0.0)
+                    it.copy(phase = Phase.WAITING, title = "Ignition off", detail = "Waiting for the car. Live data comes back as soon as the ignition is on.", readings = emptyMap(), charging = null, rate = 0.0)
                 }
                 while (true) {
                     delay(ReconnectPolicy.WAKE_PROBE_MS)
@@ -392,9 +396,15 @@ object ObdSession {
     /** Readings arriving under one key that stand in for another (accelerator pedal for throttle, say). */
     private var standInFor: Map<String, String> = emptyMap()
     private val misses = mutableMapOf<String, Int>()
+    private val chargingWatch = ChargingStatus.Watch()
 
     /** What the car scan found: the standard readings the car lists, and which manufacturer readings answered. */
-    data class Scan(val supported: Set<Int>, val enhanced: List<Pair<CarCoverage.Enhanced, String?>>)
+    data class Scan(
+        val supported: Set<Int>,
+        val enhanced: List<Pair<CarCoverage.Enhanced, String?>>,
+        /** Raw answers (hex) to the standard hybrid/EV battery readings the car lists: PID 0x9A and 0x5B. */
+        val battery: Map<Int, String?> = emptyMap(),
+    )
 
     /**
      * Asks the car which standard readings it supports, and tries a few known manufacturer
@@ -403,6 +413,12 @@ object ObdSession {
     suspend fun scanCar(context: Context): Scan {
         val c = client ?: throw IOException("Not connected")
         val supported = try { c.supportedPids().orEmpty() } catch (e: AdapterTimeoutException) { emptySet() }
+        // Hybrid/EV battery readings, when the car lists them. PID 0x9A's layout isn't published, so it's kept raw.
+        val battery = listOf(0x9A, 0x5B).filter { it in supported }.associateWith { n ->
+            val req = String.format(Locale.US, "01%02X", n)
+            val lines = try { c.command(req, 2000) } catch (e: AdapterTimeoutException) { emptyList() }
+            ElmParser.extractData(lines, "41" + req.substring(2))?.joinToString(" ") { String.format(Locale.US, "%02X", it) }
+        }
         val protocol = _state.value.protocolCode
         val probes = CarCoverage.enhancedFor(carMake(context), AppPrefs.savedCar(AppPrefs.of(context))?.model, protocol)
         val answers = mutableListOf<Pair<CarCoverage.Enhanced, String?>>()
@@ -418,7 +434,7 @@ object ObdSession {
             // Back to the usual header for live data.
             if (header != null) CarCoverage.defaultHeader(protocol)?.let { try { c.command("ATSH $it") } catch (ignored: Exception) {} }
         }
-        return Scan(supported, answers)
+        return Scan(supported, answers, battery)
     }
 
     suspend fun readVin(): String? {
@@ -527,6 +543,12 @@ object ObdSession {
             if (values.isNotEmpty()) _state.update { it.copy(readings = it.readings + values, rate = rate) }
 
             if (watch.cycle(answered, asked)) throw IgnitionOffException()
+
+            // Charging status from the latest voltage and engine speed (held steady by the watch).
+            _state.value.let { st ->
+                val charging = chargingWatch.update(now(), st.readings[VOLTAGE_KEY], st.readings["0C"])
+                if (charging != st.charging) _state.update { it.copy(charging = charging) }
+            }
 
             if (SystemClock.elapsedRealtime() >= nextCodeCheck) {
                 nextCodeCheck = SystemClock.elapsedRealtime() + CODE_CHECK_MS

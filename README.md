@@ -51,6 +51,7 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics �
 
 ## What it does
 - **Live data:** RPM, speed, coolant, fuel, throttle, engine load, intake air, manifold pressure, MAF, timing advance, ambient and oil temperature, and battery voltage. Readings past their limit turn red.
+- **Battery charging status:** beside the voltage, an estimate (marked est.) of whether the battery is charging, worked out from voltage and engine speed. Standard OBD2 has no battery-current (amps) reading.
 - **Top speed:** the highest speed of the current drive shows beside the speed, on the phone and in Android Auto.
 - **Trip summary:** distance, driving and idle time, average and top speed, best 0–100 and scores when each drive ends.
 - **Driving alerts:** sound, vibration and a notification (on Android Auto too) for a hot engine or oil, a battery not charging, overcharging or low, and new trouble codes. Switch off under **Diagnostics → Alerts**.

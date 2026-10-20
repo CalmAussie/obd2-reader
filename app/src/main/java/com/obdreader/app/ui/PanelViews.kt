@@ -19,6 +19,14 @@ import kotlin.math.roundToInt
 private fun View.dp(v: Float) = v * resources.displayMetrics.density
 
 /** Formats a reading, or a dash when there isn't one. */
+/** [s] shortened with "…" so it fits in [avail] pixels. */
+internal fun fitText(paint: Paint, s: String, avail: Float): String {
+    if (avail <= 0f || paint.measureText(s) <= avail) return s
+    var t = s
+    while (t.length > 1 && paint.measureText(t.trimEnd() + "…") > avail) t = t.dropLast(1)
+    return t.trimEnd() + "…"
+}
+
 internal fun fmt(value: Double?, decimals: Int): String =
     value?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
 
@@ -116,7 +124,7 @@ class DecalView(
         val moving = smooth.step()
         val shownValue = value?.let { smooth.shown.toDouble() }
         val x = o * 0.55f + dp(20f)
-        canvas.drawText(labelOverride ?: label, x, dp(26f), labelPaint)
+        canvas.drawText(fitText(labelPaint, labelOverride ?: label, width - x - dp(20f)), x, dp(26f), labelPaint)
         top?.takeIf { wide }?.let {
             labelPaint.textAlign = Paint.Align.RIGHT
             canvas.drawText("Top ${it.roundToInt()} $unit", width - dp(20f), dp(26f), labelPaint)
@@ -258,7 +266,9 @@ class TowerRowView(
         val x = tabW + dp(14f)
         val right = w - dp(14f)
         val top = if (layout == DashLayout.TELEMETRY) dp(28f) else dp(30f)
-        canvas.drawText(labelOverride ?: label, x, top, labelPaint)
+        // Room for the label: the row less the unit and a typical number.
+        val labelRoom = right - x - unitPaint.measureText(unit) - valuePaint.measureText("888.8") - dp(12f)
+        canvas.drawText(fitText(labelPaint, labelOverride ?: label, labelRoom), x, top, labelPaint)
         val unitW = if (unsupported) 0f else unitPaint.measureText(unit)
         if (!unsupported) canvas.drawText(unit, right, top, unitPaint)
         valuePaint.color = if (hot) danger else text

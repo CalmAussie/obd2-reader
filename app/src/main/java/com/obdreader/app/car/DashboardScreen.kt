@@ -109,6 +109,8 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
                 high -> "High"
                 // The drive's top speed under the speed (tile text can change freely; only titles must stay fixed).
                 t.key == HEX_SPEED && DriveScorer.topSpeed.value != null -> "Top ${Units.speed(DriveScorer.topSpeed.value!!).roundToInt()} ${t.unit}"
+                // Battery: the estimated charging status under the voltage.
+                t.key == ObdSession.VOLTAGE_KEY && s.isConnected && s.charging != null -> "${t.unit} · ${s.charging.short} (est.)"
                 else -> t.unit
             }
             val image = if (t.key == HEX_RPM) {
