@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.7.7 (20 October 2026)
+- **Top speed this drive.** The highest speed since you connected now shows beside the speed in every style: in the corner of the speed panel on the liveries, under km/h on Race telemetry and the Digital cockpit, and beside KM/H on Cyberpunk. It's on the Android Auto speed tile and in the driving score card too.
+- A speed only counts once two readings in a row reach it, so a single glitched reading can't set a top speed you never drove. It resets when you connect again; turning the ignition off and on mid-drive doesn't reset it.
+
 ## 1.7.6 (20 October 2026)
 - Fixed: in **Choose your car**, the Engine box was squashed (thinner than the other boxes, with the text pressed against its edge). It's now the same size and style as Manufacturer, Year and Model.
 

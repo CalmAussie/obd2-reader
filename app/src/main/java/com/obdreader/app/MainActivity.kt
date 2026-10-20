@@ -349,6 +349,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 launch { LogRecorder.active.collect { renderRecording(it) } }
                 launch { DriveScorer.results.collect { renderScore() } }
+                launch { DriveScorer.topSpeed.collect { showTopSpeed(it) } }
             }
         }
 
@@ -461,6 +462,7 @@ class MainActivity : AppCompatActivity() {
         val weakest = if (r?.score == null) null else r.parts.filter { it.score != null }.minByOrNull { it.score!! }?.takeIf { it.score!! < 90 }
         val extra = listOfNotNull(
             weakest?.let { "Tip: ${it.tip}" },
+            r?.topSpeed?.let { "Top speed this drive: ${it.roundToInt()} km/h" },
             r?.best0to100?.takeIf { scoreStyle == DrivingScore.Style.RACING }?.let { String.format(Locale.US, "Best 0 to 100 km/h this drive: %.1f s", it) },
             if (scoreStyle == DrivingScore.Style.RACING) getString(R.string.score_racing_note) else null,
         )
@@ -783,6 +785,14 @@ class MainActivity : AppCompatActivity() {
         teleSpeedText.set(value)
         cockpitRing.set(value, lastRpm)
         cyberHud.set(value, lastRpm)
+    }
+
+    /** The top speed this drive, beside the speed in every style. */
+    private fun showTopSpeed(top: Double?) {
+        decals[SPEED_KEY]?.top = top
+        cockpitRing.top = top?.toFloat()
+        cyberHud.top = top?.toFloat()
+        findViewById<TextView>(R.id.teleSpeedUnit).setIfChanged(top?.let { "km/h · top ${it.roundToInt()}" } ?: getString(R.string.unit_kmh))
     }
 
     private fun setBigReading(key: String, value: Double?) {

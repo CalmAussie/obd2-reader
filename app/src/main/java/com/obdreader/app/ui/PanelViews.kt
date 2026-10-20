@@ -14,6 +14,7 @@ import android.widget.Button
 import androidx.core.graphics.ColorUtils
 import com.obdreader.app.R
 import java.util.Locale
+import kotlin.math.roundToInt
 
 private fun View.dp(v: Float) = v * resources.displayMetrics.density
 
@@ -67,6 +68,10 @@ class DecalView(
 
     private var unsupported = false
 
+    /** The drive's top speed, shown in the corner of the wide speed decal. */
+    var top: Double? = null
+        set(v) { if (field != v) { field = v; invalidate() } }
+
     fun setValue(v: Double?) {
         unsupported = false
         value = v
@@ -108,6 +113,11 @@ class DecalView(
         val shownValue = value?.let { smooth.shown.toDouble() }
         val x = o * 0.55f + dp(20f)
         canvas.drawText(label, x, dp(26f), labelPaint)
+        top?.takeIf { wide }?.let {
+            labelPaint.textAlign = Paint.Align.RIGHT
+            canvas.drawText("Top ${it.roundToInt()} $unit", width - dp(20f), dp(26f), labelPaint)
+            labelPaint.textAlign = Paint.Align.LEFT
+        }
         val v = if (unsupported) "n/a" else fmt(shownValue, decimals)
         valuePaint.color = if (hot) danger else text
         val baseline = if (wide) h - dp(20f) else dp(64f)

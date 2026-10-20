@@ -170,6 +170,10 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
         invalidate()
     }
 
+    /** The drive's top speed, shown under km/h. */
+    var top: Float? = null
+        set(v) { if (field != v) { field = v; invalidate() } }
+
     /** Largest height in pixels; landscape sets it so the ring fits the screen's height. */
     var maxSize = Int.MAX_VALUE
         set(value) { if (field != value) { field = value; requestLayout() } }
@@ -217,6 +221,7 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
         }
         canvas.drawText(speed?.roundToInt()?.toString() ?: "—", 130f, 138f, big)
         canvas.drawText("km/h", 130f, 164f, small)
+        top?.let { canvas.drawText("Top ${it.roundToInt()}", 130f, 184f, small) }
         canvas.drawText(rpm?.let { String.format(Locale.US, "%,d rpm", ((it / 10f).roundToInt() * 10)) } ?: "— rpm", 130f, 212f, rpmText)
         canvas.restore()
         keepAnimating(moving)

@@ -15,12 +15,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.obdreader.app.obd.DemoTransport
 import com.obdreader.app.obd.Pids
+import com.obdreader.app.session.DriveScorer
 import com.obdreader.app.session.ObdSession
 import com.obdreader.app.ui.SmoothValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Locale
+import kotlin.math.roundToInt
 
 /**
  * The Android Auto screen: big, glanceable live readings while driving, built from Android
@@ -101,6 +103,8 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
                 i == 0 && !s.isConnected -> statusLine(s)
                 unsupported -> "Not supported"
                 high -> "High"
+                // The drive's top speed under the speed (tile text can change freely; only titles must stay fixed).
+                t.key == HEX_SPEED && DriveScorer.topSpeed.value != null -> "Top ${DriveScorer.topSpeed.value!!.roundToInt()} ${t.unit}"
                 else -> t.unit
             }
             val image = if (t.key == HEX_RPM) {
@@ -175,5 +179,6 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
         /** About 5 refreshes a second: smooth to the eye, and within what Android Auto shows. */
         private const val REFRESH_MS = 200L
         private val HEX_RPM = String.format(Locale.US, "%02X", Pids.RPM)
+        private val HEX_SPEED = String.format(Locale.US, "%02X", Pids.SPEED)
     }
 }

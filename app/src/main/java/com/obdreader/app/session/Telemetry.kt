@@ -229,6 +229,10 @@ object DriveScorer {
     private val _results = MutableStateFlow<Map<com.obdreader.app.obd.DrivingScore.Style, com.obdreader.app.obd.DrivingScore.Result>>(emptyMap())
     val results: StateFlow<Map<com.obdreader.app.obd.DrivingScore.Style, com.obdreader.app.obd.DrivingScore.Result>> = _results.asStateFlow()
 
+    private val _topSpeed = MutableStateFlow<Double?>(null)
+    /** The highest speed since the app connected (ignition-off pauses don't reset it), in km/h. */
+    val topSpeed: StateFlow<Double?> = _topSpeed.asStateFlow()
+
     private var started = false
     private val latest = mutableMapOf<String, Double>()
     private var lastPublish = 0L
@@ -244,7 +248,7 @@ object DriveScorer {
             var last: ObdSession.Phase? = null
             ObdSession.state.collect { s ->
                 if (s.phase == ObdSession.Phase.CONNECTING && (last == null || last == ObdSession.Phase.IDLE || last == ObdSession.Phase.ERROR)) {
-                    score.reset(); latest.clear(); publish(force = true)
+                    score.reset(); latest.clear(); _topSpeed.value = null; publish(force = true)
                 }
                 last = s.phase
             }
@@ -255,6 +259,7 @@ object DriveScorer {
                 // Speed drives the clock: every speed reading is one moment of the drive.
                 if (s.key == "0D") {
                     score.update(s.timeMs, s.value, latest["0C"], latest["11"], latest["04"], latest["05"], latest["5C"])
+                    _topSpeed.value = score.topSpeed
                     publish()
                 }
             }

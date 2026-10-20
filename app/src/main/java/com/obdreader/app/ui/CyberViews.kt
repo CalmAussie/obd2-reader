@@ -52,6 +52,10 @@ class CyberHudView @JvmOverloads constructor(context: Context, attrs: AttributeS
     private val seg = Path()
     private var scanlines = FloatArray(0)
 
+    /** The drive's top speed, shown beside KM/H. */
+    var top: Float? = null
+        set(v) { if (field != v) { field = v; invalidate() } }
+
     fun set(speed: Float?, rpm: Float?) {
         this.speed = speed
         this.rpm = rpm
@@ -159,6 +163,11 @@ class CyberHudView @JvmOverloads constructor(context: Context, attrs: AttributeS
         canvas.drawText(s, W / 2f, 196f, number)
         label.textSize = 10f; label.color = cyan
         canvas.drawText("KM/H", W / 2f, 214f, label)
+        top?.let {
+            label.color = magenta; label.textAlign = Paint.Align.RIGHT
+            canvas.drawText("TOP ${it.roundToInt()}", W - 22f, 214f, label)
+            label.textAlign = Paint.Align.CENTER
+        }
 
         // The last 15 seconds of revs, as a strip of bars.
         val barTop = 226f

@@ -51,6 +51,7 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics â
 
 ## What it does
 - **Live data:** RPM, speed, coolant, fuel, throttle, engine load, intake air, manifold pressure, MAF, timing advance, ambient and oil temperature, and battery voltage. Readings past their limit turn red.
+- **Top speed:** the highest speed of the current drive shows beside the speed, on the phone and in Android Auto.
 - **Your car first:** the app asks for your car's make, year and model when you first open it, so manufacturer-specific trouble codes are explained for your brand, the rev dial uses your engine's redline, and your car's protocol is tried first. It then lists any readings that may not work on a car like yours, and why.
 - **Driving score:** rates the current drive out of 100 for **Efficiency**, **Everyday** driving or **Racing** (track days), with a score for each habit and a tip for what would help most.
 - **Graphs and drive logs:** live charts for up to four readings at once, fast multi-reading polling, and CSV recording of whole drives that you can share to Excel or Google Sheets. Drives are only recorded when you tap **Record drive**, and recordings are never included in backups.

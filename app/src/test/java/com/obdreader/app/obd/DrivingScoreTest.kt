@@ -86,4 +86,16 @@ class DrivingScoreTest {
         d.drive(t, 9) { s -> listOf(s * 12.5, 4000.0, 90.0) } // 100 km/h after 8 s
         assertEquals(8.0, d.best0to100!!, 0.3)
     }
+
+    @Test
+    fun topSpeedIsTheHighestHeldSpeed() {
+        val d = DrivingScore()
+        var t = 0L
+        for (v in listOf(0.0, 40.0, 80.0, 112.0, 113.0, 90.0, 250.0, 60.0)) { d.update(t, v, 2000.0, 20.0, 30.0, 90.0); t += 200 }
+        // 250 was a single glitched reading; 112–113 was really driven.
+        assertEquals(112.0, d.topSpeed!!, 0.001)
+        assertEquals(112.0, d.result(DrivingScore.Style.EVERYDAY).topSpeed!!, 0.001)
+        d.reset()
+        assertEquals(null, d.topSpeed)
+    }
 }
