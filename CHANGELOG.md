@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.7.5 (20 October 2026)
+- Landscape keeps the app name at the top left in every style, with the livery stripes behind it across the full width of the screen. The dashboard sits underneath in two columns.
+- Landscape on **Race telemetry**: the 30-second trace now sits beside the engine-speed and speed numbers, the same height as them, and coolant, fuel and Disconnect share one line underneath.
+- The tab bar at the bottom is thinner in every style, upright and sideways.
+
 ## 1.7.4 (20 October 2026)
 - Fixed: **Throttle** showed about 12–20% with your foot off the pedal, for example stopped at a red light. That's the raw throttle sensor, which almost no car reads as 0% when closed. The app now learns your car's closed-throttle reading (the lowest it sees, remembered for your car between drives) and measures from there, so it reads 0% with your foot off and 100% wide open. The Dashboard, Graphs, Android Auto, recorded drives and the driving score all use the corrected value.
 - The adapter log still shows what the car actually sent, now labelled **Throttle sensor**.
