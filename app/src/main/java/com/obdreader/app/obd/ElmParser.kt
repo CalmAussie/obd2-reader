@@ -65,6 +65,10 @@ object ElmParser {
         hex.chunked(2).filter { it.length == 2 }.map { it.toInt(16) }.toIntArray()
 
     /** Returns the data bytes following [header] (e.g. "410C"), or null if absent. */
+    /** Like [extractData], but every module's answer, for requests several modules reply to (such as 0100). */
+    fun extractAll(lines: List<String>, header: String): List<IntArray> =
+        payloads(lines).mapNotNull { p -> dataAfter(p, header)?.let { toBytes(it) } }
+
     fun extractData(lines: List<String>, header: String): IntArray? {
         for (p in payloads(lines)) {
             dataAfter(p, header)?.let { return toBytes(it) }

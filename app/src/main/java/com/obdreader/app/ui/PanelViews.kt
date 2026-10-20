@@ -65,11 +65,21 @@ class DecalView(
         contentDescription = label
     }
 
+    private var unsupported = false
+
     fun setValue(v: Double?) {
+        unsupported = false
         value = v
         smooth.set(v?.toFloat())
         if (!isShown) smooth.snap()
         contentDescription = if (v == null) label else "$label ${fmt(v, decimals)} $unit"
+        invalidate()
+    }
+
+    /** The car doesn't report this reading: shows "n/a" instead of a dash that looks like it's still loading. */
+    fun setUnsupported() {
+        unsupported = true
+        contentDescription = "$label not reported by this car"
         invalidate()
     }
 
@@ -98,7 +108,7 @@ class DecalView(
         val shownValue = value?.let { smooth.shown.toDouble() }
         val x = o * 0.55f + dp(20f)
         canvas.drawText(label, x, dp(26f), labelPaint)
-        val v = fmt(shownValue, decimals)
+        val v = if (unsupported) "n/a" else fmt(shownValue, decimals)
         valuePaint.color = if (hot) danger else text
         val baseline = if (wide) h - dp(20f) else dp(64f)
         canvas.drawText(v, x - o * 0.25f, baseline, valuePaint)

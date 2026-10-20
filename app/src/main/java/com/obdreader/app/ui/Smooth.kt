@@ -97,6 +97,12 @@ class SmoothText(
         }
     }
 
+    /** Shows fixed text instead of a number, such as "n/a" for a reading the car doesn't report. */
+    fun showText(text: String) {
+        value.set(null)
+        if (view.text.toString() != text) view.text = text
+    }
+
     private fun show() {
         val text = if (value.target == null) blank else format(value.shown)
         if (view.text.toString() != text) view.text = text

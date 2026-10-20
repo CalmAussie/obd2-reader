@@ -218,7 +218,17 @@ class CyberChipView(
         contentDescription = name
     }
 
+    private var unsupported = false
+
+    /** The car doesn't report this reading. */
+    fun setUnsupported() {
+        unsupported = true
+        contentDescription = "$name not reported by this car"
+        invalidate()
+    }
+
     fun setValue(v: Double?) {
+        unsupported = false
         value = v?.toFloat()
         smooth.set(value)
         if (!isShown) smooth.snap()
@@ -249,7 +259,7 @@ class CyberChipView(
         label.color = magenta
         canvas.drawText(name.uppercase(Locale.US), pad, dp(20f), label)
         number.color = if (hot) red else fg
-        val text = shown?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
+        val text = if (unsupported) "n/a" else shown?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
         canvas.drawText(text, pad, dp(46f), number)
         canvas.drawText(unit, pad + number.measureText(text) + dp(4f), dp(46f), unitPaint)
 

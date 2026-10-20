@@ -272,7 +272,12 @@ object ObdSession {
         readVinQuietly()
 
         val supported = try { c.supportedPids() } catch (e: AdapterTimeoutException) { null }
-        val pids: List<Pid> = Pids.dashboard.filter { supported == null || it.number in supported }
+        // Some cars leave readings out of their supported list but answer them anyway (or the list
+        // stops early), so ask once for each dashboard reading the list left out before giving up on it.
+        val extra = if (supported == null) emptySet() else Pids.dashboard.filter { it.number !in supported }.filter { p ->
+            try { c.readPid(p) != null } catch (e: AdapterTimeoutException) { false }
+        }.map { it.number }.toSet()
+        val pids: List<Pid> = Pids.dashboard.filter { supported == null || it.number in supported || it.number in extra }
         _state.update { s -> s.copy(unsupported = Pids.dashboard.filter { it !in pids }.map { it.hex }.toSet()) }
 
         while (currentCoroutineContext().isActive) {
