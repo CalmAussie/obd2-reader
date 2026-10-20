@@ -338,9 +338,20 @@ if tap_text "Dashboard readouts" && tap_contains "Readout 2" && tap_text "Intake
   shot 11-custom-readouts
   SEEN=0
   for i in 1 2 3 4 5 6; do
-    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-slots.xml"
+    # Clear the last dump first, so a failed dump can't be read as this screen.
+    adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-slots.xml" 2>/dev/null
     grep -q 'content-desc="Intake air' "$OUT/ui-slots.xml" && { SEEN=1; break; }; sleep 2
   done
+  # Release builds: the Dashboard readouts row on Diagnostics (a still screen) lists what's in use.
+  if [ $SEEN = 0 ]; then
+    tap_tab Diagnostics; sleep 2
+    for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done
+    for i in 1 2 3 4; do
+      sleep 2; adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-slots-row.xml" 2>/dev/null
+      grep -q 'text="[^"]*, Intake air' "$OUT/ui-slots-row.xml" && alive && { SEEN=1; break; }
+    done
+    tap_tab Dashboard; sleep 2
+  fi
   # Newer Android can't always dump an animating screen; the saved choice and a running app also count.
   [ $SEEN = 0 ] && adb shell run-as $PKG cat shared_prefs/obd_reader.xml 2>/dev/null | grep -q 'dash_slots">05,0F' && alive && SEEN=1
   [ $SEEN = 1 ] && log "dashboard readouts: intake air shown" || { log "dashboard readouts: FAILED (not shown)"; FAIL=1; }
@@ -360,7 +371,7 @@ if tap_text "Units" && tap_contains "Miles (mph" && tap_contains "Fahrenheit" &&
     tap_tab Diagnostics; sleep 2
     for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done
     for i in 1 2 3 4; do
-      sleep 2; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-units.xml"
+      sleep 2; adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-units.xml" 2>/dev/null
       grep -q 'text="mph, °F"' "$OUT/ui-units.xml" && { UNITS=1; break; }
     done
     tap_tab Dashboard; sleep 2
