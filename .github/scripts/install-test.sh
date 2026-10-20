@@ -137,6 +137,39 @@ sleep 4
 shot 2c-portrait-again
 W=$(view_width connectButton)
 alive && [ "${W:-0}" -ge 200 ] && log "back to portrait: OK" || { log "back to portrait: FAILED"; FAIL=1; }
+# Centre of a view by its id, from the window's view hierarchy (works while animating).
+view_center() {
+  adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
+  python3 - "$1" "$OUT/views.txt" <<'PY'
+import re, sys
+stack = []
+for line in open(sys.argv[2], encoding='utf-8', errors='ignore'):
+    m = re.search(r'^(\s*)\S+\{[^}]* (-?\d+),(-?\d+)-(-?\d+),(-?\d+)', line)
+    if not m: continue
+    depth = len(m.group(1)); x1, y1, x2, y2 = map(int, m.groups()[1:])
+    while stack and stack[-1][0] >= depth: stack.pop()
+    ox = sum(s[1] for s in stack); oy = sum(s[2] for s in stack)
+    stack.append((depth, x1, y1))
+    if ('app:id/' + sys.argv[1]) in line:
+        print(ox + (x1 + x2) // 2, oy + (y1 + y2) // 2); sys.exit(0)
+PY
+}
+# Each style with its own layout, upright and sideways, with the demo car running.
+for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk"; do
+  SLUG=$(echo "$STYLE" | tr ' A-Z' '-a-z')
+  XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3   # disconnect, so the screen is still
+  tap_text "Style" || { log "style $STYLE: FAILED (no Style button)"; FAIL=1; continue; }
+  sleep 1
+  for i in 1 2 3; do tap_text "$STYLE" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
+  sleep 4
+  tap_text "Demo car" || { log "style $STYLE: FAILED (no Demo car)"; FAIL=1; continue; }
+  sleep 8
+  shot "5-$SLUG"
+  adb shell settings put system user_rotation 1; sleep 5
+  shot "6-$SLUG-landscape"
+  alive && log "style $STYLE: upright and sideways OK" || { log "style $STYLE: FAILED (app stopped)"; FAIL=1; }
+  adb shell settings put system user_rotation 0; sleep 4
+done
 tap_tab Diagnostics && tap_text "Read codes" && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
 tap_tab Graphs && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
 adb shell input keyevent KEYCODE_BACK; sleep 1
