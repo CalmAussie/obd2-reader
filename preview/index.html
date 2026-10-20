@@ -335,11 +335,31 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* =================== Layouts =================== */
-.lay-telemetry, .lay-cockpit { display: none; }
-.phone[data-layout="telemetry"] .lay-livery, .phone[data-layout="cockpit"] .lay-livery { display: none; }
-.phone[data-layout="telemetry"] .lay-telemetry, .phone[data-layout="cockpit"] .lay-cockpit { display: block; }
-.phone[data-layout="telemetry"] .livery, .phone[data-layout="cockpit"] .livery { display: none; }
-.phone[data-layout="telemetry"] .topbar, .phone[data-layout="cockpit"] .topbar { padding-top: 14px; }
+.lay-telemetry, .lay-cockpit, .lay-cyberpunk { display: none; }
+.phone:not([data-layout="livery"]) .lay-livery { display: none; }
+.phone[data-layout="telemetry"] .lay-telemetry, .phone[data-layout="cockpit"] .lay-cockpit, .phone[data-layout="cyberpunk"] .lay-cyberpunk { display: block; }
+.phone:not([data-layout="livery"]) .livery { display: none; }
+.phone:not([data-layout="livery"]) .topbar { padding-top: 14px; }
+
+/* ---------- Cyberpunk: a neon heads-up display (mirrors ui/CyberViews.kt) ---------- */
+.phone[data-layout="cyberpunk"] { background: radial-gradient(ellipse 120% 60% at 50% 0%, #2A0A3A, #0B0716 55%, var(--base)); }
+.cy-hud { position: relative; max-width: 420px; margin: 4px auto 0; }
+.cy-hud svg { display: block; width: 100%; height: auto; overflow: visible; }
+.cy-hud::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(to bottom, rgba(237, 235, 255, .035) 0 1px, transparent 1px 3px); clip-path: polygon(4.7% 0, 100% 0, 100% 93.6%, 95.3% 100%, 0 100%, 0 6.4%); }
+.cy-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.cy-chip { --e: #00F0FF; position: relative; height: 76px; padding: 11px; box-sizing: border-box; background: var(--panel); min-width: 0;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--e) 60%, transparent), inset 0 0 12px color-mix(in srgb, var(--e) 18%, transparent); }
+.cy-chip.hot { --e: var(--red); }
+.cy-chip .cl { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: #FF2BD6; }
+.cy-chip b { display: block; margin-top: 6px; font-family: var(--ui); font-stretch: 125%; font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; color: var(--fg); white-space: nowrap; }
+.cy-chip.hot b { color: var(--red); }
+.cy-chip small { font-family: var(--ui); font-stretch: 100%; font-weight: 500; font-size: 11px; color: var(--fg-2); margin-left: 4px; }
+.cy-chip i { position: absolute; left: 11px; right: 11px; bottom: 12px; height: 5px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; }
+.cy-chip i u { background: var(--track); }
+.cy-chip i u.on { background: color-mix(in srgb, #FF2BD6 var(--m), #00F0FF); }
+.cy-chip.hot i u.on { background: var(--red); }
+.phone[data-layout="cyberpunk"] .trow, .phone[data-layout="cyberpunk"] .card, .phone[data-layout="cyberpunk"] .row { box-shadow: inset 0 0 0 1px var(--line); }
 .spark { display: none; }
 
 /* ---------- Race telemetry: data-logger screen, a colour per channel ---------- */
@@ -492,10 +512,6 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 
 /* Cyberpunk: neon glow (mirrors obdGlow in RoundelView and LiveryStripesView) and a wide, upright display face */
 [data-theme="cyberpunk"] .xb { font-style: normal; font-weight: 700; }
-[data-theme="cyberpunk"] .livery i { box-shadow: 0 0 12px 2px rgba(255, 43, 214, .45); }
-[data-theme="cyberpunk"] .livery i:nth-child(2) { box-shadow: 0 0 12px 2px rgba(0, 240, 255, .4); }
-[data-theme="cyberpunk"] #rpmGauge { filter: drop-shadow(0 0 5px rgba(0, 240, 255, .55)); }
-[data-theme="cyberpunk"] #rpmGauge circle[r="80"] { stroke: #00F0FF; stroke-width: 1.5; }
 [data-theme="cyberpunk"] .go-btn { box-shadow: 0 0 14px rgba(255, 43, 214, .45); }
 [data-theme="cyberpunk"] .decal .v, [data-theme="cyberpunk"] .trow .v { text-shadow: 0 0 10px rgba(0, 240, 255, .35); }
 </style>
@@ -542,6 +558,14 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
           <div class="glass"><span class="gl">Coolant</span><b id="cpCool">—</b><small>°C</small></div>
           <div class="glass"><span class="gl">Fuel</span><b id="cpFuel">—</b><small>%</small></div>
           <div class="glass"><span class="gl">Battery</span><b id="cpVolt">—</b><small>V</small></div>
+        </div>
+      </div>
+      <div class="lay-cyberpunk">
+        <div class="cy-hud"><svg id="cyHud" viewBox="0 0 360 250" role="img" aria-label="Speed and engine speed"></svg></div>
+        <div class="cy-row">
+          <div class="cy-chip" id="cyChip05"><span class="cl">Coolant</span><b><span id="cyCool">—</span><small>°C</small></b><i></i></div>
+          <div class="cy-chip" id="cyChip2F"><span class="cl">Fuel</span><b><span id="cyFuel">—</span><small>%</small></b><i></i></div>
+          <div class="cy-chip" id="cyChipVOLT"><span class="cl">Battery</span><b><span id="cyVolt">—</span><small>V</small></b><i></i></div>
         </div>
       </div>
       <div class="startrow">
@@ -857,19 +881,62 @@ function drawCockpit(speed, rpm) {
     <text x="${cx}" y="${cy + 92}" text-anchor="middle" font-size="15" fill="var(--fg)" style="font-family:var(--ui);font-variant-numeric:tabular-nums">${rpm == null ? "—" : fmtInt(rpm)} <tspan fill="var(--fg-2)" font-size="12">rpm</tspan></text>`;
 }
 
+/* Cyberpunk HUD: a segmented rev bar, split-colour speed digits and a strip of recent revs */
+const CY_SEG = 26, CY_HIST = 48;
+const cyHist = [];
+function drawCyber(speed, rpm) {
+  const W = 360, H = 250, L = 18, R = W - 18, B = 98, gap = 3, sw = (R - L - gap * (CY_SEG - 1)) / CY_SEG;
+  const max = rpmGauge.max, warn = rpmGauge.warnAt, fr = rpm == null ? 0 : Math.min(1, rpm / max), fw = warn / max;
+  const mix = t => `color-mix(in srgb, #FF2BD6 ${Math.round(t * 100)}%, #00F0FF)`;
+  let segs = "";
+  for (let i = 0; i < CY_SEG; i++) {
+    const x = L + i * (sw + gap), h = 16 + 30 * i / (CY_SEG - 1), lean = h * 0.3, mid = (i + 0.5) / CY_SEG;
+    const d = `M${(x + lean).toFixed(1)} ${B - h}L${(x + sw + lean).toFixed(1)} ${B - h}L${(x + sw).toFixed(1)} ${B}L${x.toFixed(1)} ${B}Z`;
+    const lit = fr > 0.003 && mid <= fr + 0.5 / CY_SEG;
+    const c = mid >= fw ? "var(--red)" : mix(i / (CY_SEG - 1));
+    segs += lit ? `<path d="${d}" fill="${c}" stroke="${c}" stroke-opacity=".25" stroke-width="5" paint-order="stroke"/>` : `<path d="${d}" fill="${mid >= fw ? "rgba(255,59,92,.2)" : "var(--track)"}"/>`;
+  }
+  let scale = "";
+  for (let k = 0; k * 1000 <= max; k += max > 10000 ? 2 : 1) scale += `<text x="${(L + (R - L) * k * 1000 / max).toFixed(1)}" y="${B + 13}" text-anchor="middle" font-size="8" fill="var(--fg-2)" style="font-weight:600;letter-spacing:.2em">${k}</text>`;
+  const bw = (R - L) / CY_HIST, bt = 226, bb = H - 12;
+  let bars = "";
+  for (let i = 0; i < CY_HIST; i++) {
+    const j = i - (CY_HIST - cyHist.length), v = j >= 0 ? cyHist[j] : null;
+    const f = Math.max(0.06, v == null ? 0 : Math.min(1, v / max)), top = bb - (bb - bt) * f;
+    const c = v == null ? "var(--track)" : j === cyHist.length - 1 ? "#FF2BD6" : v >= warn ? "var(--red)" : "rgba(0,240,255,.67)";
+    bars += `<rect x="${(L + i * bw + 0.6).toFixed(1)}" y="${top.toFixed(1)}" width="${(bw - 1.2).toFixed(2)}" height="${(bb - top).toFixed(1)}" fill="${c}"/>`;
+  }
+  const s = speed == null ? "—" : Math.round(speed), hot = rpm != null && rpm >= warn;
+  const big = (x, c) => `<text x="${x}" y="196" text-anchor="middle" font-size="86" fill="${c}" style="font-family:var(--ui);font-stretch:125%;font-weight:700;font-variant-numeric:tabular-nums">${s}</text>`;
+  const frame = "M17 1H359V233L343 249H1V17Z";
+  $("cyHud").innerHTML = `<path d="${frame}" fill="none" stroke="rgba(0,240,255,.14)" stroke-width="6"/><path d="${frame}" fill="none" stroke="rgba(0,240,255,.67)" stroke-width="1.2"/>
+    <text x="22" y="28" font-size="10" fill="#FF2BD6" style="font-weight:600;letter-spacing:.22em">SYS//TACH</text>
+    <text x="${W - 22}" y="29" text-anchor="end" font-size="14" fill="${hot ? "var(--red)" : "#00F0FF"}" style="font-family:var(--ui);font-stretch:125%;font-weight:700;font-variant-numeric:tabular-nums">${rpm == null ? "—" : fmtInt(Math.round(rpm / 10) * 10)} RPM</text>
+    ${segs}${scale}${big(W / 2 - 3, "rgba(255,43,214,.75)")}${big(W / 2 + 3, "rgba(0,240,255,.75)")}${big(W / 2, "var(--fg)")}
+    <text x="${W / 2}" y="214" text-anchor="middle" font-size="10" fill="#00F0FF" style="font-weight:600;letter-spacing:.22em">KM/H</text>${bars}`;
+}
+/* Neon readouts: value, plus a ten-segment bar (mirrors CyberChipView) */
+document.querySelectorAll(".cy-chip i").forEach(i => i.innerHTML = Array.from({ length: 10 }, (_, k) => `<u style="--m:${Math.round(k / 9 * 100)}%"></u>`).join(""));
+function cyChip(key, id, v, d, lo, hi, warn) {
+  $(id).textContent = v == null ? "—" : v.toFixed(d);
+  const chip = $("cyChip" + key), f = v == null ? 0 : Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
+  chip.classList.toggle("hot", v != null && warn != null && v >= warn);
+  [...chip.querySelectorAll("u")].forEach((u, k) => u.classList.toggle("on", v != null && (k + 0.5) / 10 <= f + 0.05));
+}
+
 /* Route every reading to all three layouts; hidden ones are cheap to update */
 let lastRpm = null, lastSpeed = null;
 {
   const r = rpmGauge.set, s = speedGauge.set;
   /* Telemetry numbers and the cockpit ring glide too (mirrors SmoothText and CockpitRingView) */
   let shownRpm = null, shownSpeed = null;
-  const glideRpm = smoother(v => { shownRpm = v; teleRpm(v); drawCockpit(shownSpeed, v); }, 2);
-  const glideSpeed = smoother(v => { shownSpeed = v; $("teleSpeed").textContent = v == null ? "—" : Math.round(v); drawCockpit(v, shownRpm); }, 0.05);
+  const glideRpm = smoother(v => { shownRpm = v; teleRpm(v); drawCockpit(shownSpeed, v); drawCyber(shownSpeed, v); }, 2);
+  const glideSpeed = smoother(v => { shownSpeed = v; $("teleSpeed").textContent = v == null ? "—" : Math.round(v); drawCockpit(v, shownRpm); drawCyber(v, shownRpm); }, 0.05);
   rpmGauge.set = v => { r(v); lastRpm = v; glideRpm(v); };
   speedGauge.set = v => { s(v); lastSpeed = v; glideSpeed(v); };
   const fix = (v, d = 0) => v == null ? "—" : v.toFixed(d);
-  const glideCool = smoother(v => { $("teleCool").textContent = fix(v); $("cpCool").textContent = fix(v); }, 0.05);
-  const glideFuel = smoother(v => { $("teleFuel").textContent = fix(v); $("cpFuel").textContent = fix(v); }, 0.05);
+  const glideCool = smoother(v => { $("teleCool").textContent = fix(v); $("cpCool").textContent = fix(v); cyChip("05", "cyCool", v, 0, 40, 120, 108); }, 0.05);
+  const glideFuel = smoother(v => { $("teleFuel").textContent = fix(v); $("cpFuel").textContent = fix(v); cyChip("2F", "cyFuel", v, 0, 0, 100, null); }, 0.05);
   tiles["05"] = v => { coolGauge.set(v); glideCool(v); };
   tiles["2F"] = v => { fuelGauge.set(v); glideFuel(v); };
   mfdDefs.forEach(p => {
@@ -880,17 +947,18 @@ let lastRpm = null, lastSpeed = null;
       base(v);
       if (v == null) { hist[p.key] = []; path.setAttribute("d", ""); }
       else { pushHist(p.key, v); path.setAttribute("d", sparkPath(hist[p.key], p.min, p.max, 300, 30)); }
-      if (p.key === "VOLT") $("cpVolt").textContent = v == null ? "—" : v.toFixed(1);
+      if (p.key === "VOLT") { $("cpVolt").textContent = v == null ? "—" : v.toFixed(1); cyChip("VOLT", "cyVolt", v, 1, 11, 15, null); }
     };
   });
 }
 /* Sample engine and road speed for the trace at the same rate as the other readings */
 setInterval(() => {
-  if (state !== "connected") { hist.RPM = []; hist.SPD = []; }
-  else { pushHist("RPM", lastRpm ?? 0); pushHist("SPD", lastSpeed ?? 0); }
+  if (state !== "connected") { hist.RPM = []; hist.SPD = []; cyHist.length = 0; }
+  else { pushHist("RPM", lastRpm ?? 0); pushHist("SPD", lastSpeed ?? 0); if (lastRpm != null) { cyHist.push(lastRpm); if (cyHist.length > CY_HIST) cyHist.shift(); } }
   drawTeleTrace();
 }, 320);
 drawCockpit(null, null);
+drawCyber(null, null);
 
 /* Log */
 const logLines = [];
@@ -1144,17 +1212,22 @@ const THEMES = [
   ["pitlane", "Pit lane", "A light livery in black and race red. Easiest to read in sunlight."],
   ["drift", "Drift", "Hot pink and teal, from the drift and street scene."],
   ["apex", "Apex", "Volt yellow on carbon black with sharp, raked edges."],
-  ["cyberpunk", "Cyberpunk", "Neon magenta and cyan on a night-city black, with a glowing rev ring."],
   ["telemetry", "Race telemetry", "A data-logger screen: shift lights, big numbers and a live 30-second trace for every reading."],
   ["cockpit", "Digital cockpit", "Calm and premium, like a modern EV: one big speed in a glowing ring, on layered glass."],
+  ["cyberpunk", "Cyberpunk", "A neon heads-up display: a climbing rev bar, glitch-split speed digits and glowing readouts on night-city black."],
 ];
-/* The last two change the dashboard's layout as well as its colours */
-const LAYOUT = { telemetry: "telemetry", cockpit: "cockpit" };
+/* The last three change the dashboard's layout as well as its colours */
+const LAYOUT = { telemetry: "telemetry", cockpit: "cockpit", cyberpunk: "cyberpunk" };
 const OLD_THEMES = { midnight: "asphalt", racing: "asphalt", daylight: "pitlane", lcd: "asphalt", night: "asphalt", red: "kerb", optitron: "endurance", white: "pitlane", digital: "drift" };
 function swatch(id) {
   if (id === "telemetry") {
     const leds = Array.from({ length: 9 }, (_, i) => `<rect x="${6 + i * 6.8}" y="7" width="5" height="4" rx="1" fill="${i < 3 ? "#34D17A" : i < 6 ? "#FFB000" : "#FF3B30"}"/>`).join("");
     return `<span data-theme="telemetry" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><rect width="72" height="54" rx="4" fill="var(--base)"/>${leds}<text x="7" y="31" font-size="15" fill="var(--fg)" style="font-family:var(--ui);font-stretch:75%;font-weight:700">3420</text><path d="M6 46 L16 40 L24 43 L34 33 L44 38 L54 30 L66 35" fill="none" stroke="#FF3B30" stroke-width="1.6"/><path d="M6 49 L18 46 L30 47 L42 42 L54 44 L66 41" fill="none" stroke="#3D9BFF" stroke-width="1.6"/></svg></span>`;
+  }
+  if (id === "cyberpunk") {
+    const bars = Array.from({ length: 9 }, (_, i) => `<rect x="${7 + i * 6.6}" y="${17 - i * 1.1}" width="5" height="${2 + i * 1.1}" fill="${i < 6 ? `color-mix(in srgb, #FF2BD6 ${Math.round(i / 5 * 100)}%, #00F0FF)` : "rgba(255,255,255,.16)"}"/>`).join("");
+    const t = (x, c) => `<text x="${x}" y="42" text-anchor="middle" font-size="17" fill="${c}" style="font-family:var(--ui);font-stretch:125%;font-weight:700">88</text>`;
+    return `<span data-theme="cyberpunk" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><rect width="72" height="54" rx="4" fill="#07060D"/>${bars}${t(35, "#FF2BD6")}${t(37, "#00F0FF")}${t(36, "#EDEBFF")}<line x1="6" y1="49" x2="30" y2="49" stroke="#00F0FF"/><line x1="42" y1="49" x2="66" y2="49" stroke="#FF2BD6"/></svg></span>`;
   }
   if (id === "cockpit") {
     return `<span data-theme="cockpit" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><defs><radialGradient id="swCp" cx="50%" cy="30%" r="80%"><stop offset="0" stop-color="#16244A"/><stop offset="1" stop-color="#05070C"/></radialGradient><linearGradient id="swCpG" x1="0" x2="1"><stop offset="0" stop-color="#5B8CFF"/><stop offset="1" stop-color="#3FE0D0"/></linearGradient></defs><rect width="72" height="54" rx="4" fill="url(#swCp)"/><path d="${arcPath(36, 29, 19, 140, 400)}" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-linecap="round"/><path d="${arcPath(36, 29, 19, 140, 300)}" fill="none" stroke="url(#swCpG)" stroke-width="3" stroke-linecap="round"/><text x="36" y="34" text-anchor="middle" font-size="14" font-weight="300" fill="#EEF2FA" style="font-family:var(--ui)">87</text></svg></span>`;

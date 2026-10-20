@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.6.0 (20 October 2026)
+- **Cyberpunk** is now a dashboard layout of its own, alongside Race telemetry and Digital cockpit, instead of a livery colourway. It's a neon heads-up display: a segmented rev bar that climbs from cyan to magenta and turns red past your car's redline, the speed in big digits split into magenta and cyan ghosts, a strip of bars showing the last 15 seconds of revs, and glowing cut-corner readouts for coolant, fuel and battery, all over faint scanlines on a magenta-hazed night-city black. The live-data list and panels pick up its neon edges too.
+- If you already chose Cyberpunk, you'll see the new layout straight away.
+
 ## 1.5.0 (20 October 2026)
 - New **Cyberpunk** style: neon magenta and cyan on a night-city black, with sharp raked edges, a wide upright display font, and a neon glow on the rev ring, its disc and the livery stripes. Android Auto picks up its magenta and cyan too. Choose it with the palette button on the Dashboard.
 

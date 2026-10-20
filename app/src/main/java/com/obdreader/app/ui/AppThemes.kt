@@ -3,7 +3,7 @@ package com.obdreader.app.ui
 import androidx.annotation.StyleRes
 import com.obdreader.app.R
 
-/** The styles a user can pick: seven livery colourways, plus two layouts of their own. */
+/** The styles a user can pick: six livery colourways, plus three layouts of their own. */
 object AppThemes {
 
     data class AppTheme(
@@ -11,7 +11,7 @@ object AppThemes {
         val name: String,
         val description: String,
         @StyleRes val style: Int,
-        /** True for the telemetry and cockpit layouts, which change the dashboard's layout too. */
+        /** True for the telemetry, cockpit and cyberpunk layouts, which change the dashboard's layout too. */
         val ownLayout: Boolean = false,
     )
 
@@ -22,7 +22,6 @@ object AppThemes {
         AppTheme("pitlane", "Pit lane", "A light livery in black and race red. Easiest to read in sunlight.", R.style.Theme_ObdReader_Pitlane),
         AppTheme("drift", "Drift", "Hot pink and teal, from the drift and street scene.", R.style.Theme_ObdReader_Drift),
         AppTheme("apex", "Apex", "Volt yellow on carbon black with sharp, raked edges.", R.style.Theme_ObdReader_Apex),
-        AppTheme("cyberpunk", "Cyberpunk", "Neon magenta and cyan on a night-city black, with a glowing rev ring.", R.style.Theme_ObdReader_Cyberpunk),
         AppTheme(
             "telemetry", "Race telemetry",
             "A data-logger screen: shift lights, big numbers and a live 30-second trace for every reading.",
@@ -32,6 +31,11 @@ object AppThemes {
             "cockpit", "Digital cockpit",
             "Calm and premium, like a modern EV: one big speed in a glowing ring, on layered glass.",
             R.style.Theme_ObdReader_Cockpit, ownLayout = true,
+        ),
+        AppTheme(
+            "cyberpunk", "Cyberpunk",
+            "A neon heads-up display: a climbing rev bar, glitch-split speed digits and glowing readouts on night-city black.",
+            R.style.Theme_ObdReader_Cyberpunk, ownLayout = true,
         ),
     )
 
