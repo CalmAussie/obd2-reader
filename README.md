@@ -113,6 +113,7 @@ Tap the palette icon on the Dashboard to choose a style. Your choice is saved.
 | Pit lane | A light style in black and red, for sunlight |
 | Drift | Hot pink and teal |
 | Apex | Volt yellow on carbon black, sharply raked |
+| Cyberpunk | Neon magenta and cyan on night-city black, with a glowing rev ring |
 | Race telemetry | A data-logger screen: shift lights, big numbers and live 30-second traces |
 | Digital cockpit | One big speed in a glowing ring, on layered glass |
 

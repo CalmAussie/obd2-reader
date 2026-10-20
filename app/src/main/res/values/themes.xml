@@ -259,6 +259,52 @@
         <item name="android:colorBackground">#0E0F11</item>
     </style>
 
+    <!-- Cyberpunk: neon magenta and cyan on a near-black night city, with a glow on the rev ring -->
+    <style name="Theme.ObdReader.Cyberpunk" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#07060D</item>
+        <item name="obdSurface">#120F1F</item>
+        <item name="obdSurfaceHigh">#1B1730</item>
+        <item name="obdOutline">#2C2546</item>
+        <item name="obdTextPrimary">#EDEBFF</item>
+        <item name="obdTextSecondary">#8E88B3</item>
+        <item name="obdAccent">#FF2BD6</item>
+        <item name="obdAccentAlt">#00F0FF</item>
+        <item name="obdAccentContainer">#1B1730</item>
+        <item name="obdOnAccent">#14001A</item>
+        <item name="obdTrack">#1E1A33</item>
+        <item name="obdIdle">#8E88B3</item>
+        <item name="obdStripe1">#FF2BD6</item>
+        <item name="obdStripe2">#00F0FF</item>
+        <item name="obdRoundel">#140F26</item>
+        <item name="obdRoundelInk">#00F0FF</item>
+        <item name="obdRing">#00F0FF</item>
+        <item name="obdDanger">#FF3B5C</item>
+        <item name="obdSkew">18.0</item>
+        <item name="obdGlow">true</item>
+        <item name="obdDisplayFont">@font/archivo_expanded_bold</item>
+        <item name="obdTitleFont">@font/archivo_expanded_bold</item>
+        <item name="obdCardRadius">0dp</item>
+        <item name="obdButtonRadius">0dp</item>
+        <item name="obdShapeAppearance">@style/ShapeAppearance.Obd.Apex</item>
+        <item name="shapeAppearanceCornerExtraSmall">@style/ShapeAppearance.Obd.Cut.4</item>
+        <item name="shapeAppearanceCornerSmall">@style/ShapeAppearance.Obd.Cut.8</item>
+        <item name="shapeAppearanceCornerMedium">@style/ShapeAppearance.Obd.Cut.12</item>
+        <item name="shapeAppearanceCornerLarge">@style/ShapeAppearance.Obd.Cut.16</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.Obd.Cut.16</item>
+        <item name="colorPrimary">#FF2BD6</item>
+        <item name="colorOnPrimary">#14001A</item>
+        <item name="colorPrimaryContainer">#1B1730</item>
+        <item name="colorOnPrimaryContainer">#EDEBFF</item>
+        <item name="colorSecondaryContainer">#1B1730</item>
+        <item name="colorOnSecondaryContainer">#EDEBFF</item>
+        <item name="colorSurface">#120F1F</item>
+        <item name="colorOnSurface">#EDEBFF</item>
+        <item name="colorOnSurfaceVariant">#8E88B3</item>
+        <item name="colorOutline">#8E88B3</item>
+        <item name="colorError">#FF3B5C</item>
+        <item name="android:colorBackground">#07060D</item>
+    </style>
+
     <!-- Race telemetry: a data-logger screen with a colour per channel -->
     <style name="Theme.ObdReader.Telemetry" parent="Base.ObdReader.Dark">
         <item name="obdBg">#0C0D0F</item>

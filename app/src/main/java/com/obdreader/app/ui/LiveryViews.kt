@@ -24,10 +24,23 @@ class LiveryStripesView @JvmOverloads constructor(context: Context, attrs: Attri
     private val s1 = context.themeColor(R.attr.obdStripe1)
     private val s2 = context.themeColor(R.attr.obdStripe2)
     private val kerb = context.themeBool(R.attr.obdKerb)
+    private val glow = context.themeBool(R.attr.obdGlow)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), dp(110f).toInt())
+    }
+
+    /** A band, with a soft neon halo behind it on glowing liveries (drawn as wider translucent layers, which stays fast). */
+    private fun band(canvas: Canvas, l: Float, t: Float, r: Float, b: Float, colour: Int) {
+        if (glow) {
+            for ((spread, alpha) in listOf(dp(6f) to 28, dp(3f) to 60)) {
+                paint.color = ColorUtils.setAlphaComponent(colour, alpha)
+                canvas.drawRect(l, t - spread, r, b + spread, paint)
+            }
+        }
+        paint.color = colour
+        canvas.drawRect(l, t, r, b, paint)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -48,15 +61,12 @@ class LiveryStripesView @JvmOverloads constructor(context: Context, attrs: Attri
                 x += block; i++
             }
         } else {
-            paint.color = s1
-            canvas.drawRect(left, y, right, y + dp(30f), paint)
+            band(canvas, left, y, right, y + dp(30f), s1)
         }
         y += dp(37f)
-        paint.color = s2
-        canvas.drawRect(left, y, right, y + dp(12f), paint)
+        band(canvas, left, y, right, y + dp(12f), s2)
         y += dp(19f)
-        paint.color = s1
-        canvas.drawRect(left, y, right, y + dp(6f), paint)
+        band(canvas, left, y, right, y + dp(6f), s1)
         canvas.restore()
     }
 }
@@ -84,6 +94,8 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
     private val muted = context.themeColor(R.attr.obdTextSecondary)
     private val redTrack = ColorUtils.blendARGB(track, red, 0.28f)
     private val segPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.BUTT; strokeWidth = 18f }
+    private val glow = context.themeBool(R.attr.obdGlow)
+    private val edgeGlow = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
     private val numPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER; typeface = context.displayTypeface(); textSize = 44f
@@ -170,6 +182,17 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
                 inRed || shift -> red
                 else -> ring
             }
+            if (glow && lit) {
+                // Neon: soft wider strokes behind each lit segment.
+                val c = segPaint.color
+                for ((width, alpha) in GLOW_PASSES) {
+                    segPaint.strokeWidth = width
+                    segPaint.color = ColorUtils.setAlphaComponent(c, alpha)
+                    canvas.drawArc(arcRect, 135f + i * step + 0.9f, step - 1.8f, false, segPaint)
+                }
+                segPaint.strokeWidth = 18f
+                segPaint.color = c
+            }
             canvas.drawArc(arcRect, 135f + i * step + 0.9f, step - 1.8f, false, segPaint)
         }
         fill.color = muted
@@ -181,6 +204,13 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
         }
         fill.color = disc
         canvas.drawCircle(120f, 120f, 80f, fill)
+        if (glow) {
+            // A neon edge on the disc, in the number's colour.
+            edgeGlow.color = ColorUtils.setAlphaComponent(numPaint.color, 70); edgeGlow.strokeWidth = 6f
+            canvas.drawCircle(120f, 120f, 80f, edgeGlow)
+            edgeGlow.color = numPaint.color; edgeGlow.strokeWidth = 1.5f
+            canvas.drawCircle(120f, 120f, 80f, edgeGlow)
+        }
         val text = if (target == null) "—" else ((smooth.shown / 10f).roundToInt() * 10).toString()
         canvas.drawText(text, 120f, 138f, numPaint)
         canvas.drawText("rpm", 120f, 162f, subPaint)
@@ -197,6 +227,8 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
         keepAnimating(moving)
     }
 }
+
+private val GLOW_PASSES = listOf(28f to 40, 23f to 70)
 
 /** Five start lights: they come on one by one while the app talks to the car, then go out. */
 class StartLightsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {

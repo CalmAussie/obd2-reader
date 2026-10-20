@@ -113,6 +113,13 @@ body {
   --roundel: #D7FF1F; --roundel-ink: #0E0F11; --ring: #D7FF1F; --track: #24272C;
   --accent: #D7FF1F; --on-accent: #0D1100; --r: 0px; --skew: -18deg;
 }
+[data-theme="cyberpunk"] {
+  --base: #07060D; --panel: #120F1F; --panel-2: #1B1730; --line: #2C2546;
+  --fg: #EDEBFF; --fg-2: #8E88B3; --ink: #07060D;
+  --s1: #FF2BD6; --s2: #00F0FF; --s3: #07060D;
+  --roundel: #140F26; --roundel-ink: #00F0FF; --ring: #00F0FF; --track: #1E1A33;
+  --accent: #FF2BD6; --on-accent: #14001A; --red: #FF3B5C; --r: 0px; --skew: -18deg;
+}
 
 /* ---------- Phone shell ---------- */
 .phone {
@@ -254,7 +261,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 @keyframes fade { from { opacity: 0; } }
 .sheet { margin-top: auto; width: 100%; background: var(--panel); border-radius: 18px 18px 0 0; padding: 10px 20px 28px; animation: slide .28s cubic-bezier(.2, .8, .2, 1) both; position: relative; overflow: hidden; }
 .sheet::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--s1); }
-[data-theme="apex"] .sheet { border-radius: 0; clip-path: polygon(26px 0, 100% 0, 100% 100%, 0 100%, 0 26px); }
+[data-theme="apex"] .sheet, [data-theme="cyberpunk"] .sheet { border-radius: 0; clip-path: polygon(26px 0, 100% 0, 100% 100%, 0 100%, 0 26px); }
 @keyframes slide { from { transform: translateY(100%); } }
 .sheet.tall { max-height: 92%; overflow-y: auto; }
 .handle { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 6px auto 16px; }
@@ -268,7 +275,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .opt .tx { flex: 1; min-width: 0; } .opt .tt { font-size: 16px; font-weight: 600; } .opt .ts { font-size: 13px; color: var(--fg-2); margin-top: 2px; }
 .opt > svg { width: 20px; height: 20px; fill: var(--fg-2); flex: none; }
 .dialog { margin: auto 24px; width: 100%; background: var(--panel-2); border-radius: 16px; padding: 24px 24px 12px; animation: pop .2s both; max-height: 85%; overflow-y: auto; }
-[data-theme="apex"] .dialog { border-radius: 0; }
+[data-theme="apex"] .dialog, [data-theme="cyberpunk"] .dialog { border-radius: 0; }
 @keyframes pop { from { opacity: 0; transform: scale(.95); } }
 .dialog h3 { font-family: var(--ui); font-stretch: 125%; font-weight: 850; font-style: italic; font-size: 21px; margin: 0 0 14px; text-wrap: balance; }
 .dialog .msg { font-size: 14px; color: var(--fg-2); line-height: 1.5; margin: 0 0 14px; }
@@ -482,6 +489,15 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .score-card .bar { height: 4px; border-radius: 2px; background: var(--track); margin-top: 4px; overflow: hidden; }
 .score-card .bar i { display: block; height: 100%; border-radius: 2px; transition: width .4s; }
 .score-card .note { color: var(--fg-2); font-size: 13px; margin-top: 12px; line-height: 1.45; text-align: left; }
+
+/* Cyberpunk: neon glow (mirrors obdGlow in RoundelView and LiveryStripesView) and a wide, upright display face */
+[data-theme="cyberpunk"] .xb { font-style: normal; font-weight: 700; }
+[data-theme="cyberpunk"] .livery i { box-shadow: 0 0 12px 2px rgba(255, 43, 214, .45); }
+[data-theme="cyberpunk"] .livery i:nth-child(2) { box-shadow: 0 0 12px 2px rgba(0, 240, 255, .4); }
+[data-theme="cyberpunk"] #rpmGauge { filter: drop-shadow(0 0 5px rgba(0, 240, 255, .55)); }
+[data-theme="cyberpunk"] #rpmGauge circle[r="80"] { stroke: #00F0FF; stroke-width: 1.5; }
+[data-theme="cyberpunk"] .go-btn { box-shadow: 0 0 14px rgba(255, 43, 214, .45); }
+[data-theme="cyberpunk"] .decal .v, [data-theme="cyberpunk"] .trow .v { text-shadow: 0 0 10px rgba(0, 240, 255, .35); }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -1128,6 +1144,7 @@ const THEMES = [
   ["pitlane", "Pit lane", "A light livery in black and race red. Easiest to read in sunlight."],
   ["drift", "Drift", "Hot pink and teal, from the drift and street scene."],
   ["apex", "Apex", "Volt yellow on carbon black with sharp, raked edges."],
+  ["cyberpunk", "Cyberpunk", "Neon magenta and cyan on a night-city black, with a glowing rev ring."],
   ["telemetry", "Race telemetry", "A data-logger screen: shift lights, big numbers and a live 30-second trace for every reading."],
   ["cockpit", "Digital cockpit", "Calm and premium, like a modern EV: one big speed in a glowing ring, on layered glass."],
 ];
@@ -1863,6 +1880,10 @@ function demoVin() {
   const v = wmi + "HP3" + (year >= 2010 ? "F" : "2") + "20" + "ABCDEFGHJKLMNPRSTVWXY123456789"[(year - 1980) % 30] + "L123456";
   return v.slice(0, 8) + vinCheck(v) + v.slice(9);
 }
+
+/* ===== 1.5.0: Cyberpunk on Android Auto (mirrors CarLivery.COLOURS) ===== */
+CAR_ACCENT.cyberpunk = ["#FF2BD6", "#14001A"];
+CAR_ROUNDEL.cyberpunk = "#00F0FF";
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);
