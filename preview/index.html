@@ -522,6 +522,32 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .expect .lv.u { color: var(--red); } .expect .lv.m { color: var(--warn, #FFB000); } .expect .lv.l { color: var(--fg-2); }
 .expect p { margin: 0; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
 .exp-link { display: block; margin: 0 16px 10px; min-height: 40px; text-align: left; }
+
+/* ---------- Landscape (mirrors MainActivity.applyOrientation) ---------- */
+.rotate-btn { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #EDEDEA; background: #1A1B1E; border: 1px solid #2A2C31; border-radius: 18px; padding: 8px 14px; }
+.rotate-btn svg { width: 18px; height: 18px; fill: currentColor; }
+.phone.land { max-width: 880px; max-height: 430px; aspect-ratio: 844 / 390; flex: none; height: auto; border-radius: 40px; }
+.phone.land .statusbar { padding: 6px 30px 0; font-size: 12px; }
+.phone.land .nav button { flex-direction: row; justify-content: center; gap: 8px; padding: 8px 0 10px; }
+.phone.land .nav button::before { left: 36%; right: 36%; }
+.land-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 20px; align-items: start; }
+.land-left { padding-top: 12px; min-width: 0; }
+.land-right { min-width: 0; display: flex; flex-direction: column; }
+.land-head { position: relative; }
+.land-head .livery-clip { height: 150px; }
+.phone.land .land-left .lay-livery, .phone.land .land-left .lay-telemetry, .phone.land .land-left .lay-cockpit, .phone.land .land-left .lay-cyberpunk { display: block; }
+.land-left .roundel-wrap svg { width: auto; height: auto; max-width: min(100%, 300px); max-height: var(--heroMax, 300px); aspect-ratio: 1; }
+.land-left .cp-ring svg { width: auto; max-width: min(100%, 320px); max-height: var(--heroMax, 300px); aspect-ratio: 260 / 230; }
+.land-left .cy-hud { max-width: min(100%, calc(var(--heroMax, 300px) * 360 / 250)); }
+.land-left .roundel-wrap, .land-left .cp-ring { margin-top: 0; }
+.phone.land #mfd { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 8px; }
+/* Slimmer livery stripes sideways (mirrors LiveryStripesView.compact) */
+.phone.land[data-layout="livery"] .livery { top: 14px; }
+.phone.land[data-layout="livery"] .livery i { height: 18px; }
+.phone.land[data-layout="livery"] .livery i:nth-child(2) { height: 7px; margin-top: 4px; }
+.phone.land[data-layout="livery"] .livery i:nth-child(3) { height: 4px; margin-top: 4px; }
+.phone.land[data-layout="livery"] .topbar { padding-top: 56px; }
+.phone.land[data-layout="livery"] .livery-clip { height: 110px; }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -2022,6 +2048,58 @@ $("carExpect").onclick = () => showExpectations(myCar);
   updateCarSetting = function () { base(); $("carExpect").hidden = !(myCar && carExpectations(myCar).length); };
   updateCarSetting();
 }
+
+/* ===== 1.7.0: landscape (mirrors MainActivity.applyOrientation) =====
+   Sideways, the Dashboard has two columns: the style's main dial on the left, sized to the
+   screen's height; the title, other readouts, Connect and status on the right. The driving
+   score and live-data list follow underneath, the list in two columns. */
+let landscape = false;
+const landMoves = [];
+function landMove(el, to) { landMoves.push([el, el.parentNode, el.nextSibling]); to.appendChild(el); }
+function landRestore() {
+  while (landMoves.length) { const [el, parent, next] = landMoves.pop(); parent.insertBefore(el, next); }
+  document.querySelectorAll(".land-row").forEach(r => r.remove());
+}
+function landApply() {
+  landRestore();
+  $("phone").classList.toggle("land", landscape);
+  if (!landscape) return;
+  const content = document.querySelector("#pageDash > .content"), topbar = content.querySelector(".topbar");
+  const row = document.createElement("div"); row.className = "land-row";
+  row.innerHTML = `<div class="land-left"></div><div class="land-right"><div class="land-head"></div></div>`;
+  content.insertBefore(row, topbar);
+  const left = row.firstChild, right = row.lastChild, head = right.firstChild;
+  landMove(document.querySelector("#pageDash > .livery-clip"), head);
+  landMove(topbar, head);
+  const lay = $("phone").dataset.layout || "livery";
+  const active = content.querySelector(".lay-" + lay);
+  const heroCount = lay === "livery" ? 2 : lay === "telemetry" ? 3 : 1;
+  landMove(active, left);
+  [...active.children].slice(heroCount).forEach(el => landMove(el, right));
+  /* Connect, status, the ignition demo button and choose-car follow on the right */
+  const start = content.querySelector(".startrow");
+  const tail = [];
+  for (let el = start; el; el = el.nextElementSibling) { tail.push(el); if (el.id === "chooseCarBtn") break; }
+  tail.forEach(el => landMove(el, right));
+  fitLandHero();
+}
+function fitLandHero() {
+  const h = $("pageDash").clientHeight;
+  $("phone").style.setProperty("--heroMax", Math.max(180, h - 28) + "px");
+}
+{
+  const base = setTheme;
+  setTheme = function (id) { base(id); if (landscape) landApply(); };
+}
+document.getElementById("phone").insertAdjacentHTML("beforebegin", `<button class="rotate-btn" id="rotateBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.48,2.52c3.27,1.55 5.61,4.72 5.97,8.48h1.5C23.44,4.84 18.29,0 12,0l-0.66,0.03 3.81,3.81 1.33,-1.32zM10.23,1.75c-0.59,-0.59 -1.54,-0.59 -2.12,0L1.75,8.11c-0.59,0.59 -0.59,1.54 0,2.12l12.02,12.02c0.59,0.59 1.54,0.59 2.12,0l6.36,-6.36c0.59,-0.59 0.59,-1.54 0,-2.12L10.23,1.75zM14.83,21.19L2.81,9.17l6.36,-6.36 12.02,12.02 -6.36,6.36zM7.52,21.48C4.25,19.94 1.91,16.76 1.55,13L0.05,13C0.56,19.16 5.71,24 12,24l0.66,-0.03 -3.81,-3.81 -1.33,1.32z"/></svg><span>Turn sideways</span></button>`);
+$("rotateBtn").onclick = () => {
+  landscape = !landscape;
+  $("rotateBtn").setAttribute("aria-pressed", landscape);
+  $("rotateBtn").querySelector("span").textContent = landscape ? "Turn upright" : "Turn sideways";
+  landApply();
+  requestAnimationFrame(fitLandHero);
+};
+window.addEventListener("resize", () => { if (landscape) fitLandHero(); });
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

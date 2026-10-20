@@ -2,6 +2,14 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.7.0 (20 October 2026)
+- **Landscape.** Turn your phone sideways and every Dashboard style switches to two columns:
+  - **Livery styles:** the rev roundel on the left; speed, coolant and fuel on the right.
+  - **Race telemetry:** shift lights, the big numbers and the 30-second trace on the left; coolant, fuel, Connect and status on the right.
+  - **Digital cockpit:** the speed ring on the left; the glass panels on the right.
+  - **Cyberpunk:** the neon display on the left; the coolant, fuel and battery readouts on the right.
+- The main dial is sized to fit the screen's height, Connect and the status sit beside it, and the live-data list underneath goes into two columns. Livery stripes are slimmer sideways so the readouts sit higher. Turning back to portrait restores the usual layout, and live readings, recording and the connection carry on throughout.
+
 ## 1.6.3 (20 October 2026)
 - After you choose your car, a popup lists what may not work with it and why, so a missing reading isn't a surprise. Each one is marked **Probably won't work**, **May not work** or **Works, but slower**. For example:
   - Fuel level on Ford-built cars from before about 2008, like the 2006 Mazda Tribute, which don't send it over OBD2.

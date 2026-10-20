@@ -73,9 +73,13 @@ class CyberHudView @JvmOverloads constructor(context: Context, attrs: AttributeS
         invalidate()
     }
 
+    /** Largest height in pixels; landscape sets it so the display fits the screen's height. */
+    var maxSize = Int.MAX_VALUE
+        set(value) { if (field != value) { field = value; requestLayout() } }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val w = MeasureSpec.getSize(widthMeasureSpec)
-        setMeasuredDimension(w, (w.coerceAtMost(dp(420f).toInt()) * H / W).toInt())
+        setMeasuredDimension(w, ((w.coerceAtMost(dp(420f).toInt()) * H / W).toInt()).coerceAtMost(maxSize))
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

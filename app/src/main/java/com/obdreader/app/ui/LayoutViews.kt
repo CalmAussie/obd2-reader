@@ -166,9 +166,13 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
         invalidate()
     }
 
+    /** Largest height in pixels; landscape sets it so the ring fits the screen's height. */
+    var maxSize = Int.MAX_VALUE
+        set(value) { if (field != value) { field = value; requestLayout() } }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val w = MeasureSpec.getSize(widthMeasureSpec)
-        setMeasuredDimension(w, (w.coerceAtMost(dp(320f).toInt()) * 230f / 260f).toInt())
+        setMeasuredDimension(w, ((w.coerceAtMost(dp(320f).toInt()) * 230f / 260f).toInt()).coerceAtMost(maxSize))
     }
 
     override fun onDraw(canvas: Canvas) {

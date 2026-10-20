@@ -27,8 +27,13 @@ class LiveryStripesView @JvmOverloads constructor(context: Context, attrs: Attri
     private val glow = context.themeBool(R.attr.obdGlow)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
+    /** Landscape draws the bands at 60% size, so the page's title sits higher on a short screen. */
+    var compact = false
+        set(value) { if (field != value) { field = value; requestLayout(); invalidate() } }
+    private val k get() = if (compact) 0.6f else 1f
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), dp(110f).toInt())
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), (dp(110f) * k).toInt())
     }
 
     /** A band, with a soft neon halo behind it on glowing liveries (drawn as wider translucent layers, which stays fast). */
@@ -44,8 +49,9 @@ class LiveryStripesView @JvmOverloads constructor(context: Context, attrs: Attri
     }
 
     override fun onDraw(canvas: Canvas) {
-        val w = width.toFloat()
         canvas.save()
+        canvas.scale(k, k)
+        val w = width / k
         canvas.rotate(-7f, w / 2f, dp(46f))
         val left = -w * 0.25f
         val right = w * 1.25f
@@ -156,8 +162,12 @@ class RoundelView @JvmOverloads constructor(context: Context, attrs: AttributeSe
         super.onDetachedFromWindow()
     }
 
+    /** Largest size in pixels; landscape sets it so the dial fits the screen's height. */
+    var maxSize = Int.MAX_VALUE
+        set(value) { if (field != value) { field = value; requestLayout() } }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val w = MeasureSpec.getSize(widthMeasureSpec).coerceAtMost(dp(300f).toInt())
+        val w = MeasureSpec.getSize(widthMeasureSpec).coerceAtMost(dp(300f).toInt()).coerceAtMost(maxSize)
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), w)
     }
 
