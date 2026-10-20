@@ -103,7 +103,7 @@ Many cheap ELM327 clones can't speak J1850 PWM or VPW. If you have a 2000s Ford 
 **What can be read:** standard (generic) OBD2 data only: live engine readings, emissions-related trouble codes (P0, P2 and generic U codes are explained in full), and the VIN. Maker-specific systems such as ABS, airbags, transmission data and service resets need the maker's own tools.
 
 ## Styles
-Tap the palette icon on the Dashboard to choose a style. Your choice is saved. The first six are colourways of the livery dashboard; the last three each have a dashboard layout of their own.
+Tap the palette icon on the Dashboard to choose a style. Your choice is saved. Every style also works in landscape: turn your phone sideways and the Dashboard puts the main dial on the left and the other readouts, Connect and status on the right. The first six are colourways of the livery dashboard; the last three each have a dashboard layout of their own.
 
 | Style | Look |
 |---|---|

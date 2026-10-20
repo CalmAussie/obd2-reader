@@ -125,6 +125,18 @@ tap_text "Allow" > /dev/null || true
 shot 2-demo-dashboard
 W=$(view_width connectButton)
 [ "${W:-0}" -ge 200 ] && log "button 'Disconnect': visible (${W}px)" || { log "button 'Disconnect': FAILED (${W:-0}px wide)"; FAIL=1; }
+# Turn the phone sideways: the Dashboard switches to two columns, then back to portrait.
+adb shell settings put system accelerometer_rotation 0
+adb shell settings put system user_rotation 1
+sleep 5
+shot 2b-landscape
+LW=$(view_width connectButton); LR=$(view_width rpmRoundel)
+if alive && [ "${LW:-0}" -ge 200 ] && [ "${LR:-0}" -ge 200 ]; then log "landscape: OK (Disconnect ${LW}px, dial ${LR}px)"; else log "landscape: FAILED (Disconnect ${LW:-0}px, dial ${LR:-0}px)"; FAIL=1; fi
+adb shell settings put system user_rotation 0
+sleep 4
+shot 2c-portrait-again
+W=$(view_width connectButton)
+alive && [ "${W:-0}" -ge 200 ] && log "back to portrait: OK" || { log "back to portrait: FAILED"; FAIL=1; }
 tap_tab Diagnostics && tap_text "Read codes" && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
 tap_tab Graphs && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
 adb shell input keyevent KEYCODE_BACK; sleep 1

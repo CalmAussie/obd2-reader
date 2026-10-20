@@ -11,6 +11,7 @@ import android.bluetooth.le.ScanSettings
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
@@ -273,6 +274,7 @@ class MainActivity : AppCompatActivity() {
 
         setupDashboard()
         applyRedline()
+        applyOrientation()
 
         connectBtn.display = true
         connectBtn.setTextSizeSp(19f)
@@ -1783,6 +1785,132 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ---------- UI helpers ----------
+
+    // ---------- Landscape ----------
+
+    private var landscape = false
+    private var landRow: LinearLayout? = null
+    /** Views moved for landscape, with where they came from, so portrait can put them back exactly. */
+    private val moved = ArrayList<Triple<View, ViewGroup, Pair<Int, ViewGroup.LayoutParams>>>()
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyOrientation()
+    }
+
+    private fun move(view: View, to: ViewGroup, lp: ViewGroup.LayoutParams? = null) {
+        val from = view.parent as ViewGroup
+        moved += Triple(view, from, from.indexOfChild(view) to view.layoutParams)
+        from.removeView(view)
+        to.addView(view, lp ?: view.layoutParams)
+    }
+
+    /**
+     * Turning the phone sideways puts the Dashboard in two columns: the style's main dial or
+     * display on the left, sized to fit the screen's height, and the title, other readouts,
+     * Connect and status on the right. Below them come the driving score and the live-data
+     * list, in two columns. Turning it back restores the portrait layout exactly.
+     */
+    private fun applyOrientation() {
+        val land = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (land == landscape) return
+        landscape = land
+        // Back to portrait first: undo every move, newest first.
+        for ((view, parent, where) in moved.asReversed()) {
+            (view.parent as? ViewGroup)?.removeView(view)
+            parent.addView(view, where.first, where.second)
+        }
+        moved.clear()
+        landRow?.let { (it.parent as? ViewGroup)?.removeView(it) }
+        landRow = null
+
+        val content = findViewById<LinearLayout>(R.id.content)
+        val topBar = findViewById<View>(R.id.topBar)
+        if (land) {
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            val left = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = android.view.Gravity.CENTER_HORIZONTAL
+                setPadding(0, dp(12f).toInt(), 0, 0)
+            }
+            val right = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            row.addView(left, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            row.addView(right, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(20f).toInt() })
+            content.addView(row, content.indexOfChild(topBar))
+            landRow = row
+
+            // The title (and, on liveries, the stripes behind it) heads the right column.
+            val head = android.widget.FrameLayout(this)
+            right.addView(head, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            val stripes = findViewById<View>(R.id.stripesDash)
+            move(stripes, head, android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            move(topBar, head, android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+
+            // The style's main dial goes left; its other readouts go right.
+            val active = findViewById<ViewGroup>(when (dash) {
+                DashLayout.LIVERY -> R.id.layoutLivery
+                DashLayout.TELEMETRY -> R.id.layoutTelemetry
+                DashLayout.COCKPIT -> R.id.layoutCockpit
+                DashLayout.CYBERPUNK -> R.id.layoutCyberpunk
+            })
+            val heroCount = when (dash) {
+                DashLayout.LIVERY -> 2 // roundel and start lights
+                DashLayout.TELEMETRY -> 3 // shift lights, big numbers and the trace
+                DashLayout.COCKPIT, DashLayout.CYBERPUNK -> 1
+            }
+            move(active, left, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            (heroCount until active.childCount).map { active.getChildAt(it) }.forEach { move(it, right) }
+
+            // Connect, status and the choose-car button follow on the right.
+            val connectRow = connectBtn.parent as View
+            val from = content.indexOfChild(connectRow)
+            val to = content.indexOfChild(chooseCarButton)
+            (from..to).map { content.getChildAt(it) }.forEach { move(it, right) }
+        }
+        // Slimmer livery stripes sideways, so the title and readouts sit higher.
+        if (dash == DashLayout.LIVERY) {
+            listOf(R.id.stripesDash, R.id.stripesDiag, R.id.stripesGraphs).forEach { findViewById<LiveryStripesView>(it).compact = land }
+            val top = dp(if (land) 56f else 92f).toInt()
+            listOf(R.id.topBar, R.id.titleDiagnostics, R.id.titleGraphs).forEach { findViewById<View>(it).setPadding(0, top, 0, 0) }
+        }
+        layoutTiles(if (land) 2 else 1)
+        fitHero()
+    }
+
+    /** In landscape, sizes the main dial to the visible height of the Dashboard. */
+    private fun fitHero() {
+        pageDashboard.post {
+            val max = if (landscape) (pageDashboard.height - dp(28f).toInt()).coerceAtLeast(dp(180f).toInt()) else Int.MAX_VALUE
+            roundel.maxSize = max
+            cockpitRing.maxSize = max
+            cyberHud.maxSize = max
+        }
+    }
+
+    /** The live-data list: one column in portrait, two side by side in landscape. */
+    private fun layoutTiles(columns: Int) {
+        val all = tiles.values.toList()
+        all.forEach { (it.parent as? ViewGroup)?.removeView(it) }
+        towerList.removeAllViews()
+        if (columns == 1) {
+            all.forEach { tile ->
+                towerList.addView(tile, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    bottomMargin = dp(4f).toInt()
+                })
+            }
+            return
+        }
+        all.chunked(columns).forEach { group ->
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            group.forEachIndexed { i, tile ->
+                row.addView(tile, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { if (i > 0) marginStart = dp(8f).toInt() })
+            }
+            repeat(columns - group.size) { row.addView(View(this), LinearLayout.LayoutParams(0, 0, 1f).apply { marginStart = dp(8f).toInt() }) }
+            towerList.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                bottomMargin = dp(4f).toInt()
+            })
+        }
+    }
 
     private fun addTile(key: String, tile: TowerRowView) {
         towerList.addView(tile, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
