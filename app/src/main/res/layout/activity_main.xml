@@ -147,9 +147,9 @@
                                 android:paddingStart="12dp">
 
                                 <TextView style="@style/ObdSectionTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/engine_speed" android:textSize="12sp" />
-                                <TextView
+                                <com.obdreader.app.ui.FitTextView
                                     android:id="@+id/teleRpm"
-                                    android:layout_width="wrap_content"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="?attr/obdTitleFont"
                 android:tag="@string/tag_title_font"
@@ -175,9 +175,9 @@
                                 android:paddingStart="12dp">
 
                                 <TextView style="@style/ObdSectionTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/speed" android:textSize="12sp" />
-                                <TextView
+                                <com.obdreader.app.ui.FitTextView
                                     android:id="@+id/teleSpeed"
-                                    android:layout_width="wrap_content"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="?attr/obdTitleFont"
                 android:tag="@string/tag_title_font"
@@ -218,7 +218,7 @@
                             android:layout_marginTop="8dp"
                             android:orientation="horizontal">
 
-                            <TextView
+                            <com.obdreader.app.ui.FitTextView
                                 android:id="@+id/teleCoolant"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
@@ -228,7 +228,7 @@
                                 android:textColor="?attr/obdTextPrimary"
                                 android:textSize="14sp" />
 
-                            <TextView
+                            <com.obdreader.app.ui.FitTextView
                                 android:id="@+id/teleFuel"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"

@@ -83,6 +83,7 @@ import com.obdreader.app.ui.CockpitRingView
 import com.obdreader.app.ui.CyberChipView
 import com.obdreader.app.ui.CyberHudView
 import com.obdreader.app.ui.DashLayout
+import com.obdreader.app.ui.FitTextView
 import com.obdreader.app.ui.DecalView
 import com.obdreader.app.ui.LiveryStripesView
 import com.obdreader.app.ui.MilBannerView
@@ -375,6 +376,13 @@ class MainActivity : AppCompatActivity() {
         DriveScorer.start()
         scoreStyle = DrivingScore.Style.values().firstOrNull { it.name == prefs.getString(PREF_SCORE_STYLE, null) } ?: DrivingScore.Style.EVERYDAY
         val ids = mapOf(DrivingScore.Style.EFFICIENCY to R.id.styleEfficiency, DrivingScore.Style.EVERYDAY to R.id.styleEveryday, DrivingScore.Style.RACING to R.id.styleRacing)
+        // Narrow padding and one line each, so "Efficiency" isn't cut short on small phones or with large text.
+        ids.values.forEach { id ->
+            findViewById<MaterialButton>(id).apply {
+                maxLines = 1
+                setPaddingRelative(dp(4f).toInt(), paddingTop, dp(4f).toInt(), paddingBottom)
+            }
+        }
         findViewById<MaterialButtonToggleGroup>(R.id.scoreStyle).apply {
             ids.values.forEach { id ->
                 findViewById<MaterialButton>(id).apply {
@@ -665,6 +673,10 @@ class MainActivity : AppCompatActivity() {
         trace = findViewById(R.id.teleTrace)
         teleRpm = findViewById(R.id.teleRpm)
         teleSpeed = findViewById(R.id.teleSpeed)
+        (teleRpm as FitTextView).sample = "8,888"
+        (teleSpeed as FitTextView).sample = "888"
+        (findViewById<View>(R.id.teleCoolant) as FitTextView).sample = "Coolant     888 °C"
+        (findViewById<View>(R.id.teleFuel) as FitTextView).sample = "Fuel     888 %"
         teleCoolant = findViewById(R.id.teleCoolant)
         teleFuel = findViewById(R.id.teleFuel)
         cockpitRing = findViewById(R.id.cockpitRing)
@@ -710,13 +722,19 @@ class MainActivity : AppCompatActivity() {
                 background = panelBackground(stroke = true)
                 setPadding(dp(12f).toInt(), dp(12f).toInt(), dp(12f).toInt(), dp(10f).toInt())
             }
-            box.addView(TextView(this).apply { text = label; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+            box.addView(TextView(this).apply { text = label; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+            // The number and its unit share one line, like the other styles' readouts.
+            val line = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; isBaselineAligned = true }
             val value = TextView(this).apply {
-                text = getString(R.string.dash); setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f); setTextColor(themeColor(R.attr.obdTextPrimary))
+                text = getString(R.string.dash); maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f); setTextColor(themeColor(R.attr.obdTextPrimary))
                 typeface = uiTypeface(500); fontFeatureSettings = "tnum"
             }
-            box.addView(value)
-            box.addView(TextView(this).apply { text = unit; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+            line.addView(value)
+            line.addView(TextView(this).apply {
+                text = unit; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                setPadding(dp(4f).toInt(), 0, 0, 0)
+            })
+            box.addView(line)
             row.addView(box, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
                 if (i > 0) marginStart = dp(8f).toInt()
             })
@@ -1893,7 +1911,19 @@ class MainActivity : AppCompatActivity() {
             roundel.maxSize = max
             cockpitRing.maxSize = max
             cyberHud.maxSize = max
+            // Telemetry: the trace takes whatever height is left under the big numbers.
+            trace.fixedHeight = if (landscape && dash == DashLayout.TELEMETRY && h > 0) {
+                val panel = findViewById<View>(R.id.telePanel)
+                (max - panel.top - (panel.height - trace.height)).coerceIn(dp(56f).toInt(), dp(96f).toInt())
+            } else null
         }
+        // Fit again once the new arrangement has been laid out.
+        pageDashboard.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                pageDashboard.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                fit()
+            }
+        })
         if (heroFitter == null) {
             heroFitter = View.OnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
                 if (bottom - top != oldBottom - oldTop) pageDashboard.post { fit() }
