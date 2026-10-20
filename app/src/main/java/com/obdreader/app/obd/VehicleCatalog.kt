@@ -731,7 +731,7 @@ object VehicleCatalog {
     private val VW_GROUP = setOf("Volkswagen", "Audi", "Skoda", "SEAT / Cupra", "Porsche", "Lamborghini", "Bentley", "Bugatti")
     private val VW_DEALER_ONLY = setOf("Porsche", "Lamborghini", "Bentley", "Bugatti")
     private val FCA_US = setOf("Chrysler", "Dodge", "Jeep", "Ram", "Plymouth")
-    private val FORD_GROUP = setOf("Ford", "Lincoln", "Mercury")
+    internal val FORD_GROUP = setOf("Ford", "Lincoln", "Mercury")
     private val TOYOTA_GROUP = setOf("Toyota", "Lexus", "Scion")
     private val HONDA_GROUP = setOf("Honda", "Acura")
     private val BMW_GROUP = setOf("BMW", "Mini", "Rolls-Royce")
@@ -754,7 +754,7 @@ object VehicleCatalog {
         "Lotus" to "eletre", "Rolls-Royce" to "spectre",
     )
 
-    private fun isElectric(car: Car, model: String): Boolean =
+    internal fun isElectric(car: Car, model: String): Boolean =
         (car.make in EV_MAKES && !(car.make == "Polestar" && model.startsWith("polestar 1"))) ||
             EV_MODELS.any { (make, prefix) -> car.make == make && model.startsWith(prefix) } ||
             (car.make == "Acura" && model.startsWith("zdx") && car.year >= 2024)

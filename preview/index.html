@@ -514,6 +514,14 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 [data-theme="cyberpunk"] .xb { font-style: normal; font-weight: 700; }
 [data-theme="cyberpunk"] .go-btn { box-shadow: 0 0 14px rgba(255, 43, 214, .45); }
 [data-theme="cyberpunk"] .decal .v, [data-theme="cyberpunk"] .trow .v { text-shadow: 0 0 10px rgba(0, 240, 255, .35); }
+
+/* What may not work with your car (mirrors MainActivity.showExpectations) */
+.expect .ex { padding: 14px 0 0; }
+.expect .ex b { display: block; font-size: 15px; font-weight: 600; }
+.expect .lv { display: block; font-size: 12px; font-weight: 600; margin: 2px 0 2px; }
+.expect .lv.u { color: var(--red); } .expect .lv.m { color: var(--warn, #FFB000); } .expect .lv.l { color: var(--fg-2); }
+.expect p { margin: 0; font-size: 14px; line-height: 1.45; color: var(--fg-2); }
+.exp-link { display: block; margin: 0 16px 10px; min-height: 40px; text-align: left; }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -1867,7 +1875,7 @@ showCarPicker = function (firstRun = false, onDone = null) {
     $("carClear").textContent = "Not listed";
   }
   /* In the preview every connection is the simulated car, so it becomes the car you choose. */
-  $("carSave").addEventListener("click", () => { mark(); if (state === "connected") setTimeout(() => showVin(demoVin()), 0); if (onDone) setTimeout(onDone, 50); });
+  $("carSave").addEventListener("click", () => { mark(); if (state === "connected") setTimeout(() => showVin(demoVin()), 0); setTimeout(() => { if (!showExpectations(myCar, onDone) && onDone) onDone(); }, 50); });
   $("carClear").addEventListener("click", () => { mark(); if (onDone) setTimeout(onDone, 50); });
 };
 $("carRow").onclick = () => showCarPicker();
@@ -1957,6 +1965,63 @@ function demoVin() {
 /* ===== 1.5.0: Cyberpunk on Android Auto (mirrors CarLivery.COLOURS) ===== */
 CAR_ACCENT.cyberpunk = ["#FF2BD6", "#14001A"];
 CAR_ROUNDEL.cyberpunk = "#00F0FF";
+
+
+/* ===== 1.6.3: what may not work with your car (mirrors obd/CarSupport.kt) ===== */
+const CAN_CODES = ["6", "7", "8", "9"];
+function carExpectations(car) {
+  if (!car) return [];
+  const m = (car.model || "").toLowerCase(), y = car.year;
+  const eng = enginesFor(car.make, y, car.model).find(e => e[0].toLowerCase() === (car.engine || "").trim().toLowerCase());
+  const fuel = eng ? eng[4] || "petrol" : null;
+  const rec = recommend(car.make, y, car.model, car.engine), code = rec.order[0];
+  const proto = PROTOCOLS.find(p => p[0] === code), can = CAN_CODES.includes(code);
+  const U = "Probably won't work", M = "May not work", L = "Works, but slower";
+  const items = [], add = (name, level, reason) => { if (!items.some(i => i.name === name)) items.push({ name, level, reason }); };
+  if (isElectric(car.make, y, m)) {
+    add("Engine readings", U, "Electric cars have no engine computer, so engine speed, coolant, throttle, load, airflow, timing, fuel level and oil temperature aren't reported. Speed and battery voltage usually still work.");
+    add("Trouble codes", M, "Many electric cars keep their fault codes in their own systems rather than standard OBD2, so few or none may show.");
+    return items;
+  }
+  if (fuel === "lpg") add("Fuel level", U, "The LPG tank's level isn't sent over OBD2. If a fuel level shows at all, it's the petrol tank.");
+  const fordBuilt = FORD_G.includes(car.make) || (car.make === "Mazda" && (m.startsWith("tribute") || m.startsWith("b-series")) && y <= 2006);
+  if (fordBuilt && y < 2008) add("Fuel level", U, "Ford-built cars from before about 2008 usually don't send fuel level over OBD2. The fuel gauge gets it from the tank sender through the instrument cluster, which the OBD2 port can't read.");
+  else if (!can) add("Fuel level", M, "Fuel level is optional in OBD2, and many cars on the older protocols (before CAN, about 2008) don't report it.");
+  if (y < 2010) add("Oil temp", U, "Oil temperature was only added to OBD2 in the late 2000s, and almost no cars from before about 2010 report it.");
+  else add("Oil temp", M, "Many cars don't report oil temperature over OBD2, even newer ones.");
+  if (!can) add("Ambient air", M, "Outside temperature is optional, and older cars often only send it to the dashboard display.");
+  add("Manifold pressure or MAF airflow", M, "Most engines have either a manifold pressure (MAP) sensor or a mass airflow (MAF) sensor, not both, so one of these usually shows n/a.");
+  if (fuel === "diesel") {
+    add("Timing advance", U, "Diesel engines have no spark plugs, so there's no ignition timing to report.");
+    add("Throttle", M, "Many diesels report the accelerator pedal position instead of a throttle, so Throttle may be missing. The driving score then leans on speed and revs.");
+  }
+  if (fuel === "hybrid") add("Engine speed, throttle and load", L, "The petrol engine switches off often in a hybrid, so these drop to zero whenever it does. That's normal, not a fault.");
+  if (y < 2005) add("VIN", M, "Many cars from before about 2005 don't report their VIN over OBD2. Your chosen car is used instead.");
+  if (!can && proto) add("Update speed", L, `This car most likely uses ${proto[1]}, an older protocol that answers one reading at a time, so numbers update a few times a second instead of 20 or more. They still glide; they just react a little later.`);
+  if (rec.note && /may not|only partly|missing/.test(rec.note)) add("Some readings and trouble codes", M, rec.note);
+  return items;
+}
+function showExpectations(car, onClose) {
+  const items = carExpectations(car);
+  if (!items.length) return false;
+  setTimeout(() => document.querySelectorAll("#phone > .toast").forEach(t => t.remove()), 0); /* the app shows "Saved" after the popup */
+  const lv = l => l.startsWith("Probably") ? "u" : l.startsWith("May") ? "m" : "l";
+  const s = overlay(`<h3>What may not work with your ${carLabel(car)}</h3>
+    <p class="msg">Based on what cars like yours usually report. When you connect, the app asks your car and shows everything it does report.</p>
+    <div class="expect">${items.map(i => `<div class="ex"><b>${i.name}</b><span class="lv ${lv(i.level)}">${i.level}</span><p>${i.reason}</p></div>`).join("")}</div>
+    <div class="btns"><button id="expOk">Got it</button></div>`);
+  let done = false; const close = () => { if (done) return; done = true; if (onClose) setTimeout(onClose, 0); };
+  s.addEventListener("closed", close);
+  $("expOk").onclick = closeOverlay;
+  return true;
+}
+$("carRow").insertAdjacentHTML("afterend", `<button class="link-btn exp-link" id="carExpect" hidden>What may not work with this car</button>`);
+$("carExpect").onclick = () => showExpectations(myCar);
+{
+  const base = updateCarSetting;
+  updateCarSetting = function () { base(); $("carExpect").hidden = !(myCar && carExpectations(myCar).length); };
+  updateCarSetting();
+}
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

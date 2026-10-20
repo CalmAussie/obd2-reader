@@ -2,6 +2,15 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.6.3 (20 October 2026)
+- After you choose your car, a popup lists what may not work with it and why, so a missing reading isn't a surprise. Each one is marked **Probably won't work**, **May not work** or **Works, but slower**. For example:
+  - Fuel level on Ford-built cars from before about 2008, like the 2006 Mazda Tribute, which don't send it over OBD2.
+  - Oil temperature on most cars before about 2010.
+  - Manifold pressure or MAF airflow, since most engines have one sensor or the other.
+  - Timing advance on diesels, and slower updates on cars that use the older pre-CAN protocols.
+- It's based on what cars like yours usually report. When you connect, the app still asks your car and shows everything it does report.
+- Open the list again any time with **What may not work with this car** under **Diagnostics → Your car**.
+
 ## 1.6.2 (20 October 2026)
 - Better at finding which readings your car reports. When the car is first asked, several of its modules (engine, gearbox and so on) can answer, each with its own list. The app used to take only the first answer, and if that wasn't the engine it could miss readings such as fuel level. It now combines every module's answer.
 - Any dashboard reading still missing from the car's list is tried once anyway, because some cars answer readings they don't list.
