@@ -83,6 +83,24 @@ class ThemeSwatchView(context: Context, theme: AppThemes.AppTheme) : View(contex
                 text.typeface = t.uiTypeface(300); text.textSize = 14 * u; text.color = fg
                 canvas.drawText("87", 36 * u, 34 * u, text)
             }
+            DashLayout.CYBERPUNK -> {
+                // A climbing neon rev bar over split-colour digits.
+                for (i in 0 until 9) {
+                    val x = (7 + i * 6.6f) * u
+                    val top = (17 - i * 1.1f) * u
+                    paint.color = if (i < 6) androidx.core.graphics.ColorUtils.blendARGB(s2, s1, i / 5f) else Color.argb(40, 255, 255, 255)
+                    canvas.drawRect(x, top, x + 5 * u, 19 * u, paint)
+                }
+                text.typeface = display; text.textSize = 17 * u
+                text.color = s1; canvas.drawText("88", 35 * u, 42 * u, text)
+                text.color = s2; canvas.drawText("88", 37 * u, 42 * u, text)
+                text.color = fg; canvas.drawText("88", 36 * u, 42 * u, text)
+                paint.style = Paint.Style.STROKE; paint.strokeWidth = u; paint.color = s2
+                canvas.drawLine(6 * u, 49 * u, 30 * u, 49 * u, paint)
+                paint.color = s1
+                canvas.drawLine(42 * u, 49 * u, 66 * u, 49 * u, paint)
+                paint.style = Paint.Style.FILL
+            }
         }
     }
 }

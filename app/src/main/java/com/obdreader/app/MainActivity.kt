@@ -77,6 +77,8 @@ import com.google.android.material.card.MaterialCardView
 import com.obdreader.app.ui.AppThemes
 import com.obdreader.app.ui.Channels
 import com.obdreader.app.ui.CockpitRingView
+import com.obdreader.app.ui.CyberChipView
+import com.obdreader.app.ui.CyberHudView
 import com.obdreader.app.ui.DashLayout
 import com.obdreader.app.ui.DecalView
 import com.obdreader.app.ui.LiveryStripesView
@@ -164,6 +166,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var teleCoolant: TextView
     private lateinit var teleFuel: TextView
     private lateinit var cockpitRing: CockpitRingView
+    private lateinit var cyberHud: CyberHudView
+    private val cyberChips = mutableMapOf<String, CyberChipView>()
     private val decals = mutableMapOf<String, DecalView>()
     private val glass = mutableMapOf<String, SmoothText>()
     // Big text numbers that roll to each reading instead of jumping (the drawn dials do it themselves).
@@ -620,6 +624,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.layoutLivery).visibility = if (livery) View.VISIBLE else View.GONE
         findViewById<View>(R.id.layoutTelemetry).visibility = if (dash == DashLayout.TELEMETRY) View.VISIBLE else View.GONE
         findViewById<View>(R.id.layoutCockpit).visibility = if (dash == DashLayout.COCKPIT) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.layoutCyberpunk).visibility = if (dash == DashLayout.CYBERPUNK) View.VISIBLE else View.GONE
         // Livery stripes run across the top of each page; the title sits below them.
         listOf(R.id.stripesDash, R.id.stripesDiag, R.id.stripesGraphs).forEach { findViewById<LiveryStripesView>(it).visibility = if (livery) View.VISIBLE else View.GONE }
         if (livery) {
@@ -633,6 +638,15 @@ class MainActivity : AppCompatActivity() {
                 colors = intArrayOf(android.graphics.Color.parseColor("#13203F"), android.graphics.Color.parseColor("#070A12"), themeColor(R.attr.obdBg))
                 gradientRadius = resources.displayMetrics.heightPixels * 0.7f
                 setGradientCenter(0.5f, 0.15f)
+            }
+        }
+        if (dash == DashLayout.CYBERPUNK) {
+            // A magenta haze over the top of the night-city black.
+            findViewById<View>(R.id.root).background = GradientDrawable().apply {
+                gradientType = GradientDrawable.RADIAL_GRADIENT
+                colors = intArrayOf(android.graphics.Color.parseColor("#2A0A3A"), android.graphics.Color.parseColor("#0B0716"), themeColor(R.attr.obdBg))
+                gradientRadius = resources.displayMetrics.heightPixels * 0.6f
+                setGradientCenter(0.5f, 0f)
             }
         }
         listOf(R.id.carRow, R.id.protocolRow, R.id.logCard, R.id.helpRow).forEach { findViewById<View>(it).background = panelBackground() }
@@ -649,6 +663,7 @@ class MainActivity : AppCompatActivity() {
         teleCoolant = findViewById(R.id.teleCoolant)
         teleFuel = findViewById(R.id.teleFuel)
         cockpitRing = findViewById(R.id.cockpitRing)
+        cyberHud = findViewById(R.id.cyberHud)
         val blank = getString(R.string.dash)
         teleRpmText = SmoothText(teleRpm, blank, settle = 2f) { String.format(Locale.US, "%,d", ((it / 10f).roundToInt() * 10)) }
         teleSpeedText = SmoothText(teleSpeed, blank) { it.roundToInt().toString() }
@@ -705,6 +720,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Cyberpunk neon readouts: coolant, fuel and battery.
+        val cyberRow = findViewById<LinearLayout>(R.id.cyberRow)
+        listOf(
+            CyberChipView(this, "Coolant", "°C", 0, coolant.min.toFloat(), coolant.max.toFloat(), coolant.warnAbove?.toFloat()) to COOLANT_KEY,
+            CyberChipView(this, "Fuel", "%", 0, 0f, 100f, null) to FUEL_KEY,
+            CyberChipView(this, "Battery", "V", 1, 11f, 15f, null) to VOLTAGE_KEY,
+        ).forEachIndexed { i, (chip, key) ->
+            cyberRow.addView(chip, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { if (i > 0) marginStart = dp(8f).toInt() })
+            cyberChips[key] = chip
+        }
+
         // The live-data list: everything except the readings the dashboard already shows big.
         val shownBig = setOf(RPM_KEY, SPEED_KEY, COOLANT_KEY, FUEL_KEY)
         Pids.dashboard.filter { it.hex !in shownBig }.forEach { p ->
@@ -719,7 +745,13 @@ class MainActivity : AppCompatActivity() {
         shiftLights.setRpm(value, redline)
         teleRpmText.set(value)
         cockpitRing.set(lastSpeed, value)
-        if (ObdSession.state.value.isConnected) trace.push(value, lastSpeed)
+        cyberHud.set(lastSpeed, value)
+        if (ObdSession.state.value.isConnected) {
+            trace.push(value, lastSpeed)
+            cyberHud.push(value)
+        } else if (value == null) {
+            cyberHud.push(null)
+        }
     }
 
     private fun setSpeed(value: Float?) {
@@ -727,11 +759,13 @@ class MainActivity : AppCompatActivity() {
         decals[SPEED_KEY]?.setValue(value?.toDouble())
         teleSpeedText.set(value)
         cockpitRing.set(value, lastRpm)
+        cyberHud.set(value, lastRpm)
     }
 
     private fun setBigReading(key: String, value: Double?) {
         decals[key]?.setValue(value)
         glass[key]?.set(value?.toFloat())
+        cyberChips[key]?.setValue(value)
         when (key) {
             COOLANT_KEY -> teleCoolantText.set(value?.toFloat())
             FUEL_KEY -> teleFuelText.set(value?.toFloat())
@@ -1403,6 +1437,8 @@ class MainActivity : AppCompatActivity() {
         roundel.warnAt = this.redline
         cockpitRing.rpmMax = max
         cockpitRing.warnAt = this.redline
+        cyberHud.rpmMax = max
+        cyberHud.warnAt = this.redline
         trace.rpmMax = max
     }
 

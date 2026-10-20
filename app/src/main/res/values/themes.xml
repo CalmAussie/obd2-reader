@@ -259,7 +259,7 @@
         <item name="android:colorBackground">#0E0F11</item>
     </style>
 
-    <!-- Cyberpunk: neon magenta and cyan on a near-black night city, with a glow on the rev ring -->
+    <!-- Cyberpunk: its own layout, a neon heads-up display in magenta and cyan on night-city black -->
     <style name="Theme.ObdReader.Cyberpunk" parent="Base.ObdReader.Dark">
         <item name="obdBg">#07060D</item>
         <item name="obdSurface">#120F1F</item>
@@ -279,6 +279,7 @@
         <item name="obdRoundelInk">#00F0FF</item>
         <item name="obdRing">#00F0FF</item>
         <item name="obdDanger">#FF3B5C</item>
+        <item name="obdLayout">cyberpunk</item>
         <item name="obdSkew">18.0</item>
         <item name="obdGlow">true</item>
         <item name="obdDisplayFont">@font/archivo_expanded_bold</item>

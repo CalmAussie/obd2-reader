@@ -22,7 +22,7 @@ internal fun fmt(value: Double?, decimals: Int): String =
     value?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
 
 /** A plain panel background in the theme's surface colour and corner radius. */
-fun Context.panelBackground(stroke: Boolean = dashLayout() == DashLayout.COCKPIT): GradientDrawable =
+fun Context.panelBackground(stroke: Boolean = dashLayout().let { it == DashLayout.COCKPIT || it == DashLayout.CYBERPUNK }): GradientDrawable =
     GradientDrawable().apply {
         cornerRadius = themeDimen(R.attr.obdCardRadius)
         setColor(themeColor(R.attr.obdSurface))
@@ -200,7 +200,7 @@ class TowerRowView(
         paint.style = Paint.Style.FILL
         paint.color = surface
         canvas.drawRoundRect(rect, radius, radius, paint)
-        if (layout == DashLayout.COCKPIT) {
+        if (layout == DashLayout.COCKPIT || layout == DashLayout.CYBERPUNK) {
             paint.style = Paint.Style.STROKE; paint.strokeWidth = dp(1f); paint.color = outline
             canvas.drawRoundRect(rect, radius, radius, paint)
             paint.style = Paint.Style.FILL
@@ -221,6 +221,11 @@ class TowerRowView(
                 canvas.drawRect(0f, 0f, tabW, h, paint)
             }
             DashLayout.COCKPIT -> tabW = 0f
+            DashLayout.CYBERPUNK -> {
+                tabW = dp(3f)
+                paint.color = if (hot) danger else stripe2
+                canvas.drawRect(0f, 0f, tabW, h, paint)
+            }
         }
         val x = tabW + dp(14f)
         val right = w - dp(14f)
@@ -240,8 +245,8 @@ class TowerRowView(
                 val y = h - dp(12f)
                 paint.color = track
                 canvas.drawRect(x, y, right, y + dp(3f), paint)
-                if (layout == DashLayout.COCKPIT) {
-                    paint.shader = LinearGradient(x, 0f, right, 0f, stripe, stripe2, Shader.TileMode.CLAMP)
+                if (layout == DashLayout.COCKPIT || layout == DashLayout.CYBERPUNK) {
+                    paint.shader = LinearGradient(x, 0f, right, 0f, if (layout == DashLayout.CYBERPUNK) stripe2 else stripe, if (layout == DashLayout.CYBERPUNK) stripe else stripe2, Shader.TileMode.CLAMP)
                 } else {
                     paint.color = if (hot) danger else muted
                 }

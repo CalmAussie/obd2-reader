@@ -103,7 +103,7 @@ Many cheap ELM327 clones can't speak J1850 PWM or VPW. If you have a 2000s Ford 
 **What can be read:** standard (generic) OBD2 data only: live engine readings, emissions-related trouble codes (P0, P2 and generic U codes are explained in full), and the VIN. Maker-specific systems such as ABS, airbags, transmission data and service resets need the maker's own tools.
 
 ## Styles
-Tap the palette icon on the Dashboard to choose a style. Your choice is saved.
+Tap the palette icon on the Dashboard to choose a style. Your choice is saved. The first six are colourways of the livery dashboard; the last three each have a dashboard layout of their own.
 
 | Style | Look |
 |---|---|
@@ -113,9 +113,9 @@ Tap the palette icon on the Dashboard to choose a style. Your choice is saved.
 | Pit lane | A light style in black and red, for sunlight |
 | Drift | Hot pink and teal |
 | Apex | Volt yellow on carbon black, sharply raked |
-| Cyberpunk | Neon magenta and cyan on night-city black, with a glowing rev ring |
 | Race telemetry | A data-logger screen: shift lights, big numbers and live 30-second traces |
 | Digital cockpit | One big speed in a glowing ring, on layered glass |
+| Cyberpunk | A neon heads-up display: a climbing rev bar, split-colour speed digits and glowing readouts |
 
 ## Android Auto
 The car screen shows live RPM, speed, coolant, throttle, fuel and battery, refreshing about five times a second with each number gliding to the next reading, and lists trouble codes. It uses your style's colours, but its background, fonts and layout are always Android Auto's own.
