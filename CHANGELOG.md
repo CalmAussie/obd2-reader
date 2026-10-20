@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.7.1 (20 October 2026)
+- Landscape: the tab bar is slimmer sideways (icons only), and the main dial re-fits whenever the screen's height changes, so it's never cut off at the bottom.
+
 ## 1.7.0 (20 October 2026)
 - **Landscape.** Turn your phone sideways and every Dashboard style switches to two columns:
   - **Livery styles:** the rev roundel on the left; speed, coolant and fuel on the right.

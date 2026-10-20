@@ -53,6 +53,7 @@ import com.google.android.material.chip.ChipGroup
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationBarView
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -1789,6 +1790,7 @@ class MainActivity : AppCompatActivity() {
     // ---------- Landscape ----------
 
     private var landscape = false
+    private var portraitNavMinHeight = -1
     private var landRow: LinearLayout? = null
     /** Views moved for landscape, with where they came from, so portrait can put them back exactly. */
     private val moved = ArrayList<Triple<View, ViewGroup, Pair<Int, ViewGroup.LayoutParams>>>()
@@ -1873,18 +1875,31 @@ class MainActivity : AppCompatActivity() {
             val top = dp(if (land) 56f else 92f).toInt()
             listOf(R.id.topBar, R.id.titleDiagnostics, R.id.titleGraphs).forEach { findViewById<View>(it).setPadding(0, top, 0, 0) }
         }
+        // A slimmer tab bar sideways: icons only, so the dial gets more of the short screen.
+        if (portraitNavMinHeight < 0) portraitNavMinHeight = bottomNav.minimumHeight
+        bottomNav.labelVisibilityMode = if (land) NavigationBarView.LABEL_VISIBILITY_UNLABELED else NavigationBarView.LABEL_VISIBILITY_LABELED
+        bottomNav.minimumHeight = if (land) dp(56f).toInt() else portraitNavMinHeight
         layoutTiles(if (land) 2 else 1)
         fitHero()
     }
 
-    /** In landscape, sizes the main dial to the visible height of the Dashboard. */
+    private var heroFitter: View.OnLayoutChangeListener? = null
+
+    /** In landscape, sizes the main dial to the visible height of the Dashboard, and keeps it fitted as that changes. */
     private fun fitHero() {
-        pageDashboard.post {
-            val max = if (landscape) (pageDashboard.height - dp(28f).toInt()).coerceAtLeast(dp(180f).toInt()) else Int.MAX_VALUE
+        fun fit() {
+            val h = pageDashboard.height
+            val max = if (landscape && h > 0) (h - dp(40f).toInt()).coerceAtLeast(dp(180f).toInt()) else Int.MAX_VALUE
             roundel.maxSize = max
             cockpitRing.maxSize = max
             cyberHud.maxSize = max
         }
+        if (heroFitter == null) {
+            heroFitter = View.OnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+                if (bottom - top != oldBottom - oldTop) pageDashboard.post { fit() }
+            }.also { pageDashboard.addOnLayoutChangeListener(it) }
+        }
+        fit()
     }
 
     /** The live-data list: one column in portrait, two side by side in landscape. */
