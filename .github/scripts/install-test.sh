@@ -154,9 +154,13 @@ for line in open(sys.argv[2], encoding='utf-8', errors='ignore'):
         print(ox + (x1 + x2) // 2, oy + (y1 + y2) // 2); sys.exit(0)
 PY
 }
-# Each style with its own layout, upright and sideways, with the demo car running.
-for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk"; do
-  SLUG=$(echo "$STYLE" | tr ' A-Z' '-a-z')
+# Each style with its own layout, upright and sideways, with the demo car running. The second
+# pass is a small phone with large text (360 dp wide, text at 115%), where crowding shows up.
+for PASS in normal small; do
+if [ $PASS = small ]; then adb shell wm density 480; adb shell settings put system font_scale 1.15; sleep 3; fi
+for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk" "Asphalt"; do
+  [ $PASS = normal ] && [ "$STYLE" = "Asphalt" ] && continue
+  SLUG=$(echo "$STYLE" | tr ' A-Z' '-a-z'); [ $PASS = small ] && SLUG="small-$SLUG"
   XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3   # disconnect, so the screen is still
   tap_text "Style" || { log "style $STYLE: FAILED (no Style button)"; FAIL=1; continue; }
   sleep 1
@@ -170,6 +174,8 @@ for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk"; do
   alive && log "style $STYLE: upright and sideways OK" || { log "style $STYLE: FAILED (app stopped)"; FAIL=1; }
   adb shell settings put system user_rotation 0; sleep 4
 done
+done
+adb shell wm density reset; adb shell settings put system font_scale 1.0; sleep 3
 tap_tab Diagnostics && tap_text "Read codes" && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
 tap_tab Graphs && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
 adb shell input keyevent KEYCODE_BACK; sleep 1
