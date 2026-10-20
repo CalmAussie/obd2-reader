@@ -98,4 +98,18 @@ class DrivingScoreTest {
         d.reset()
         assertEquals(null, d.topSpeed)
     }
+
+    @Test
+    fun tripTotals() {
+        val d = DrivingScore()
+        var t = 0L
+        // A minute at a steady 60 km/h, then 20 seconds stopped at idle.
+        repeat(301) { d.update(t, 60.0, 1800.0, 15.0, 30.0, 90.0); t += 200 }
+        repeat(100) { d.update(t, 0.0, 800.0, 0.0, 20.0, 90.0); t += 200 }
+        val r = d.result(DrivingScore.Style.EVERYDAY)
+        assertEquals(1.0, r.distanceKm, 0.01)       // 60 km/h for one minute
+        assertEquals(60.0, r.averageSpeed!!, 1.0)
+        assertTrue(r.idleSeconds in 18..20)
+        assertTrue(r.connectedSeconds in 79..81)
+    }
 }

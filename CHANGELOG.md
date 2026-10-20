@@ -2,6 +2,18 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.8.0 (21 October 2026)
+- **Trip summary.** When a drive ends (you disconnect or turn the ignition off), a summary comes up: distance, time driving and idling, average and top speed, best 0–100 km/h and the score in all three styles. **Last drive summary**, under the driving score, opens it again later.
+- **Driving alerts.** A sound, vibration and notification (also shown on the Android Auto screen) when the engine runs hot, the oil gets too hot, the battery isn't charging or is overcharging, the battery is low with the engine off, or a new trouble code appears. Trouble codes are now checked every two minutes while connected. Turn alerts off under **Diagnostics → Alerts**.
+- **Video overlay.** Make an MP4 of a recorded drive, with the shift lights, rev arc, speed, top speed, throttle and a 30-second trace, to lay over your dash-cam or phone footage in a video editor. Choose 1080p or 720p, on a green-screen or black background your editor can remove. Saved to Movies › OBD2 Reader (Android 10 and newer) and ready to share.
+- **Shareable drive cards.** Turn a drive into a picture in your style: a 9:16 card for Shorts, TikTok and Reels or a square one for Instagram, with the score, distance, time, top and average speed. Saved to Pictures and ready to share.
+- **Performance timers.** 0–100 km/h, 80–120 km/h and the quarter mile (0–60 and 50–70 mph in imperial), timed from the car's speed, with a start-light countdown, trap speed and your best times. The quarter mile is worked out from speed, so it's marked as an estimate.
+- **Choose your readouts.** Pick which readings fill the Dashboard's main readouts (two on the liveries and Race telemetry, three on the Digital cockpit and Cyberpunk) under **Diagnostics → Dashboard readouts**.
+- **Wider car coverage.** When a car leaves out a reading, the app uses a close standard one where there is one (accelerator pedal position for throttle, or the car's other coolant sensor) and labels it for what it is. **Diagnostics → Scan what your car reports** lists every standard reading your car reports and, for Ford-built cars, tries a few known Ford readings. Share the scan to help add readings for your car. Like everything else, the scan only reads.
+- **Metric or imperial.** Choose km/h or mph and °C or °F separately under **Diagnostics → Units**. The Dashboard, Graphs, Android Auto, trip summaries, drive cards, video overlays and timers all follow it.
+- **N/A instead of guesses.** A reading your car doesn't report, or stops answering, now says **N/A** everywhere it's shown, on the phone and in Android Auto, instead of a dash or the last number it had. One missed reply is common, so a reading only switches to N/A after three in a row.
+- Everything above works the same for every car; nothing is tied to one make or model except the Ford readings tried in the car scan.
+
 ## 1.7.7 (20 October 2026)
 - **Top speed this drive.** The highest speed since you connected now shows beside the speed in every style: in the corner of the speed panel on the liveries, under km/h on Race telemetry and the Digital cockpit, and beside KM/H on Cyberpunk. It's on the Android Auto speed tile and in the driving score card too.
 - A speed only counts once two readings in a row reach it, so a single glitched reading can't set a top speed you never drove. It resets when you connect again; turning the ignition off and on mid-drive doesn't reset it.

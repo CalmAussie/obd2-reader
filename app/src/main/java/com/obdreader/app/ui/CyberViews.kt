@@ -52,7 +52,10 @@ class CyberHudView @JvmOverloads constructor(context: Context, attrs: AttributeS
     private val seg = Path()
     private var scanlines = FloatArray(0)
 
-    /** The drive's top speed, shown beside KM/H. */
+    /** The speed unit under the digits: km/h or mph. */
+    var speedUnit = "km/h"
+
+    /** The drive's top speed, shown beside the unit. */
     var top: Float? = null
         set(v) { if (field != v) { field = v; invalidate() } }
 
@@ -162,7 +165,7 @@ class CyberHudView @JvmOverloads constructor(context: Context, attrs: AttributeS
         number.color = fg
         canvas.drawText(s, W / 2f, 196f, number)
         label.textSize = 10f; label.color = cyan
-        canvas.drawText("KM/H", W / 2f, 214f, label)
+        canvas.drawText(speedUnit.uppercase(Locale.US), W / 2f, 214f, label)
         top?.let {
             label.color = magenta; label.textAlign = Paint.Align.RIGHT
             canvas.drawText("TOP ${it.roundToInt()}", W - 22f, 214f, label)
@@ -272,9 +275,9 @@ class CyberChipView(
         label.color = magenta
         canvas.drawText(name.uppercase(Locale.US), pad, dp(20f), label)
         number.color = if (hot) red else fg
-        val text = if (unsupported) "n/a" else shown?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
+        val text = if (unsupported) "N/A" else shown?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
         canvas.drawText(text, pad, dp(46f), number)
-        canvas.drawText(unit, pad + number.measureText(text) + dp(4f), dp(46f), unitPaint)
+        if (!unsupported) canvas.drawText(unit, pad + number.measureText(text) + dp(4f), dp(46f), unitPaint)
 
         // Ten segments along the bottom.
         val f = shown?.let { ((it - min) / (max - min)).coerceIn(0f, 1f) } ?: 0f

@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.obdreader.app.obd.DemoTransport
 import com.obdreader.app.obd.Pids
+import com.obdreader.app.obd.Units
 import com.obdreader.app.session.DriveScorer
 import com.obdreader.app.session.ObdSession
 import com.obdreader.app.ui.SmoothValue
@@ -45,8 +46,11 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
 
     private val tiles: List<Tile> by lazy {
         fun pid(n: Int) = Pids.dashboard.first { it.number == n }
+        // In the chosen units (mph, °F), like the phone.
         fun tile(n: Int, title: String, max: Float? = null) = pid(n).let {
-            Tile(it.hex, title, it.unit, it.decimals, it.min.toFloat(), max ?: it.max.toFloat(), it.warnAbove?.toFloat())
+            val k = it.hex
+            fun u(v: Double) = Units.value(k, v).toFloat()
+            Tile(k, title, Units.unit(k, it.unit), it.decimals, u(it.min), max?.let { m -> u(m.toDouble()) } ?: u(it.max), it.warnAbove?.let { w -> u(w) })
         }
         listOf(
             tile(Pids.RPM, "Engine speed"),
@@ -93,7 +97,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
         val now = SystemClock.uptimeMillis()
         val items = ItemList.Builder()
         tiles.forEachIndexed { i, t ->
-            val raw = s.readings[t.key]
+            val raw = Units.value(t.key, s.readings[t.key])
             t.smooth.set(raw?.toFloat())
             t.smooth.step(now)
             val shown = if (raw == null) null else t.smooth.shown
@@ -104,7 +108,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
                 unsupported -> "Not supported"
                 high -> "High"
                 // The drive's top speed under the speed (tile text can change freely; only titles must stay fixed).
-                t.key == HEX_SPEED && DriveScorer.topSpeed.value != null -> "Top ${DriveScorer.topSpeed.value!!.roundToInt()} ${t.unit}"
+                t.key == HEX_SPEED && DriveScorer.topSpeed.value != null -> "Top ${Units.speed(DriveScorer.topSpeed.value!!).roundToInt()} ${t.unit}"
                 else -> t.unit
             }
             val image = if (t.key == HEX_RPM) {
@@ -112,7 +116,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
             } else {
                 CarLivery.readingTile(
                     carContext,
-                    value = if (unsupported) "n/a" else shown?.let { String.format(Locale.US, "%.${t.decimals}f", it) } ?: "—",
+                    value = if (unsupported) "N/A" else shown?.let { String.format(Locale.US, "%.${t.decimals}f", it) } ?: "—",
                     fraction = shown?.let { ((it - t.min) / (t.max - t.min)).coerceIn(0f, 1f) },
                     high = high,
                 )

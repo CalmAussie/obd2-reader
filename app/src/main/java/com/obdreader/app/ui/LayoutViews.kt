@@ -170,7 +170,11 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
         invalidate()
     }
 
-    /** The drive's top speed, shown under km/h. */
+    /** Top of the speed ring (240 km/h, or 150 mph) and its unit. */
+    var speedMax = 240f
+    var speedUnit = "km/h"
+
+    /** The drive's top speed, shown under the unit. */
     var top: Float? = null
         set(v) { if (field != v) { field = v; invalidate() } }
 
@@ -208,7 +212,7 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
         arc.strokeWidth = 8f
         arc.color = track
         canvas.drawArc(inner, a0, sweep, false, arc)
-        val fs = ((speed ?: 0f) / 240f).coerceIn(0f, 1f)
+        val fs = ((speed ?: 0f) / speedMax).coerceIn(0f, 1f)
         if (fs > 0.003f) {
             arc.shader = gradient
             arc.alpha = 70
@@ -220,7 +224,7 @@ class CockpitRingView @JvmOverloads constructor(context: Context, attrs: Attribu
             arc.shader = null
         }
         canvas.drawText(speed?.roundToInt()?.toString() ?: "—", 130f, 138f, big)
-        canvas.drawText("km/h", 130f, 164f, small)
+        canvas.drawText(speedUnit, 130f, 164f, small)
         top?.let { canvas.drawText("Top ${it.roundToInt()}", 130f, 184f, small) }
         canvas.drawText(rpm?.let { String.format(Locale.US, "%,d rpm", ((it / 10f).roundToInt() * 10)) } ?: "— rpm", 130f, 212f, rpmText)
         canvas.restore()

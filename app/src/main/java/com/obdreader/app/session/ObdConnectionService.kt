@@ -96,11 +96,11 @@ class ObdConnectionService : Service() {
     }
 
     private fun liveSummary(s: ObdSession.State): String {
-        fun v(hex: String, unit: String) = s.readings[hex]?.let { String.format(Locale.US, "%,.0f %s", it, unit) }
+        fun v(hex: String, unit: String) = s.readings[hex]?.let { String.format(Locale.US, "%,.0f %s", com.obdreader.app.obd.Units.value(hex, it), unit) }
         return listOfNotNull(
             v(Pids.dashboard.first { it.number == Pids.RPM }.hex, "rpm"),
-            v(Pids.dashboard.first { it.number == Pids.SPEED }.hex, "km/h"),
-            v("05", "°C coolant"),
+            v(Pids.dashboard.first { it.number == Pids.SPEED }.hex, com.obdreader.app.obd.Units.speedUnit),
+            v("05", "${com.obdreader.app.obd.Units.temperatureUnit} coolant"),
         ).joinToString(" · ").ifEmpty { "Reading live data…" }
     }
 

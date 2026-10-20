@@ -68,6 +68,10 @@ class DecalView(
 
     private var unsupported = false
 
+    /** Shown instead of the usual label, for a stand-in reading ("Accelerator pedal" for throttle). */
+    var labelOverride: String? = null
+        set(v) { if (field != v) { field = v; invalidate() } }
+
     /** The drive's top speed, shown in the corner of the wide speed decal. */
     var top: Double? = null
         set(v) { if (field != v) { field = v; invalidate() } }
@@ -81,7 +85,7 @@ class DecalView(
         invalidate()
     }
 
-    /** The car doesn't report this reading: shows "n/a" instead of a dash that looks like it's still loading. */
+    /** The car doesn't report this reading: shows "N/A" rather than a dash that looks like it's still loading, or a made-up number. */
     fun setUnsupported() {
         unsupported = true
         contentDescription = "$label not reported by this car"
@@ -112,17 +116,17 @@ class DecalView(
         val moving = smooth.step()
         val shownValue = value?.let { smooth.shown.toDouble() }
         val x = o * 0.55f + dp(20f)
-        canvas.drawText(label, x, dp(26f), labelPaint)
+        canvas.drawText(labelOverride ?: label, x, dp(26f), labelPaint)
         top?.takeIf { wide }?.let {
             labelPaint.textAlign = Paint.Align.RIGHT
             canvas.drawText("Top ${it.roundToInt()} $unit", width - dp(20f), dp(26f), labelPaint)
             labelPaint.textAlign = Paint.Align.LEFT
         }
-        val v = if (unsupported) "n/a" else fmt(shownValue, decimals)
+        val v = if (unsupported) "N/A" else fmt(shownValue, decimals)
         valuePaint.color = if (hot) danger else text
         val baseline = if (wide) h - dp(20f) else dp(64f)
         canvas.drawText(v, x - o * 0.25f, baseline, valuePaint)
-        canvas.drawText(unit, x - o * 0.25f + valuePaint.measureText(v) + dp(5f), baseline, unitPaint)
+        if (!unsupported) canvas.drawText(unit, x - o * 0.25f + valuePaint.measureText(v) + dp(5f), baseline, unitPaint)
         if (!wide) {
             val y = h - dp(14f)
             val left = x - o * 0.4f
@@ -156,6 +160,10 @@ class TowerRowView(
     private var value: Double? = null
     private val smooth = SmoothValue(tauMs = 120f, settle = 0.4f * Math.pow(10.0, -decimals.toDouble()).toFloat())
     private var unsupported = false
+
+    /** Shown instead of the usual label, for a stand-in reading ("Accelerator pedal" for throttle). */
+    var labelOverride: String? = null
+        set(v) { if (field != v) { field = v; invalidate() } }
     private val history = ArrayDeque<Double>()
     private var lastPushMs = 0L
     private val skew = context.skewDegrees()
@@ -250,13 +258,13 @@ class TowerRowView(
         val x = tabW + dp(14f)
         val right = w - dp(14f)
         val top = if (layout == DashLayout.TELEMETRY) dp(28f) else dp(30f)
-        canvas.drawText(label, x, top, labelPaint)
-        val unitW = unitPaint.measureText(unit)
-        canvas.drawText(unit, right, top, unitPaint)
+        canvas.drawText(labelOverride ?: label, x, top, labelPaint)
+        val unitW = if (unsupported) 0f else unitPaint.measureText(unit)
+        if (!unsupported) canvas.drawText(unit, right, top, unitPaint)
         valuePaint.color = if (hot) danger else text
         val moving = smooth.step()
         val shownValue = value?.let { smooth.shown.toDouble() }
-        canvas.drawText(if (unsupported) "n/a" else fmt(shownValue, decimals), right - unitW - dp(4f), top + dp(1f), valuePaint)
+        canvas.drawText(if (unsupported) "N/A" else fmt(shownValue, decimals), right - unitW - dp(4f), top + dp(1f), valuePaint)
 
         val f = shownValue?.let { ((it - min) / (max - min)).coerceIn(0.0, 1.0).toFloat() } ?: 0f
         when (layout) {

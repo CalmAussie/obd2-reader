@@ -21,6 +21,9 @@ object AppPrefs {
     const val HOST = "wifi_host"
     const val PORT = "wifi_port"
     const val AUTO_RECONNECT = "auto_reconnect"
+    const val ALERTS = "alerts"
+    const val UNITS_MPH = "units_mph"
+    const val UNITS_FAHRENHEIT = "units_fahrenheit"
 
     const val TYPE_CLASSIC = "classic"
     const val TYPE_BLE = "ble"
@@ -33,6 +36,14 @@ object AppPrefs {
 
     /** "Reconnect automatically": on unless the user turns it off. */
     fun autoReconnect(prefs: SharedPreferences): Boolean = prefs.getBoolean(AUTO_RECONNECT, true)
+
+    fun alerts(prefs: SharedPreferences): Boolean = prefs.getBoolean(ALERTS, true)
+
+    /** Loads the chosen units (km/h or mph, °C or °F) for display. */
+    fun applyUnits(prefs: SharedPreferences) {
+        com.obdreader.app.obd.Units.mph = prefs.getBoolean(UNITS_MPH, false)
+        com.obdreader.app.obd.Units.fahrenheit = prefs.getBoolean(UNITS_FAHRENHEIT, false)
+    }
 
     fun savedCar(prefs: SharedPreferences): VehicleCatalog.Car? {
         val make = prefs.getString(CAR_MAKE, null) ?: return null

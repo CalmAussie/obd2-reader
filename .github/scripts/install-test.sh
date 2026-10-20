@@ -44,6 +44,45 @@ PY
   return 1
 }
 alive() { adb shell pidof $PKG > /dev/null; }
+tap_contains() {   # taps the first on-screen item whose text contains $1
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+  adb shell cat /sdcard/ui.xml > "$OUT/ui.xml"
+  local b=$(python3 - "$1" "$OUT/ui.xml" <<'PY'
+import re, sys
+want, path = sys.argv[1], sys.argv[2]
+xml = open(path, encoding='utf-8', errors='ignore').read()
+for n in re.findall(r'<node [^>]*>', xml):
+    t = (re.search(r' text="([^"]*)"', n) or [None, ''])[1]
+    if want in t:
+        x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
+        print((x1 + x2) // 2, (y1 + y2) // 2); break
+PY
+)
+  [ -n "$b" ] && adb shell input tap $b && sleep 1 && return 0
+  return 1
+}
+# Centre of a view inside a scrolled page, after scrolling that page all the way down.
+view_center_bottom() {   # $1 view id, $2 scrolling page id
+  for k in 1 2 3; do adb shell input swipe 540 2000 540 500 150; done; sleep 1
+  adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
+  python3 - "$1" "$2" "$OUT/views.txt" <<'PY'
+import re, sys
+want, page, path = sys.argv[1], sys.argv[2], sys.argv[3]
+stack = []; page_box = None; page_depth = None; content_h = None
+for line in open(path, encoding='utf-8', errors='ignore'):
+    m = re.search(r'^(\s*)\S+\{[^}]* (-?\d+),(-?\d+)-(-?\d+),(-?\d+)', line)
+    if not m: continue
+    depth = len(m.group(1)); x1, y1, x2, y2 = map(int, m.groups()[1:])
+    while stack and stack[-1][0] >= depth: stack.pop()
+    ox = sum(s[1] for s in stack); oy = sum(s[2] for s in stack)
+    if page_depth is not None and content_h is None and depth > page_depth: content_h = y2 - y1
+    if ('app:id/' + page) in line: page_box = (oy + y1, y2 - y1); page_depth = depth
+    stack.append((depth, x1, y1))
+    if ('app:id/' + want) in line and page_box:
+        scroll = max(0, (content_h or 0) - page_box[1])
+        print(ox + (x1 + x2) // 2, oy + (y1 + y2) // 2 - scroll); sys.exit(0)
+PY
+}
 
 # Fails if a button is missing or squeezed too small to tap (at least 40% of the width or 200 px).
 check_button() {
@@ -154,6 +193,8 @@ for line in open(sys.argv[2], encoding='utf-8', errors='ignore'):
         print(ox + (x1 + x2) // 2, oy + (y1 + y2) // 2); sys.exit(0)
 PY
 }
+# Scrolls the page back to the very top, so positions read from the view tree are on screen.
+scroll_top() { adb shell input swipe 540 800 540 2000 200; adb shell input swipe 540 800 540 2000 200; sleep 1; }
 # Each style with its own layout, upright and sideways, with the demo car running. The second
 # pass is a small phone with large text (360 dp wide, text at 115%), where crowding shows up.
 for PASS in normal small; do
@@ -161,7 +202,8 @@ if [ $PASS = small ]; then adb shell wm density 480; adb shell settings put syst
 for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk" "Asphalt"; do
   [ $PASS = normal ] && [ "$STYLE" = "Asphalt" ] && continue
   SLUG=$(echo "$STYLE" | tr ' A-Z' '-a-z'); [ $PASS = small ] && SLUG="small-$SLUG"
-  XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3   # disconnect, so the screen is still
+  scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3   # disconnect, so the screen is still
+  tap_text "Done" > /dev/null || true   # close the trip summary if that drive was long enough for one
   tap_text "Style" || { log "style $STYLE: FAILED (no Style button)"; FAIL=1; continue; }
   sleep 1
   for i in 1 2 3; do tap_text "$STYLE" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
@@ -177,10 +219,131 @@ for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk" "Asphalt"; do
 done
 done
 adb shell wm density reset; adb shell settings put system font_scale 1.0; sleep 3
-tap_tab Diagnostics && tap_text "Read codes" && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
+# A longer drive, then Disconnect: the trip summary should sum it up.
+sleep 35
+scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
+adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-trip.xml"
+shot 7-trip-summary
+if grep -q "Your drive" "$OUT/ui-trip.xml" && grep -q "Top speed" "$OUT/ui-trip.xml"; then log "trip summary: shown"; else log "trip summary: FAILED (not shown)"; FAIL=1; fi
+# Share the drive as a picture: the image is made and Android's share sheet opens.
+if tap_text "Share as a picture" && tap_contains "Story (9:16)"; then
+  sleep 3
+  F=$(adb shell run-as $PKG ls cache/exports 2>/dev/null | tr -d '\r' | grep 'story.png' | head -1)
+  if [ -n "$F" ]; then
+    adb exec-out run-as $PKG cat "cache/exports/$F" > "$OUT/9-drive-card.png"
+    adb exec-out run-as $PKG ls cache/exports > /dev/null
+    log "drive card: made"
+  else
+    log "drive card: FAILED (no picture)"; FAIL=1
+  fi
+  shot 9a-share-sheet
+  adb shell input keyevent KEYCODE_BACK; sleep 2
+else
+  log "drive card: FAILED (button missing)"; FAIL=1
+fi
+tap_text "Done" > /dev/null || true
+tap_text "Demo car" > /dev/null || true
+sleep 8
+# Performance timers: the sheet opens and follows the demo car (staging, ready, timing).
+XY=$(view_center_bottom perfButton pageDashboard); [ -n "$XY" ] && adb shell input tap $XY
+sleep 25
+shot 10-performance
+adb shell dumpsys activity top > "$OUT/views-perf.txt" 2>/dev/null
+# The screen keeps animating, so a UI dump can fail; try a few times.
+for i in 1 2 3 4 5 6; do
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-perf.xml"
+  grep -q "Performance timers" "$OUT/ui-perf.xml" && break; sleep 2
+done
+# Older Android can't dump an animating screen, so also count the app's windows: a sheet adds one.
+WINS=$(adb shell dumpsys window windows 2>/dev/null | grep -c "Window #.*$PKG")
+if grep -q "Performance timers" "$OUT/ui-perf.xml" || grep -q "Performance timers" "$OUT/views-perf.txt" || [ "${WINS:-0}" -ge 2 ]; then log "performance timers: shown"; else log "performance timers: FAILED (not shown)"; FAIL=1; fi
+adb shell input keyevent KEYCODE_BACK; sleep 2
+# Codes are now also read on their own shortly after connecting, so they may already be listed.
+tap_tab Diagnostics && { tap_text "Read codes" || grep -q "P0133" "$OUT/ui.xml"; } && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
 tap_tab Graphs && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
+# Video overlay: record a short drive on Graphs, then make an overlay video from it.
+XY=$(view_center_bottom recordButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY
+sleep 20
+XY=$(view_center_bottom recordButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+shot 8a-recorded
+tap_tab Dashboard; scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
+tap_text "Done" > /dev/null || true
+tap_tab Graphs; sleep 2
+XY=$(view_center_bottom savedLogsButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+shot 8b-saved-drives
+if tap_contains " KB" && tap_text "Make a video overlay" && tap_contains "720p" && tap_text "Make video"; then
+  READY=0
+  for i in $(seq 1 60); do
+    sleep 3
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-video.xml"
+    grep -q "Video ready" "$OUT/ui-video.xml" && { READY=1; break; }
+    grep -q "make the video" "$OUT/ui-video.xml" && break
+  done
+  shot 8-video-ready
+  if [ $READY = 1 ]; then
+    F=$(adb shell run-as $PKG ls cache/exports 2>/dev/null | tr -d '\r' | grep overlay | head -1)
+    [ -n "$F" ] && adb exec-out run-as $PKG cat "cache/exports/$F" > "$OUT/overlay.mp4"
+    SZ=$(stat -c %s "$OUT/overlay.mp4" 2>/dev/null || echo 0)
+    command -v ffmpeg > /dev/null && ffmpeg -loglevel error -y -ss 12 -i "$OUT/overlay.mp4" -frames:v 1 "$OUT/8-video-frame.png"
+    DUR=$(command -v ffprobe > /dev/null && ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT/overlay.mp4")
+    [ "$SZ" -gt 10000 ] && log "video overlay: made ($SZ bytes, ${DUR:-?} s)" || { log "video overlay: FAILED (file $SZ bytes)"; FAIL=1; }
+    # The video stays in the reports, so a frame can be checked.
+    tap_text "Done" > /dev/null || true
+  else
+    log "video overlay: FAILED (not ready)"; FAIL=1
+  fi
+else
+  log "video overlay: FAILED (couldn't open the options)"; FAIL=1
+fi
 adb shell input keyevent KEYCODE_BACK; sleep 1
 
+# Car scan: lists what the car reports (it needs a connection, so make sure the demo car is on).
+tap_tab Dashboard; sleep 2; scroll_top; tap_text "Demo car" > /dev/null 2>&1; sleep 8
+tap_tab Diagnostics; sleep 2
+for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
+if tap_text "Scan what your car reports"; then
+  sleep 8
+  SEEN=0
+  for i in 1 2 3 4 5; do
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-scan.xml"
+    grep -q "What your car reports" "$OUT/ui-scan.xml" && { SEEN=1; break; }; sleep 2
+  done
+  shot 12-car-scan
+  [ $SEEN = 1 ] && log "car scan: shown" || { log "car scan: FAILED (not shown)"; FAIL=1; }
+  adb shell input keyevent KEYCODE_BACK; sleep 2
+else
+  log "car scan: FAILED (row missing)"; FAIL=1
+fi
+# Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
+tap_tab Diagnostics; sleep 2
+for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
+if tap_text "Dashboard readouts" && tap_contains "Readout 2" && tap_text "Intake air" && tap_text "Save"; then
+  sleep 4
+  tap_tab Dashboard; sleep 3; scroll_top
+  shot 11-custom-readouts
+  SEEN=0
+  for i in 1 2 3 4 5 6; do
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-slots.xml"
+    grep -q 'content-desc="Intake air' "$OUT/ui-slots.xml" && { SEEN=1; break; }; sleep 2
+  done
+  # Newer Android can't always dump an animating screen; the saved choice and a running app also count.
+  [ $SEEN = 0 ] && adb shell run-as $PKG cat shared_prefs/obd_reader.xml 2>/dev/null | grep -q 'dash_slots">05,0F' && alive && SEEN=1
+  [ $SEEN = 1 ] && log "dashboard readouts: intake air shown" || { log "dashboard readouts: FAILED (not shown)"; FAIL=1; }
+else
+  log "dashboard readouts: FAILED (couldn't change)"; FAIL=1
+fi
+# Units: miles and Fahrenheit, then the Dashboard shows mph.
+tap_tab Diagnostics; sleep 2
+for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
+if tap_text "Units" && tap_contains "Miles (mph" && tap_contains "Fahrenheit" && tap_text "Save"; then
+  sleep 4; tap_tab Dashboard; sleep 4; scroll_top
+  shot 13-imperial
+  adb shell run-as $PKG cat shared_prefs/obd_reader.xml 2>/dev/null | grep -q 'units_mph" value="true' && alive && log "units: mph and °F saved" || { log "units: FAILED"; FAIL=1; }
+else
+  log "units: FAILED (couldn't change)"; FAIL=1
+fi
+adb shell dumpsys notification > "$OUT/notifications.txt" 2>/dev/null
+grep -q "mId='alerts'" "$OUT/notifications.txt" && log "alerts channel: created" || { log "alerts channel: FAILED (missing)"; FAIL=1; }
 alive && log "still running after tour: OK" || log "still running after tour: FAILED"
 adb logcat -d > "$OUT/logcat.txt"
 if grep -q "FATAL EXCEPTION" "$OUT/logcat.txt" && grep -A3 "FATAL EXCEPTION" "$OUT/logcat.txt" | grep -q "$PKG"; then

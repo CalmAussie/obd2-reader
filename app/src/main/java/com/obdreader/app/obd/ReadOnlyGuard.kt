@@ -13,8 +13,12 @@ import java.util.Locale
  */
 object ReadOnlyGuard {
 
-    /** OBD2 services that only read: live data, freeze frame, stored, test results, pending, vehicle info, permanent codes. */
-    private val READ_SERVICES = setOf("01", "02", "03", "06", "07", "09", "0A")
+    /**
+     * Services that only read: OBD2's live data, freeze frame, stored codes, test results, pending
+     * codes, vehicle info and permanent codes, plus the two manufacturer "read data" services
+     * (21, ReadDataByLocalIdentifier, and 22, ReadDataByIdentifier) used for enhanced readings.
+     */
+    private val READ_SERVICES = setOf("01", "02", "03", "06", "07", "09", "0A", "21", "22")
 
     fun isAllowed(command: String): Boolean {
         val cmd = command.replace(" ", "").uppercase(Locale.US)
