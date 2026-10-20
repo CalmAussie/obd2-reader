@@ -34,4 +34,11 @@ class ReadOnlyGuardTest {
         assertFalse(ReadOnlyGuard.isAllowed(" 0 4 "))
         assertTrue(ReadOnlyGuard.isAllowed("01 0c"))
     }
+
+    @Test fun manufacturerReadsAreAllowed() {
+        assertTrue(ReadOnlyGuard.isAllowed("221310"))
+        assertTrue(ReadOnlyGuard.isAllowed("22F42F"))
+        assertTrue(ReadOnlyGuard.isAllowed("2101"))
+        assertTrue(ReadOnlyGuard.isAllowed("ATSH C410F1"))
+    }
 }

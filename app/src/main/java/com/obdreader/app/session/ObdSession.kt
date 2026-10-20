@@ -10,6 +10,8 @@ import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import com.obdreader.app.obd.AdapterTimeoutException
 import com.obdreader.app.obd.ThrottleCalibration
+import com.obdreader.app.obd.CarCoverage
+import com.obdreader.app.obd.ElmParser
 import com.obdreader.app.obd.BleTransport
 import com.obdreader.app.obd.BluetoothTransport
 import com.obdreader.app.obd.DemoTransport
@@ -76,6 +78,8 @@ object ObdSession {
         /** Latest values keyed by PID hex (e.g. "0C") or [VOLTAGE_KEY]; null means the car didn't answer. */
         val readings: Map<String, Double?> = emptyMap(),
         val unsupported: Set<String> = emptySet(),
+        /** Readings shown through a stand-in, with the stand-in's name ("11" to "Accelerator pedal"). */
+        val standIns: Map<String, String> = emptyMap(),
         val protocolCode: String? = null,
         val summary: String? = null,
         val vin: String? = null,
@@ -93,6 +97,9 @@ object ObdSession {
     const val VOLTAGE_KEY = "VOLT"
     const val IDLE_HINT = "Plug your adapter into the car and turn the ignition on, or try demo mode."
     private const val MAX_LOG_LINES = 200
+    private const val FIRST_CODE_CHECK_MS = 8_000L
+    private const val MISSES_BEFORE_NA = 3
+    private const val CODE_CHECK_MS = 120_000L
 
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
@@ -280,8 +287,16 @@ object ObdSession {
         val extra = if (supported == null) emptySet() else Pids.dashboard.filter { it.number !in supported }.filter { p ->
             try { c.readPid(p) != null } catch (e: AdapterTimeoutException) { false }
         }.map { it.number }.toSet()
-        val pids: List<Pid> = Pids.dashboard.filter { supported == null || it.number in supported || it.number in extra }
-        _state.update { s -> s.copy(unsupported = Pids.dashboard.filter { it !in pids }.map { it.hex }.toSet()) }
+        val base: List<Pid> = Pids.dashboard.filter { supported == null || it.number in supported || it.number in extra }
+        // Stand-ins: a close standard reading for a dashboard one the car leaves out.
+        val standIns = if (supported == null) emptyList() else CarCoverage.standInsFor(supported + extra)
+        standIns.forEach { appendLog("= Using ${it.note}") }
+        standInFor = standIns.associate { it.pid.hex to it.forHex }
+        misses.clear()
+        _state.update { it.copy(standIns = standIns.associate { s -> s.forHex to s.pid.label }) }
+        val pids = base + standIns.map { it.pid }
+        val covered = base.map { it.hex }.toSet() + standIns.map { it.forHex }
+        _state.update { s -> s.copy(unsupported = Pids.dashboard.map { it.hex }.filter { it !in covered }.toSet()) }
 
         while (currentCoroutineContext().isActive) {
             try {
@@ -374,6 +389,38 @@ object ObdSession {
         return codes
     }
 
+    /** Readings arriving under one key that stand in for another (accelerator pedal for throttle, say). */
+    private var standInFor: Map<String, String> = emptyMap()
+    private val misses = mutableMapOf<String, Int>()
+
+    /** What the car scan found: the standard readings the car lists, and which manufacturer readings answered. */
+    data class Scan(val supported: Set<Int>, val enhanced: List<Pair<CarCoverage.Enhanced, String?>>)
+
+    /**
+     * Asks the car which standard readings it supports, and tries a few known manufacturer
+     * readings (read-only service 22). Live data carries on in between.
+     */
+    suspend fun scanCar(context: Context): Scan {
+        val c = client ?: throw IOException("Not connected")
+        val supported = try { c.supportedPids().orEmpty() } catch (e: AdapterTimeoutException) { emptySet() }
+        val protocol = _state.value.protocolCode
+        val probes = CarCoverage.enhancedFor(carMake(context), AppPrefs.savedCar(AppPrefs.of(context))?.model, protocol)
+        val answers = mutableListOf<Pair<CarCoverage.Enhanced, String?>>()
+        var header: String? = null
+        try {
+            for (p in probes) {
+                if (p.header != null && p.header != header) { c.command("ATSH ${p.header}"); header = p.header }
+                val lines = try { c.command(p.request, 2000) } catch (e: AdapterTimeoutException) { emptyList() }
+                val data = if (ElmParser.errorIn(lines) == null) ElmParser.extractData(lines, "62" + p.request.substring(2)) else null
+                answers += p to data?.joinToString(" ") { String.format(Locale.US, "%02X", it) }
+            }
+        } finally {
+            // Back to the usual header for live data.
+            if (header != null) CarCoverage.defaultHeader(protocol)?.let { try { c.command("ATSH $it") } catch (ignored: Exception) {} }
+        }
+        return Scan(supported, answers)
+    }
+
     suspend fun readVin(): String? {
         val c = client ?: throw IOException("Not connected")
         val vin = c.readVin()
@@ -407,6 +454,9 @@ object ObdSession {
         var cycle = 0
         var timeouts = 0
         val rateWindow = ArrayDeque<Long>()
+        // Trouble codes are checked shortly after connecting and then every two minutes, so a code
+        // that appears mid-drive shows up (and can raise an alert) without tapping Read codes.
+        var nextCodeCheck = SystemClock.elapsedRealtime() + FIRST_CODE_CHECK_MS
 
         while (currentCoroutineContext().isActive) {
             val focused = focus
@@ -445,6 +495,21 @@ object ObdSession {
                 if (++timeouts >= 5) throw IOException("The adapter stopped responding.")
             }
 
+            // Counted before missed replies are held back, so the ignition-off check sees every request.
+            val asked = values.size
+            // Stand-in readings take the place of the dashboard reading they stand in for.
+            standInFor.forEach { (from, to) -> if (from in values) values[to] = values.remove(from) }
+            // A reading the car didn't answer keeps its last value for a couple of tries (one missed
+            // reply is common); after that it's cleared, so the app says N/A instead of an old number.
+            for (k in values.keys.toList()) {
+                if (values[k] == null) {
+                    val n = (misses[k] ?: 0) + 1
+                    misses[k] = n
+                    if (n < MISSES_BEFORE_NA) values.remove(k)
+                } else {
+                    misses.remove(k)
+                }
+            }
             values[ThrottleCalibration.KEY]?.let { raw ->
                 values[ThrottleCalibration.KEY] = throttle.adjust(raw)
                 if (throttle.changed) throttleKey?.let { k -> appContext?.let { AppPrefs.of(it).edit().putFloat(k, throttle.closed!!.toFloat()).apply() } }
@@ -461,8 +526,16 @@ object ObdSession {
             val rate = rateWindow.size / 3.0
             if (values.isNotEmpty()) _state.update { it.copy(readings = it.readings + values, rate = rate) }
 
-            if (watch.cycle(answered, values.size)) throw IgnitionOffException()
+            if (watch.cycle(answered, asked)) throw IgnitionOffException()
 
+            if (SystemClock.elapsedRealtime() >= nextCodeCheck) {
+                nextCodeCheck = SystemClock.elapsedRealtime() + CODE_CHECK_MS
+                try {
+                    val codes = Codes(c.readDtcs(pending = false), c.readDtcs(pending = true))
+                    _state.update { it.copy(codes = codes) }
+                } catch (ignored: AdapterTimeoutException) {
+                }
+            }
             if (slowTurn) {
                 try {
                     c.readVoltage()?.let { v ->

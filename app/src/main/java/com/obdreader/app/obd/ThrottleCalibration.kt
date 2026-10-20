@@ -4,8 +4,7 @@ package com.obdreader.app.obd
  * Turns the car's throttle reading into how far the throttle is actually open.
  *
  * OBD2's throttle position (PID 11) is the raw sensor, and almost no car reads 0% with the
- * throttle closed: most sit somewhere around 10–20% at idle (a 2006 Tribute is typically about
- * 15%), and a few never reach 100% even flat out. So with your foot off the pedal at a red light,
+ * throttle closed: most sit somewhere around 10–20% at idle, and a few never reach 100% even flat out. So with your foot off the pedal at a red light,
  * the raw value still "shows throttle".
  *
  * This learns the closed position as the lowest reading seen (remembered between drives), and

@@ -75,6 +75,7 @@ class SmoothText(
     private val format: (Float) -> String,
 ) {
     private val value = SmoothValue(tauMs, settle)
+    private var fixed: String? = null
     private var running = false
     private val frame = object : Runnable {
         override fun run() {
@@ -85,6 +86,7 @@ class SmoothText(
     }
 
     fun set(v: Float?) {
+        fixed = null
         value.set(v)
         if (v == null || !view.isShown) {
             value.snap()
@@ -97,14 +99,16 @@ class SmoothText(
         }
     }
 
-    /** Shows fixed text instead of a number, such as "n/a" for a reading the car doesn't report. */
+    /** Shows fixed text instead of a number, such as "N/A" for a reading the car doesn't report. */
     fun showText(text: String) {
+        fixed = text
         value.set(null)
         if (view.text.toString() != text) view.text = text
     }
 
     private fun show() {
-        val text = if (value.target == null) blank else format(value.shown)
+        // Fixed text (N/A) stays put even if a frame was already queued.
+        val text = fixed ?: if (value.target == null) blank else format(value.shown)
         if (view.text.toString() != text) view.text = text
     }
 }

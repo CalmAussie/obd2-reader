@@ -52,6 +52,12 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics �
 ## What it does
 - **Live data:** RPM, speed, coolant, fuel, throttle, engine load, intake air, manifold pressure, MAF, timing advance, ambient and oil temperature, and battery voltage. Readings past their limit turn red.
 - **Top speed:** the highest speed of the current drive shows beside the speed, on the phone and in Android Auto.
+- **Trip summary:** distance, driving and idle time, average and top speed, best 0–100 and scores when each drive ends.
+- **Driving alerts:** sound, vibration and a notification (on Android Auto too) for a hot engine or oil, a battery not charging, overcharging or low, and new trouble codes. Switch off under **Diagnostics → Alerts**.
+- **Performance timers:** 0–100 km/h, 80–120 km/h and the quarter mile (an estimate, worked out from speed), or 0–60 and 50–70 mph, with your best times.
+- **Video overlay and drive cards:** turn a recorded drive into an MP4 gauge overlay for your video editor, or a drive into a picture card for Shorts, TikTok, Reels or Instagram.
+- **Your readouts, your units:** choose which readings fill the Dashboard's main readouts, and km/h or mph and °C or °F separately.
+- **N/A, never a guess:** a reading the car doesn't report, or stops answering, says N/A rather than a dash or an old number.
 - **Your car first:** the app asks for your car's make, year and model when you first open it, so manufacturer-specific trouble codes are explained for your brand, the rev dial uses your engine's redline, and your car's protocol is tried first. It then lists any readings that may not work on a car like yours, and why.
 - **Driving score:** rates the current drive out of 100 for **Efficiency**, **Everyday** driving or **Racing** (track days), with a score for each habit and a tip for what would help most.
 - **Graphs and drive logs:** live charts for up to four readings at once, fast multi-reading polling, and CSV recording of whole drives that you can share to Excel or Google Sheets. Drives are only recorded when you tap **Record drive**, and recordings are never included in backups.
@@ -101,7 +107,7 @@ Many cheap ELM327 clones can't speak J1850 PWM or VPW. If you have a 2000s Ford 
 | Electric cars | Often limited or no standard engine readings. Teslas have no standard OBD2 port |
 | Japanese-market imports | Some older ones use Japan's own standard and may not connect |
 
-**What can be read:** standard (generic) OBD2 data only: live engine readings, emissions-related trouble codes (P0, P2 and generic U codes are explained in full), and the VIN. Maker-specific systems such as ABS, airbags, transmission data and service resets need the maker's own tools.
+**What can be read:** standard (generic) OBD2 data: live engine readings, emissions-related trouble codes (P0, P2 and generic U codes are explained in full), and the VIN. When a car leaves out a reading, a close standard one is used where there is one, and labelled. **Diagnostics → Scan what your car reports** lists everything your car reports. Maker-specific systems such as ABS, airbags, transmission data and service resets need the maker's own tools.
 
 ## Styles
 Tap the palette icon on the Dashboard to choose a style. Your choice is saved. Every style also works in landscape: turn your phone sideways and the Dashboard puts the main dial on the left and the other readouts, Connect and status on the right. The first six are colourways of the livery dashboard; the last three each have a dashboard layout of their own.
@@ -128,7 +134,7 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 4. Reconnect to your car. OBD2 Reader appears in Android Auto's app list.
 
 ## Good to know
-- **Not every reading on every car:** cars only answer the readings they support, so some tiles may stay blank. The adapter log shows what the car supports.
+- **Not every reading on every car:** cars only answer the readings they support, so some readings say **N/A**. **Diagnostics → Scan what your car reports** shows what your car supports.
 - **Finding adapters on Android 11 and older** needs Location turned on while searching (an Android rule).
 
 ## For developers
@@ -149,8 +155,8 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 
 | Folder | What's in it |
 |---|---|
-| `obd/` | Adapter connections (Bluetooth, BLE, Wi-Fi, demo), the ELM327 client and parser, PIDs, protocols, trouble-code explanations, adapter-log translations, reconnect timing, the car catalogue and VIN decoder |
-| `session/` | The shared connection used by the phone and the car, the background service, graph history, drive recording and exports |
+| `obd/` | Adapter connections (Bluetooth, BLE, Wi-Fi, demo), the ELM327 client and parser, PIDs, protocols, trouble-code explanations, adapter-log translations, reconnect timing, the car catalogue and VIN decoder, plus the logic for trips, alerts, timers, units and car coverage |
+| `session/` | The shared connection used by the phone and the car, the background service, alerts, graph history, drive recording, the video overlay encoder and exports |
 | `ui/` | Styles and the custom views for each dashboard layout |
 | `car/` | The Android Auto screens |
 | `MainActivity.kt` | The Dashboard, Graphs and Diagnostics tabs, permissions and pickers |

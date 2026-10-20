@@ -113,7 +113,7 @@ class GraphStripView(
                 val t = series.times[i]
                 if (t in from..now) {
                     val v = series.values[i]
-                    times[n] = t; values[n] = v; n++
+                    times[n] = t; values[n] = com.obdreader.app.obd.Units.value(key, v); n++
                     if (v < vMin) vMin = v
                     if (v > vMax) vMax = v
                 }

@@ -569,6 +569,38 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 /* Top speed in the corner of the speed decal (mirrors DecalView.top) */
 #speedDecal { position: relative; }
 #speedDecal .top-sp { position: absolute; right: 22px; top: 14px; font-size: 13px; font-weight: 500; color: var(--fg-2); }
+
+/* Trip summary (mirrors MainActivity.showTripSummary) */
+.trip-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.trip-tiles > div { background: var(--panel-2, var(--panel)); box-shadow: inset 0 0 0 1px var(--line); border-radius: var(--r); padding: 12px 14px; min-width: 0; }
+.trip-tiles span { display: block; font-size: 12px; color: var(--fg-2); }
+.trip-tiles b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.trip-h { font-size: 15px; font-weight: 600; margin: 16px 0 6px; }
+.trip-scores { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--panel-2, var(--panel)); box-shadow: inset 0 0 0 1px var(--line); border-radius: var(--r); padding: 12px 0; text-align: center; }
+.trip-scores b { display: block; font-family: var(--ui); font-stretch: 125%; font-weight: 800; font-size: 26px; }
+.trip-scores span { font-size: 12px; color: var(--fg-2); }
+.trip-note { font-size: 13px; color: var(--fg-2); margin: 6px 0 0; }
+.trip-done { width: 100%; margin-top: 18px; height: 48px; border-radius: var(--r); background: var(--accent); color: var(--on-accent); font-weight: 600; }
+#lastTripBtn { margin: 6px 0 0; text-align: left; }
+
+/* Heads-up alert (mirrors the app's high-priority notification and Android Auto's heads-up card) */
+.hun { position: absolute; left: 12px; right: 12px; top: 40px; z-index: 20; background: #2A2C31; color: #F2F2F0; border-radius: 16px; padding: 12px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.45); animation: slide .25s both; border-left: 4px solid #FF3B30; }
+.hun b { display: block; font-size: 14px; }
+.hun span { display: block; font-size: 12.5px; color: #C9CBD0; margin-top: 2px; line-height: 1.4; }
+.car-hun { top: 12px; left: auto; right: 12px; width: 44%; }
+.trip-share { width: 100%; margin-top: 8px; height: 46px; border-radius: var(--r); box-shadow: inset 0 0 0 1px var(--line); color: var(--accent); font-weight: 600; }
+
+/* Performance timers */
+.perf-seg { display: grid; grid-template-columns: repeat(3, 1fr); }
+.perf-big { font-size: 72px; text-align: center; margin: 22px 0 4px; font-variant-numeric: tabular-nums; }
+.perf-st { text-align: center; color: var(--fg-2); font-size: 15px; margin-bottom: 14px; min-height: 20px; }
+.perf-hist { margin-top: 16px; font-size: 13px; color: var(--fg-2); }
+.perf-hist b { display: block; color: var(--fg); font-size: 15px; margin-bottom: 4px; }
+.perf-hist div { margin-top: 6px; }
+#perfSim { margin: 10px auto 0; display: block; }
+.scan-l { font-size: 13px; padding: 3px 0; font-variant-numeric: tabular-nums; }
+.scan-l.dim { color: var(--fg-2); }
+.perf-est { text-align: center; font-size: 13px; color: var(--amber, #FFB000); margin: -6px 0 12px; line-height: 1.4; }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -932,8 +964,8 @@ function drawCockpit(speed, rpm) {
     <path d="${arcPath(cx, cy, 88, a0, a0 + sw)}" fill="none" stroke="var(--track)" stroke-width="8" stroke-linecap="round"/>
     ${fs > 0.003 ? `<path d="${arcPath(cx, cy, 88, a0, a0 + sw * fs)}" fill="none" stroke="url(#cpG)" stroke-width="8" stroke-linecap="round" filter="url(#cpGlow)" opacity=".8"/><path d="${arcPath(cx, cy, 88, a0, a0 + sw * fs)}" fill="none" stroke="url(#cpG)" stroke-width="8" stroke-linecap="round"/>` : ""}
     <text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="78" font-weight="300" fill="var(--fg)" style="font-family:var(--ui);font-variant-numeric:tabular-nums;letter-spacing:-2px">${speed == null ? "—" : Math.round(speed)}</text>
-    <text x="${cx}" y="${cy + 44}" text-anchor="middle" font-size="14" fill="var(--fg-2)" style="font-family:var(--ui)">km/h</text>
-    ${window.topSpeedNow != null ? `<text x="${cx}" y="${cy + 64}" text-anchor="middle" font-size="14" fill="var(--fg-2)" style="font-family:var(--ui)">Top ${Math.round(window.topSpeedNow)}</text>` : ""}
+    <text x="${cx}" y="${cy + 44}" text-anchor="middle" font-size="14" fill="var(--fg-2)" style="font-family:var(--ui)">${window.SPEED_UNIT || "km/h"}</text>
+    ${window.topSpeedNow != null ? `<text x="${cx}" y="${cy + 64}" text-anchor="middle" font-size="14" fill="var(--fg-2)" style="font-family:var(--ui)">Top ${Math.round(uVal("0D", window.topSpeedNow))}</text>` : ""}
     <text x="${cx}" y="${cy + 92}" text-anchor="middle" font-size="15" fill="var(--fg)" style="font-family:var(--ui);font-variant-numeric:tabular-nums">${rpm == null ? "—" : fmtInt(rpm)} <tspan fill="var(--fg-2)" font-size="12">rpm</tspan></text>`;
 }
 
@@ -969,7 +1001,7 @@ function drawCyber(speed, rpm) {
     <text x="22" y="28" font-size="10" fill="#FF2BD6" style="font-weight:600;letter-spacing:.22em">SYS//TACH</text>
     <text x="${W - 22}" y="29" text-anchor="end" font-size="14" fill="${hot ? "var(--red)" : "#00F0FF"}" style="font-family:var(--ui);font-stretch:125%;font-weight:700;font-variant-numeric:tabular-nums">${rpm == null ? "—" : fmtInt(Math.round(rpm / 10) * 10)} RPM</text>
     ${segs}${scale}${big(W / 2 - 3, "rgba(255,43,214,.75)")}${big(W / 2 + 3, "rgba(0,240,255,.75)")}${big(W / 2, "var(--fg)")}
-    <text x="${W / 2}" y="214" text-anchor="middle" font-size="10" fill="#00F0FF" style="font-weight:600;letter-spacing:.22em">KM/H</text>${window.topSpeedNow != null ? `<text x="${W - 22}" y="214" text-anchor="end" font-size="10" fill="#FF2BD6" style="font-weight:600;letter-spacing:.22em">TOP ${Math.round(window.topSpeedNow)}</text>` : ""}${bars}`;
+    <text x="${W / 2}" y="214" text-anchor="middle" font-size="10" fill="#00F0FF" style="font-weight:600;letter-spacing:.22em">${(window.SPEED_UNIT || "km/h").toUpperCase()}</text>${window.topSpeedNow != null ? `<text x="${W - 22}" y="214" text-anchor="end" font-size="10" fill="#FF2BD6" style="font-weight:600;letter-spacing:.22em">TOP ${Math.round(uVal("0D", window.topSpeedNow))}</text>` : ""}${bars}`;
 }
 /* Neon readouts: value, plus a ten-segment bar (mirrors CyberChipView) */
 document.querySelectorAll(".cy-chip i").forEach(i => i.innerHTML = Array.from({ length: 10 }, (_, k) => `<u style="--m:${Math.round(k / 9 * 100)}%"></u>`).join(""));
@@ -1574,6 +1606,15 @@ $("viewPhone").onclick = () => showView(false);
 $("viewCar").onclick = () => showView(true);
 /* Android Auto limits how often a screen may redraw, so the car view refreshes about once a second */
 setInterval(() => { $("carClock").textContent = $("clock").textContent; renderCar(); }, 1000);
+/* ===== Units: km/h or mph, °C or °F, chosen separately (mirrors obd/Units.kt) ===== */
+var unitsMph = false, unitsF = false;
+try { unitsMph = localStorage.getItem("unitsMph") === "1"; unitsF = localStorage.getItem("unitsF") === "1"; } catch (e) {}
+window.SPEED_UNIT = unitsMph ? "mph" : "km/h";
+const TEMP_KEYS = ["05", "0F", "46", "5C"];
+const uVal = (k, v) => v == null ? v : k === "0D" && unitsMph ? v * 0.621371 : TEMP_KEYS.includes(k) && unitsF ? v * 9 / 5 + 32 : v;
+const uUnit = (k, u) => k === "0D" ? window.SPEED_UNIT : TEMP_KEYS.includes(k) ? (unitsF ? "°F" : "°C") : u;
+const uSpeedText = kmh => `${Math.round(uVal("0D", kmh))} ${window.SPEED_UNIT}`;
+
 /* ===== 1.2.0: Graphs tab, drive recording, detailed code cards, auto-reconnect (mirrors GraphStripView.kt, Telemetry.kt, DtcLibrary.kt, ObdSession.kt) ===== */
 const DTC = {"P0133": {"title": "Oxygen sensor slow response (bank 1, sensor 1)", "meaning": "The front oxygen sensor (before the catalytic converter), which the computer uses to set the fuel mixture, is reacting too slowly to changes in the exhaust. It's usually an ageing sensor.", "sev": "MEDIUM", "sevLabel": "Check soon", "advice": "The car is usually safe to drive for now, but fuel use, emissions or performance may suffer. Get it checked in the next few weeks.", "causes": ["An old, worn-out oxygen sensor (common after 150,000 km)", "A sensor contaminated by oil burning or a coolant leak", "An exhaust leak near the sensor"], "symptoms": ["Higher fuel use", "Can lead to a catalytic converter code if ignored"], "checks": ["Check for exhaust leaks near the sensor", "Check the engine isn't burning oil or coolant", "Replace the sensor"], "system": "Engine and transmission (powertrain), generic code (same meaning on every car)"}, "P0420": {"title": "Catalytic converter efficiency below threshold (bank 1)", "meaning": "The rear oxygen sensor shows the catalytic converter isn't cleaning the exhaust as well as it should.", "sev": "LOW", "sevLabel": "Check when convenient", "advice": "Usually safe to drive. It mainly affects emissions or a minor system, but it will keep the check-engine light on.", "causes": ["An old or failing catalytic converter", "A faulty rear oxygen sensor", "An exhaust leak near the sensors", "A misfire or oil burning that has damaged the converter"], "symptoms": ["Usually none", "Sometimes a rotten-egg smell or reduced power if the converter is blocked", "May fail an emissions inspection"], "checks": ["Fix any misfire or fuel mixture codes first: they can cause this one", "Check for exhaust leaks", "Compare front and rear oxygen sensor readings", "Replace the converter only after ruling out sensors and leaks"], "system": "Engine and transmission (powertrain), generic code (same meaning on every car)"}, "P0171": {"title": "Fuel mixture too lean (bank 1)", "meaning": "The engine is getting too much air or too little fuel, and the computer has reached the limit of how much fuel it can add to compensate.", "sev": "MEDIUM", "sevLabel": "Check soon", "advice": "The car is usually safe to drive for now, but fuel use, emissions or performance may suffer. Get it checked in the next few weeks.", "causes": ["A vacuum leak, such as a split intake hose, a loose intake boot or a leaking intake gasket", "A dirty or faulty mass air flow (MAF) sensor reading less air than is really entering", "Low fuel pressure from a weak fuel pump or a blocked fuel filter", "Clogged or leaking fuel injectors", "An exhaust leak before the front oxygen sensor"], "symptoms": ["Rough or hunting idle", "Hesitation when accelerating", "Misfires if severe"], "checks": ["Listen for hissing vacuum leaks and check intake hoses", "Clean the MAF sensor", "Check fuel pressure", "Look at long-term fuel trim on the dashboard: above +10% confirms lean"], "system": "Engine and transmission (powertrain), generic code (same meaning on every car)"}};
 const CHEV_D = "M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z";
@@ -1681,24 +1722,25 @@ function renderRec() {
   const s = Math.floor((Date.now() - rec.started) / 1000);
   $("recordStatus").textContent = `Recording ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}, ${rec.rows.toLocaleString("en-AU")} rows. Saved as ${rec.name}`;
 }
-function stopRec() { if (!rec) return; if (rec.rows) savedDrives.unshift({ name: rec.name, rows: rec.rows, secs: Math.round((Date.now() - rec.started) / 1000) }); rec = null; renderRec(); }
+function stopRec() { if (!rec) return; if (rec.rows) savedDrives.unshift({ name: rec.name, rows: rec.rows, secs: Math.round((Date.now() - rec.started) / 1000), samples: rec.samples }); rec = null; renderRec(); }
 $("recordBtn").onclick = () => {
   if (rec) { stopRec(); return toast("Drive saved. Open Saved drives to share it."); }
-  rec = { name: `OBD2Reader_${stamp()}.csv`, started: Date.now(), rows: 0 }; renderRec();
+  rec = { name: `OBD2Reader_${stamp()}.csv`, started: Date.now(), rows: 0, samples: [] }; renderRec();
 };
 setInterval(() => {
   if (!rec) return;
   if (state === "idle") return stopRec();
-  if (state === "connected" && !ignOff) rec.rows++;
+  if (state === "connected" && !ignOff) { rec.rows++; rec.samples.push([(Date.now() - rec.started) / 1000, live["0C"], live["0D"], live["11"]]); }
   renderRec();
 }, 200);
 $("savedBtn").onclick = () => {
-  const body = savedDrives.length ? savedDrives.map((d, i) => `<div class="drive"><div>${d.name}<small>${Math.floor(d.secs / 60)}:${String(d.secs % 60).padStart(2, "0")} long, ${d.rows.toLocaleString("en-AU")} rows</small></div><button data-share="${i}">Share</button><button class="del" data-del="${i}">Delete</button></div>`).join("")
+  const body = savedDrives.length ? savedDrives.map((d, i) => `<div class="drive"><div>${d.name}<small>${Math.floor(d.secs / 60)}:${String(d.secs % 60).padStart(2, "0")} long, ${d.rows.toLocaleString("en-AU")} rows</small></div><button data-video="${i}">Video</button><button data-share="${i}">Share</button><button class="del" data-del="${i}">Delete</button></div>`).join("")
     : `<p class="msg">No saved drives yet. Tap Record drive while connected.</p>`;
   const s = overlay(`<h3>Saved drives</h3>${body}<div class="btns"><button id="cancel">Close</button></div>`);
   $("cancel").onclick = closeOverlay;
   s.querySelectorAll("[data-share]").forEach(b => b.onclick = () => { closeOverlay(); toast("Opens Android's share sheet: email, Drive, Messages…"); });
   s.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { savedDrives.splice(+b.dataset.del, 1); $("savedBtn").onclick(); });
+  s.querySelectorAll("[data-video]").forEach(b => b.onclick = () => showOverlayVideo(savedDrives[+b.dataset.video]));
 };
 
 /* Three tabs */
@@ -1870,9 +1912,9 @@ renderCar = function () {
   const connected = state === "connected" && !ignOff, now = performance.now();
   const status = state === "connecting" ? "Connecting…" : state === "waiting" ? statusNow.title : statusNow.kind === "error" ? statusNow.title : lastUsed ? "Not connected" : "Pair on phone";
   const items = CAR_TILES.map((t, i) => {
-    const raw = connected ? live[t.key] : null, shown = carGlide(t.key, raw, now);
+    const raw = connected ? uVal(t.key, live[t.key]) : null, shown = carGlide(t.key, raw, now);
     const high = raw != null && t.warn != null && raw >= t.warn;
-    const text = i === 0 && !connected ? status : high ? "High" : t.key === "0D" && sc.top != null ? `Top ${Math.round(sc.top)} ${t.unit}` : t.unit;
+    const text = i === 0 && !connected ? status : high ? "High" : t.key === "0D" && sc.top != null ? `Top ${Math.round(uVal("0D", sc.top))} ${t.unit}` : t.unit;
     const img = t.key === "0C" ? carRoundelNum(Math.min(1, (shown || 0) / t.max), shown == null ? "—" : (Math.floor(shown / 10) * 10).toLocaleString("en-US"))
       : carTile(shown == null ? "—" : shown.toFixed(t.dec), shown == null ? null : Math.max(0, Math.min(1, (shown - t.min) / (t.max - t.min))), high);
     return `<div class="car-item${high ? " hot" : ""}">${img}<div class="t">${t.title}</div><div class="x${high ? " hot" : ""}">${text}</div></div>`;
@@ -1936,7 +1978,7 @@ const SCORE_STYLES = {
   EVERYDAY: { label: "Everyday", blurb: "Smooth, relaxed driving: no harsh acceleration, braking or high revs." },
   RACING: { label: "Racing", blurb: "For track days: full commitment, high revs without the limiter, cool engine." },
 };
-const sc = { reset() { Object.assign(this, { connected: 0, driving: 0, idling: 0, harshAccel: 0, brisk: 0, harshBrake: 0, lateBrake: 0, highRevs: 0, revs2500: 0, fast: 0, full: 0, fullBand: 0, acc: 0, accCommit: 0, overRev: 0, lug: 0, hot: 0, last: -1, lastSpeed: null, a: 0, runStart: null, best: null, top: null }); } };
+const sc = { reset() { Object.assign(this, { connected: 0, driving: 0, idling: 0, harshAccel: 0, brisk: 0, harshBrake: 0, lateBrake: 0, highRevs: 0, revs2500: 0, fast: 0, full: 0, fullBand: 0, acc: 0, accCommit: 0, overRev: 0, lug: 0, hot: 0, last: -1, lastSpeed: null, a: 0, runStart: null, best: null, top: null, km: 0, startedAt: Date.now() }); } };
 sc.reset();
 function scoreUpdate(t, v, r, thr, load, cool) {
   /* Top speed: counts once two readings in a row reach it (mirrors DrivingScore.topSpeed) */
@@ -1944,6 +1986,7 @@ function scoreUpdate(t, v, r, thr, load, cool) {
   if (sc.last < 0) { sc.last = t; sc.lastSpeed = v; return; }
   const dt = t - sc.last; if (dt <= 0) return; sc.last = t;
   if (dt > 2000) { sc.lastSpeed = v; sc.a = 0; return; }
+  if (v != null && sc.lastSpeed != null) sc.km += (v + sc.lastSpeed) / 2 * dt / 3600000;
   if (v != null && sc.lastSpeed != null) sc.a += ((v - sc.lastSpeed) / (dt / 1000) - sc.a) * Math.min(1, dt / 500);
   sc.lastSpeed = v; sc.connected += dt;
   if (v == null) return;
@@ -1980,7 +2023,7 @@ function renderScore() {
   const r = scoreResult(scoreStyle), live = state === "connected" || state === "waiting";
   const why = r.drivingSeconds === 0 && !live ? "Connect to score this drive. Scores are worked out on your phone and never saved." : r.score == null ? "Drive for about half a minute to get a score." : SCORE_STYLES[scoreStyle].blurb;
   const weakest = r.score == null ? null : r.parts.filter(p => p.score != null).sort((a, b) => a.score - b.score)[0];
-  const notes = [weakest && weakest.score < 90 ? `Tip: ${weakest.tip}` : null, r.top != null ? `Top speed this drive: ${Math.round(r.top)} km/h` : null, scoreStyle === "RACING" && r.best ? `Best 0 to 100 km/h this drive: ${r.best.toFixed(1)} s` : null, scoreStyle === "RACING" ? "Racing is for track days and closed roads only." : null].filter(Boolean);
+  const notes = [weakest && weakest.score < 90 ? `Tip: ${weakest.tip}` : null, r.top != null ? `Top speed this drive: ${uSpeedText(r.top)}` : null, scoreStyle === "RACING" && r.best ? `Best 0 to 100 km/h this drive: ${r.best.toFixed(1)} s` : null, scoreStyle === "RACING" ? "Racing is for track days and closed roads only." : null].filter(Boolean);
   $("scoreCard").innerHTML = `<div class="big"><b style="color:${r.score == null ? "var(--fg)" : scoreCol(r.score)}">${r.score ?? "—"}</b><small>/100</small></div><div class="why">${why}</div>` +
     r.parts.map(p => { const s = r.score == null ? null : p.score; return `<div class="part"><span>${p.name}</span><b>${s ?? "—"}</b></div><div class="bar"><i style="width:${s ?? 0}%;background:${s == null ? "var(--accent)" : scoreCol(s)}"></i></div>`; }).join("") +
     notes.map(n => `<div class="note">${n}</div>`).join("");
@@ -2159,10 +2202,400 @@ var topSpeedNow = null;
 $("speedDecal").insertAdjacentHTML("beforeend", `<span class="top-sp" id="speedTop" hidden></span>`);
 function showTopSpeed(v) {
   topSpeedNow = v;
-  const t = v == null ? null : Math.round(v);
-  $("speedTop").hidden = t == null; $("speedTop").textContent = t == null ? "" : `Top ${t} km/h`;
-  const tu = $("teleSpeed").parentNode.querySelector(".tu"); if (tu) tu.textContent = t == null ? "km/h" : `km/h · top ${t}`;
+  const t = v == null ? null : Math.round(uVal("0D", v));
+  $("speedTop").hidden = t == null; $("speedTop").textContent = t == null ? "" : `Top ${t} ${window.SPEED_UNIT}`;
+  const tu = $("teleSpeed").parentNode.querySelector(".tu"); if (tu) tu.textContent = t == null ? window.SPEED_UNIT : `${window.SPEED_UNIT} · top ${t}`;
 }
+
+
+/* ===== Trip summary when a drive ends (mirrors MainActivity.showTripSummary and TripSummary.kt) ===== */
+const tripDur = s => s < 60 ? `${s} s` : s < 3600 ? `${Math.round(s / 60)} min` : `${Math.floor(s / 3600)} h ${Math.floor(s % 3600 / 60)} min`;
+const tripKm = km => km >= 100 ? `${Math.round(km)} km` : `${km.toFixed(1)} km`;
+let lastTrip = null;
+function tripNow() {
+  const drive = Math.floor(sc.driving / 1000);
+  const scores = Object.fromEntries(["EFFICIENCY", "EVERYDAY", "RACING"].map(k => [k, scoreResult(k).score]));
+  return { start: sc.startedAt, end: Date.now(), km: sc.km, drive, idle: Math.floor(sc.idling / 1000), top: sc.top, avg: drive > 0 ? sc.km / (drive / 3600) : null, best: sc.best, scores };
+}
+function showTripSummary(t, justEnded) {
+  const tm = d => new Date(d).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const day = new Date(t.start).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" });
+  const tiles = [["Distance", tripKm(unitsMph ? t.km * 0.621371 : t.km).replace(" km", unitsMph ? " mi" : " km")], ["Driving time", tripDur(t.drive)], t.top != null && ["Top speed", uSpeedText(t.top)],
+    t.avg != null && ["Average speed", uSpeedText(t.avg)], ["Idling", tripDur(t.idle)], t.best != null && ["Best 0–100 km/h", `${t.best.toFixed(1)} s`]].filter(Boolean);
+  const sc3 = ["EFFICIENCY", "EVERYDAY", "RACING"].map(k => { const v = t.scores[k]; return `<div><b style="color:${v == null ? "var(--fg-2)" : scoreCol(v)}">${v ?? "—"}</b><span>${SCORE_STYLES[k].label}</span></div>`; }).join("");
+  const s = overlay(`<div class="handle"></div><h2>${justEnded ? "Your drive" : "Your last drive"}</h2>
+    <p>${day}, ${tm(t.start)} to ${tm(t.end)}${myCar ? " · " + carLabel(myCar) : ""}</p>
+    <div class="trip-tiles">${tiles.map(([l, v]) => `<div><span>${l}</span><b class="xb">${v}</b></div>`).join("")}</div>
+    <div class="trip-h">Driving score</div><div class="trip-scores">${sc3}</div>
+    ${Object.values(t.scores).every(v => v == null) ? `<p class="trip-note">Drive for at least half a minute to get a score.</p>` : ""}
+    <button class="primary trip-done" id="tripDone">Done</button><button class="trip-share" id="tripShare">Share as a picture</button>`, { sheet: true });
+  $("tripDone").onclick = closeOverlay;
+  $("tripShare").onclick = () => showDriveCard(t);
+}
+$("scoreCard").insertAdjacentHTML("afterend", `<button class="link-btn" id="lastTripBtn" hidden>Last drive summary</button>`);
+$("lastTripBtn").onclick = () => lastTrip && showTripSummary(lastTrip, false);
+{
+  const base = disconnect;
+  disconnect = function () {
+    const wasOn = state === "connected" || state === "waiting";
+    const t = wasOn ? tripNow() : null;
+    base.apply(this, arguments);
+    if (t && (t.drive >= 30 || t.km >= 0.2)) { lastTrip = t; $("lastTripBtn").hidden = false; setTimeout(() => showTripSummary(t, true), 50); }
+  };
+}
+
+
+/* ===== Driving alerts (mirrors obd/AlertRules.kt and session/Alerts.kt) =====
+   Engine hot (coolant 110 °C for 5 s), battery not charging (under 12.8 V with the engine
+   running for 20 s) or overcharging (over 15.2 V for 10 s), and new trouble codes. In the app
+   they're notifications with sound and vibration, shown on Android Auto too. */
+let alertsOn = true;
+try { alertsOn = localStorage.getItem("alerts") !== "0"; } catch (e) {}
+$("reconnectRow").insertAdjacentHTML("afterend", `<div class="setting" id="alertsRow"><div class="r"><span style="flex:1">Alerts</span><button class="switch" id="alertsSwitch" role="switch" aria-checked="${alertsOn}" aria-label="Alerts"><i></i></button></div><div class="h">Sound and vibrate if the engine runs hot, the battery stops charging or a new trouble code appears. Shown on Android Auto too.</div></div>`);
+$("alertsSwitch").onclick = () => { alertsOn = !alertsOn; $("alertsSwitch").setAttribute("aria-checked", alertsOn); try { localStorage.setItem("alerts", alertsOn ? "1" : "0"); } catch (e) {} };
+const alertWatch = {};
+function watchAlert(k, now, bad, ok, hold) {
+  const w = alertWatch[k] || (alertWatch[k] = { since: null, fired: false });
+  if (w.fired) { if (ok) { w.fired = false; w.since = null; } return false; }
+  if (!bad) { w.since = null; return false; }
+  if (w.since == null) w.since = now;
+  if (now - w.since >= hold) { w.fired = true; return true; }
+  return false;
+}
+function showAlert(title, text) {
+  if (!alertsOn) return;
+  const html = t => `<div class="hun ${t}"><b>${title}</b><span>${text}</span></div>`;
+  document.querySelectorAll(".hun").forEach(h => h.remove());
+  $("phone").insertAdjacentHTML("beforeend", html(""));
+  const car = document.getElementById("car"); if (car) car.insertAdjacentHTML("beforeend", html("car-hun"));
+  try { navigator.vibrate && navigator.vibrate([0, 300, 150, 300]); } catch (e) {}
+  setTimeout(() => document.querySelectorAll(".hun").forEach(h => h.remove()), 7000);
+}
+let simHot = false;
+setInterval(() => {
+  if (state !== "connected") { for (const k in alertWatch) delete alertWatch[k]; return; }
+  const now = performance.now(), c = live["05"], r = live["0C"] || 0, v = live.VOLT, run = r > 500;
+  if (c != null && watchAlert("hot", now, c >= 110, c < 104, 5000)) showAlert("Engine running hot", `Coolant is at ${Math.round(c)} °C. Pull over safely, let the engine idle or switch it off, and check the coolant once it's cool.`);
+  if (v != null && watchAlert("chg", now, run && v < 12.8, !run || v > 13.2, 20000)) showAlert("Battery not charging", `Only ${v.toFixed(1)} V with the engine running (normally 13.5–14.7 V). The alternator or its belt may be failing; get it checked soon.`);
+  if (v != null && watchAlert("high", now, v > 15.2, v < 14.8, 10000)) showAlert("Charging voltage high", `${v.toFixed(1)} V is more than a battery should get. The voltage regulator may be faulty; get it checked.`);
+}, 1000);
+/* Preview only: make the demo car run hot, to see an alert */
+$("ignBtn").insertAdjacentHTML("afterend", `<button class="sim-btn" id="hotBtn" hidden>Preview only: make the demo engine run hot</button>`);
+{
+  const base = car.raw.bind(car);
+  car.raw = n => n === 0x05 && simHot ? [115 + 40] : base(n);
+}
+$("hotBtn").onclick = () => { simHot = !simHot; $("hotBtn").textContent = simHot ? "Preview only: cool the demo engine down" : "Preview only: make the demo engine run hot"; };
+setInterval(() => { $("hotBtn").hidden = $("ignBtn").hidden; if ($("ignBtn").hidden) simHot = false; }, 500);
+
+
+/* ===== Video overlay (mirrors ui/OverlayRenderer.kt and session/OverlayExporter.kt) =====
+   The app encodes this as an MP4 on the phone; the preview plays it back on a canvas. */
+function overlayAt(sm, t) {
+  if (!sm.length) return {};
+  let i = sm.findIndex(r => r[0] > t); if (i < 0) i = sm.length - 1; const a = sm[Math.max(0, i - 1)], b = sm[i];
+  const f = b[0] === a[0] ? 0 : Math.max(0, Math.min(1, (t - a[0]) / (b[0] - a[0])));
+  const mix = k => a[k] == null ? b[k] : b[k] == null ? a[k] : a[k] + (b[k] - a[k]) * f;
+  return { rpm: mix(1), speed: mix(2), thr: mix(3) };
+}
+function drawOverlay(ctx, sm, t, bg) {
+  const css = getComputedStyle($("phone")), v = n => css.getPropertyValue(n).trim();
+  const accent = v("--s1"), panel = v("--panel"), track = v("--track"), fg = v("--fg"), fg2 = v("--fg-2"), red = v("--red") || "#FF3B30";
+  const u = ctx.canvas.width / 1920; ctx.save(); ctx.fillStyle = bg; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); ctx.scale(u, u);
+  const s = overlayAt(sm, t), redline = rpmGauge.warnAt || 6500, max = rpmGauge.max || 8000;
+  const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); };
+  ctx.fillStyle = panel; rr(60, 700, 840, 320, 24);
+  const lit = !s.rpm ? 0 : Math.max(1, Math.min(15, Math.floor(s.rpm / (redline * 0.97 / 15))));
+  for (let i = 0; i < 15; i++) { ctx.fillStyle = i < lit ? ["#34D17A", "#FFB000", "#FF3B30"][Math.floor(i / 5)] : track; rr(100 + i * 50, 724, 40, 20, 5); }
+  const cx = 230, cy = 885, R = 105, a0 = 0.75 * Math.PI, sw = 1.5 * Math.PI;
+  ctx.lineWidth = 22; ctx.strokeStyle = track; ctx.beginPath(); ctx.arc(cx, cy, R, a0, a0 + sw); ctx.stroke();
+  const fr = Math.min(1, (s.rpm || 0) / max);
+  if (fr > 0.003) { ctx.strokeStyle = (s.rpm || 0) >= redline ? red : accent; ctx.beginPath(); ctx.arc(cx, cy, R, a0, a0 + sw * fr); ctx.stroke(); }
+  ctx.fillStyle = fg; ctx.textAlign = "center"; { let fs = 58; do { ctx.font = `800 ${fs}px Archivo`; fs -= 2; } while (ctx.measureText("8,888").width > R * 1.45 && fs > 30); } ctx.fillText(s.rpm == null ? "—" : Math.round(s.rpm / 10) * 10 + "", cx, cy + 18);
+  ctx.fillStyle = fg2; ctx.font = "500 26px Archivo"; ctx.fillText("rpm", cx, cy + 56);
+  const sp = s.speed == null ? "—" : Math.round(uVal("0D", s.speed)) + ""; ctx.textAlign = "left"; ctx.fillStyle = fg; ctx.font = "italic 900 170px Archivo";
+  ctx.fillText(sp, 380, 950); const spw = ctx.measureText(sp).width; ctx.fillStyle = fg2; ctx.font = "500 32px Archivo"; ctx.fillText(window.SPEED_UNIT, 396 + spw, 950);
+  let top = 0; for (let i = 1; i < sm.length && sm[i][0] <= t; i++) top = Math.max(top, Math.min(sm[i][2] ?? 0, sm[i - 1][2] ?? 0));
+  if (top) { ctx.font = "500 28px Archivo"; ctx.fillText(`Top ${uSpeedText(top)}`, 384, 996); }
+  ctx.fillStyle = track; rr(840, 772, 28, 224, 8); const ft = Math.min(1, (s.thr || 0) / 100); ctx.fillStyle = v("--s2") || accent; if (ft > 0) rr(840, 996 - 224 * ft, 28, 224 * ft, 8);
+  ctx.fillStyle = fg2; ctx.textAlign = "center"; ctx.font = "500 20px Archivo"; ctx.fillText("THR", 854, 764);
+  ctx.fillStyle = panel; rr(1180, 820, 680, 200, 24);
+  const L = 1210, Rr = 1830, T = 850, B = 990;
+  const trace = (k, m, col) => { ctx.strokeStyle = col; ctx.lineWidth = 5; ctx.beginPath(); let st = false; for (let i = 0; i <= 60; i++) { const tt = t - 30 + i / 2; if (tt < 0) continue; const val = overlayAt(sm, tt)[k]; if (val == null) continue; const x = L + (Rr - L) * i / 60, y = B - (B - T) * Math.min(1, val / m); st ? ctx.lineTo(x, y) : ctx.moveTo(x, y); st = true; } ctx.stroke(); };
+  trace("rpm", max, "#FF3B30"); trace("speed", 200, "#3D9BFF");
+  ctx.font = "500 22px Archivo"; ctx.textAlign = "center"; ctx.fillStyle = fg2; const c = Math.floor(t); ctx.fillText(`${Math.floor(c / 60)}:${String(c % 60).padStart(2, "0")}`, 1520, 844);
+  ctx.textAlign = "right"; ctx.fillText("Last 30 s", Rr, 844); ctx.textAlign = "left"; ctx.fillStyle = "#FF3B30"; ctx.fillText("■ rpm", L, 844); ctx.fillStyle = "#3D9BFF"; ctx.fillText("■ km/h", L + 90, 844);
+  ctx.restore();
+}
+function showOverlayVideo(d) {
+  if (!d || !d.samples || d.samples.length < 10) return toast("This drive is too short to make a video.");
+  let bg = "#00FF00";
+  const s = overlay(`<h3>Video overlay</h3><p class="msg">Your readings as a video to lay over dashcam or GoPro footage, in your style's colours. In the app this saves an MP4 (1080p or 720p, 30 frames a second) to Movies › OBD2 Reader.</p>
+    <canvas id="ovCanvas" width="640" height="360" style="width:100%;border-radius:8px;display:block"></canvas>
+    <div class="seg ov-seg" style="margin-top:10px"><button role="radio" aria-checked="true" data-bg="#00FF00">Green screen</button><button role="radio" aria-checked="false" data-bg="#000000">Black</button></div>
+    <div class="btns"><button id="ovClose">Close</button></div>`);
+  s.querySelectorAll("[data-bg]").forEach(b => b.onclick = () => { bg = b.dataset.bg; s.querySelectorAll("[data-bg]").forEach(x => x.setAttribute("aria-checked", x === b)); });
+  const ctx = $("ovCanvas").getContext("2d"), dur = d.samples[d.samples.length - 1][0], t0 = performance.now();
+  let alive = true; s.addEventListener("closed", () => alive = false);
+  $("ovClose").onclick = closeOverlay;
+  (function loop() { if (!alive || !document.getElementById("ovCanvas")) return; drawOverlay(ctx, d.samples, ((performance.now() - t0) / 1000) % dur, bg); requestAnimationFrame(loop); })();
+}
+
+
+/* ===== Shareable drive card (mirrors ui/DriveCardRenderer.kt) ===== */
+function renderDriveCard(t, fmt) {
+  const W = 1080, H = fmt === "story" ? 1920 : 1080, story = fmt === "story";
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const c = cv.getContext("2d");
+  const css = getComputedStyle($("phone")), v = n => css.getPropertyValue(n).trim();
+  const bg = v("--base"), panel = v("--panel"), s1 = v("--s1"), s2 = v("--s2"), fg = v("--fg"), fg2 = v("--fg-2"), track = v("--track");
+  const col = s => s >= 80 ? "#34D17A" : s >= 55 ? "#FFB000" : "#FF3B30";
+  c.fillStyle = bg; c.fillRect(0, 0, W, H);
+  c.save(); c.translate(W / 2, 120); c.rotate(-7 * Math.PI / 180); c.translate(-W / 2, -120);
+  c.fillStyle = s1; c.fillRect(-200, 60, W + 400, 80); c.fillStyle = s2; c.fillRect(-200, 160, W + 400, 30); c.fillStyle = s1; c.fillRect(-200, 210, W + 400, 16); c.restore();
+  let y = story ? 380 : 340;
+  c.fillStyle = fg; c.font = `italic 900 ${story ? 96 : 78}px Archivo`; c.textAlign = "left"; c.fillText("My drive", 72, y);
+  y += story ? 62 : 54; c.fillStyle = fg2; c.font = "500 36px Archivo";
+  c.fillText([new Date(t.start).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" }), myCar && carLabel(myCar)].filter(Boolean).join("  ·  "), 72, y);
+  const sc = t.scores[scoreStyle], cx = story ? W / 2 : 240, cy = story ? y + 260 : y + 230, r = story ? 190 : 150;
+  c.lineCap = "round"; c.lineWidth = story ? 34 : 26; c.strokeStyle = track; c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI); c.stroke();
+  if (sc != null) { c.strokeStyle = col(sc); c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, 0.75 * Math.PI + 1.5 * Math.PI * sc / 100); c.stroke(); }
+  c.textAlign = "center"; c.fillStyle = fg; const big = story ? 170 : 120; c.font = `italic 900 ${big}px Archivo`; c.fillText(sc ?? "—", cx, cy + big * 0.32);
+  c.fillStyle = fg2; c.font = `600 ${story ? 38 : 30}px Archivo`; c.fillText(`${SCORE_STYLES[scoreStyle].label} score`, cx, cy + r * 0.78);
+  const stats = [["Distance", tripKm(unitsMph ? t.km * 0.621371 : t.km).replace(" km", unitsMph ? " mi" : " km")], ["Driving time", tripDur(t.drive)], t.top != null && ["Top speed", uSpeedText(t.top)], t.avg != null && ["Average", uSpeedText(t.avg)], t.best != null && ["0–100 km/h", `${t.best.toFixed(1)} s`], ["Idling", tripDur(t.idle)]].filter(Boolean).slice(0, story ? 6 : 4);
+  const gl = story ? 72 : 470, gr = W - 72, gap = 24, tw = (gr - gl - gap) / 2, th = 170; let gy = story ? cy + r + 80 : y + 70;
+  for (let i = 0; i < stats.length; i++) {
+    const x = gl + (i % 2) * (tw + gap); if (i && i % 2 === 0) gy += th + gap;
+    c.fillStyle = panel; c.beginPath(); c.roundRect(x, gy, tw, th, 20); c.fill(); c.fillStyle = s1; c.fillRect(x, gy + 24, 8, th - 48);
+    c.textAlign = "left"; c.fillStyle = fg2; c.font = "500 32px Archivo"; c.fillText(stats[i][0], x + 36, gy + 62);
+    let fs = story ? 76 : 64; c.fillStyle = fg; do { c.font = `italic 900 ${fs}px Archivo`; fs -= 2; } while (c.measureText(stats[i][1]).width > tw - 60 && fs > 24);
+    c.fillText(stats[i][1], x + 36, gy + th - 40);
+  }
+  if (story) {
+    gy += th + gap + 20; c.fillStyle = panel; c.beginPath(); c.roundRect(72, gy, W - 144, 200, 20); c.fill();
+    ["EFFICIENCY", "EVERYDAY", "RACING"].forEach((k, i) => { const sx = 72 + (W - 144) / 3 * (i + 0.5), val = t.scores[k];
+      c.textAlign = "center"; c.font = "italic 900 76px Archivo"; c.fillStyle = val == null ? fg2 : col(val); c.fillText(val ?? "—", sx, gy + 110);
+      c.font = "500 30px Archivo"; c.fillStyle = fg2; c.fillText(SCORE_STYLES[k].label, sx, gy + 160); });
+  }
+  const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, s1); g.addColorStop(1, s2); c.fillStyle = g; c.fillRect(0, H - 14, W, 14);
+  c.textAlign = "left"; c.fillStyle = fg; c.globalAlpha = .8; c.font = "italic 900 40px Archivo"; c.fillText("OBD2 Reader", 72, H - 60); c.globalAlpha = 1;
+  return cv;
+}
+function showDriveCard(t) {
+  const s = overlay(`<h3>Share as a picture</h3><div class="seg ov-seg"><button role="radio" aria-checked="true" data-f="story">Story 9:16</button><button role="radio" aria-checked="false" data-f="square">Square 1:1</button></div>
+    <div id="cardBox" style="margin-top:12px;text-align:center"></div><p class="msg" style="margin-top:10px">In the app this opens Android's share sheet (YouTube, TikTok, Instagram…) and keeps a copy in Pictures › OBD2 Reader.</p>
+    <div class="btns"><button id="cardClose">Close</button></div>`);
+  const show = f => { const cv = renderDriveCard(t, f); cv.style.cssText = `width:${f === "story" ? 56 : 100}%;border-radius:8px`; $("cardBox").replaceChildren(cv); };
+  s.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { s.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-checked", x === b)); show(b.dataset.f); });
+  $("cardClose").onclick = closeOverlay; show("story");
+}
+
+
+/* ===== Performance timers (mirrors obd/PerformanceTimer.kt and MainActivity.showPerformance) ===== */
+/* Runs in km/h: from null is a standing start, to null the quarter mile (mirrors PerformanceTimer.Mode) */
+const PERF_DEF = unitsMph ? { ZERO_60: ["0–60 mph", null, 96.5606], MID_50_70: ["50–70 mph", 80.4672, 112.6541], QUARTER: ["¼ mile", null, null] }
+  : { ZERO_100: ["0–100 km/h", null, 100], MID_80_120: ["80–120 km/h", 80, 120], QUARTER: ["¼ mile", null, null] };
+const PERF = Object.fromEntries(Object.entries(PERF_DEF).map(([k, v]) => [k, v[0]]));
+function perfTimer() {
+  const p = { mode: Object.keys(PERF)[0], state: { k: "staging", msg: "" }, lastT: -1, lastV: 0, still: null, start: 0, m: 0 };
+  const cross = (t1, v1, t2, v2, x) => (t1 + (t2 - t1) * (v2 === v1 ? 1 : Math.max(0, Math.min(1, (x - v1) / (v2 - v1))))) / 1000;
+  p.arm = mode => { Object.assign(p, { mode, lastT: -1, still: null, m: 0, state: { k: "staging", msg: PERF_DEF[mode][1] != null ? `Drop below ${PERF[mode].split("–")[0]} ${window.SPEED_UNIT}` : "Come to a stop" } }); };
+  const stage = (t, v, pt, pv) => {
+    const from = PERF_DEF[p.mode][1];
+    if (from != null) { if (v < from) { if (v < from - 5) p.state = { k: "ready" }; return; } if (p.state.k === "ready" && pt >= 0 && pv < from) { p.start = cross(pt, pv, t, v, from); p.m = 0; p.state = { k: "run", s: t / 1000 - p.start, m: 0 }; } return; }
+    if (v < 1) { if (p.still == null) p.still = t; p.state = t - p.still >= 1000 ? { k: "ready" } : { k: "staging", msg: "Hold still…" }; return; }
+    p.still = null;
+    if (p.state.k === "ready" && pt >= 0) { p.start = pt / 1000; p.m = (pv + v) / 2 / 3.6 * (t - pt) / 1000; p.state = { k: "run", s: t / 1000 - p.start, m: p.m }; }
+    else if (p.state.k !== "ready") p.state = { k: "staging", msg: "Come to a stop" };
+  };
+  p.update = (t, v) => {
+    const pt = p.lastT, pv = p.lastV; p.lastT = t; p.lastV = v;
+    if (pt < 0) { stage(t, v); return p.state; }
+    const dt = (t - pt) / 1000; if (dt <= 0) return p.state;
+    if (p.state.k === "staging" || p.state.k === "ready") stage(t, v, pt, pv);
+    else if (p.state.k === "run") {
+      const before = p.m; p.m += (pv + v) / 2 / 3.6 * dt; const el = t / 1000 - p.start;
+      const to = PERF_DEF[p.mode][2], from = PERF_DEF[p.mode][1];
+      if (to != null && v >= to) p.state = { k: "done", s: cross(pt, pv, t, v, to) - p.start };
+      else if (to == null && p.m >= 402.336) { const f = (402.336 - before) / (p.m - before); p.state = { k: "done", s: pt / 1000 + f * dt - p.start, trap: pv + (v - pv) * f }; }
+      else if (el > 60) p.state = { k: "abort", why: "Took longer than a minute" };
+      else if (from != null && v < from - 5) p.state = { k: "abort", why: "Slowed below the start speed" };
+      else if (from == null && v < 1) p.state = { k: "abort", why: "Stopped before the finish" };
+      else p.state = { k: "run", s: el, m: p.m };
+    }
+    return p.state;
+  };
+  return p;
+}
+const perfHistory = [];
+let simLaunch = null;
+{
+  const base = car.raw.bind(car);
+  car.raw = n => {
+    if (n === 0x0D && simLaunch != null) { const s = (performance.now() - simLaunch) / 1000; return [Math.max(0, Math.min(255, Math.trunc(s < 1.5 ? 0 : Math.min(185, 14 * (s - 1.5) - 0.12 * (s - 1.5) ** 2))))]; }
+    if (n === 0x0C && simLaunch != null) { const s = (performance.now() - simLaunch) / 1000; const r = s < 1.5 ? 850 : 2500 + ((s * 900) % 3800); return [(r * 4) >> 8, (r * 4) & 255]; }
+    return base(n);
+  };
+}
+$("lastTripBtn").insertAdjacentHTML("afterend", `<button class="link-btn" id="perfBtn" style="display:block;margin-top:2px;text-align:left">Performance timers</button>`);
+$("perfBtn").onclick = () => {
+  const p = perfTimer(); let mode = Object.keys(PERF)[0], readyAt = 0;
+  const s = overlay(`<div class="handle"></div><h2>Performance timers</h2><p>For closed roads and track days only. Timed from your car's speed readings, so older cars that report speed less often are less precise.</p>
+    <div class="seg perf-seg">${Object.entries(PERF).map(([k, l]) => `<button role="radio" aria-checked="${k === mode}" data-m="${k}">${l}</button>`).join("")}</div>
+    <div class="perf-big xb" id="perfBig">—</div><div class="perf-st" id="perfSt"></div>
+    <div class="perf-est" id="perfEst" hidden>The ¼ mile is an estimate: distance is worked out from your car's speed readings, not measured by timing beams like a drag strip.</div>
+    <button class="primary trip-done" id="perfAgain" hidden>Run again</button>
+    <button class="sim-btn" id="perfSim">Preview only: launch the demo car</button>
+    <div id="perfHist" class="perf-hist"></div>`, { sheet: true });
+  const fmt = r => `${r.s.toFixed(2)} s${r.trap ? ` at ${uSpeedText(r.trap)}` : ""}`;
+  const hist = () => { const mine = perfHistory.filter(r => r.mode === mode); if (!mine.length) return $("perfHist").innerHTML = "";
+    const best = mine.reduce((a, b) => a.s < b.s ? a : b); $("perfHist").innerHTML = `<b>Best ${PERF[mode]}: ${fmt(best)}</b>` + mine.slice(-5).reverse().map(r => `<div>${fmt(r)} · ${new Date(r.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</div>`).join(""); };
+  const show = st => {
+    const B = $("perfBig"), S = $("perfSt"); if (!B) return;
+    $("perfAgain").hidden = !(st.k === "done" || st.k === "abort");
+    if (st.k === "staging") { B.textContent = "—"; S.textContent = state === "connected" ? st.msg : "Connect to your car (or the demo car) first."; }
+    else if (st.k === "ready") { if (!readyAt) readyAt = performance.now(); const n = 3 - Math.floor((performance.now() - readyAt) / 1000); B.textContent = n > 0 ? n : "GO"; S.textContent = PERF_DEF[mode][1] != null ? `Ready. The clock starts as you pass ${PERF[mode].split("–")[0]} ${window.SPEED_UNIT}.` : "Ready. The clock starts when the car moves."; }
+    else if (st.k === "run") { B.textContent = st.s.toFixed(1); S.textContent = mode === "QUARTER" ? `${Math.round(st.m)} m of 402` : "Timing…"; }
+    else if (st.k === "done" && !st.saved) { st.saved = true; const prev = perfHistory.filter(r => r.mode === mode).reduce((a, r) => Math.min(a, r.s), Infinity);
+      perfHistory.push({ mode, s: st.s, trap: st.trap, at: Date.now() }); B.textContent = `${st.s.toFixed(2)} s`; S.textContent = [st.trap && `Trap speed ${uSpeedText(st.trap)}`, st.s < prev && "New best!"].filter(Boolean).join(" · ") || PERF[mode]; hist(); simLaunch = null; }
+    else if (st.k === "abort") { B.textContent = "—"; S.textContent = `${st.why}. Run again when you're ready.`; simLaunch = null; }
+  };
+  const arm = () => { p.arm(mode); readyAt = 0; $("perfEst").hidden = mode !== "QUARTER"; show(p.state); hist(); };
+  s.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { mode = b.dataset.m; s.querySelectorAll("[data-m]").forEach(x => x.setAttribute("aria-checked", x === b)); arm(); });
+  $("perfAgain").onclick = arm;
+  $("perfSim").onclick = () => { if (state !== "connected") return toast("Start the demo car first."); simLaunch = performance.now() + (PERF_DEF[mode][1] != null ? -7000 : 0); };
+  arm();
+  const iv = setInterval(() => { if (!document.getElementById("perfBig")) return clearInterval(iv); if (state === "connected" && live["0D"] != null) show(p.update(Math.round(performance.now()), live["0D"])); else show(p.state); }, 60);
+  s.addEventListener("closed", () => { clearInterval(iv); simLaunch = null; });
+};
+
+
+/* ===== Dashboard readouts (mirrors MainActivity.slots and showSlotPicker) =====
+   The main readouts (two on the liveries and Race telemetry, three on the cockpit and Cyberpunk)
+   show the readings you choose under Diagnostics → Dashboard readouts. */
+const SLOT_DEFAULT = ["05", "2F", "VOLT"];
+const slotInfo = k => { if (k === "VOLT") return { label: "Battery", unit: "V", dec: 1, min: 11, max: 15, warn: null };
+  const p = PIDS.find(x => hex2(x.n) === k); return { label: p.label, unit: p.unit, dec: p.dec || 0, min: p.min, max: p.max, warn: p.warn }; };
+const slotChoices = PIDS.filter(p => p.n !== 0x0C && p.n !== 0x0D).map(p => hex2(p.n)).concat("VOLT");
+let dashSlots = SLOT_DEFAULT;
+try { const v = JSON.parse(localStorage.getItem("dashSlots") || "null"); if (Array.isArray(v) && v.length === 3 && v.every(k => slotChoices.includes(k))) dashSlots = v; } catch (e) {}
+if (dashSlots.join() !== SLOT_DEFAULT.join()) {
+  /* The usual coolant, fuel and battery feeds stop driving these readouts; a loop feeds the chosen readings instead. */
+  tiles["05"] = () => {}; tiles["2F"] = () => {};
+  const dummy = id => { const el = $(id); el.id = id + "Slot"; const d = document.createElement("span"); d.id = id; d.hidden = true; document.body.appendChild(d); return el; };
+  const cpV = dummy("cpVolt"), cyV = dummy("cyVolt"), cyChipV = dummy("cyChipVOLT");
+  const S = [
+    { decal: $("coolDecal"), tele: $("teleCool"), cp: $("cpCool"), cyChipEl: $("cyChip05"), cyVal: $("cyCool") },
+    { decal: $("fuelDecal"), tele: $("teleFuel"), cp: $("cpFuel"), cyChipEl: $("cyChip2F"), cyVal: $("cyFuel") },
+    { cp: cpV, cyChipEl: cyChipV, cyVal: cyV },
+  ];
+  S.forEach((el, i) => {
+    const r = slotInfo(dashSlots[i]);
+    if (el.decal) { el.decal.querySelector(".l").textContent = r.label; el.decal.querySelector(".v small").textContent = r.unit; el.gauge = makeDecal(el.decal, r); }
+    if (el.tele) { el.tele.parentNode.querySelector(".tl").textContent = r.label; el.tele.parentNode.querySelector("small").textContent = r.unit; }
+    el.cp.parentNode.querySelector(".gl").textContent = r.label; el.cp.parentNode.querySelector("small").textContent = r.unit;
+    el.cyChipEl.querySelector(".cl").textContent = r.label; el.cyVal.parentNode.querySelector("small").textContent = r.unit;
+    el.cyChipEl.id = "cyChipSlot" + i;
+  });
+  /* The live-data list hides what's now shown big, and shows what isn't (coolant and fuel if swapped out). */
+  setInterval(() => {
+    S.forEach((el, i) => {
+      const k = dashSlots[i], r = slotInfo(k), v = state === "connected" ? live[k] : null, txt = v == null ? "—" : v.toFixed(r.dec);
+      if (el.gauge) el.gauge.set(v); if (el.tele) el.tele.textContent = txt; el.cp.textContent = txt;
+      cyChip("Slot" + i, el.cyVal.id, v, r.dec, r.min, r.max, r.warn);
+    });
+  }, 100);
+  [dashSlots[0], dashSlots[1]].forEach(k => { const row = document.getElementById("mfd" + k); if (row) row.hidden = true; });
+}
+$("alertsRow").insertAdjacentHTML("beforebegin", `<button class="setting" id="slotsRow"><div class="r"><span>Dashboard readouts</span><span id="slotsSetting"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div><div class="h">Choose what the Dashboard's main readouts show, for example intake air instead of fuel.</div></button>`);
+$("slotsSetting").textContent = dashSlots.map(k => slotInfo(k).label).join(", ");
+function showSlotPicker(chosen) {
+  const names = ["Readout 1", "Readout 2", "Readout 3 (Digital cockpit and Cyberpunk)"];
+  const s = overlay(`<h3>Dashboard readouts</h3>${names.map((n, i) => `<button class="item" data-slot="${i}">${n}<small>${slotInfo(chosen[i]).label}</small></button>`).join("")}
+    <div class="btns"><button id="slotReset">Reset</button><button id="slotCancel">Cancel</button><button id="slotSave">Save</button></div>`);
+  s.querySelectorAll("[data-slot]").forEach(b => b.onclick = () => {
+    const i = +b.dataset.slot;
+    const s2 = overlay(`<h3>${names[i]}</h3>${slotChoices.map(k => `<button class="radio" role="radio" aria-checked="${k === chosen[i]}" data-k="${k}"><span class="c"></span><span class="n">${slotInfo(k).label}</span></button>`).join("")}`);
+    s2.querySelectorAll("[data-k]").forEach(x => x.onclick = () => { const k = x.dataset.k, o = chosen.indexOf(k); if (o >= 0 && o !== i) chosen[o] = chosen[i]; chosen[i] = k; showSlotPicker(chosen); });
+  });
+  $("slotCancel").onclick = closeOverlay;
+  $("slotReset").onclick = () => { try { localStorage.removeItem("dashSlots"); } catch (e) {} location.reload(); };
+  $("slotSave").onclick = () => { try { localStorage.setItem("dashSlots", JSON.stringify(chosen)); } catch (e) {} location.reload(); };
+}
+$("slotsRow").onclick = () => showSlotPicker(dashSlots.slice());
+
+
+/* ===== Car scan and stand-in readings (mirrors obd/CarCoverage.kt and MainActivity.showScan) ===== */
+const PID_NAMES = {"01":"Monitor status since codes cleared","02":"Freeze frame code","03":"Fuel system status","04":"Engine load","05":"Coolant temperature","06":"Short-term fuel trim, bank 1","07":"Long-term fuel trim, bank 1","08":"Short-term fuel trim, bank 2","09":"Long-term fuel trim, bank 2","0A":"Fuel pressure","0B":"Manifold pressure","0C":"Engine RPM","0D":"Speed","0E":"Timing advance","0F":"Intake air temperature","10":"MAF airflow","11":"Throttle position","12":"Secondary air status","13":"Oxygen sensors present","14":"Oxygen sensor 1","15":"Oxygen sensor 2","16":"Oxygen sensor 3","17":"Oxygen sensor 4","18":"Oxygen sensor 5","19":"Oxygen sensor 6","1A":"Oxygen sensor 7","1B":"Oxygen sensor 8","1C":"OBD standard","1D":"Oxygen sensors present (4 banks)","1E":"Auxiliary input status","1F":"Run time since engine start","21":"Distance with check-engine light on","22":"Fuel rail pressure (relative)","23":"Fuel rail pressure","24":"Oxygen sensor 1 (wide range)","25":"Oxygen sensor 2 (wide range)","26":"Oxygen sensor 3 (wide range)","27":"Oxygen sensor 4 (wide range)","28":"Oxygen sensor 5 (wide range)","29":"Oxygen sensor 6 (wide range)","2A":"Oxygen sensor 7 (wide range)","2B":"Oxygen sensor 8 (wide range)","2C":"Commanded EGR","2D":"EGR error","2E":"Commanded evaporative purge","2F":"Fuel level","30":"Warm-ups since codes cleared","31":"Distance since codes cleared","32":"Evap system vapour pressure","33":"Barometric pressure","34":"Oxygen sensor 1 (current)","35":"Oxygen sensor 2 (current)","36":"Oxygen sensor 3 (current)","37":"Oxygen sensor 4 (current)","38":"Oxygen sensor 5 (current)","39":"Oxygen sensor 6 (current)","3A":"Oxygen sensor 7 (current)","3B":"Oxygen sensor 8 (current)","3C":"Catalyst temperature, bank 1 sensor 1","3D":"Catalyst temperature, bank 2 sensor 1","3E":"Catalyst temperature, bank 1 sensor 2","3F":"Catalyst temperature, bank 2 sensor 2","41":"Monitor status this drive cycle","42":"Control module voltage","43":"Absolute engine load","44":"Commanded air-fuel ratio","45":"Relative throttle position","46":"Ambient air temperature","47":"Throttle position B","48":"Throttle position C","49":"Accelerator pedal position D","4A":"Accelerator pedal position E","4B":"Accelerator pedal position F","4C":"Commanded throttle","4D":"Time with check-engine light on","4E":"Time since codes cleared","4F":"Maximum values (air-fuel, oxygen sensor, MAP)","50":"Maximum MAF airflow","51":"Fuel type","52":"Ethanol fuel %","53":"Evap system vapour pressure (absolute)","54":"Evap system vapour pressure (wide)","55":"Short-term secondary oxygen trim, banks 1 and 3","56":"Long-term secondary oxygen trim, banks 1 and 3","57":"Short-term secondary oxygen trim, banks 2 and 4","58":"Long-term secondary oxygen trim, banks 2 and 4","59":"Fuel rail pressure (absolute)","5A":"Relative accelerator pedal position","5B":"Hybrid battery remaining life","5C":"Engine oil temperature","5D":"Fuel injection timing","5E":"Engine fuel rate","5F":"Emission requirements","61":"Driver's demanded torque","62":"Actual engine torque","63":"Reference engine torque","64":"Engine torque data","65":"Auxiliary inputs and outputs","66":"MAF sensor","67":"Coolant temperature (sensors)","68":"Intake air temperature (sensors)","6B":"EGR temperature","6C":"Commanded throttle and position","6D":"Fuel pressure control","6E":"Injection pressure control","6F":"Turbo compressor inlet pressure","70":"Boost pressure control","71":"Variable geometry turbo control","72":"Wastegate control","73":"Exhaust pressure","74":"Turbo speed","75":"Turbo temperature (A)","76":"Turbo temperature (B)","77":"Charge air cooler temperature","78":"Exhaust gas temperature, bank 1","79":"Exhaust gas temperature, bank 2","7A":"Diesel particulate filter pressure (bank 1)","7B":"Diesel particulate filter pressure (bank 2)","7C":"Diesel particulate filter temperature","7D":"NOx emission limit status","7E":"PM emission limit status","7F":"Engine run time","83":"NOx sensor","84":"Manifold surface temperature","85":"NOx reagent system","86":"Particulate matter sensor","87":"Intake manifold pressure (absolute)","8D":"Throttle position G","8E":"Engine friction torque","9D":"Engine fuel rate (multiple)","9E":"Engine exhaust flow rate","A4":"Transmission gear","A6":"Odometer"};
+$("slotsRow").insertAdjacentHTML("beforebegin", `<button class="setting" id="scanRow"><div class="r"><span style="flex:1">Scan what your car reports</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div><div class="h">Lists every reading your car offers, including ones the app doesn't show yet, and tries known manufacturer readings. Share the result to help add support for your car.</div></button>`);
+$("scanRow").onclick = () => {
+  if (state !== "connected") return toast("Connect to your car first.");
+  const shown = new Set(PIDS.map(p => hex2(p.n)).concat(["49", "67"]));
+  const supported = Object.keys(PID_NAMES).filter(k => parseInt(k, 16) % 32 !== 0);   /* the demo car lists everything */
+  const ford = myCar && ["Ford", "Lincoln", "Mercury", "Mazda"].includes(myCar.make);
+  const probes = ford ? [["Engine oil temperature", "221310"], ["Transmission fluid temperature", "221674"], ["Transmission fluid temperature", "2211BD"], ["Transmission fluid temperature", "221E1C"], ["Fuel level", "22F42F"]] : [];
+  const row = (mark, t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${mark}  ${t}</div>`;
+  const s = overlay(`<div class="handle"></div><h2>What your car reports</h2><p>${supported.length} standard readings. Ones marked ✓ are on the app's Dashboard or live-data list.</p>
+    <div class="trip-h">Standard readings</div>${supported.map(k => row(shown.has(k) ? "✓" : "·", `${k}  ${PID_NAMES[k]}`, !shown.has(k))).join("")}
+    ${probes.length ? `<div class="trip-h">Manufacturer readings (experimental)</div><p>Known readings for your make, tried read-only. An answer means your car has it; send this scan to have it added.</p>${probes.map(([n, r]) => row("·", `${n} (${r}): no answer from the demo car`, true)).join("")}` : ""}
+    <button class="primary trip-done" id="scanShare">Share scan</button>`, { sheet: true });
+  $("scanShare").onclick = () => { closeOverlay(); toast("Opens Android's share sheet with the scan as a text file."); };
+};
+
+
+/* Units in the readouts (mirrors MainActivity's Units handling) and the Units setting */
+if (unitsMph) {
+  const b = speedGauge.set; speedGauge.set = v => b(uVal("0D", v));
+  ["#speedV small", ".tele-big > div + div .tu", ".tele-trace .legend span:nth-child(2)"].forEach(q => { const el = document.querySelector(q); if (el) el.textContent = "mph"; });
+  CAR_TILES.forEach(t => { if (t.key === "0D") { t.unit = "mph"; t.max = 150; } });
+}
+if (unitsF) {
+  const conv = v => v == null ? v : v * 9 / 5 + 32;
+  TEMP_KEYS.forEach(k => { if (tiles[k]) { const b = tiles[k]; tiles[k] = v => b(conv(v)); } });
+  mfdDefs.forEach(p => { if (TEMP_KEYS.includes(p.key)) { p.min = conv(p.min); p.max = conv(p.max); if (p.warn != null) p.warn = conv(p.warn); } });
+  CAR_TILES.forEach(t => { if (TEMP_KEYS.includes(t.key)) { t.unit = "°F"; t.min = conv(t.min); t.max = conv(t.max); if (t.warn != null) t.warn = conv(t.warn); } });
+  const cyb = cyChip; cyChip = (key, id, v, d, lo, hi, w) => key === "05" ? cyb(key, id, v, d, conv(lo), conv(hi), conv(w)) : cyb(key, id, v, d, lo, hi, w);
+  document.querySelectorAll("#pageDash small, #pageDash .tu").forEach(el => { if (el.textContent.trim() === "°C") el.textContent = "°F"; });
+  /* The livery coolant decal keeps its own range, so it follows °F here */
+  const cd = $("coolDecal"), cv = cd.querySelector(".v"), cm = cd.querySelector(".meter b");
+  coolGauge.set = v => { cv.firstChild.textContent = v == null ? "—" : Math.round(v); if (cm) cm.style.width = v == null ? "0%" : Math.max(0, Math.min(100, (v - 104) / (248 - 104) * 100)) + "%"; cd.classList.toggle("hot", v != null && v >= 226); };
+}
+$("slotsRow").insertAdjacentHTML("beforebegin", `<button class="setting" id="unitsRow"><div class="r"><span>Units</span><span id="unitsSetting">${window.SPEED_UNIT}, ${unitsF ? "°F" : "°C"}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div></button>`);
+$("unitsRow").onclick = () => {
+  let m = unitsMph, f = unitsF;
+  const radio = (name, on, val) => `<button class="radio" role="radio" aria-checked="${on}" data-g="${name}" data-v="${val}"><span class="c"></span><span class="n">${val}</span></button>`;
+  const s = overlay(`<h3>Units</h3><div class="trip-h">Speed and distance</div>${radio("s", !m, "Kilometres (km/h, km)")}${radio("s", m, "Miles (mph, mi)")}
+    <div class="trip-h">Temperature</div>${radio("t", !f, "Celsius (°C)")}${radio("t", f, "Fahrenheit (°F)")}
+    <p class="msg" style="margin-top:10px">Recorded drives (CSV) and the adapter log stay in the car's own metric units.</p>
+    <div class="btns"><button id="uCancel">Cancel</button><button id="uSave">Save</button></div>`);
+  s.querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
+    s.querySelectorAll(`[data-g="${b.dataset.g}"]`).forEach(x => x.setAttribute("aria-checked", x === b));
+    if (b.dataset.g === "s") m = b.dataset.v.startsWith("Miles"); else f = b.dataset.v.startsWith("Fahr");
+  });
+  $("uCancel").onclick = closeOverlay;
+  $("uSave").onclick = () => { try { localStorage.setItem("unitsMph", m ? "1" : "0"); localStorage.setItem("unitsF", f ? "1" : "0"); } catch (e) {} location.reload(); };
+};
+
+
+/* ===== N/A for readings the car doesn't give (mirrors MainActivity.showNoReading) =====
+   Preview only: make the demo car stop reporting fuel level, to see what the app does: every place
+   fuel is shown says N/A, never an old or made-up number. */
+let simNoFuel = false;
+{
+  const base = tiles["2F"];
+  tiles["2F"] = v => {
+    if (!simNoFuel) return base(v);
+    base(null);
+    const fd = $("fuelDecal"); if (fd) { fd.querySelector(".v").firstChild.textContent = "N/A"; fd.querySelector(".v small").hidden = true; }
+    ["teleFuel", "cpFuel", "cyFuel"].forEach(id => { const el = $(id); if (el) { el.textContent = "N/A"; const u = el.parentNode.querySelector("small"); if (u) u.hidden = true; } });
+  };
+}
+$("hotBtn").insertAdjacentHTML("afterend", `<button class="sim-btn" id="noFuelBtn" hidden>Preview only: the demo car stops reporting fuel level</button>`);
+$("noFuelBtn").onclick = () => {
+  simNoFuel = !simNoFuel;
+  $("noFuelBtn").textContent = simNoFuel ? "Preview only: the demo car reports fuel level again" : "Preview only: the demo car stops reporting fuel level";
+  if (!simNoFuel) { document.querySelectorAll("#fuelDecal .v small, #teleFuel ~ small, #cpFuel ~ small, #cyFuel ~ small").forEach(u => u.hidden = false); }
+};
+setInterval(() => { $("noFuelBtn").hidden = $("ignBtn").hidden; if ($("ignBtn").hidden && simNoFuel) $("noFuelBtn").click(); }, 500);
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

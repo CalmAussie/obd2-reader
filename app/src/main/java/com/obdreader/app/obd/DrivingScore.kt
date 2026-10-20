@@ -40,7 +40,16 @@ class DrivingScore(redline: Float = 6500f) {
         val best0to100: Double?,
         /** The highest speed this drive, in km/h. */
         val topSpeed: Double? = null,
-    )
+        /** Distance covered this drive, worked out from speed over time, in km. */
+        val distanceKm: Double = 0.0,
+        /** Time stopped with the engine running, in seconds. */
+        val idleSeconds: Int = 0,
+        /** Time connected to the car (moving or not), in seconds. */
+        val connectedSeconds: Int = 0,
+    ) {
+        /** Average speed while moving, in km/h; null until the car has moved. */
+        val averageSpeed: Double? get() = if (drivingSeconds > 0) distanceKm / (drivingSeconds / 3600.0) else null
+    }
 
     var redline: Float = redline
         set(value) { field = value.coerceIn(3000f, 12000f) }
@@ -64,6 +73,7 @@ class DrivingScore(redline: Float = 6500f) {
     private var lugging = 0L
     private var hot = 0L
 
+    private var distanceKm = 0.0
     private var lastMs = -1L
     private var lastSpeed: Double? = null
     private var accel = 0.0          // km/h per second, smoothed
@@ -82,7 +92,7 @@ class DrivingScore(redline: Float = 6500f) {
         connected = 0; driving = 0; idling = 0; harshAccel = 0; brisk = 0; harshBrake = 0; lateBrake = 0
         highRevs = 0; revsOver2500 = 0; fast = 0; fullThrottle = 0; fullThrottleInBand = 0
         accelerating = 0; acceleratingCommitted = 0; overRev = 0; lugging = 0; hot = 0
-        lastMs = -1; lastSpeed = null; accel = 0.0; runStartMs = null; best0to100 = null; topSpeed = null
+        lastMs = -1; lastSpeed = null; accel = 0.0; runStartMs = null; best0to100 = null; topSpeed = null; distanceKm = 0.0
     }
 
     /**
@@ -101,6 +111,8 @@ class DrivingScore(redline: Float = 6500f) {
         // A long gap (ignition off, lost link) isn't driving time.
         if (dt > 2000) { lastSpeed = speed; accel = 0.0; return }
         if (speed != null && lastSpeed != null) {
+            // Distance: the average of the two speeds over the time between them.
+            distanceKm += (speed + lastSpeed!!) / 2.0 * (dt / 3_600_000.0)
             val raw = (speed - lastSpeed!!) / (dt / 1000.0)
             // Smooth over about half a second so a jittery reading isn't a harsh stop.
             val k = min(1.0, dt / 500.0)
@@ -185,7 +197,10 @@ class DrivingScore(redline: Float = 6500f) {
         }
         val scored = parts.zip(weights).filter { it.first.score != null }
         val total = if (scored.isEmpty()) null else scored.sumOf { (p, w) -> p.score!! * w } / scored.sumOf { it.second }.toDouble()
-        return Result(style, if (enough) total?.roundToInt() else null, parts, (driving / 1000).toInt(), best0to100, topSpeed)
+        return Result(
+            style, if (enough) total?.roundToInt() else null, parts, (driving / 1000).toInt(), best0to100, topSpeed,
+            distanceKm, (idling / 1000).toInt(), (connected / 1000).toInt(),
+        )
     }
 
     companion object {

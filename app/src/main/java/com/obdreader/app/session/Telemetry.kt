@@ -164,7 +164,24 @@ object Exports {
         File(context.cacheDir, "exports").listFiles()?.forEach { it.delete() }
     }
 
-    private fun exportFile(context: Context, name: String): File =
+    /** Keeps a copy of a picture in Pictures › OBD2 Reader, so it's in the gallery too (Android 10 and later). */
+    fun saveToPictures(context: Context, file: File) {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) return
+        val values = android.content.ContentValues().apply {
+            put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, file.name)
+            put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/png")
+            put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/OBD2 Reader")
+        }
+        val resolver = context.contentResolver
+        val uri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return
+        try {
+            resolver.openOutputStream(uri)?.use { out -> file.inputStream().use { it.copyTo(out) } }
+        } catch (e: Exception) {
+            resolver.delete(uri, null, null)
+        }
+    }
+
+    fun exportFile(context: Context, name: String): File =
         File(File(context.cacheDir, "exports").apply { mkdirs() }, name)
 
     /** A plain-text report of the car's trouble codes with full explanations, for a mechanic or a forum post. */
@@ -233,6 +250,11 @@ object DriveScorer {
     /** The highest speed since the app connected (ignition-off pauses don't reset it), in km/h. */
     val topSpeed: StateFlow<Double?> = _topSpeed.asStateFlow()
 
+    private val _lastTrip = MutableStateFlow<com.obdreader.app.obd.TripSummary?>(null)
+    /** The drive that just ended (when the connection closes), for the trip summary. */
+    val lastTrip: StateFlow<com.obdreader.app.obd.TripSummary?> = _lastTrip.asStateFlow()
+    private var tripStart = 0L
+
     private var started = false
     private val latest = mutableMapOf<String, Double>()
     private var lastPublish = 0L
@@ -249,6 +271,14 @@ object DriveScorer {
             ObdSession.state.collect { s ->
                 if (s.phase == ObdSession.Phase.CONNECTING && (last == null || last == ObdSession.Phase.IDLE || last == ObdSession.Phase.ERROR)) {
                     score.reset(); latest.clear(); _topSpeed.value = null; publish(force = true)
+                    tripStart = System.currentTimeMillis()
+                }
+                // The drive ends when the connection closes (Disconnect, or the car stayed off).
+                val wasOn = last == ObdSession.Phase.CONNECTED || last == ObdSession.Phase.WAITING
+                if (wasOn && (s.phase == ObdSession.Phase.IDLE || s.phase == ObdSession.Phase.ERROR)) {
+                    val all = com.obdreader.app.obd.DrivingScore.Style.values().associateWith { score.result(it) }
+                    val trip = com.obdreader.app.obd.TripSummary.from(all.values.first(), all, tripStart, System.currentTimeMillis())
+                    if (trip.isDrive) _lastTrip.value = trip
                 }
                 last = s.phase
             }

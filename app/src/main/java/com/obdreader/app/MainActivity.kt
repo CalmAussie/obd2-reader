@@ -74,6 +74,12 @@ import com.obdreader.app.obd.Pid
 import com.obdreader.app.obd.Pids
 import com.obdreader.app.obd.ObdProtocols
 import com.obdreader.app.obd.VehicleCatalog
+import com.obdreader.app.obd.TripSummary
+import com.obdreader.app.obd.Units
+import com.obdreader.app.obd.CarCoverage
+import com.obdreader.app.obd.PerformanceTimer
+import com.obdreader.app.obd.DriveTrack
+import com.obdreader.app.session.OverlayExporter
 import com.obdreader.app.obd.VinDecoder
 import com.obdreader.app.obd.WifiTransport
 import com.google.android.material.card.MaterialCardView
@@ -83,6 +89,7 @@ import com.obdreader.app.ui.CockpitRingView
 import com.obdreader.app.ui.CyberChipView
 import com.obdreader.app.ui.CyberHudView
 import com.obdreader.app.ui.DashLayout
+import com.obdreader.app.ui.DriveCardRenderer
 import com.obdreader.app.ui.FitTextView
 import com.obdreader.app.ui.DecalView
 import com.obdreader.app.ui.LiveryStripesView
@@ -102,9 +109,12 @@ import com.obdreader.app.ui.themeBool
 import com.obdreader.app.ui.SmoothText
 import com.obdreader.app.ui.applyTitleFonts
 import com.obdreader.app.ui.displayTypeface
+import com.obdreader.app.ui.titleTypeface
+import com.obdreader.app.session.Alerts
 import com.obdreader.app.session.DriveScorer
 import com.obdreader.app.obd.DrivingScore
 import com.obdreader.app.ui.themeColor
+import com.obdreader.app.ui.themeDimen
 import com.obdreader.app.ui.themeShape
 import com.obdreader.app.ui.uiTypeface
 import kotlinx.coroutines.CancellationException
@@ -177,8 +187,35 @@ class MainActivity : AppCompatActivity() {
     // Big text numbers that roll to each reading instead of jumping (the drawn dials do it themselves).
     private lateinit var teleRpmText: SmoothText
     private lateinit var teleSpeedText: SmoothText
-    private lateinit var teleCoolantText: SmoothText
-    private lateinit var teleFuelText: SmoothText
+    /** The two telemetry readouts under the trace, by reading. */
+    private val teleTexts = mutableMapOf<String, SmoothText>()
+    private val teleLabels = mutableMapOf<String, String>()
+    private val glassUnits = mutableMapOf<String, TextView>()
+    private var lastStandIns: Map<String, String> = emptyMap()
+
+    /** A reading the dashboard can show in one of its main readouts. */
+    private data class Readout(val key: String, val label: String, val unit: String, val decimals: Int, val min: Double, val max: Double, val warn: Double?)
+
+    private fun readout(key: String): Readout =
+        (Pids.dashboard.firstOrNull { it.hex == key }?.let { Readout(it.hex, it.label, it.unit, it.decimals, it.min, it.max, it.warnAbove) }
+            ?: Readout(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0, null)).inUnits()
+
+    /** The readout in the chosen units (°F, mph) where that applies. */
+    private fun Readout.inUnits(): Readout = if (!Units.isTemperature(key) && !Units.isSpeed(key)) this else copy(
+        unit = Units.unit(key, unit), min = Units.value(key, min), max = Units.value(key, max), warn = warn?.let { Units.value(key, it) },
+    )
+
+    /** Every reading that can go in a main readout (not engine speed or speed, which have their own). */
+    private val readoutChoices: List<Readout> by lazy {
+        Pids.dashboard.filter { it.hex != RPM_KEY && it.hex != SPEED_KEY }.map { readout(it.hex) } + readout(VOLTAGE_KEY)
+    }
+
+    /** What the main readouts show, chosen under Diagnostics → Dashboard readouts. Coolant, fuel and battery to start with. */
+    private val slots: List<String> by lazy {
+        val saved = prefs.getString(PREF_SLOTS, null)?.split(",").orEmpty()
+        val valid = readoutChoices.map { it.key }.toSet()
+        listOf(COOLANT_KEY, FUEL_KEY, VOLTAGE_KEY).mapIndexed { i, def -> saved.getOrNull(i)?.takeIf { it in valid } ?: def }
+    }
     private var lastRpm: Float? = null
     private var lastSpeed: Float? = null
     private var redline = 6500f
@@ -223,6 +260,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // The chosen theme must be set before any view is created.
         setTheme(AppThemes.byId(prefs.getString(PREF_THEME, null)).style)
+        AppPrefs.applyUnits(prefs)
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         // Dark status-bar icons on the light theme, light icons on the dark ones.
@@ -312,6 +350,29 @@ class MainActivity : AppCompatActivity() {
             background = panelBackground()
             setOnClickListener { findViewById<MaterialSwitch>(R.id.reconnectSwitch).toggle() }
         }
+        findViewById<MaterialSwitch>(R.id.alertsSwitch).apply {
+            isChecked = AppPrefs.alerts(prefs)
+            setOnCheckedChangeListener { _, on -> prefs.edit().putBoolean(AppPrefs.ALERTS, on).apply() }
+        }
+        findViewById<View>(R.id.alertsRow).apply {
+            background = panelBackground()
+            setOnClickListener { findViewById<MaterialSwitch>(R.id.alertsSwitch).toggle() }
+        }
+        Alerts.start(this)
+        findViewById<TextView>(R.id.slotsSetting).text = slots.joinToString(", ") { readout(it).label }
+        findViewById<TextView>(R.id.unitsSetting).text = "${Units.speedUnit}, ${Units.temperatureUnit}"
+        findViewById<View>(R.id.unitsRow).apply {
+            background = panelBackground()
+            setOnClickListener { showUnitsPicker() }
+        }
+        findViewById<View>(R.id.scanRow).apply {
+            background = panelBackground()
+            setOnClickListener { runCarScan() }
+        }
+        findViewById<View>(R.id.slotsRow).apply {
+            background = panelBackground()
+            setOnClickListener { showSlotPicker(slots.toMutableList()) }
+        }
         setupGraphs()
         setupScore()
         if (savedInstanceState == null) Exports.cleanUp(this) // shared reports and logs are temporary copies
@@ -350,6 +411,15 @@ class MainActivity : AppCompatActivity() {
                 launch { LogRecorder.active.collect { renderRecording(it) } }
                 launch { DriveScorer.results.collect { renderScore() } }
                 launch { DriveScorer.topSpeed.collect { showTopSpeed(it) } }
+                // When a drive ends, sum it up (once), and keep it as the last drive.
+                launch {
+                    DriveScorer.lastTrip.collect { trip ->
+                        if (trip == null || trip.endedAt <= prefs.getLong(PREF_LAST_TRIP_SHOWN, 0L)) return@collect
+                        prefs.edit().putString(PREF_LAST_TRIP, trip.encode()).putLong(PREF_LAST_TRIP_SHOWN, trip.endedAt).apply()
+                        lastTripButton?.visibility = View.VISIBLE
+                        showTripSummary(trip, justEnded = true)
+                    }
+                }
             }
         }
 
@@ -393,6 +463,25 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             check(ids.getValue(scoreStyle))
+            // "Last drive" under the score card, once there's been one.
+            val content = scoreCard.parent as ViewGroup
+            lastTripButton = MaterialButton(this@MainActivity, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
+                text = getString(R.string.last_trip)
+                setTextColor(themeColor(R.attr.obdAccent))
+                setPaddingRelative(0, paddingTop, dp(8f).toInt(), paddingBottom)
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                visibility = if (savedTrip() != null) View.VISIBLE else View.GONE
+                setOnClickListener { savedTrip()?.let { showTripSummary(it, justEnded = false) } }
+            }
+            content.addView(lastTripButton, content.indexOfChild(scoreCard) + 1, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            content.addView(MaterialButton(this@MainActivity, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
+                id = R.id.perfButton
+                text = getString(R.string.perf_title)
+                setTextColor(themeColor(R.attr.obdAccent))
+                setPaddingRelative(0, paddingTop, dp(8f).toInt(), paddingBottom)
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                setOnClickListener { showPerformance() }
+            }, content.indexOfChild(lastTripButton) + 1, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             addOnButtonCheckedListener { _, id, checked ->
                 if (!checked) return@addOnButtonCheckedListener
                 scoreStyle = ids.entries.first { it.value == id }.key
@@ -462,7 +551,7 @@ class MainActivity : AppCompatActivity() {
         val weakest = if (r?.score == null) null else r.parts.filter { it.score != null }.minByOrNull { it.score!! }?.takeIf { it.score!! < 90 }
         val extra = listOfNotNull(
             weakest?.let { "Tip: ${it.tip}" },
-            r?.topSpeed?.let { "Top speed this drive: ${it.roundToInt()} km/h" },
+            r?.topSpeed?.let { "Top speed this drive: ${Units.speedText(it)}" },
             r?.best0to100?.takeIf { scoreStyle == DrivingScore.Style.RACING }?.let { String.format(Locale.US, "Best 0 to 100 km/h this drive: %.1f s", it) },
             if (scoreStyle == DrivingScore.Style.RACING) getString(R.string.score_racing_note) else null,
         )
@@ -477,6 +566,402 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var lastTripButton: MaterialButton? = null
+
+    private fun savedTrip(): TripSummary? = TripSummary.decode(prefs.getString(PREF_LAST_TRIP, null))
+
+    /** The trip summary: what the drive added up to, as a sheet of tiles. */
+    private fun showTripSummary(trip: TripSummary, justEnded: Boolean) {
+        val sheet = BottomSheetDialog(this)
+        val pad = dp(20f).toInt()
+        val body = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, dp(8f).toInt(), pad, dp(24f).toInt())
+        }
+        body.addView(TextView(this).apply {
+            text = getString(if (justEnded) R.string.trip_title_ended else R.string.trip_title_last)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+            typeface = titleTypeface()
+            setTextColor(themeColor(R.attr.obdTextPrimary))
+        })
+        val time = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT)
+        val day = java.text.SimpleDateFormat("EEE d MMM", Locale.getDefault())
+        body.addView(TextView(this).apply {
+            text = listOfNotNull(
+                "${day.format(java.util.Date(trip.startedAt))}, ${time.format(java.util.Date(trip.startedAt))} to ${time.format(java.util.Date(trip.endedAt))}",
+                savedCar()?.label,
+            ).joinToString(" · ")
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setTextColor(themeColor(R.attr.obdTextSecondary))
+            setPadding(0, dp(2f).toInt(), 0, dp(14f).toInt())
+        })
+        val tiles = listOfNotNull(
+            "Distance" to TripSummary.distance(Units.distance(trip.distanceKm)).replace(" km", " ${Units.distanceUnit}"),
+            "Driving time" to TripSummary.duration(trip.drivingSeconds),
+            trip.topSpeed?.let { "Top speed" to Units.speedText(it) },
+            trip.averageSpeed?.let { "Average speed" to Units.speedText(it) },
+            "Idling" to TripSummary.duration(trip.idleSeconds),
+            trip.best0to100?.let { "Best 0–100 km/h" to String.format(Locale.US, "%.1f s", it) },
+        )
+        tiles.chunked(2).forEach { pair ->
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            pair.forEachIndexed { i, (label, value) ->
+                row.addView(LinearLayout(this).apply {
+                    orientation = LinearLayout.VERTICAL
+                    background = tripTile()
+                    setPadding(dp(14f).toInt(), dp(12f).toInt(), dp(14f).toInt(), dp(12f).toInt())
+                    addView(TextView(context).apply { text = label; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+                    addView(TextView(context).apply {
+                        text = value; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
+                        typeface = displayTypeface(); fontFeatureSettings = "tnum"; setTextColor(themeColor(R.attr.obdTextPrimary))
+                    })
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { if (i > 0) marginStart = dp(8f).toInt() })
+            }
+            if (pair.size == 1) row.addView(View(this), LinearLayout.LayoutParams(0, 0, 1f).apply { marginStart = dp(8f).toInt() })
+            body.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8f).toInt() })
+        }
+        // The driving score in each style.
+        body.addView(TextView(this).apply {
+            setText(R.string.driving_score)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            typeface = uiTypeface(600)
+            setTextColor(themeColor(R.attr.obdTextPrimary))
+            setPadding(0, dp(10f).toInt(), 0, dp(6f).toInt())
+        })
+        val scores = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; background = tripTile(); setPadding(0, dp(12f).toInt(), 0, dp(12f).toInt()) }
+        DrivingScore.Style.values().forEach { style ->
+            val s = trip.scores[style]
+            scores.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER_HORIZONTAL
+                addView(TextView(context).apply {
+                    text = s?.toString() ?: getString(R.string.dash); setTextSize(TypedValue.COMPLEX_UNIT_SP, 26f); typeface = displayTypeface()
+                    setTextColor(s?.let { scoreColour(it) } ?: themeColor(R.attr.obdTextSecondary))
+                })
+                addView(TextView(context).apply { text = style.label; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        body.addView(scores, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        if (trip.scores.values.all { it == null }) body.addView(TextView(this).apply {
+            setText(R.string.trip_too_short)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setTextColor(themeColor(R.attr.obdTextSecondary))
+            setPadding(0, dp(6f).toInt(), 0, 0)
+        })
+        body.addView(MaterialButton(this).apply {
+            setText(R.string.done)
+            setOnClickListener { sheet.dismiss() }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(18f).toInt() })
+        body.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            setText(R.string.share_picture)
+            setOnClickListener { shareDriveCard(trip) }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4f).toInt() })
+        body.applyTitleFonts()
+        sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+        sheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        sheet.behavior.skipCollapsed = true
+        sheet.show()
+    }
+
+    // ---------- Units ----------
+
+    /** Speed in km/h or mph, and temperature in °C or °F, chosen separately. */
+    private fun showUnitsPicker() {
+        var mph = Units.mph
+        var fahrenheit = Units.fahrenheit
+        val view = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24f).toInt(), dp(4f).toInt(), dp(24f).toInt(), 0) }
+        fun group(title: String, options: List<String>, selected: Int, onPick: (Int) -> Unit) {
+            view.addView(TextView(this).apply {
+                text = title; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
+                setPadding(0, dp(12f).toInt(), 0, dp(2f).toInt())
+            })
+            val radios = android.widget.RadioGroup(this)
+            options.forEachIndexed { i, name ->
+                radios.addView(com.google.android.material.radiobutton.MaterialRadioButton(this).apply {
+                    id = View.generateViewId(); text = name; isChecked = i == selected
+                    setOnCheckedChangeListener { _, on -> if (on) onPick(i) }
+                })
+            }
+            view.addView(radios)
+        }
+        group("Speed and distance", listOf("Kilometres (km/h, km)", "Miles (mph, mi)"), if (mph) 1 else 0) { mph = it == 1 }
+        group("Temperature", listOf("Celsius (°C)", "Fahrenheit (°F)"), if (fahrenheit) 1 else 0) { fahrenheit = it == 1 }
+        view.addView(TextView(this).apply {
+            text = "Recorded drives (CSV) and the adapter log stay in the car's own metric units."
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)); setPadding(0, dp(10f).toInt(), 0, 0)
+        })
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.units)
+            .setView(view)
+            .setPositiveButton("Save") { _, _ ->
+                if (mph != Units.mph || fahrenheit != Units.fahrenheit) {
+                    prefs.edit().putBoolean(AppPrefs.UNITS_MPH, mph).putBoolean(AppPrefs.UNITS_FAHRENHEIT, fahrenheit).apply()
+                    AppPrefs.applyUnits(prefs)
+                    recreate() // rebuilds every readout in the new units
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    // ---------- Car scan ----------
+
+    private fun runCarScan() {
+        if (!ObdSession.state.value.isConnected) { toast("Connect to your car first."); return }
+        val wait = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.scan)
+            .setView(com.google.android.material.progressindicator.LinearProgressIndicator(this).apply {
+                isIndeterminate = true; setPadding(dp(24f).toInt(), dp(16f).toInt(), dp(24f).toInt(), dp(8f).toInt())
+            })
+            .setMessage("Asking your car. This takes a few seconds.")
+            .setCancelable(false)
+            .show()
+        lifecycleScope.launch {
+            val scan = try { ObdSession.scanCar(this@MainActivity) } catch (e: Exception) { null }
+            wait.dismiss()
+            if (scan == null) { toast("The car stopped answering. Try again."); return@launch }
+            showScan(scan)
+        }
+    }
+
+    private fun showScan(scan: ObdSession.Scan) {
+        val sheet = BottomSheetDialog(this)
+        val pad = dp(20f).toInt()
+        val body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, dp(8f).toInt(), pad, dp(24f).toInt()) }
+        fun heading(t: String) = body.addView(TextView(this).apply {
+            text = t; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
+            setPadding(0, dp(16f).toInt(), 0, dp(4f).toInt())
+        })
+        fun line(t: String, secondary: Boolean = true) = body.addView(TextView(this).apply {
+            text = t; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setLineSpacing(0f, 1.1f)
+            setTextColor(themeColor(if (secondary) R.attr.obdTextSecondary else R.attr.obdTextPrimary)); setPadding(0, dp(3f).toInt(), 0, 0)
+        })
+        body.addView(TextView(this).apply {
+            text = "What your car reports"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
+        })
+        val readings = scan.supported.filter { it % 0x20 != 0 }.sorted()
+        line("${readings.size} standard readings. Ones marked ✓ are on the app's Dashboard or live-data list.")
+        heading("Standard readings")
+        readings.forEach { n -> line(String.format(Locale.US, "%s  %02X  %s", if (CarCoverage.shownByApp(n)) "✓" else "·", n, CarCoverage.name(n)), secondary = !CarCoverage.shownByApp(n)) }
+        val missing = Pids.dashboard.filter { it.number !in scan.supported }
+        if (missing.isNotEmpty()) {
+            heading("Not reported by your car")
+            missing.forEach { p -> line("${p.label}" + (CarCoverage.STAND_INS.firstOrNull { it.forHex == p.hex && it.pid.number in scan.supported }?.let { " (using ${it.note.substringBefore(",")})" } ?: "")) }
+        }
+        if (scan.enhanced.isNotEmpty()) {
+            heading("Manufacturer readings (experimental)")
+            line("Known readings for your make, tried read-only. An answer means your car has it; send this scan to have it added.")
+            scan.enhanced.forEach { (e, data) -> line("${if (data != null) "✓" else "·"}  ${e.name} (${e.request})" + (data?.let { ": $it" } ?: ": no answer"), secondary = data == null) }
+        }
+        body.addView(MaterialButton(this).apply {
+            text = "Share scan"
+            setOnClickListener {
+                val text = buildString {
+                    appendLine("OBD2 Reader car scan, ${java.text.SimpleDateFormat("d MMM yyyy, h:mm a", Locale.getDefault()).format(java.util.Date())}")
+                    savedCar()?.label?.let { appendLine("Car: $it") }
+                    ObdSession.state.value.vin?.let { appendLine("VIN: $it") }
+                    appendLine("Protocol: ${ObdProtocols.byCode(ObdSession.state.value.protocolCode)?.name ?: "unknown"}")
+                    appendLine(); appendLine("Standard readings:")
+                    readings.forEach { appendLine(String.format(Locale.US, "  %02X  %s", it, CarCoverage.name(it))) }
+                    if (scan.enhanced.isNotEmpty()) {
+                        appendLine(); appendLine("Manufacturer readings:")
+                        scan.enhanced.forEach { (e, d) -> appendLine("  ${e.request} ${e.name} [${e.header ?: "default"}]: ${d ?: "no answer"}") }
+                    }
+                }
+                val f = Exports.exportFile(this@MainActivity, "OBD2Reader_car_scan.txt").apply { writeText(text) }
+                Exports.share(this@MainActivity, f, "text/plain", "OBD2 Reader car scan")
+            }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(18f).toInt() })
+        body.applyTitleFonts()
+        sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+        sheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        sheet.behavior.skipCollapsed = true
+        sheet.show()
+    }
+
+    // ---------- Dashboard readouts ----------
+
+    /**
+     * Choose the readings in the Dashboard's main readouts: two on the liveries and Race
+     * telemetry, three on the Digital cockpit and Cyberpunk. Picking one that's already used swaps them.
+     */
+    private fun showSlotPicker(chosen: MutableList<String>) {
+        val names = listOf("Readout 1", "Readout 2", "Readout 3 (Digital cockpit and Cyberpunk)")
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.slots)
+            .setItems(names.mapIndexed { i, n -> "$n: ${readout(chosen[i]).label}" }.toTypedArray()) { _, slot ->
+                val choices = readoutChoices
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(names[slot])
+                    .setSingleChoiceItems(choices.map { it.label }.toTypedArray(), choices.indexOfFirst { it.key == chosen[slot] }) { d, i ->
+                        val pick = choices[i].key
+                        val other = chosen.indexOf(pick)
+                        if (other >= 0 && other != slot) chosen[other] = chosen[slot] // swap rather than show one twice
+                        chosen[slot] = pick
+                        d.dismiss()
+                        showSlotPicker(chosen)
+                    }
+                    .setNegativeButton("Back") { _, _ -> showSlotPicker(chosen) }
+                    .show()
+            }
+            .setPositiveButton("Save") { _, _ ->
+                if (chosen != slots) {
+                    prefs.edit().putString(PREF_SLOTS, chosen.joinToString(",")).apply()
+                    recreate() // rebuilds the Dashboard with the new readouts
+                }
+            }
+            .setNeutralButton("Reset") { _, _ ->
+                prefs.edit().remove(PREF_SLOTS).apply()
+                recreate()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    // ---------- Performance timers ----------
+
+    /** 0–100 km/h, 80–120 km/h and the quarter mile, timed from the car's speed, with a history. */
+    private fun showPerformance() {
+        val sheet = BottomSheetDialog(this)
+        val timer = PerformanceTimer()
+        // 0–100 and 80–120 km/h, or 0–60 and 50–70 mph, plus the quarter mile.
+        val offered = PerformanceTimer.Mode.offered(Units.mph)
+        var mode = offered.firstOrNull { it.name == prefs.getString(PREF_PERF_MODE, null) } ?: offered.first()
+        val pad = dp(20f).toInt()
+        val body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, dp(8f).toInt(), pad, dp(24f).toInt()) }
+        body.addView(TextView(this).apply {
+            setText(R.string.perf_title); setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
+        })
+        body.addView(TextView(this).apply {
+            setText(R.string.perf_note); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+            setPadding(0, dp(4f).toInt(), 0, dp(14f).toInt())
+        })
+        val modes = MaterialButtonToggleGroup(this).apply { isSingleSelection = true; isSelectionRequired = true }
+        val ids = offered.associateWith { View.generateViewId() }
+        offered.forEach { m ->
+            modes.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                id = ids.getValue(m); text = m.label; maxLines = 1
+                setPaddingRelative(dp(4f).toInt(), paddingTop, dp(4f).toInt(), paddingBottom)
+                setTextColor(ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()), intArrayOf(themeColor(R.attr.obdOnAccent), themeColor(R.attr.obdTextPrimary))))
+                backgroundTintList = ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()), intArrayOf(themeColor(R.attr.obdAccent), android.graphics.Color.TRANSPARENT))
+                strokeColor = ColorStateList.valueOf(themeColor(R.attr.obdOutline))
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        body.addView(modes, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        val big = TextView(this).apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 72f); typeface = displayTypeface(); fontFeatureSettings = "tnum"
+            setTextColor(themeColor(R.attr.obdTextPrimary)); gravity = Gravity.CENTER; includeFontPadding = false
+            setPadding(0, dp(24f).toInt(), 0, dp(4f).toInt())
+        }
+        val status = TextView(this).apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextSecondary)); gravity = Gravity.CENTER
+            setPadding(0, 0, 0, dp(14f).toInt())
+        }
+        // The quarter mile is worked out from speed, so say it's an estimate.
+        val estimate = TextView(this).apply {
+            setText(R.string.perf_quarter_estimate); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdWarn))
+            gravity = Gravity.CENTER; setPadding(0, 0, 0, dp(12f).toInt())
+        }
+        body.addView(big); body.addView(status); body.addView(estimate)
+        val again = MaterialButton(this).apply { setText(R.string.perf_again); visibility = View.GONE }
+        body.addView(again, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        val history = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(0, dp(16f).toInt(), 0, 0) }
+        body.addView(history)
+
+        fun results() = PerformanceTimer.decode(prefs.getString(PREF_PERF_HISTORY, null))
+        fun fmt(r: PerformanceTimer.Result) = String.format(Locale.US, "%.2f s", r.seconds) + (r.trapSpeed?.let { " at ${Units.speedText(it)}" } ?: "")
+        fun renderHistory() {
+            history.removeAllViews()
+            val mine = results().filter { it.mode == mode }
+            if (mine.isEmpty()) return
+            val best = mine.minByOrNull { it.seconds }!!
+            history.addView(TextView(this).apply {
+                text = "Best ${mode.label}: ${fmt(best)}"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
+            })
+            val day = java.text.SimpleDateFormat("d MMM, h:mm a", Locale.getDefault())
+            mine.sortedByDescending { it.atMs }.take(5).forEach { r ->
+                history.addView(TextView(this).apply {
+                    text = "${fmt(r)}  ·  ${day.format(java.util.Date(r.atMs))}"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                    setPadding(0, dp(6f).toInt(), 0, 0)
+                })
+            }
+        }
+        var readyAt = 0L
+        var shownDone = false
+        fun show(s: PerformanceTimer.State) {
+            when (s) {
+                is PerformanceTimer.State.Staging -> { big.text = "—"; status.text = if (ObdSession.state.value.isConnected) s.message else getString(R.string.perf_connect); again.visibility = View.GONE }
+                PerformanceTimer.State.Ready -> {
+                    // A start-light countdown, then go (the clock starts when the car moves).
+                    if (readyAt == 0L) readyAt = android.os.SystemClock.elapsedRealtime()
+                    val n = 3 - ((android.os.SystemClock.elapsedRealtime() - readyAt) / 1000).toInt()
+                    big.text = if (n > 0) n.toString() else "GO"
+                    status.text = if (mode.from != null) "Ready. The clock starts as you pass ${mode.label.substringBefore("–")} ${mode.label.substringAfterLast(" ")}." else "Ready. The clock starts when the car moves."
+                }
+                is PerformanceTimer.State.Running -> {
+                    big.text = String.format(Locale.US, "%.1f", s.seconds)
+                    status.text = if (mode == PerformanceTimer.Mode.QUARTER) "${s.metres.roundToInt()} m of 402" else "Timing…"
+                }
+                is PerformanceTimer.State.Done -> {
+                    // Readings keep arriving after the finish; save and show the result only once.
+                    if (shownDone) return
+                    shownDone = true
+                    val r = s.result
+                    val previous = results().filter { it.mode == mode }.minOfOrNull { it.seconds }
+                    big.text = String.format(Locale.US, "%.2f s", r.seconds)
+                    status.text = listOfNotNull(r.trapSpeed?.let { "Trap speed ${Units.speedText(it)}" }, if (previous == null || r.seconds < previous) "New best!" else null).joinToString(" · ").ifEmpty { mode.label }
+                    prefs.edit().putString(PREF_PERF_HISTORY, PerformanceTimer.encode((results() + r).takeLast(30))).apply()
+                    renderHistory(); again.visibility = View.VISIBLE
+                }
+                is PerformanceTimer.State.Aborted -> { big.text = "—"; status.text = "${s.reason}. Run again when you're ready."; again.visibility = View.VISIBLE }
+            }
+        }
+        fun arm() {
+            timer.arm(mode); readyAt = 0L; shownDone = false
+            estimate.visibility = if (mode == PerformanceTimer.Mode.QUARTER) View.VISIBLE else View.GONE
+            prefs.edit().putString(PREF_PERF_MODE, mode.name).apply()
+            show(timer.state); renderHistory()
+        }
+        modes.check(ids.getValue(mode))
+        modes.addOnButtonCheckedListener { _, id, checked -> if (checked) { mode = ids.entries.first { it.value == id }.key; arm() } }
+        again.setOnClickListener { arm() }
+        arm()
+        val job = lifecycleScope.launch {
+            launch { ObdSession.samples.collect { if (it.key == SPEED_KEY) show(timer.update(it.timeMs, it.value)) } }
+            launch { while (true) { kotlinx.coroutines.delay(100); if (timer.state is PerformanceTimer.State.Ready || timer.state is PerformanceTimer.State.Staging) show(timer.state) } }
+        }
+        sheet.setOnDismissListener { job.cancel() }
+        body.applyTitleFonts()
+        sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+        sheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        sheet.behavior.skipCollapsed = true
+        sheet.show()
+    }
+
+    /** A picture of the drive in this style, for Shorts, TikTok, Reels or an Instagram post. */
+    private fun shareDriveCard(trip: TripSummary) {
+        val formats = DriveCardRenderer.Format.values()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.share_picture)
+            .setItems(formats.map { it.label }.toTypedArray()) { _, i ->
+                val bmp = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, formats[i])
+                val name = "OBD2Reader_drive_" + java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).format(java.util.Date(trip.startedAt)) + "_${formats[i].name.lowercase(Locale.US)}.png"
+                val file = Exports.exportFile(this, name)
+                file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+                bmp.recycle()
+                Exports.saveToPictures(this, file)
+                Exports.share(this, file, "image/png", "My drive")
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    /** A tile one shade lighter than the sheet behind it. */
+    private fun tripTile() = GradientDrawable().apply {
+        setColor(themeColor(R.attr.obdSurfaceHigh))
+        cornerRadius = themeDimen(R.attr.obdCardRadius)
+    }
+
     private fun scoreColour(score: Int): Int = when {
         score >= 80 -> themeColor(R.attr.obdOk)
         score >= 55 -> themeColor(R.attr.obdWarn)
@@ -489,7 +974,7 @@ class MainActivity : AppCompatActivity() {
     private data class Channel(val key: String, val label: String, val unit: String, val decimals: Int, val min: Double, val max: Double)
 
     private val channels: List<Channel> by lazy {
-        Pids.dashboard.map { Channel(it.hex, if (it.number == Pids.RPM) "RPM" else it.label, it.unit, it.decimals, it.min, it.max) } +
+        Pids.dashboard.map { Channel(it.hex, if (it.number == Pids.RPM) "RPM" else it.label, Units.unit(it.hex, it.unit), it.decimals, Units.value(it.hex, it.min), Units.value(it.hex, it.max)) } +
             Channel(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0)
     }
 
@@ -616,20 +1101,117 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDriveActions(file: java.io.File) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(driveLabel(file))
-            .setMessage("A CSV file with a row every 0.2 seconds. Open it in Excel, Google Sheets or any data-logging tool.")
-            .setPositiveButton(R.string.share) { _, _ -> Exports.share(this, file, "text/csv", "OBD2 Reader drive ${file.nameWithoutExtension}") }
-            .setNeutralButton("Delete") { _, _ ->
+        val actions = listOf(
+            "Make a video overlay" to { showOverlayOptions(file) },
+            "Share the data (CSV)" to { Exports.share(this, file, "text/csv", "OBD2 Reader drive ${file.nameWithoutExtension}") },
+            "Delete" to {
                 if (LogRecorder.active.value?.file == file) {
                     toast("This drive is still recording. Stop recording first.")
                 } else {
                     file.delete()
                     toast("Deleted")
                 }
-            }
+            },
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle(driveLabel(file))
+            .setItems(actions.map { it.first }.toTypedArray()) { _, i -> actions[i].second() }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    // ---------- Video overlay ----------
+
+    private var overlayJob: kotlinx.coroutines.Job? = null
+
+    /** Background and size for the overlay video, then makes it. */
+    private fun showOverlayOptions(file: java.io.File) {
+        if (LogRecorder.active.value?.file == file) { toast("This drive is still recording. Stop recording first."); return }
+        val drive = DriveTrack.parse(file.readLines())
+        if (drive == null || drive.duration < 2.0) { toast("This drive is too short to make a video."); return }
+        val backgrounds = listOf(
+            Triple("Green screen", "Remove it with your editor's chroma key (CapCut, Premiere, DaVinci Resolve…)", android.graphics.Color.rgb(0, 255, 0)),
+            Triple("Black", "Use the Screen blend mode to drop the black", android.graphics.Color.BLACK),
+        )
+        var bg = 0
+        var size = 0
+        val view = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24f).toInt(), dp(8f).toInt(), dp(24f).toInt(), 0) }
+        view.addView(TextView(this).apply {
+            text = "Your readings as a video to lay over dashcam or GoPro footage: rpm, speed, shift lights, throttle and a 30-second trace, in your style's colours. ${TripSummary.duration(drive.duration.toInt())} long, 30 frames a second."
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdTextSecondary)); setLineSpacing(0f, 1.15f)
+        })
+        fun group(title: String, options: List<Pair<String, String?>>, onPick: (Int) -> Unit) {
+            view.addView(TextView(this).apply {
+                text = title; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
+                setPadding(0, dp(16f).toInt(), 0, dp(2f).toInt())
+            })
+            val radios = android.widget.RadioGroup(this)
+            options.forEachIndexed { i, (name, hint) ->
+                radios.addView(com.google.android.material.radiobutton.MaterialRadioButton(this).apply {
+                    id = View.generateViewId()
+                    text = if (hint == null) name else "$name\n$hint"
+                    isChecked = i == 0
+                    setOnCheckedChangeListener { _, on -> if (on) onPick(i) }
+                })
+            }
+            view.addView(radios)
+        }
+        group("Background", backgrounds.map { it.first to it.second }) { bg = it }
+        group("Size", OverlayExporter.Size.values().map { it.label to null }) { size = it }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Video overlay")
+            .setView(androidx.core.widget.NestedScrollView(this).apply { addView(view) })
+            .setPositiveButton("Make video") { _, _ -> makeOverlay(file, drive, backgrounds[bg].third, OverlayExporter.Size.values()[size]) }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun makeOverlay(file: java.io.File, drive: DriveTrack, background: Int, size: OverlayExporter.Size) {
+        val out = Exports.exportFile(this, file.nameWithoutExtension + "_overlay.mp4")
+        val progress = com.google.android.material.progressindicator.LinearProgressIndicator(this).apply { max = 1000; isIndeterminate = false }
+        val label = TextView(this).apply { text = "Starting…"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary)) }
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL; setPadding(dp(24f).toInt(), dp(12f).toInt(), dp(24f).toInt(), 0)
+            addView(progress); addView(label, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8f).toInt() })
+        }
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Making your video")
+            .setView(box)
+            .setCancelable(false)
+            .setNegativeButton("Cancel") { _, _ -> overlayJob?.cancel() }
+            .show()
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        val started = android.os.SystemClock.elapsedRealtime()
+        overlayJob = lifecycleScope.launch {
+            try {
+                OverlayExporter.export(this@MainActivity, drive, out, background, size, redline, roundel.max) { f ->
+                    progress.progress = (f * 1000).toInt()
+                    val spent = (android.os.SystemClock.elapsedRealtime() - started) / 1000.0
+                    val left = if (f > 0.02f) (spent / f * (1 - f)).toInt() else null
+                    label.text = "${(f * 100).toInt()}%" + (left?.let { " · about ${TripSummary.duration(it.coerceAtLeast(1))} left" } ?: "")
+                }
+                dialog.dismiss()
+                val saved = OverlayExporter.saveToMovies(this@MainActivity, out)
+                MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle("Video ready")
+                    .setMessage(if (saved != null) "Saved to Movies › OBD2 Reader, where your video editor can find it." else "Share it to your video editor, Drive or Files to keep it.")
+                    .setPositiveButton(R.string.share) { _, _ -> Exports.share(this@MainActivity, out, "video/mp4", "OBD2 Reader video overlay") }
+                    .setNegativeButton(R.string.done, null)
+                    .show()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                dialog.dismiss(); out.delete()
+                throw e
+            } catch (e: Exception) {
+                dialog.dismiss(); out.delete()
+                MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle("Couldn't make the video")
+                    .setMessage("This phone's video encoder refused the job (${e.message ?: e.javaClass.simpleName}). Try the 720p size.")
+                    .setPositiveButton(R.string.done, null)
+                    .show()
+            } finally {
+                if (!ObdSession.state.value.isConnected) window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
     }
 
     /** Shows the chosen style's dashboard and builds its readings. */
@@ -678,7 +1260,6 @@ class MainActivity : AppCompatActivity() {
         (teleRpm as FitTextView).sample = "8,888"
         (teleSpeed as FitTextView).sample = "888"
         (findViewById<View>(R.id.teleCoolant) as FitTextView).sample = "Coolant     888 °C"
-        (findViewById<View>(R.id.teleFuel) as FitTextView).sample = "Fuel     888 %"
         teleCoolant = findViewById(R.id.teleCoolant)
         teleFuel = findViewById(R.id.teleFuel)
         cockpitRing = findViewById(R.id.cockpitRing)
@@ -686,8 +1267,16 @@ class MainActivity : AppCompatActivity() {
         val blank = getString(R.string.dash)
         teleRpmText = SmoothText(teleRpm, blank, settle = 2f) { String.format(Locale.US, "%,d", ((it / 10f).roundToInt() * 10)) }
         teleSpeedText = SmoothText(teleSpeed, blank) { it.roundToInt().toString() }
-        teleCoolantText = SmoothText(teleCoolant, "Coolant     $blank °C") { "Coolant     ${it.roundToInt()} °C" }
-        teleFuelText = SmoothText(teleFuel, "Fuel     $blank %") { "Fuel     ${it.roundToInt()} %" }
+        // The two readouts under the trace: the first two chosen readings.
+        listOf(teleCoolant to slots[0], teleFuel to slots[1]).forEach { (view, key) ->
+            val r = readout(key)
+            val gap = if (r.label.length > 8) "   " else "     "
+            (view as FitTextView).sample = "${r.label}${gap}888.8 ${r.unit}"
+            teleLabels[key] = "${r.label}$gap"
+            teleTexts[key] = SmoothText(view, "${r.label}$gap$blank ${r.unit}", settle = if (r.decimals > 0) 0.01f else 0.05f) {
+                "${r.label}$gap${String.format(Locale.US, "%.${r.decimals}f", it)} ${r.unit}"
+            }
+        }
         findViewById<View>(R.id.teleRpmBar).setBackgroundColor(Channels.RPM)
         findViewById<View>(R.id.teleSpeedBar).setBackgroundColor(Channels.SPEED)
         findViewById<View>(R.id.telePanel).background = panelBackground()
@@ -700,25 +1289,27 @@ class MainActivity : AppCompatActivity() {
                 setSpan(android.text.style.ForegroundColorSpan(colour), start, length, 0)
                 append(label).append("     ")
             }
-            key("rpm", Channels.RPM); key("km/h", Channels.SPEED); append("Last 30 s")
+            key("rpm", Channels.RPM); key(Units.speedUnit, Channels.SPEED); append("Last 30 s")
         }
 
         fun pid(n: Int) = Pids.dashboard.first { it.number == n }
         val speed = pid(Pids.SPEED)
-        val coolant = pid(0x05)
-        val fuel = pid(0x2F)
-        fun decal(holder: Int, key: String, p: Pid, label: String, wide: Boolean) {
-            val d = DecalView(this, label, p.unit, p.min, if (key == SPEED_KEY) 240.0 else p.max, p.warnAbove, p.decimals, wide)
+        fun decal(holder: Int, key: String, r: Readout, wide: Boolean) {
+            val d = DecalView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, wide)
             findViewById<android.widget.FrameLayout>(holder).addView(d)
             decals[key] = d
         }
-        decal(R.id.decalSpeed, SPEED_KEY, speed, "Speed", true)
-        decal(R.id.decalCoolant, COOLANT_KEY, coolant, "Coolant", false)
-        decal(R.id.decalFuel, FUEL_KEY, fuel, "Fuel", false)
+        decal(R.id.decalSpeed, SPEED_KEY, Readout(SPEED_KEY, "Speed", Units.speedUnit, speed.decimals, 0.0, Units.speed(240.0), null), true)
+        cockpitRing.speedMax = Units.speed(240.0).toFloat(); cockpitRing.speedUnit = Units.speedUnit
+        cyberHud.speedUnit = Units.speedUnit
+        findViewById<TextView>(R.id.teleSpeedUnit).text = Units.speedUnit
+        decal(R.id.decalCoolant, slots[0], readout(slots[0]), false)
+        decal(R.id.decalFuel, slots[1], readout(slots[1]), false)
 
-        // Cockpit glass panels: coolant, fuel and battery.
+        // Cockpit glass panels: the three chosen readings (coolant, fuel and battery to start with).
         val row = findViewById<LinearLayout>(R.id.glassRow)
-        listOf(Triple(COOLANT_KEY, "Coolant", "°C"), Triple(FUEL_KEY, "Fuel", "%"), Triple(VOLTAGE_KEY, "Battery", "V")).forEachIndexed { i, (key, label, unit) ->
+        slots.map { readout(it) }.forEachIndexed { i, r ->
+            val key = r.key; val label = r.label; val unit = r.unit
             val box = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 background = panelBackground(stroke = true)
@@ -733,6 +1324,7 @@ class MainActivity : AppCompatActivity() {
             }
             line.addView(value)
             line.addView(TextView(this).apply {
+                glassUnits[key] = this
                 text = unit; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary))
                 setPadding(dp(4f).toInt(), 0, 0, 0)
             })
@@ -740,28 +1332,27 @@ class MainActivity : AppCompatActivity() {
             row.addView(box, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
                 if (i > 0) marginStart = dp(8f).toInt()
             })
-            glass[key] = SmoothText(value, getString(R.string.dash), settle = if (key == VOLTAGE_KEY) 0.01f else 0.05f) {
-                if (key == VOLTAGE_KEY) String.format(Locale.US, "%.1f", it) else it.roundToInt().toString()
+            glass[key] = SmoothText(value, getString(R.string.dash), settle = if (r.decimals > 0) 0.01f else 0.05f) {
+                String.format(Locale.US, "%.${r.decimals}f", it)
             }
         }
 
         // Cyberpunk neon readouts: coolant, fuel and battery.
         val cyberRow = findViewById<LinearLayout>(R.id.cyberRow)
-        listOf(
-            CyberChipView(this, "Coolant", "°C", 0, coolant.min.toFloat(), coolant.max.toFloat(), coolant.warnAbove?.toFloat()) to COOLANT_KEY,
-            CyberChipView(this, "Fuel", "%", 0, 0f, 100f, null) to FUEL_KEY,
-            CyberChipView(this, "Battery", "V", 1, 11f, 15f, null) to VOLTAGE_KEY,
-        ).forEachIndexed { i, (chip, key) ->
+        slots.map { readout(it) }.map { r ->
+            CyberChipView(this, r.label, r.unit, r.decimals, r.min.toFloat(), r.max.toFloat(), r.warn?.toFloat()) to r.key
+        }.forEachIndexed { i, (chip, key) ->
             cyberRow.addView(chip, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { if (i > 0) marginStart = dp(8f).toInt() })
             cyberChips[key] = chip
         }
 
         // The live-data list: everything except the readings the dashboard already shows big.
-        val shownBig = setOf(RPM_KEY, SPEED_KEY, COOLANT_KEY, FUEL_KEY)
+        val shownBig = setOf(RPM_KEY, SPEED_KEY, slots[0], slots[1])
         Pids.dashboard.filter { it.hex !in shownBig }.forEach { p ->
-            addTile(p.hex, TowerRowView(this, p.label, p.unit, p.min, p.max, p.warnAbove, p.decimals, Channels.forKey(p.hex, themeColor(R.attr.obdStripe1))))
+            val r = readout(p.hex)
+            addTile(p.hex, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, Channels.forKey(p.hex, themeColor(R.attr.obdStripe1))))
         }
-        addTile(VOLTAGE_KEY, TowerRowView(this, "Battery", "V", 11.0, 15.0, 15.0, 1, Channels.forKey(VOLTAGE_KEY, themeColor(R.attr.obdStripe1))))
+        if (VOLTAGE_KEY !in shownBig) addTile(VOLTAGE_KEY, TowerRowView(this, "Battery", "V", 11.0, 15.0, 15.0, 1, Channels.forKey(VOLTAGE_KEY, themeColor(R.attr.obdStripe1))))
     }
 
     private fun setRpm(value: Float?) {
@@ -789,20 +1380,30 @@ class MainActivity : AppCompatActivity() {
 
     /** The top speed this drive, beside the speed in every style. */
     private fun showTopSpeed(top: Double?) {
-        decals[SPEED_KEY]?.top = top
-        cockpitRing.top = top?.toFloat()
-        cyberHud.top = top?.toFloat()
-        findViewById<TextView>(R.id.teleSpeedUnit).setIfChanged(top?.let { "km/h · top ${it.roundToInt()}" } ?: getString(R.string.unit_kmh))
+        val t = top?.let { Units.speed(it) }
+        decals[SPEED_KEY]?.top = t
+        cockpitRing.top = t?.toFloat()
+        cyberHud.top = t?.toFloat()
+        findViewById<TextView>(R.id.teleSpeedUnit).setIfChanged(t?.let { "${Units.speedUnit} · top ${it.roundToInt()}" } ?: Units.speedUnit)
+    }
+
+    /** No reading from the car for [key]: every place it's shown says N/A, never a stale or made-up number. */
+    private fun showNoReading(key: String) {
+        tiles[key]?.setUnsupported()
+        if (key !in slots) return
+        decals[key]?.setUnsupported()
+        cyberChips[key]?.setUnsupported()
+        glass[key]?.showText("N/A")
+        glassUnits[key]?.visibility = View.GONE
+        teleTexts[key]?.showText("${teleLabels[key].orEmpty()}N/A")
     }
 
     private fun setBigReading(key: String, value: Double?) {
+        if (value != null) glassUnits[key]?.visibility = View.VISIBLE
         decals[key]?.setValue(value)
         glass[key]?.set(value?.toFloat())
         cyberChips[key]?.setValue(value)
-        when (key) {
-            COOLANT_KEY -> teleCoolantText.set(value?.toFloat())
-            FUEL_KEY -> teleFuelText.set(value?.toFloat())
-        }
+        teleTexts[key]?.set(value?.toFloat())
     }
 
     // ---------- Choosing an adapter ----------
@@ -1157,10 +1758,10 @@ class MainActivity : AppCompatActivity() {
                 startLights.out()
             }
             if (s.phase == ObdSession.Phase.WAITING) {
-                lastUnsupported = emptySet() // so "n/a" comes back when the car wakes up
+                lastUnsupported = emptySet() // so "N/A" comes back when the car wakes up
                 setRpm(null); setSpeed(null)
                 tiles.values.forEach { it.setValue(null) }
-                listOf(COOLANT_KEY, FUEL_KEY, VOLTAGE_KEY).forEach { setBigReading(it, null) }
+                slots.forEach { setBigReading(it, null) }
             }
             // Lights out, then the rev ring sweeps: like a car's self-test when you turn the key.
             if (s.isConnected && (lastPhase == ObdSession.Phase.CONNECTING || lastPhase == ObdSession.Phase.WAITING)) roundel.sweep()
@@ -1171,7 +1772,7 @@ class MainActivity : AppCompatActivity() {
                 // Codes and the VIN stay on screen until the next connection.
                 setRpm(null); setSpeed(null)
                 tiles.values.forEach { it.setValue(null) }
-                listOf(COOLANT_KEY, FUEL_KEY, VOLTAGE_KEY).forEach { setBigReading(it, null) }
+                slots.forEach { setBigReading(it, null) }
                 trace.clear()
                 lastReadings = emptyMap()
                 lastUnsupported = emptySet()
@@ -1187,24 +1788,38 @@ class MainActivity : AppCompatActivity() {
             for ((key, value) in s.readings) {
                 if (lastReadings.containsKey(key) && lastReadings[key] == value) continue
                 when (key) {
-                    RPM_KEY -> setRpm(value?.toFloat())
-                    SPEED_KEY -> setSpeed(value?.toFloat())
-                    COOLANT_KEY, FUEL_KEY -> setBigReading(key, value)
-                    VOLTAGE_KEY -> { setBigReading(key, value); tiles[key]?.setValue(value) }
-                    else -> tiles[key]?.setValue(value)
+                    RPM_KEY -> {
+                        setRpm(value?.toFloat())
+                        if (value == null && s.isConnected) teleRpmText.showText("N/A")
+                    }
+                    SPEED_KEY -> {
+                        setSpeed(Units.value(key, value)?.toFloat())
+                        if (value == null && s.isConnected) { decals[SPEED_KEY]?.setUnsupported(); teleSpeedText.showText("N/A") }
+                    }
+                    else -> {
+                        val shown = Units.value(key, value) // °F where chosen
+                        if (shown == null && s.isConnected) {
+                            // Connected, but the car has stopped answering this one: N/A, never an old number.
+                            showNoReading(key)
+                        } else {
+                            if (key in slots) setBigReading(key, shown)
+                            tiles[key]?.setValue(shown)
+                        }
+                    }
                 }
             }
             lastReadings = s.readings
         }
+        // A stand-in reading is labelled for what it really is.
+        if (s.standIns != lastStandIns) {
+            tiles.forEach { (k, t) -> t.labelOverride = s.standIns[k] }
+            decals.forEach { (k, d) -> d.labelOverride = s.standIns[k] }
+            lastStandIns = s.standIns
+        }
         if (s.unsupported != lastUnsupported) {
             s.unsupported.forEach { tiles[it]?.setUnsupported() }
-            // The big coolant and fuel readouts say so too, instead of a dash that never fills in.
-            listOf(COOLANT_KEY, FUEL_KEY).filter { it in s.unsupported }.forEach { key ->
-                decals[key]?.setUnsupported()
-                cyberChips[key]?.setUnsupported()
-                glass[key]?.showText("n/a")
-                if (key == COOLANT_KEY) teleCoolantText.showText("Coolant     n/a") else teleFuelText.showText("Fuel     n/a")
-            }
+            // The main readouts say so too, instead of a dash that never fills in.
+            slots.filter { it in s.unsupported }.forEach { showNoReading(it) }
             lastUnsupported = s.unsupported
         }
         if (s.isConnected) {
@@ -1981,7 +2596,7 @@ class MainActivity : AppCompatActivity() {
         tiles.values.forEach { it.setValue(null) }
         setRpm(null)
         setSpeed(null)
-        listOf(COOLANT_KEY, FUEL_KEY, VOLTAGE_KEY).forEach { setBigReading(it, null) }
+        slots.forEach { setBigReading(it, null) }
         trace.clear()
         roundel.checkEngine = false
         vinText.setText(R.string.vin_unknown)
@@ -2089,6 +2704,11 @@ class MainActivity : AppCompatActivity() {
         private const val PREF_CAR_ENGINE = AppPrefs.CAR_ENGINE
         private const val PREF_CAR_ASKED = "car_asked"
         private const val PREF_SCORE_STYLE = "score_style"
+        private const val PREF_LAST_TRIP = "last_trip"
+        private const val PREF_SLOTS = "dash_slots"
+        private const val PREF_PERF_HISTORY = "perf_history"
+        private const val PREF_PERF_MODE = "perf_mode"
+        private const val PREF_LAST_TRIP_SHOWN = "last_trip_shown"
         private const val PREF_PROTOCOL = AppPrefs.PROTOCOL
         private const val PREF_LAST_PROTOCOL = AppPrefs.LAST_PROTOCOL
         private const val PREF_LAST_TYPE = AppPrefs.LAST_TYPE
