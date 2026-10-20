@@ -52,7 +52,8 @@ class LiveryStripesView @JvmOverloads constructor(context: Context, attrs: Attri
         canvas.save()
         canvas.scale(k, k)
         val w = width / k
-        canvas.rotate(-7f, w / 2f, dp(46f))
+        // Sideways the screen is twice as wide, so a shallower rake keeps the bands clear of the title.
+        canvas.rotate(if (compact) -3f else -7f, w / 2f, dp(46f))
         val left = -w * 0.25f
         val right = w * 1.25f
         var y = dp(20f)

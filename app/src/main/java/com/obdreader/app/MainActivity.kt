@@ -1808,8 +1808,9 @@ class MainActivity : AppCompatActivity() {
     // ---------- Landscape ----------
 
     private var landscape = false
-    private var portraitNavMinHeight = -1
     private var landRow: LinearLayout? = null
+    /** Rows built for landscape, removed again in portrait. */
+    private val landRows = ArrayList<LinearLayout>()
     /** Views moved for landscape, with where they came from, so portrait can put them back exactly. */
     private val moved = ArrayList<Triple<View, ViewGroup, Pair<Int, ViewGroup.LayoutParams>>>()
 
@@ -1826,10 +1827,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Turning the phone sideways puts the Dashboard in two columns: the style's main dial or
-     * display on the left, sized to fit the screen's height, and the title, other readouts,
-     * Connect and status on the right. Below them come the driving score and the live-data
-     * list, in two columns. Turning it back restores the portrait layout exactly.
+     * Turning the phone sideways keeps the title across the top (with the livery stripes behind
+     * it at full width) and puts the Dashboard in two columns underneath: the style's main dial or
+     * display on the left, sized to fit the screen's height, and its other readouts, Connect and
+     * status on the right. Race telemetry instead has its numbers beside the trace, with coolant,
+     * fuel and Connect on one line below. The driving score and the live-data list (in two
+     * columns) follow. Turning back restores the portrait layout exactly.
      */
     private fun applyOrientation() {
         val land = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -1841,90 +1844,80 @@ class MainActivity : AppCompatActivity() {
             parent.addView(view, where.first, where.second)
         }
         moved.clear()
-        landRow?.let { (it.parent as? ViewGroup)?.removeView(it) }
+        landRows.forEach { (it.parent as? ViewGroup)?.removeView(it) }
+        landRows.clear()
         landRow = null
 
         val content = findViewById<LinearLayout>(R.id.content)
         val topBar = findViewById<View>(R.id.topBar)
+        fun row() = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }.also { landRows += it }
+        fun column() = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         if (land) {
-            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-            val left = LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                gravity = android.view.Gravity.CENTER_HORIZONTAL
-                setPadding(0, dp(12f).toInt(), 0, 0)
-            }
-            val right = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            val row = row()
+            val left = column().apply { gravity = android.view.Gravity.CENTER_HORIZONTAL }
+            val right = column()
             row.addView(left, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             row.addView(right, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(20f).toInt() })
-            content.addView(row, content.indexOfChild(topBar))
+            content.addView(row, content.indexOfChild(topBar) + 1, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             landRow = row
 
-            // The title (and, on liveries, the stripes behind it) heads the right column.
-            val head = android.widget.FrameLayout(this)
-            right.addView(head, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            val stripes = findViewById<View>(R.id.stripesDash)
-            move(stripes, head, android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            move(topBar, head, android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-
-            // The style's main dial goes left; its other readouts go right.
             val active = findViewById<ViewGroup>(when (dash) {
                 DashLayout.LIVERY -> R.id.layoutLivery
                 DashLayout.TELEMETRY -> R.id.layoutTelemetry
                 DashLayout.COCKPIT -> R.id.layoutCockpit
                 DashLayout.CYBERPUNK -> R.id.layoutCyberpunk
             })
-            val heroCount = when (dash) {
-                DashLayout.LIVERY -> 2 // roundel and start lights
-                DashLayout.TELEMETRY -> 3 // shift lights, big numbers and the trace
-                DashLayout.COCKPIT, DashLayout.CYBERPUNK -> 1
-            }
-            move(active, left, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            (heroCount until active.childCount).map { active.getChildAt(it) }.forEach { move(it, right) }
-
-            // Connect, status and the choose-car button follow on the right.
             val connectRow = connectBtn.parent as View
-            val from = content.indexOfChild(connectRow)
-            val to = content.indexOfChild(chooseCarButton)
-            (from..to).map { content.getChildAt(it) }.forEach { move(it, right) }
+            if (dash == DashLayout.TELEMETRY) {
+                // Shift lights and the big numbers on the left, the trace beside them on the right.
+                val panel = findViewById<View>(R.id.telePanel)
+                val pair = active.getChildAt(active.indexOfChild(panel) + 1)
+                move(active, left, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+                move(panel, right, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4f).toInt() })
+                // Coolant, fuel and Connect on one line underneath both.
+                val line = row().apply { gravity = android.view.Gravity.CENTER_VERTICAL }
+                content.addView(line, content.indexOfChild(row) + 1, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10f).toInt() })
+                move(pair, line, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                move(connectRow, line, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(12f).toInt() })
+            } else {
+                // The main dial goes left; the style's other readouts, Connect and status go right.
+                val heroCount = if (dash == DashLayout.LIVERY) 2 else 1 // roundel and start lights; the ring or display
+                move(active, left, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+                (heroCount until active.childCount).map { active.getChildAt(it) }.forEach { move(it, right) }
+                val from = content.indexOfChild(connectRow)
+                val to = content.indexOfChild(chooseCarButton)
+                (from..to).map { content.getChildAt(it) }.forEach { move(it, right) }
+            }
         }
         // Slimmer livery stripes sideways, so the title and readouts sit higher.
         if (dash == DashLayout.LIVERY) {
             listOf(R.id.stripesDash, R.id.stripesDiag, R.id.stripesGraphs).forEach { findViewById<LiveryStripesView>(it).compact = land }
-            val top = dp(if (land) 56f else 92f).toInt()
+            val top = dp(if (land) 60f else 92f).toInt()
             listOf(R.id.topBar, R.id.titleDiagnostics, R.id.titleGraphs).forEach { findViewById<View>(it).setPadding(0, top, 0, 0) }
         }
-        // A slimmer tab bar sideways: icons only, so the dial gets more of the short screen.
-        if (portraitNavMinHeight < 0) portraitNavMinHeight = bottomNav.minimumHeight
+        // Icons only on the tab bar sideways, so it's slimmer still.
         bottomNav.labelVisibilityMode = if (land) NavigationBarView.LABEL_VISIBILITY_UNLABELED else NavigationBarView.LABEL_VISIBILITY_LABELED
-        bottomNav.minimumHeight = if (land) dp(56f).toInt() else portraitNavMinHeight
+        bottomNav.minimumHeight = dp(if (land) 44f else 56f).toInt()
         layoutTiles(if (land) 2 else 1)
         fitHero()
     }
 
     private var heroFitter: View.OnLayoutChangeListener? = null
 
-    /** In landscape, sizes the main dial to the visible height of the Dashboard, and keeps it fitted as that changes. */
+    /** In landscape, sizes the main dial to the visible height under the title, and keeps it fitted as that changes. */
     private fun fitHero() {
         fun fit() {
             val h = pageDashboard.height
-            val max = if (landscape && h > 0) (h - dp(40f).toInt()).coerceAtLeast(dp(180f).toInt()) else Int.MAX_VALUE
+            val below = findViewById<View>(R.id.topBar).height
+            val max = if (landscape && h > 0) (h - below - dp(24f).toInt()).coerceAtLeast(dp(160f).toInt()) else Int.MAX_VALUE
             roundel.maxSize = max
             cockpitRing.maxSize = max
             cyberHud.maxSize = max
-            // Telemetry: the trace takes whatever height is left under the big numbers. On a short
-            // screen where that's too little, it moves under both columns at full width instead.
-            val panel = findViewById<View>(R.id.telePanel)
-            val inLeft = panel.parent === findViewById<View>(R.id.layoutTelemetry)
-            trace.fixedHeight = if (landscape && dash == DashLayout.TELEMETRY && h > 0 && inLeft) {
-                val room = max - panel.top - (panel.height - trace.height)
-                if (room < dp(56f)) {
-                    landRow?.let { row ->
-                        val content = row.parent as ViewGroup
-                        move(panel, content, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(12f).toInt() })
-                        content.removeView(panel); content.addView(panel, content.indexOfChild(row) + 1)
-                    }
-                    null
-                } else room.coerceAtMost(dp(96f).toInt())
+            // Telemetry: the trace beside the numbers is as tall as they are.
+            trace.fixedHeight = if (landscape && dash == DashLayout.TELEMETRY) {
+                val numbers = findViewById<View>(R.id.layoutTelemetry)
+                val panel = findViewById<View>(R.id.telePanel)
+                if (numbers.height > 0) (numbers.height - dp(4f).toInt() - (panel.height - trace.height)).coerceIn(dp(56f).toInt(), dp(220f).toInt()) else null
             } else null
         }
         // Fit again once the new arrangement has been laid out.
