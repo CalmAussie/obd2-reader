@@ -71,6 +71,7 @@
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/modelInput"
+                style="@style/Widget.Material3.AutoCompleteTextView.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:completionThreshold="1"
@@ -90,12 +91,18 @@
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/engineInput"
+                style="@style/Widget.Material3.AutoCompleteTextView.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:completionThreshold="1"
                 android:imeOptions="actionDone"
                 android:inputType="text"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:minHeight="56dp"
+                android:paddingStart="16dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.card.MaterialCardView

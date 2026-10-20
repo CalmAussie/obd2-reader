@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.7.6 (20 October 2026)
+- Fixed: in **Choose your car**, the Engine box was squashed (thinner than the other boxes, with the text pressed against its edge). It's now the same size and style as Manufacturer, Year and Model.
+
 ## 1.7.5 (20 October 2026)
 - Landscape keeps the app name at the top left in every style, with the livery stripes behind it across the full width of the screen. The dashboard sits underneath in two columns.
 - Landscape on **Race telemetry**: the 30-second trace now sits beside the engine-speed and speed numbers, the same height as them, and coolant, fuel and Disconnect share one line underneath.
