@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.9.0 (21 October 2026)
+- **Battery charging status.** Beside the battery voltage, the app now says whether the battery looks like it's charging: charging, charging weakly, not charging or overcharging with the engine running, and engine off (or engine off, low) when it isn't. It's on every style's battery readout, the live-data list and the Android Auto battery tile.
+- It's an estimate, marked **(est.)**: standard OBD2 has no battery-current (amps) reading, so it's worked out from the voltage and engine speed, with the same limits as the battery alerts. It waits a few seconds before changing (20 seconds for "not charging"), so a moment's dip doesn't flip it. Cars with smart charging lower the voltage while cruising, which shows as "charging weakly". **Diagnostics → Help → Battery status** explains the limits.
+- **Scan what your car reports** has a new **Battery** section: battery voltage (every car), whether the car offers the standard hybrid or electric battery data (shown raw, so it can be decoded for your car), and the hybrid battery's remaining life where reported. A 12-volt battery-current reading isn't part of standard OBD2, and the scan says so.
+
 ## 1.8.1 (21 October 2026)
 - **More trouble codes explained.** About 370 generic trouble codes now have their standard name and a full explanation, up from about 150: what the code means, how urgent it is, common causes, what you might notice and what to check first. The new ones cover sensor faults (circuit low, high, range and intermittent), injectors, ignition coils and misfires for up to 12 cylinders, oxygen sensors and their heaters, fuel trim and pressure, EGR, EVAP, the electronic throttle, the transmission's sensors, gears and solenoids, diesel particulate filters, and lost communication between the car's computers.
 - New help topic, **What codes it reads**: the app reads codes from the engine computer (and, on many cars, the automatic transmission), not from systems such as ABS, airbags or body electrics. Codes outside its list are named by system, and manufacturer-specific codes say where to look them up for your make.

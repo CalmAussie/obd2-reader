@@ -236,6 +236,10 @@ class CyberChipView(
 
     private var unsupported = false
 
+    /** Replaces the name above the number when it fits (the battery's charging status, say). */
+    var labelOverride: String? = null
+        set(v) { if (field != v) { field = v; invalidate() } }
+
     /** The car doesn't report this reading. */
     fun setUnsupported() {
         unsupported = true
@@ -273,7 +277,8 @@ class CyberChipView(
 
         val pad = dp(11f)
         label.color = magenta
-        canvas.drawText(name.uppercase(Locale.US), pad, dp(20f), label)
+        val title = labelOverride?.uppercase(Locale.US)?.takeIf { label.measureText(it) <= w - pad * 2 } ?: name.uppercase(Locale.US)
+        canvas.drawText(title, pad, dp(20f), label)
         number.color = if (hot) red else fg
         val text = if (unsupported) "N/A" else shown?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
         canvas.drawText(text, pad, dp(46f), number)
