@@ -33,6 +33,18 @@ class ElmParserTest {
     }
 
     @Test
+    fun everyModuleAnswersSupportedList() {
+        // J1850 car, headers off: the gearbox module answers first and doesn't list 0120;
+        // the engine module answers second and does.
+        val lines = listOf("41 00 98 18 00 00", "41 00 BE 3E B8 11")
+        val all = ElmParser.extractAll(lines, "4100")
+        assertEquals(2, all.size)
+        val set = all.flatMap { ElmParser.supportedFromBitmask(it, 0) }.toSet()
+        assertTrue(0x20 in set)
+        assertTrue(0x0C in set)
+    }
+
+    @Test
     fun supportedBitmask() {
         val set = ElmParser.supportedFromBitmask(intArrayOf(0xBE, 0x1F, 0xA8, 0x13), 0)
         assertTrue(0x01 in set)

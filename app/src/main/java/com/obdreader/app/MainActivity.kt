@@ -1124,6 +1124,7 @@ class MainActivity : AppCompatActivity() {
                 startLights.out()
             }
             if (s.phase == ObdSession.Phase.WAITING) {
+                lastUnsupported = emptySet() // so "n/a" comes back when the car wakes up
                 setRpm(null); setSpeed(null)
                 tiles.values.forEach { it.setValue(null) }
                 listOf(COOLANT_KEY, FUEL_KEY, VOLTAGE_KEY).forEach { setBigReading(it, null) }
@@ -1164,6 +1165,13 @@ class MainActivity : AppCompatActivity() {
         }
         if (s.unsupported != lastUnsupported) {
             s.unsupported.forEach { tiles[it]?.setUnsupported() }
+            // The big coolant and fuel readouts say so too, instead of a dash that never fills in.
+            listOf(COOLANT_KEY, FUEL_KEY).filter { it in s.unsupported }.forEach { key ->
+                decals[key]?.setUnsupported()
+                cyberChips[key]?.setUnsupported()
+                glass[key]?.showText("n/a")
+                if (key == COOLANT_KEY) teleCoolantText.showText("Coolant     n/a") else teleFuelText.showText("Fuel     n/a")
+            }
             lastUnsupported = s.unsupported
         }
         if (s.isConnected) {

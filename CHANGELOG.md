@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.6.2 (20 October 2026)
+- Better at finding which readings your car reports. When the car is first asked, several of its modules (engine, gearbox and so on) can answer, each with its own list. The app used to take only the first answer, and if that wasn't the engine it could miss readings such as fuel level. It now combines every module's answer.
+- Any dashboard reading still missing from the car's list is tried once anyway, because some cars answer readings they don't list.
+- If the car really doesn't report fuel level or coolant temperature, the big Dashboard readouts now say **n/a** instead of a dash that looks like it's still loading. Many older cars, especially Ford-built ones from before about 2008, don't send fuel level over OBD2 at all; the fuel gauge gets it from the instrument cluster instead.
+
 ## 1.6.1 (20 October 2026)
 - Fixed: on the **Race telemetry** layout, the shift lights across the top stayed dark in normal driving. They only started at about a third of the redline (around 2,300 rpm on most petrol cars), so at idle and everyday revs nothing lit up. They now cover the whole rev range: one light at idle, climbing one light at a time as the revs rise, all 15 just below your car's redline, and flashing blue at the redline as before.
 

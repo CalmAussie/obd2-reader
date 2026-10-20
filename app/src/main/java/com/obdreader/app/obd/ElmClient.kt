@@ -138,9 +138,11 @@ class ElmClient(
         var base = 0
         while (base <= 0xC0) {
             val code = String.format(Locale.US, "%02X", base)
-            val bytes = ElmParser.extractData(command("01$code", 5000), "41$code") ?: break
-            if (bytes.size < 4) break
-            result += ElmParser.supportedFromBitmask(bytes, base)
+            // Several modules can answer (engine, gearbox…), each with its own list. Use them all:
+            // the first to answer isn't always the engine, and only the engine may go on to 0120.
+            val answers = ElmParser.extractAll(command("01$code", 5000), "41$code").filter { it.size >= 4 }
+            if (answers.isEmpty()) break
+            answers.forEach { result += ElmParser.supportedFromBitmask(it, base) }
             if ((base + 0x20) !in result) break
             base += 0x20
         }
