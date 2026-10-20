@@ -186,7 +186,7 @@
                                     android:text="@string/dash"
                                     android:textColor="?attr/obdTextPrimary"
                                     android:textSize="66sp" />
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/unit_kmh" android:textColor="?attr/obdTextSecondary" android:textSize="13sp" />
+                                <TextView android:id="@+id/teleSpeedUnit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" android:text="@string/unit_kmh" android:textColor="?attr/obdTextSecondary" android:textSize="13sp" />
                             </LinearLayout>
                         </LinearLayout>
 

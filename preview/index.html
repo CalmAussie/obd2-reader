@@ -565,6 +565,10 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .land-right .tele-trace { margin-top: 4px; }
 .phone.land[data-layout="livery"] .topbar { padding-top: 62px; }
 .phone.land[data-layout="livery"] .livery { transform: rotate(-3deg); }
+
+/* Top speed in the corner of the speed decal (mirrors DecalView.top) */
+#speedDecal { position: relative; }
+#speedDecal .top-sp { position: absolute; right: 22px; top: 14px; font-size: 13px; font-weight: 500; color: var(--fg-2); }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -929,6 +933,7 @@ function drawCockpit(speed, rpm) {
     ${fs > 0.003 ? `<path d="${arcPath(cx, cy, 88, a0, a0 + sw * fs)}" fill="none" stroke="url(#cpG)" stroke-width="8" stroke-linecap="round" filter="url(#cpGlow)" opacity=".8"/><path d="${arcPath(cx, cy, 88, a0, a0 + sw * fs)}" fill="none" stroke="url(#cpG)" stroke-width="8" stroke-linecap="round"/>` : ""}
     <text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="78" font-weight="300" fill="var(--fg)" style="font-family:var(--ui);font-variant-numeric:tabular-nums;letter-spacing:-2px">${speed == null ? "—" : Math.round(speed)}</text>
     <text x="${cx}" y="${cy + 44}" text-anchor="middle" font-size="14" fill="var(--fg-2)" style="font-family:var(--ui)">km/h</text>
+    ${window.topSpeedNow != null ? `<text x="${cx}" y="${cy + 64}" text-anchor="middle" font-size="14" fill="var(--fg-2)" style="font-family:var(--ui)">Top ${Math.round(window.topSpeedNow)}</text>` : ""}
     <text x="${cx}" y="${cy + 92}" text-anchor="middle" font-size="15" fill="var(--fg)" style="font-family:var(--ui);font-variant-numeric:tabular-nums">${rpm == null ? "—" : fmtInt(rpm)} <tspan fill="var(--fg-2)" font-size="12">rpm</tspan></text>`;
 }
 
@@ -964,7 +969,7 @@ function drawCyber(speed, rpm) {
     <text x="22" y="28" font-size="10" fill="#FF2BD6" style="font-weight:600;letter-spacing:.22em">SYS//TACH</text>
     <text x="${W - 22}" y="29" text-anchor="end" font-size="14" fill="${hot ? "var(--red)" : "#00F0FF"}" style="font-family:var(--ui);font-stretch:125%;font-weight:700;font-variant-numeric:tabular-nums">${rpm == null ? "—" : fmtInt(Math.round(rpm / 10) * 10)} RPM</text>
     ${segs}${scale}${big(W / 2 - 3, "rgba(255,43,214,.75)")}${big(W / 2 + 3, "rgba(0,240,255,.75)")}${big(W / 2, "var(--fg)")}
-    <text x="${W / 2}" y="214" text-anchor="middle" font-size="10" fill="#00F0FF" style="font-weight:600;letter-spacing:.22em">KM/H</text>${bars}`;
+    <text x="${W / 2}" y="214" text-anchor="middle" font-size="10" fill="#00F0FF" style="font-weight:600;letter-spacing:.22em">KM/H</text>${window.topSpeedNow != null ? `<text x="${W - 22}" y="214" text-anchor="end" font-size="10" fill="#FF2BD6" style="font-weight:600;letter-spacing:.22em">TOP ${Math.round(window.topSpeedNow)}</text>` : ""}${bars}`;
 }
 /* Neon readouts: value, plus a ten-segment bar (mirrors CyberChipView) */
 document.querySelectorAll(".cy-chip i").forEach(i => i.innerHTML = Array.from({ length: 10 }, (_, k) => `<u style="--m:${Math.round(k / 9 * 100)}%"></u>`).join(""));
@@ -1867,7 +1872,7 @@ renderCar = function () {
   const items = CAR_TILES.map((t, i) => {
     const raw = connected ? live[t.key] : null, shown = carGlide(t.key, raw, now);
     const high = raw != null && t.warn != null && raw >= t.warn;
-    const text = i === 0 && !connected ? status : high ? "High" : t.unit;
+    const text = i === 0 && !connected ? status : high ? "High" : t.key === "0D" && sc.top != null ? `Top ${Math.round(sc.top)} ${t.unit}` : t.unit;
     const img = t.key === "0C" ? carRoundelNum(Math.min(1, (shown || 0) / t.max), shown == null ? "—" : (Math.floor(shown / 10) * 10).toLocaleString("en-US"))
       : carTile(shown == null ? "—" : shown.toFixed(t.dec), shown == null ? null : Math.max(0, Math.min(1, (shown - t.min) / (t.max - t.min))), high);
     return `<div class="car-item${high ? " hot" : ""}">${img}<div class="t">${t.title}</div><div class="x${high ? " hot" : ""}">${text}</div></div>`;
@@ -1931,9 +1936,11 @@ const SCORE_STYLES = {
   EVERYDAY: { label: "Everyday", blurb: "Smooth, relaxed driving: no harsh acceleration, braking or high revs." },
   RACING: { label: "Racing", blurb: "For track days: full commitment, high revs without the limiter, cool engine." },
 };
-const sc = { reset() { Object.assign(this, { connected: 0, driving: 0, idling: 0, harshAccel: 0, brisk: 0, harshBrake: 0, lateBrake: 0, highRevs: 0, revs2500: 0, fast: 0, full: 0, fullBand: 0, acc: 0, accCommit: 0, overRev: 0, lug: 0, hot: 0, last: -1, lastSpeed: null, a: 0, runStart: null, best: null }); } };
+const sc = { reset() { Object.assign(this, { connected: 0, driving: 0, idling: 0, harshAccel: 0, brisk: 0, harshBrake: 0, lateBrake: 0, highRevs: 0, revs2500: 0, fast: 0, full: 0, fullBand: 0, acc: 0, accCommit: 0, overRev: 0, lug: 0, hot: 0, last: -1, lastSpeed: null, a: 0, runStart: null, best: null, top: null }); } };
 sc.reset();
 function scoreUpdate(t, v, r, thr, load, cool) {
+  /* Top speed: counts once two readings in a row reach it (mirrors DrivingScore.topSpeed) */
+  if (v != null && sc.lastSpeed != null) { const held = Math.min(v, sc.lastSpeed); if (held > (sc.top ?? 0)) { sc.top = held; showTopSpeed(held); } }
   if (sc.last < 0) { sc.last = t; sc.lastSpeed = v; return; }
   const dt = t - sc.last; if (dt <= 0) return; sc.last = t;
   if (dt > 2000) { sc.lastSpeed = v; sc.a = 0; return; }
@@ -1960,7 +1967,7 @@ function scoreResult(style) {
   const w = style === "EVERYDAY" ? [40, 40, 20] : [30, 25, 20, 15, 10];
   const scored = parts.map((p, i) => [p, w[i]]).filter(x => x[0].score != null);
   const total = scored.length ? scored.reduce((s, [p, k]) => s + p.score * k, 0) / scored.reduce((s, x) => s + x[1], 0) : null;
-  return { score: sc.driving >= 30000 && total != null ? Math.round(total) : null, parts, drivingSeconds: Math.floor(sc.driving / 1000), best: sc.best };
+  return { score: sc.driving >= 30000 && total != null ? Math.round(total) : null, parts, drivingSeconds: Math.floor(sc.driving / 1000), best: sc.best, top: sc.top };
 }
 let scoreStyle = "EVERYDAY";
 try { scoreStyle = localStorage.getItem("scoreStyle") || "EVERYDAY"; } catch (e) {}
@@ -1973,14 +1980,14 @@ function renderScore() {
   const r = scoreResult(scoreStyle), live = state === "connected" || state === "waiting";
   const why = r.drivingSeconds === 0 && !live ? "Connect to score this drive. Scores are worked out on your phone and never saved." : r.score == null ? "Drive for about half a minute to get a score." : SCORE_STYLES[scoreStyle].blurb;
   const weakest = r.score == null ? null : r.parts.filter(p => p.score != null).sort((a, b) => a.score - b.score)[0];
-  const notes = [weakest && weakest.score < 90 ? `Tip: ${weakest.tip}` : null, scoreStyle === "RACING" && r.best ? `Best 0 to 100 km/h this drive: ${r.best.toFixed(1)} s` : null, scoreStyle === "RACING" ? "Racing is for track days and closed roads only." : null].filter(Boolean);
+  const notes = [weakest && weakest.score < 90 ? `Tip: ${weakest.tip}` : null, r.top != null ? `Top speed this drive: ${Math.round(r.top)} km/h` : null, scoreStyle === "RACING" && r.best ? `Best 0 to 100 km/h this drive: ${r.best.toFixed(1)} s` : null, scoreStyle === "RACING" ? "Racing is for track days and closed roads only." : null].filter(Boolean);
   $("scoreCard").innerHTML = `<div class="big"><b style="color:${r.score == null ? "var(--fg)" : scoreCol(r.score)}">${r.score ?? "—"}</b><small>/100</small></div><div class="why">${why}</div>` +
     r.parts.map(p => { const s = r.score == null ? null : p.score; return `<div class="part"><span>${p.name}</span><b>${s ?? "—"}</b></div><div class="bar"><i style="width:${s ?? 0}%;background:${s == null ? "var(--accent)" : scoreCol(s)}"></i></div>`; }).join("") +
     notes.map(n => `<div class="note">${n}</div>`).join("");
 }
 let lastScoreState = "idle";
 setInterval(() => {
-  if (state === "connecting" && (lastScoreState === "idle")) sc.reset();
+  if (state === "connecting" && (lastScoreState === "idle")) { sc.reset(); showTopSpeed(null); }
   lastScoreState = state;
   if (state === "connected" && !ignOff) scoreUpdate(performance.now(), live["0D"], live["0C"], live["11"], live["04"], live["05"]);
 }, 100);
@@ -2144,6 +2151,17 @@ window.addEventListener("resize", () => { if (landscape) fitLandHero(); });
     if (raw <= 35 && (closed == null || raw < closed)) closed = raw;
     return closed == null ? raw : Math.max(0, Math.min(100, (raw - closed) / (100 - closed) * 100));
   };
+}
+
+
+/* ===== 1.7.7: top speed this drive, beside the speed in every style (mirrors MainActivity.showTopSpeed) ===== */
+var topSpeedNow = null;
+$("speedDecal").insertAdjacentHTML("beforeend", `<span class="top-sp" id="speedTop" hidden></span>`);
+function showTopSpeed(v) {
+  topSpeedNow = v;
+  const t = v == null ? null : Math.round(v);
+  $("speedTop").hidden = t == null; $("speedTop").textContent = t == null ? "" : `Top ${t} km/h`;
+  const tu = $("teleSpeed").parentNode.querySelector(".tu"); if (tu) tu.textContent = t == null ? "km/h" : `km/h · top ${t}`;
 }
 
 window.carReady = true;

@@ -38,6 +38,8 @@ class DrivingScore(redline: Float = 6500f) {
         val drivingSeconds: Int,
         /** The quickest 0 to 100 km/h run this drive, in seconds. */
         val best0to100: Double?,
+        /** The highest speed this drive, in km/h. */
+        val topSpeed: Double? = null,
     )
 
     var redline: Float = redline
@@ -69,11 +71,18 @@ class DrivingScore(redline: Float = 6500f) {
     var best0to100: Double? = null
         private set
 
+    /**
+     * The highest speed this drive, in km/h. A speed only counts once two readings in a row
+     * reach it, so a single glitched reading can't set a record nobody drove.
+     */
+    var topSpeed: Double? = null
+        private set
+
     fun reset() {
         connected = 0; driving = 0; idling = 0; harshAccel = 0; brisk = 0; harshBrake = 0; lateBrake = 0
         highRevs = 0; revsOver2500 = 0; fast = 0; fullThrottle = 0; fullThrottleInBand = 0
         accelerating = 0; acceleratingCommitted = 0; overRev = 0; lugging = 0; hot = 0
-        lastMs = -1; lastSpeed = null; accel = 0.0; runStartMs = null; best0to100 = null
+        lastMs = -1; lastSpeed = null; accel = 0.0; runStartMs = null; best0to100 = null; topSpeed = null
     }
 
     /**
@@ -81,6 +90,10 @@ class DrivingScore(redline: Float = 6500f) {
      * reading or every few hundred milliseconds); readings the car doesn't report can be null.
      */
     fun update(timeMs: Long, speed: Double?, rpm: Double?, throttle: Double?, load: Double?, coolant: Double?, oil: Double? = null) {
+        if (speed != null && lastSpeed != null) {
+            val held = minOf(speed, lastSpeed!!)
+            if (held > (topSpeed ?: 0.0)) topSpeed = held
+        }
         if (lastMs < 0) { lastMs = timeMs; lastSpeed = speed; return }
         val dt = timeMs - lastMs
         if (dt <= 0) return
@@ -172,7 +185,7 @@ class DrivingScore(redline: Float = 6500f) {
         }
         val scored = parts.zip(weights).filter { it.first.score != null }
         val total = if (scored.isEmpty()) null else scored.sumOf { (p, w) -> p.score!! * w } / scored.sumOf { it.second }.toDouble()
-        return Result(style, if (enough) total?.roundToInt() else null, parts, (driving / 1000).toInt(), best0to100)
+        return Result(style, if (enough) total?.roundToInt() else null, parts, (driving / 1000).toInt(), best0to100, topSpeed)
     }
 
     companion object {
