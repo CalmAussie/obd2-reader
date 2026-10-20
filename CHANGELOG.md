@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.8.1 (21 October 2026)
+- **More trouble codes explained.** About 370 generic trouble codes now have their standard name and a full explanation, up from about 150: what the code means, how urgent it is, common causes, what you might notice and what to check first. The new ones cover sensor faults (circuit low, high, range and intermittent), injectors, ignition coils and misfires for up to 12 cylinders, oxygen sensors and their heaters, fuel trim and pressure, EGR, EVAP, the electronic throttle, the transmission's sensors, gears and solenoids, diesel particulate filters, and lost communication between the car's computers.
+- New help topic, **What codes it reads**: the app reads codes from the engine computer (and, on many cars, the automatic transmission), not from systems such as ABS, airbags or body electrics. Codes outside its list are named by system, and manufacturer-specific codes say where to look them up for your make.
+- The README no longer says every generic code is explained in full.
+
 ## 1.8.0 (21 October 2026)
 - **Trip summary.** When a drive ends (you disconnect or turn the ignition off), a summary comes up: distance, time driving and idling, average and top speed, best 0–100 km/h and the score in all three styles. **Last drive summary**, under the driving score, opens it again later.
 - **Driving alerts.** A sound, vibration and notification (also shown on the Android Auto screen) when the engine runs hot, the oil gets too hot, the battery isn't charging or is overcharging, the battery is low with the engine off, or a new trouble code appears. Trouble codes are now checked every two minutes while connected. Turn alerts off under **Diagnostics → Alerts**.

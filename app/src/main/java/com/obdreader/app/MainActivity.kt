@@ -1955,6 +1955,7 @@ class MainActivity : AppCompatActivity() {
             R.string.help_adapters_title to R.string.help_adapters_body,
             R.string.help_car_title to R.string.help_car_body,
             R.string.help_auto_title to R.string.help_auto_body,
+            R.string.help_codes_title to R.string.help_codes_body,
             R.string.help_safety_title to R.string.help_safety_body,
         )
         for ((title, body) in sections) {

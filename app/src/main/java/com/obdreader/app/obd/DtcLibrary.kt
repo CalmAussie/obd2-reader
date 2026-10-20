@@ -6,9 +6,10 @@ import java.util.Locale
  * Plain-English explanations for OBD2 trouble codes: what the code means, how urgent it is,
  * common causes, what you might notice and what to check first.
  *
- * Generic SAE codes (P0xxx, P2xxx, U0xxx) have the same meaning on every car. Codes the
- * catalogue doesn't list are still explained from their structure (system and subsystem),
- * and manufacturer-specific codes (P1xxx, P3xxx and so on) say so plainly.
+ * Generic SAE codes (P0xxx, P2xxx, U0xxx) have the same meaning on every car. The common ones
+ * are written out in full here; many more have their standard definition in [DtcGeneric].
+ * Codes in neither are explained from their structure (system and subsystem), and
+ * manufacturer-specific codes (P1xxx, P3xxx and so on) say so plainly.
  */
 object DtcLibrary {
 
@@ -565,6 +566,7 @@ object DtcLibrary {
     fun lookup(raw: String, make: String? = null): DtcInfo {
         val code = raw.trim().uppercase(Locale.US)
         catalogue[code]?.let { return it.copy(system = systemOf(code)) }
+        DtcGeneric.lookup(code, systemOf(code))?.let { return it }
         if (!CODE.matches(code)) {
             return DtcInfo(code, "Unrecognised code", "This doesn't look like a standard OBD2 trouble code.", Severity.UNKNOWN, known = false)
         }
