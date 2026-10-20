@@ -1350,6 +1350,7 @@ const HELP = [
   ["Adapter types", "Bluetooth: tap Connect, then Bluetooth. The app lists your adapter by name, whatever kind of Bluetooth it uses. If it needs pairing, Android asks for a PIN: it's usually 1234 or 0000.\n\nWi-Fi: join the adapter's Wi-Fi network in your phone's settings first, then connect. The usual address is 192.168.0.10, port 35000."],
   ["If it won't connect", "Check the ignition is on and the adapter's light is lit. Then, on the Diagnostics tab, tap Your car and choose your car's make, year and model, so the app tries its usual protocol first. Cars sold in Australia before 2006 may not fully support OBD2, and some cheap adapters can't talk to older Fords, GM and Chrysler cars."],
   ["Android Auto", "Android Auto only shows apps from the Play Store until you allow others. To turn that on:\n1. Open Android Auto's settings on your phone (search \"Android Auto\" in Settings).\n2. Scroll to the bottom and tap Version about 10 times, then confirm to turn on developer mode.\n3. Tap the three-dot menu at the top right, then Developer settings, and turn on Unknown sources.\n4. Reconnect to your car. OBD2 Reader appears in Android Auto's app list.\n\nConnect to your adapter from the phone first, or tap Connect on the car screen to reconnect to the last one."],
+  ["What codes it reads", "OBD2 Reader reads the trouble codes the engine computer, and on many cars the automatic transmission, report through the OBD2 port. It doesn't read other systems such as ABS, airbags or body electrics; those need the maker's tool or a scanner made for your make.\n\nCommon generic codes (P0, P2 and U0) are explained in full, with causes and what to check. Other generic codes are named by the system they belong to. Manufacturer-specific codes (such as P1 codes) are marked as such, with where to look them up for your make, because their meaning differs between brands."],
   ["Read-only", "OBD2 Reader only reads from your car. It never clears trouble codes, turns off the check-engine light or changes any setting, and it blocks any command that could. After a repair, a workshop scan tool can clear the codes."],
 ];
 function showHelp() {
@@ -1773,7 +1774,7 @@ showCodes = function (codes) {
   }).join("");
   $("dtcList").querySelectorAll(".code .head").forEach(h => h.onclick = () => { const c = h.parentElement; c.classList.toggle("open"); h.setAttribute("aria-expanded", c.classList.contains("open")); });
 };
-$("shareReport").onclick = () => toast("Shares a text report with every code explained, for your mechanic.");
+$("shareReport").onclick = () => toast("Shares a text report of every code and what it means, for your mechanic.");
 $("logShare").onclick = () => toast("Shares the adapter log as a text file.");
 $("logLabel").onclick = () => $("logToggle").onclick();
 $("logToggle").onclick = () => { const show = $("log").hidden; $("log").hidden = !show; $("logLabel").textContent = show ? "Hide" : "Show"; $("logToggle").setAttribute("aria-expanded", show); };
