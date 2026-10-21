@@ -2362,12 +2362,18 @@ function showOverlayVideo(d) {
 
 /* ===== Shareable drive card (mirrors ui/DriveCardRenderer.kt): drawn in the look of the layout
    it's shared from, with a cheeky line about the score (mirrors obd/Roast.kt). ===== */
-const ROAST = {"EVERYDAY": [["Smooth as a hotel lift. Your passengers could have threaded a needle.", "Butter-smooth. Not a single coffee was spilled.", "Driving instructors would like your autograph."], ["Pretty tidy. A couple of spirited moments, but we won't tell.", "Mostly smooth, with the odd surprise for the passengers.", "Good drive. The cup holder only filed one complaint."], ["A solid C+. The brakes are drafting a strongly worded letter.", "Not bad. Your passengers only grabbed the handle twice.", "Respectable, if you squint a bit."], ["Your passengers are now holding the handle above the door.", "The car would like a quiet word about the braking.", "Somewhere, a set of brake pads is crying."], ["That wasn't a drive, that was a stunt audition.", "Bold. Very bold. The car needs a lie-down.", "Your seatbelt earned its keep today."]], "EFFICIENCY": [["Sipping fuel like it's a fine wine.", "Hypermiler energy. The fuel gauge forgot you exist.", "Your fuel bill just sent you a thank-you card."], ["Efficient-ish. The fuel gauge barely noticed.", "Pretty frugal. Your wallet is mildly impressed.", "Good on fuel, with the odd heavy-footed lapse."], ["Middle of the road. The fuel company says thanks.", "Not wasteful, not thrifty. Just vibes.", "Your right foot has opinions, and they cost money."], ["Fuel economy has left the chat.", "Every red light was a drag race, apparently.", "The servo knows you by name."], ["Somewhere, an oil executive just bought a yacht.", "That drive burned fuel like a bonfire on cracker night.", "Your fuel gauge needs therapy."]], "RACING": [["The pit wall says: good lap. Mic drop.", "Fast and tidy. Someone call the scouts.", "Clean, quick, committed. Chef's kiss."], ["Quick, but the stopwatch has notes.", "Solid pace. A few apexes went missing.", "Fast enough to brag, slow enough to stay humble."], ["Track-day ready... for the parade lap.", "Spirited, in a Sunday-drive kind of way.", "The tyres barely broke a sweat."], ["Your lap time has grown a beard.", "Lots of revs, not much progress.", "The racing line called. It wants a word."], ["Even the safety car overtook you.", "That lap was sponsored by the brake pedal.", "Bold strategy: be the slowest car on track."]], "TOO_SHORT": ["Barely left the driveway. Bold.", "A drive so short the engine didn't warm up.", "Blink and you'd miss it. We did."]};
+const ROAST = {"EVERYDAY": [["Smooth as a hotel lift. Your passengers could have threaded a needle.", "Butter-smooth. Not a single coffee was spilled.", "Driving instructors would like your autograph."], ["Pretty tidy. A couple of spirited moments, but we won't tell.", "Mostly smooth, with the odd surprise for the passengers.", "Good drive. The cup holder only filed one complaint."], ["A solid C+. The brakes are drafting a strongly worded letter.", "Not bad. Your passengers only grabbed the handle twice.", "Respectable, if you squint a bit."], ["Your passengers are now holding the handle above the door.", "The car would like a quiet word about the braking.", "Somewhere, a set of brake pads is crying."], ["That wasn't a drive, that was a stunt audition.", "Bold. Very bold. The car needs a lie-down.", "Your seatbelt earned its keep today."]], "EFFICIENCY": [["Sipping fuel like it's a fine wine.", "Hypermiler energy. The fuel gauge forgot you exist.", "Your fuel bill just sent you a thank-you card."], ["Efficient-ish. The fuel gauge barely noticed.", "Pretty frugal. Your wallet is mildly impressed.", "Good on fuel, with the odd heavy-footed lapse."], ["Middle of the road. The fuel company says thanks.", "Not wasteful, not thrifty. Just vibes.", "Your right foot has opinions, and they cost money."], ["Fuel economy has left the chat.", "Every red light was a drag race, apparently.", "The servo knows you by name."], ["Somewhere, an oil executive just bought a yacht.", "That drive burned fuel like a bonfire on cracker night.", "Your fuel gauge needs therapy."]], "RACING": [["The pit wall says: good lap. Mic drop.", "Fast and tidy. Someone call the scouts.", "Clean, quick, committed. Chef's kiss."], ["Quick, but the stopwatch has notes.", "Solid pace. A few apexes went missing.", "Fast enough to brag, slow enough to stay humble."], ["Track-day ready... for the parade lap.", "Spirited, in a Sunday-drive kind of way.", "The tyres barely broke a sweat."], ["Your lap time has grown a beard.", "Lots of revs, not much progress.", "The racing line called. It wants a word."], ["Even the safety car overtook you.", "That lap was sponsored by the brake pedal.", "Bold strategy: be the slowest car on track."]], "DRIVE": [["Smooth and frugal. Your car wants to adopt you.", "Gentle on the brakes, gentle on the fuel. Show-off.", "Silky smooth and barely sipped fuel. Teach us your ways."], ["Tidy and thrifty, with the odd heavy-footed moment.", "Pretty smooth, pretty frugal. The car approves, mostly.", "Good drive. The fuel gauge and the passengers both nodded."], ["A solid C+. Smooth-ish, thirsty-ish, very average-ish.", "Not bad. The brakes and the fuel gauge have notes.", "Respectable. Your right foot just needs a little therapy."], ["The passengers held on, and the fuel gauge held its breath.", "Every red light was a drag race, and the servo noticed.", "Somewhere, a set of brake pads and a fuel tank are crying."], ["That wasn't a drive, it was a fuel-burning stunt audition.", "Bold. The car needs a lie-down and a refuel.", "Your seatbelt and the fuel company both had a big day."]], "TOO_SHORT": ["Barely left the driveway. Bold.", "A drive so short the engine didn't warm up.", "Blink and you'd miss it. We did."]};
 function roastLine(style, score, seed) {
   const pick = l => l[((seed % l.length) + l.length) % l.length];
   if (score == null) return pick(ROAST.TOO_SHORT);
   const band = score >= 90 ? 0 : score >= 75 ? 1 : score >= 55 ? 2 : score >= 35 ? 3 : 4;
   return pick((ROAST[style] || ROAST.EVERYDAY)[band]);
+}
+/* Mirrors obd/ShareScore.kt: Race telemetry shares Racing only; other layouts the average of Everyday and Efficiency. */
+function shareScore(t, L) {
+  if (L === "telemetry") return { kind: "RACING", label: "Racing", score: t.scores.RACING ?? null, parts: [] };
+  const parts = ["EVERYDAY", "EFFICIENCY"].map(k => [k, t.scores[k] ?? null]), known = parts.map(p => p[1]).filter(x => x != null);
+  return { kind: "DRIVE", label: "Drive", score: known.length ? Math.round(known.reduce((a, b) => a + b, 0) / known.length) : null, parts };
 }
 function renderDriveCard(t, fmt, hideRoast) {
   const W = 1080, H = fmt === "story" ? 1920 : 1080, story = fmt === "story";
@@ -2380,7 +2386,7 @@ function renderDriveCard(t, fmt, hideRoast) {
   const up = s => L === "cyberpunk" ? s.toUpperCase() : s;
   const numFont = size => L === "cockpit" ? `300 ${size}px Archivo` : L === "telemetry" ? `700 ${size}px Archivo` : `italic 900 ${size}px Archivo`;
   const chamfer = (l, tp, r, b, cut) => { c.beginPath(); c.moveTo(l + cut, tp); c.lineTo(r, tp); c.lineTo(r, b - cut); c.lineTo(r - cut, b); c.lineTo(l, b); c.lineTo(l, tp + cut); c.closePath(); };
-  const sc = t.scores[scoreStyle];
+  const card = shareScore(t, L), sc = card.score;
   /* Background */
   if (L === "livery") {
     c.fillStyle = bg; c.fillRect(0, 0, W, H);
@@ -2412,7 +2418,7 @@ function renderDriveCard(t, fmt, hideRoast) {
   c.fillStyle = fg; c.fillText(head, 72, y); c.letterSpacing = "0px";
   y += story ? 60 : 52; c.fillStyle = fg2; c.font = "500 36px Archivo";
   c.fillText(up([new Date(t.start).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" }), myCar && carLabel(myCar)].filter(Boolean).join("  ·  ")), 72, y);
-  const roast = roastLine(scoreStyle, sc, Math.floor(t.start));
+  const roast = roastLine(card.kind, sc, Math.floor(t.start));
   c.fillStyle = L === "cyberpunk" ? s2 : s1; const rs = story ? 42 : 36; c.font = `600 ${rs}px Archivo`;
   const words = `“${roast}”`.split(" "), lines = []; let ln = "";
   for (const wd of words) { const nx = ln ? ln + " " + wd : wd; if (c.measureText(nx).width <= W - 144 || !ln) ln = nx; else { lines.push(ln); ln = wd; } } if (ln) lines.push(ln);
@@ -2420,7 +2426,7 @@ function renderDriveCard(t, fmt, hideRoast) {
   /* Score */
   const route = DEMO_ROUTE, showRoute = route.length > 1;
   const cx = story ? (showRoute ? 270 : W / 2) : 240, r = story ? (showRoute ? 170 : 190) : 150, cy = y + (story ? 60 : 40) + r;
-  const label = up(`${SCORE_STYLES[scoreStyle].label} score`), n = sc == null ? "—" : String(sc);
+  const label = up(`${card.label} score`), n = sc == null ? "—" : String(sc);
   if (L === "telemetry") {
     c.fillStyle = RPM; c.fillRect(cx - r, cy - r * 0.62, 10, r * 1.24);
     c.textAlign = "left"; c.fillStyle = fg2; c.font = `700 ${story ? 40 : 32}px Archivo`; c.fillText(label, cx - r + 40, cy - r * 0.38);
@@ -2461,16 +2467,16 @@ function renderDriveCard(t, fmt, hideRoast) {
   }
   if (stats.length) gy += th + gap;
   if (showRoute) { const rc = L === "cockpit" || L === "cyberpunk" ? s2 : s1; story ? drawRoute(c, route, 520, cy - 190, W - 72, cy + 190, bg, rc, rc === s1 ? s2 : s1, fg) : drawRoute(c, route, gl, gy, gr, H - 110, bg, rc, rc === s1 ? s2 : s1, fg); }
-  if (story) {
+  if (story && card.parts.length) {
     gy += 16; panel(72, gy, W - 72, gy + 190);
-    ["EFFICIENCY", "EVERYDAY", "RACING"].forEach((k, i) => { const sx = 72 + (W - 144) / 3 * (i + 0.5), val = t.scores[k];
+    card.parts.forEach(([k, val], i) => { const sx = 72 + (W - 144) / card.parts.length * (i + 0.5);
       c.textAlign = "center"; c.font = numFont(72); c.fillStyle = val == null ? fg2 : col(val); c.fillText(val ?? "—", sx, gy + 104);
       c.font = "500 30px Archivo"; c.fillStyle = fg2; c.fillText(up(SCORE_STYLES[k].label), sx, gy + 152); });
   }
   if (L === "livery" || L === "cyberpunk") { const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, s1); g.addColorStop(1, s2); c.fillStyle = g; c.fillRect(0, H - 14, W, 14); }
   c.textAlign = "left"; c.fillStyle = fg; c.globalAlpha = .8; c.font = L === "livery" ? "italic 900 40px Archivo" : L === "cockpit" ? "300 40px Archivo" : "700 40px Archivo";
   c.fillText(L === "cyberpunk" ? "OBD2 READER" : "OBD2 Reader", 72, H - 64); c.globalAlpha = 1;
-  cv.dataset.roast = roast;
+  cv.dataset.roast = roast; cv.dataset.score = sc ?? ""; cv.dataset.kind = card.label;
   return cv;
 }
 /* A made-up demo route (lat, lon) for the preview's demo car: a loop around a few blocks. */
@@ -2496,7 +2502,7 @@ function showDriveCard(t) {
     <div id="cardBox" style="margin-top:12px;text-align:center"></div><p class="msg" id="cardHint" style="margin-top:8px;text-align:center">Your roast is added when you share.</p><p class="msg" id="cardCaption" style="margin-top:10px" hidden></p><p class="msg" id="cardNote" style="margin-top:6px" hidden>In the app this opens Android's share sheet (YouTube, TikTok, Instagram…) with that caption, and keeps a copy in Pictures › OBD2 Reader.</p>
     <div class="btns"><button id="cardClose">Cancel</button><button class="primary" id="cardShare">Share</button></div>`);
   const show = () => { const cv = renderDriveCard(t, fmt, !shared); cv.style.cssText = `width:${fmt === "story" ? 56 : 100}%;border-radius:8px`; $("cardBox").replaceChildren(cv);
-    const sc = t.scores[scoreStyle]; $("cardCaption").textContent = `Caption: ${cv.dataset.roast}${sc != null ? ` (${sc}/100, ${SCORE_STYLES[scoreStyle].label.toLowerCase()})` : ""} #OBD2Reader`; };
+    const sc = cv.dataset.score; $("cardCaption").textContent = `Caption: ${cv.dataset.roast}${sc !== "" ? ` (${sc}/100, ${cv.dataset.kind.toLowerCase()} score)` : ""} #OBD2Reader`; };
   s.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { s.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-checked", x === b)); fmt = b.dataset.f; show(); });
   $("cardShare").onclick = () => { shared = true; $("cardTitle").textContent = "Shared picture"; $("cardHint").hidden = true; $("cardCaption").hidden = false; $("cardNote").hidden = false; $("cardShare").hidden = true; $("cardClose").textContent = "Close"; show(); };
   $("cardClose").onclick = closeOverlay; show();

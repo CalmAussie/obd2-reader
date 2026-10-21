@@ -15,6 +15,7 @@ import androidx.core.graphics.ColorUtils
 import com.obdreader.app.R
 import com.obdreader.app.obd.DrivingScore
 import com.obdreader.app.obd.Route
+import com.obdreader.app.obd.ShareScore
 import com.obdreader.app.obd.TripSummary
 import com.obdreader.app.obd.Units
 import java.text.SimpleDateFormat
@@ -65,13 +66,13 @@ class DriveCardRenderer(private val context: Context) {
      * [roast]: a short line about the score, under the date. [hideRoast] keeps its space but leaves
      * it blank, for the preview before sharing: the card looks the same, the roast stays a surprise.
      */
-    fun render(trip: TripSummary, style: DrivingScore.Style, carLabel: String?, format: Format, route: Route? = null, roast: String? = null, hideRoast: Boolean = false): Bitmap {
+    fun render(trip: TripSummary, card: ShareScore, carLabel: String?, format: Format, route: Route? = null, roast: String? = null, hideRoast: Boolean = false): Bitmap {
         val w = format.width; val h = format.height
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
         val story = format == Format.STORY
         val showRoute = route != null && !route.isEmpty
-        val score = trip.scores[style]
+        val score = card.score
 
         background(c, w, h, score)
 
@@ -106,7 +107,7 @@ class DriveCardRenderer(private val context: Context) {
         val cx = if (story && !showRoute) w / 2f else if (story) 270f else 240f
         val r = if (story && !showRoute) 190f else if (story) 170f else 150f
         val cy = y + (if (story) 60f else 40f) + r
-        scoreBlock(c, cx, cy, r, score, style, story)
+        scoreBlock(c, cx, cy, r, score, card.kind.label, story)
 
         // Stats.
         val stats = listOfNotNull(
@@ -136,14 +137,13 @@ class DriveCardRenderer(private val context: Context) {
             else drawRoute(c, route!!, gridLeft, gy, gridRight, h - 110f)
         }
 
-        // All three styles.
-        if (story) {
+        // What the drive score is made of: Everyday and Efficiency. The racing card shows Racing only.
+        if (story && card.parts.isNotEmpty()) {
             gy += 16f
             panel(c, 72f, gy, w - 72f, gy + 190f)
-            val colW = (w - 144f) / 3
-            DrivingScore.Style.values().forEachIndexed { i, st ->
+            val colW = (w - 144f) / card.parts.size
+            card.parts.forEachIndexed { i, (st, v) ->
                 val sx = 72f + colW * i + colW / 2
-                val v = trip.scores[st]
                 paint.textAlign = Paint.Align.CENTER; paint.typeface = numberFace(); paint.textSize = 72f
                 paint.color = v?.let { scoreColour(it) } ?: muted
                 c.drawText(v?.toString() ?: "—", sx, gy + 104f, paint)
@@ -204,8 +204,8 @@ class DriveCardRenderer(private val context: Context) {
         }
     }
 
-    private fun scoreBlock(c: Canvas, cx: Float, cy: Float, r: Float, score: Int?, style: DrivingScore.Style, story: Boolean) {
-        val label = label("${style.label} score")
+    private fun scoreBlock(c: Canvas, cx: Float, cy: Float, r: Float, score: Int?, kind: String, story: Boolean) {
+        val label = label("$kind score")
         when (layout) {
             DashLayout.TELEMETRY -> {
                 // A data-logger readout: the big number with a red channel bar, "/100" beside it.
