@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.11.0 (22 October 2026)
+- **The full standard code list.** About 2,860 generic trouble codes are now explained, up from about 370: nearly every standard P0, P2 and U0 code, the P34 cylinder-deactivation codes and the U3 codes. Each has its standard name and an explanation for its kind of part, with how urgent it is, common causes and what to check. New kinds include hybrid and electric drive systems (with a warning about orange high-voltage parts), cylinder deactivation and variable valve lift, glow plugs, exhaust temperature and pressure, coolant pumps and level, engine oil level and condition, cruise control, power steering, and transmission switches and actuators.
+- Every name was checked against more than one copy of the standard list, and a code was only added when they agreed on its name, letters, numbers and bank. The few they disagree on are left out and still say which system they belong to.
+- **Ford's own definitions for some Ford and Lincoln codes.** Where Ford's published OBD documents define a Ford-specific code and say which model years it covers, the app uses Ford's definition for those years: P1336, P1450, P144A, P144C, P164A, P164B, P1646 and P1647, on 2018 to 2025 petrol models depending on the code. Choose your car (or connect so the VIN can be read) for these to show. On other years and other makes, these codes still say where to look them up, because they can mean something different there.
+
 ## 1.10.0 (22 October 2026)
 - **Drive cards in your layout's style.** The shareable picture now looks like the Dashboard layout you share it from: livery stripes and a score ring on the liveries; shift lights lit by your score, a data-logger readout and channel-coloured panels on Race telemetry; a soft blue glow, a fine glowing ring and glass panels on the Digital cockpit; neon haze, scanlines, a segmented neon ring and split-colour digits on Cyberpunk.
 - **A cheeky roast of your score.** Every card carries a short line about the drive, picked for your score and style ("A solid C+. The brakes are drafting a strongly worded letter."), and the same line goes in the post's caption with the score. It teases the driving, never the driver.

@@ -296,6 +296,83 @@ internal object DtcGeneric {
             listOf("Warning lights for the system concerned", "Features controlled by that module not working"),
             listOf("Check the battery and charging first", "Check the fuses for the module named", "Check its connectors and the network wiring, then have the module tested"),
         ),
+        CYL_DEACT(
+            "Cylinder deactivation shuts some cylinders off at light load to save fuel, by stopping their valves from opening. Oil-pressure solenoids or valve actuators do the switching.",
+            Severity.MEDIUM,
+            listOf("Low, old or wrong-grade engine oil", "A faulty deactivation solenoid or valve actuator", "Damaged wiring or a poor connection", "Worn lifters or rocker arms"),
+            listOf("Rough running or vibration", "Higher fuel use (deactivation may be switched off)", "Ticking from the valve gear in some cases"),
+            listOf("Check the oil level and grade first", "Check the solenoid or actuator connector and wiring", "Have the solenoid and valve gear checked if the code returns"),
+        ),
+        VALVE_LIFT(
+            "Variable valve lift switches the rocker arms between cam profiles, so the valves open further at high engine speeds. Oil pressure and an actuator do the switching.",
+            Severity.MEDIUM,
+            listOf("Low, old or wrong-grade engine oil", "A faulty rocker arm actuator or its solenoid", "A failed position sensor", "Damaged wiring or a poor connection"),
+            listOf("Loss of power at high engine speeds", "Rough idle", "Higher fuel use"),
+            listOf("Check the oil level and grade first", "Check the actuator and sensor connectors and wiring", "Have the actuator tested if the code returns"),
+        ),
+        HYBRID(
+            "This is part of the hybrid or electric drive system: the high-voltage battery, the electric motors and generators, their inverters and cooling, and the computers that run them.",
+            Severity.HIGH,
+            listOf("A fault in the high-voltage battery, a motor or the inverter", "A failed sensor in that system", "Cooling problems for the battery or electronics", "Damaged wiring or a poor connection"),
+            listOf("Reduced power or the car refusing to go into ready mode", "Hybrid or electric system warning lights", "Higher fuel use, or the engine running more than usual"),
+            listOf("Don't touch orange high-voltage cables or parts: they can be dangerous", "Check the 12-volt battery, since a weak one can cause hybrid faults", "Have a hybrid or EV specialist or dealer diagnose it"),
+        ),
+        GLOW_PLUG(
+            "Diesel engines use glow plugs (or an intake air heater) to warm the cylinders or intake air, so the engine starts easily and runs cleanly when cold.",
+            Severity.LOW,
+            listOf("A burnt-out glow plug", "A faulty glow plug control module or relay", "Damaged wiring or a poor connection"),
+            listOf("Hard starting in cold weather", "White smoke or rough running just after a cold start"),
+            listOf("Check the glow plug or heater wiring and connectors", "Test each glow plug's resistance", "Test the glow plug control module or relay"),
+        ),
+        EXHAUST_TEMP(
+            "Exhaust temperature and pressure sensors let the engine computer protect the turbo and exhaust parts from overheating, and manage the catalytic converter or particulate filter.",
+            Severity.MEDIUM,
+            listOf("A failed sensor", "Damaged wiring or a connector near hot exhaust parts", "A blocked exhaust or particulate filter, for pressure codes", "A real overheating exhaust, for temperature-too-high codes"),
+            listOf("Reduced power (limp mode) in some cases", "Particulate filter cleaning not running", "Often nothing else you'd notice"),
+            listOf("Check the sensor's wiring and connector, away from hot parts", "Check pressure sensor hoses for cracks or blockages", "Replace the sensor if the wiring is good"),
+        ),
+        POWER_STEERING(
+            "The engine computer watches the power steering pressure or control circuit, so it can raise the idle when you turn the wheel.",
+            Severity.LOW,
+            listOf("A failed pressure sensor or switch", "Damaged wiring or a poor connection", "Low power steering fluid"),
+            listOf("Idle dipping or stalling when turning at low speed", "Heavier steering in some cases"),
+            listOf("Check the power steering fluid level", "Check the sensor's connector and wiring", "Replace the sensor or switch"),
+        ),
+        CRUISE(
+            "The engine computer runs cruise control from the steering wheel buttons, the brake switch and, on some cars, a distance sensor at the front.",
+            Severity.LOW,
+            listOf("A faulty cruise control switch", "A brake light switch fault", "Damaged wiring, often in the steering wheel clock spring", "A dirty or misaligned distance sensor, on adaptive cruise"),
+            listOf("Cruise control not working", "Usually nothing else you'd notice"),
+            listOf("Check the brake lights work", "Check the cruise switch and its wiring", "Clean the front distance sensor if the car has one"),
+        ),
+        TRANS_GENERAL(
+            "The transmission computer watches the parts that select and hold gears: switches, the gear lever, clutch and shift actuators, hydraulic pumps and its own power supply.",
+            Severity.MEDIUM,
+            listOf("A faulty switch, sensor or actuator", "Low or old transmission fluid", "Damaged wiring or a poor connection", "A fault in the transmission computer's power or ground"),
+            listOf("Harsh or delayed shifts", "The transmission holding one gear (limp mode)", "Warning lights or a gear display fault"),
+            listOf("Check the transmission fluid level and condition", "Check the battery, fuses and the connectors on the transmission", "Have the transmission scanned with a tool that reads its computer"),
+        ),
+        COOLING(
+            "The cooling system's pumps, valves and level sensor keep coolant moving through the engine and, on some cars, through the turbo intercooler or hybrid electronics.",
+            Severity.HIGH,
+            listOf("Low coolant or a leak", "A failed electric coolant pump or valve", "A failed level sensor", "Damaged wiring or a poor connection"),
+            listOf("The engine running hot", "The heater not getting warm", "Reduced power to protect the engine"),
+            listOf("Check the coolant level (only when the engine is cold) and look for leaks", "Check the pump or valve connector and wiring", "Watch the engine temperature, and stop if it climbs"),
+        ),
+        ENGINE_OIL(
+            "Sensors report the engine oil's temperature, level or condition, so the engine computer can protect the engine and tell you when to top up or change the oil.",
+            Severity.MEDIUM,
+            listOf("Low or old oil, for level and condition codes", "A failed sensor", "Damaged wiring or a poor connection"),
+            listOf("An oil warning on the dashboard", "Often nothing else you'd notice"),
+            listOf("Check the oil level on the dipstick (on level ground, engine off)", "Change the oil if it's due", "Check the sensor's connector and wiring, then replace the sensor"),
+        ),
+        GENERAL(
+            "This is a standard code, so it means the same on every car that uses it. Its name says which part or signal has the problem; where that part is and how it's tested depends on the car.",
+            Severity.UNKNOWN,
+            listOf("A fault in the part or signal named", "Damaged wiring or a poor connection", "Less often, a fault in the computer that reports it"),
+            listOf("Depends on the part named", "Often a warning light and nothing else you'd notice"),
+            listOf("Check the connector and wiring for the part named", "Look up where that part is on your car", "Read codes again after a few drives to see if it returns"),
+        ),
     }
 
     private class Def(val title: String, val kind: Kind)
@@ -618,6 +695,13 @@ internal object DtcGeneric {
         d("U0401", "Invalid data received from the engine computer (ECM/PCM)", Kind.NETWORK)
         d("U0402", "Invalid data received from the transmission computer (TCM)", Kind.NETWORK)
         d("U0415", "Invalid data received from the ABS control module", Kind.NETWORK)
+
+        // The rest of the standard list. The hand-written definitions above come first.
+        for (chunk in DtcGenericData.CHUNKS) for (line in chunk.lineSequence()) {
+            if (line.isBlank()) continue
+            val parts = line.split('|', limit = 3)
+            if (parts.size == 3 && parts[0] !in m) m[parts[0]] = Def(parts[2], Kind.valueOf(parts[1]))
+        }
         m
     }
 
