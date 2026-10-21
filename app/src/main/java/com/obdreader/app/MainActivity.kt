@@ -981,9 +981,10 @@ class MainActivity : AppCompatActivity() {
 
     /** The card as it'll look, before it's shared. The roast's space is left blank: it's a surprise. */
     private fun previewDriveCard(trip: TripSummary, format: DriveCardRenderer.Format) {
-        val roast = com.obdreader.app.obd.Roast.line(scoreStyle, trip.scores[scoreStyle], trip.startedAt)
+        val card = shareScore(trip)
+        val roast = com.obdreader.app.obd.Roast.line(card, trip.startedAt)
         val route = routeFor(trip)
-        val preview = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, format, route, roast, hideRoast = true)
+        val preview = DriveCardRenderer(this).render(trip, card, savedCar()?.label, format, route, roast, hideRoast = true)
         val pad = (16 * resources.displayMetrics.density).toInt()
         val image = android.widget.ImageView(this).apply {
             setImageBitmap(preview)
@@ -1008,22 +1009,25 @@ class MainActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.share_preview_title)
             .setView(body)
-            .setPositiveButton(R.string.share_preview_share) { _, _ -> sendDriveCard(trip, format, route, roast) }
+            .setPositiveButton(R.string.share_preview_share) { _, _ -> sendDriveCard(trip, card, format, route, roast) }
             .setNegativeButton("Cancel", null)
             .setOnDismissListener { image.setImageDrawable(null); preview.recycle() }
             .show()
     }
 
-    private fun sendDriveCard(trip: TripSummary, format: DriveCardRenderer.Format, route: com.obdreader.app.obd.Route?, roast: String) {
-        val bmp = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, format, route, roast)
+    /** Race telemetry shares the Racing score; every other layout the average of Everyday and Efficiency. */
+    private fun shareScore(trip: TripSummary) = com.obdreader.app.obd.ShareScore.of(trip.scores, dashLayout() == com.obdreader.app.ui.DashLayout.TELEMETRY)
+
+    private fun sendDriveCard(trip: TripSummary, card: com.obdreader.app.obd.ShareScore, format: DriveCardRenderer.Format, route: com.obdreader.app.obd.Route?, roast: String) {
+        val bmp = DriveCardRenderer(this).render(trip, card, savedCar()?.label, format, route, roast)
         val name = "OBD2Reader_drive_" + java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).format(java.util.Date(trip.startedAt)) + "_${format.name.lowercase(Locale.US)}.png"
         val file = Exports.exportFile(this, name)
         file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
         bmp.recycle()
         Exports.saveToPictures(this, file)
         // The post's text: the roast and the score, ready to paste or post as the caption.
-        val score = trip.scores[scoreStyle]
-        Exports.share(this, file, "image/png", "My drive", text = "$roast ${score?.let { "($it/100, ${scoreStyle.label.lowercase(Locale.getDefault())})" } ?: ""}".trim() + " #OBD2Reader")
+        val score = card.score
+        Exports.share(this, file, "image/png", "My drive", text = "$roast ${score?.let { "($it/100, ${card.kind.label.lowercase(Locale.getDefault())} score)" } ?: ""}".trim() + " #OBD2Reader")
     }
 
     /**

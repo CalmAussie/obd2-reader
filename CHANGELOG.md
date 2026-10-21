@@ -4,6 +4,8 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 
 ## 1.12.0 (22 October 2026)
 - **Preview before you share a drive.** After you pick Story or Square, the card is shown as it'll look, with a **Share** button and **Cancel**. The roast stays a surprise: its space on the card is left blank in the preview, and it's only added to the picture and caption when you tap **Share**. Nothing is saved or sent until then.
+- **One score on each drive card.** Shared from **Race telemetry**, the card shows only your Racing score. From any other layout, it shows your **drive score**: the average of your Everyday and Efficiency scores, with those two shown underneath on the Story card. If a drive was too short for one of them, the drive score uses the other.
+- **Roasts follow the card's score.** Race telemetry cards get racing roasts for the Racing score. Other cards get new drive-score roasts that tease smoothness and fuel together, picked for the average ("A solid C+. Smooth-ish, thirsty-ish, very average-ish."). The caption says which score it is, for example "(67/100, drive score)".
 
 ## 1.11.1 (22 October 2026)
 - **Code support table.** [docs/CODE-SUPPORT.md](docs/CODE-SUPPORT.md) lists every make and model in the car list, whether the generic codes apply, and how many manufacturer-specific codes are explained for each model year. It's built from the app's own car list and code library, and a test fails if it falls out of date.

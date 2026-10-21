@@ -28,6 +28,14 @@ object Roast {
         listOf("Your lap time has grown a beard.", "Lots of revs, not much progress.", "The racing line called. It wants a word."),
         listOf("Even the safety car overtook you.", "That lap was sponsored by the brake pedal.", "Bold strategy: be the slowest car on track."),
     )
+    /** The drive score: Everyday and Efficiency together, so smoothness and fuel both count. */
+    private val DRIVE = listOf(
+        listOf("Smooth and frugal. Your car wants to adopt you.", "Gentle on the brakes, gentle on the fuel. Show-off.", "Silky smooth and barely sipped fuel. Teach us your ways."),
+        listOf("Tidy and thrifty, with the odd heavy-footed moment.", "Pretty smooth, pretty frugal. The car approves, mostly.", "Good drive. The fuel gauge and the passengers both nodded."),
+        listOf("A solid C+. Smooth-ish, thirsty-ish, very average-ish.", "Not bad. The brakes and the fuel gauge have notes.", "Respectable. Your right foot just needs a little therapy."),
+        listOf("The passengers held on, and the fuel gauge held its breath.", "Every red light was a drag race, and the servo noticed.", "Somewhere, a set of brake pads and a fuel tank are crying."),
+        listOf("That wasn't a drive, it was a fuel-burning stunt audition.", "Bold. The car needs a lie-down and a refuel.", "Your seatbelt and the fuel company both had a big day."),
+    )
     private val TOO_SHORT = listOf("Barely left the driveway. Bold.", "A drive so short the engine didn't warm up.", "Blink and you'd miss it. We did.")
 
     private fun band(score: Int): Int = when {
@@ -36,6 +44,15 @@ object Roast {
         score >= 55 -> 2
         score >= 35 -> 3
         else -> 4
+    }
+
+    /** The line for the score a shared card shows: Racing on Race telemetry, else the drive score. */
+    fun line(card: ShareScore, seed: Long): String =
+        if (card.kind == ShareScore.Kind.RACING) line(DrivingScore.Style.RACING, card.score, seed) else pickFrom(DRIVE, card.score, seed)
+
+    private fun pickFrom(table: List<List<String>>, score: Int?, seed: Long): String {
+        val pick = { list: List<String> -> list[Math.floorMod(seed, list.size.toLong()).toInt()] }
+        return if (score == null) pick(TOO_SHORT) else pick(table[band(score)])
     }
 
     /** The line for [score] in [style] (null score: too short to rate). [seed] picks among the lines, e.g. the drive's start time. */
@@ -51,5 +68,5 @@ object Roast {
     }
 
     /** Every line (for the tests). */
-    internal val all: List<String> get() = (EVERYDAY + EFFICIENCY + RACING).flatten() + TOO_SHORT
+    internal val all: List<String> get() = (EVERYDAY + EFFICIENCY + RACING + DRIVE).flatten() + TOO_SHORT
 }
