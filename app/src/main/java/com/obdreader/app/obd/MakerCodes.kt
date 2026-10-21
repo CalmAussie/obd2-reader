@@ -93,6 +93,12 @@ internal object MakerCodes {
     /** Every code with a maker's definition (for tests). */
     val codes: Set<String> get() = entries.keys
 
+    /** One maker-specific code: which makes and model years it's defined for, and its name. */
+    data class Coverage(val code: String, val makes: Set<String>, val years: IntRange, val title: String, val source: String)
+
+    /** Every maker-specific code, for the support table in the docs. */
+    val coverage: List<Coverage> get() = entries.map { (code, e) -> Coverage(code, e.makes, e.years, e.title, e.source) }
+
     /** The maker's definition of [code] for this [make] and model [year], or null if there isn't one. */
     fun lookup(code: String, make: String?, year: Int?): DtcInfo? {
         val e = entries[code] ?: return null
