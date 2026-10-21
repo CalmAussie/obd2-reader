@@ -922,7 +922,7 @@ P0A19|GENERAL|Motor torque sensor circuit low
 P0A1A|HYBRID|Generator control module
 P0A1B|HYBRID|Drive motor A control module performance
 P0A1C|HYBRID|Drive motor B control module performance
-P0A1D|HYBRID|hybrid/EV powertrain control module A
+P0A1D|HYBRID|Hybrid/EV powertrain control module A
 P0A1E|HYBRID|Starter/generator control module
 P0A1F|HYBRID|Battery energy control module A performance
 P0A20|GENERAL|Motor torque sensor circuit high
@@ -932,9 +932,9 @@ P0A23|HYBRID|Generator torque sensor circuit range/performance
 P0A24|HYBRID|Generator torque sensor circuit low
 P0A25|HYBRID|Generator torque sensor circuit high
 P0A26|HYBRID|Generator torque sensor circuit intermittent
-P0A27|HYBRID|hybrid/EV battery power off circuit
-P0A28|HYBRID|hybrid/EV battery power off circuit low
-P0A29|HYBRID|hybrid/EV battery power off circuit high
+P0A27|HYBRID|Hybrid/EV battery power off circuit
+P0A28|HYBRID|Hybrid/EV battery power off circuit low
+P0A29|HYBRID|Hybrid/EV battery power off circuit high
 P0A2A|HYBRID|Drive motor A temperature sensor A circuit
 P0A2B|HYBRID|Drive motor A temperature sensor A circuit range/performance
 P0A2C|HYBRID|Drive motor A temperature sensor A circuit low
@@ -1018,15 +1018,15 @@ P0A79|HYBRID|Drive motor B inverter performance
 P0A7A|HYBRID|Generator inverter performance
 P0A7B|GENERAL|Battery energy control module requested MIL illumination
 P0A7C|HYBRID|Motor electronics over temperature
-P0A7D|HYBRID|hybrid/EV battery pack state of charge low
-P0A7E|HYBRID|hybrid/EV battery pack A over temperature
-P0A7F|HYBRID|hybrid/EV battery pack A deterioration
+P0A7D|HYBRID|Hybrid/EV battery pack state of charge low
+P0A7E|HYBRID|Hybrid/EV battery pack A over temperature
+P0A7F|HYBRID|Hybrid/EV battery pack A deterioration
 P0A80|HYBRID|Replace hybrid/EV battery pack
-P0A81|HYBRID|hybrid/EV battery pack cooling fan 1 control circuit/open
-P0A82|HYBRID|hybrid/EV battery pack cooling fan 1 performance/stuck off
-P0A83|HYBRID|hybrid/EV battery pack cooling fan 1 stuck on
-P0A84|HYBRID|hybrid/EV battery pack cooling fan 1 control circuit low
-P0A85|HYBRID|hybrid/EV battery pack cooling fan 1 control circuit high
+P0A81|HYBRID|Hybrid/EV battery pack cooling fan 1 control circuit/open
+P0A82|HYBRID|Hybrid/EV battery pack cooling fan 1 performance/stuck off
+P0A83|HYBRID|Hybrid/EV battery pack cooling fan 1 stuck on
+P0A84|HYBRID|Hybrid/EV battery pack cooling fan 1 control circuit low
+P0A85|HYBRID|Hybrid/EV battery pack cooling fan 1 control circuit high
 P0A86|HYBRID|14 volt power module current sensor A circuit
 P0A87|HYBRID|14 volt power module current sensor A circuit range/performance
 P0A88|HYBRID|14 volt power module current sensor A circuit low
@@ -1043,93 +1043,93 @@ P0A92|HYBRID|Hybrid generator performance
 P0A93|COOLING|Inverter A cooling system performance
 P0A94|HYBRID|DC/DC converter A performance
 P0A95|HYBRID|High voltage fuse A
-P0A96|HYBRID|hybrid/EV battery pack cooling fan 2 control circuit/open
-P0A97|HYBRID|hybrid/EV battery pack cooling fan 2 performance/stuck off
-P0A98|HYBRID|hybrid/EV battery pack cooling fan 2 stuck on
-P0A99|HYBRID|hybrid/EV battery pack cooling fan 2 control circuit low
-P0A9A|HYBRID|hybrid/EV battery pack cooling fan 2 control circuit high
-P0A9B|HYBRID|hybrid/EV battery temperature sensor A circuit
-P0A9C|HYBRID|hybrid/EV battery temperature sensor A circuit range/performance
-P0A9D|HYBRID|hybrid/EV battery temperature sensor A circuit low
-P0A9E|HYBRID|hybrid/EV battery temperature sensor A circuit high
-P0A9F|HYBRID|hybrid/EV battery temperature sensor A circuit intermittent/erratic
-P0AA0|HYBRID|hybrid/EV battery positive contactor circuit
-P0AA1|HYBRID|hybrid/EV battery positive contactor circuit stuck closed
-P0AA2|HYBRID|hybrid/EV battery positive contactor circuit stuck open
-P0AA3|HYBRID|hybrid/EV battery negative contactor circuit
-P0AA4|HYBRID|hybrid/EV battery negative contactor circuit stuck closed
-P0AA5|HYBRID|hybrid/EV battery negative contactor circuit stuck open
-P0AA6|HYBRID|hybrid/EV battery voltage system isolation fault
-P0AA7|HYBRID|hybrid/EV battery voltage isolation sensor circuit
-P0AA8|HYBRID|hybrid/EV battery voltage isolation sensor circuit range/performance
-P0AA9|HYBRID|hybrid/EV battery voltage isolation sensor circuit low
-P0AAA|HYBRID|hybrid/EV battery voltage isolation sensor circuit high
-P0AAB|HYBRID|hybrid/EV battery voltage isolation sensor circuit intermittent/erratic
-P0AAC|HYBRID|hybrid/EV battery pack air temperature sensor A circuit
-P0AAD|HYBRID|hybrid/EV battery pack air temperature sensor A circuit range/performance
-P0AAE|HYBRID|hybrid/EV battery pack air temperature sensor A circuit low
-P0AAF|HYBRID|hybrid/EV battery pack air temperature sensor A circuit high
-P0AB0|HYBRID|hybrid/EV battery pack air temperature sensor A circuit intermittent/erratic
-P0AB1|HYBRID|hybrid/EV battery pack air temperature sensor B circuit
-P0AB2|HYBRID|hybrid/EV battery pack air temperature sensor B circuit range/performance
-P0AB3|HYBRID|hybrid/EV battery pack air temperature sensor B circuit low
-P0AB4|HYBRID|hybrid/EV battery pack air temperature sensor B circuit high
-P0AB5|HYBRID|hybrid/EV battery pack air temperature sensor B circuit intermittent/erratic
+P0A96|HYBRID|Hybrid/EV battery pack cooling fan 2 control circuit/open
+P0A97|HYBRID|Hybrid/EV battery pack cooling fan 2 performance/stuck off
+P0A98|HYBRID|Hybrid/EV battery pack cooling fan 2 stuck on
+P0A99|HYBRID|Hybrid/EV battery pack cooling fan 2 control circuit low
+P0A9A|HYBRID|Hybrid/EV battery pack cooling fan 2 control circuit high
+P0A9B|HYBRID|Hybrid/EV battery temperature sensor A circuit
+P0A9C|HYBRID|Hybrid/EV battery temperature sensor A circuit range/performance
+P0A9D|HYBRID|Hybrid/EV battery temperature sensor A circuit low
+P0A9E|HYBRID|Hybrid/EV battery temperature sensor A circuit high
+P0A9F|HYBRID|Hybrid/EV battery temperature sensor A circuit intermittent/erratic
+P0AA0|HYBRID|Hybrid/EV battery positive contactor circuit
+P0AA1|HYBRID|Hybrid/EV battery positive contactor circuit stuck closed
+P0AA2|HYBRID|Hybrid/EV battery positive contactor circuit stuck open
+P0AA3|HYBRID|Hybrid/EV battery negative contactor circuit
+P0AA4|HYBRID|Hybrid/EV battery negative contactor circuit stuck closed
+P0AA5|HYBRID|Hybrid/EV battery negative contactor circuit stuck open
+P0AA6|HYBRID|Hybrid/EV battery voltage system isolation fault
+P0AA7|HYBRID|Hybrid/EV battery voltage isolation sensor circuit
+P0AA8|HYBRID|Hybrid/EV battery voltage isolation sensor circuit range/performance
+P0AA9|HYBRID|Hybrid/EV battery voltage isolation sensor circuit low
+P0AAA|HYBRID|Hybrid/EV battery voltage isolation sensor circuit high
+P0AAB|HYBRID|Hybrid/EV battery voltage isolation sensor circuit intermittent/erratic
+P0AAC|HYBRID|Hybrid/EV battery pack air temperature sensor A circuit
+P0AAD|HYBRID|Hybrid/EV battery pack air temperature sensor A circuit range/performance
+P0AAE|HYBRID|Hybrid/EV battery pack air temperature sensor A circuit low
+P0AAF|HYBRID|Hybrid/EV battery pack air temperature sensor A circuit high
+P0AB0|HYBRID|Hybrid/EV battery pack air temperature sensor A circuit intermittent/erratic
+P0AB1|HYBRID|Hybrid/EV battery pack air temperature sensor B circuit
+P0AB2|HYBRID|Hybrid/EV battery pack air temperature sensor B circuit range/performance
+P0AB3|HYBRID|Hybrid/EV battery pack air temperature sensor B circuit low
+P0AB4|HYBRID|Hybrid/EV battery pack air temperature sensor B circuit high
+P0AB5|HYBRID|Hybrid/EV battery pack air temperature sensor B circuit intermittent/erratic
 P0AB6|GENERAL|Engine mount B control circuit/open
 P0AB7|GENERAL|Engine mount B control circuit low
 P0AB8|GENERAL|Engine mount B control circuit high
-P0AB9|HYBRID|hybrid/EV system performance
-P0ABA|HYBRID|hybrid/EV battery pack voltage sense A circuit
-P0ABB|HYBRID|hybrid/EV battery pack voltage sense A circuit range/performance
-P0ABC|HYBRID|hybrid/EV battery pack voltage sense A circuit low
-P0ABD|HYBRID|hybrid/EV battery pack voltage sense A circuit high
-P0ABE|HYBRID|hybrid/EV battery pack voltage sense A circuit intermittent/erratic
-P0ABF|HYBRID|hybrid/EV battery pack current sensor A circuit
-P0AC0|HYBRID|hybrid/EV battery pack current sensor A circuit range/performance
-P0AC1|HYBRID|hybrid/EV battery pack current sensor A circuit low
-P0AC2|HYBRID|hybrid/EV battery pack current sensor A circuit high
-P0AC3|HYBRID|hybrid/EV battery pack current sensor A circuit intermittent/erratic
-P0AC4|GENERAL|hybrid/EV powertrain control module requested MIL illumination
-P0AC5|HYBRID|hybrid/EV battery temperature sensor B circuit
-P0AC6|HYBRID|hybrid/EV battery temperature sensor B circuit range/performance
-P0AC7|HYBRID|hybrid/EV battery temperature sensor B circuit low
-P0AC8|HYBRID|hybrid/EV battery temperature sensor B circuit high
-P0AC9|HYBRID|hybrid/EV battery temperature sensor B circuit intermittent/erratic
-P0ACA|HYBRID|hybrid/EV battery temperature sensor C circuit
-P0ACB|HYBRID|hybrid/EV battery temperature sensor C circuit range/performance
-P0ACC|HYBRID|hybrid/EV battery temperature sensor C circuit low
-P0ACD|HYBRID|hybrid/EV battery temperature sensor C circuit high
-P0ACE|HYBRID|hybrid/EV battery temperature sensor C circuit intermittent/erratic
-P0ACF|HYBRID|hybrid/EV battery pack cooling fan 3 control circuit/open
-P0AD0|HYBRID|hybrid/EV battery pack cooling fan 3 performance/stuck off
-P0AD1|HYBRID|hybrid/EV battery pack cooling fan 3 stuck on
-P0AD2|HYBRID|hybrid/EV battery pack cooling fan 3 control circuit low
-P0AD3|HYBRID|hybrid/EV battery pack cooling fan 3 control circuit high
-P0AD4|HYBRID|hybrid/EV battery pack air flow system insufficient air flow
-P0AD5|HYBRID|hybrid/EV battery pack air flow valve A control circuit/open
-P0AD6|HYBRID|hybrid/EV battery pack air flow valve A control circuit range/performance
-P0AD7|HYBRID|hybrid/EV battery pack air flow valve A control circuit low
-P0AD8|HYBRID|hybrid/EV battery pack air flow valve A control circuit high
-P0AD9|HYBRID|hybrid/EV battery positive contactor control circuit/open
-P0ADA|HYBRID|hybrid/EV battery positive contactor control circuit range/performance
-P0ADB|HYBRID|hybrid/EV battery positive contactor control circuit low
-P0ADC|HYBRID|hybrid/EV battery positive contactor control circuit high
-P0ADD|HYBRID|hybrid/EV battery negative contactor control circuit/open
-P0ADE|HYBRID|hybrid/EV battery negative contactor control circuit range/performance
-P0ADF|HYBRID|hybrid/EV battery negative contactor control circuit low
-P0AE0|HYBRID|hybrid/EV battery negative contactor control circuit high
-P0AE1|HYBRID|hybrid/EV battery precharge contactor circuit
-P0AE2|HYBRID|hybrid/EV battery precharge contactor circuit stuck closed
-P0AE3|HYBRID|hybrid/EV battery precharge contactor circuit stuck open
-P0AE4|HYBRID|hybrid/EV battery precharge contactor A control circuit/open
-P0AE5|HYBRID|hybrid/EV battery precharge contactor A control circuit range/performance
-P0AE6|HYBRID|hybrid/EV battery precharge contactor A control circuit low
-P0AE7|HYBRID|hybrid/EV battery precharge contactor A control circuit high
-P0AE8|HYBRID|hybrid/EV battery temperature sensor D circuit
-P0AE9|HYBRID|hybrid/EV battery temperature sensor D circuit range/performance
-P0AEA|HYBRID|hybrid/EV battery temperature sensor D circuit low
-P0AEB|HYBRID|hybrid/EV battery temperature sensor D circuit high
-P0AEC|HYBRID|hybrid/EV battery temperature sensor D circuit intermittent/erratic
+P0AB9|HYBRID|Hybrid/EV system performance
+P0ABA|HYBRID|Hybrid/EV battery pack voltage sense A circuit
+P0ABB|HYBRID|Hybrid/EV battery pack voltage sense A circuit range/performance
+P0ABC|HYBRID|Hybrid/EV battery pack voltage sense A circuit low
+P0ABD|HYBRID|Hybrid/EV battery pack voltage sense A circuit high
+P0ABE|HYBRID|Hybrid/EV battery pack voltage sense A circuit intermittent/erratic
+P0ABF|HYBRID|Hybrid/EV battery pack current sensor A circuit
+P0AC0|HYBRID|Hybrid/EV battery pack current sensor A circuit range/performance
+P0AC1|HYBRID|Hybrid/EV battery pack current sensor A circuit low
+P0AC2|HYBRID|Hybrid/EV battery pack current sensor A circuit high
+P0AC3|HYBRID|Hybrid/EV battery pack current sensor A circuit intermittent/erratic
+P0AC4|GENERAL|Hybrid/EV powertrain control module requested MIL illumination
+P0AC5|HYBRID|Hybrid/EV battery temperature sensor B circuit
+P0AC6|HYBRID|Hybrid/EV battery temperature sensor B circuit range/performance
+P0AC7|HYBRID|Hybrid/EV battery temperature sensor B circuit low
+P0AC8|HYBRID|Hybrid/EV battery temperature sensor B circuit high
+P0AC9|HYBRID|Hybrid/EV battery temperature sensor B circuit intermittent/erratic
+P0ACA|HYBRID|Hybrid/EV battery temperature sensor C circuit
+P0ACB|HYBRID|Hybrid/EV battery temperature sensor C circuit range/performance
+P0ACC|HYBRID|Hybrid/EV battery temperature sensor C circuit low
+P0ACD|HYBRID|Hybrid/EV battery temperature sensor C circuit high
+P0ACE|HYBRID|Hybrid/EV battery temperature sensor C circuit intermittent/erratic
+P0ACF|HYBRID|Hybrid/EV battery pack cooling fan 3 control circuit/open
+P0AD0|HYBRID|Hybrid/EV battery pack cooling fan 3 performance/stuck off
+P0AD1|HYBRID|Hybrid/EV battery pack cooling fan 3 stuck on
+P0AD2|HYBRID|Hybrid/EV battery pack cooling fan 3 control circuit low
+P0AD3|HYBRID|Hybrid/EV battery pack cooling fan 3 control circuit high
+P0AD4|HYBRID|Hybrid/EV battery pack air flow system insufficient air flow
+P0AD5|HYBRID|Hybrid/EV battery pack air flow valve A control circuit/open
+P0AD6|HYBRID|Hybrid/EV battery pack air flow valve A control circuit range/performance
+P0AD7|HYBRID|Hybrid/EV battery pack air flow valve A control circuit low
+P0AD8|HYBRID|Hybrid/EV battery pack air flow valve A control circuit high
+P0AD9|HYBRID|Hybrid/EV battery positive contactor control circuit/open
+P0ADA|HYBRID|Hybrid/EV battery positive contactor control circuit range/performance
+P0ADB|HYBRID|Hybrid/EV battery positive contactor control circuit low
+P0ADC|HYBRID|Hybrid/EV battery positive contactor control circuit high
+P0ADD|HYBRID|Hybrid/EV battery negative contactor control circuit/open
+P0ADE|HYBRID|Hybrid/EV battery negative contactor control circuit range/performance
+P0ADF|HYBRID|Hybrid/EV battery negative contactor control circuit low
+P0AE0|HYBRID|Hybrid/EV battery negative contactor control circuit high
+P0AE1|HYBRID|Hybrid/EV battery precharge contactor circuit
+P0AE2|HYBRID|Hybrid/EV battery precharge contactor circuit stuck closed
+P0AE3|HYBRID|Hybrid/EV battery precharge contactor circuit stuck open
+P0AE4|HYBRID|Hybrid/EV battery precharge contactor A control circuit/open
+P0AE5|HYBRID|Hybrid/EV battery precharge contactor A control circuit range/performance
+P0AE6|HYBRID|Hybrid/EV battery precharge contactor A control circuit low
+P0AE7|HYBRID|Hybrid/EV battery precharge contactor A control circuit high
+P0AE8|HYBRID|Hybrid/EV battery temperature sensor D circuit
+P0AE9|HYBRID|Hybrid/EV battery temperature sensor D circuit range/performance
+P0AEA|HYBRID|Hybrid/EV battery temperature sensor D circuit low
+P0AEB|HYBRID|Hybrid/EV battery temperature sensor D circuit high
+P0AEC|HYBRID|Hybrid/EV battery temperature sensor D circuit intermittent/erratic
 P0AED|HYBRID|Drive motor inverter temperature sensor A circuit
 P0AEE|HYBRID|Drive motor inverter temperature sensor A circuit range/performance
 P0AEF|HYBRID|Drive motor inverter temperature sensor A circuit low
@@ -1141,10 +1141,10 @@ P0AF4|HYBRID|Drive motor inverter temperature sensor B circuit low
 P0AF5|HYBRID|Drive motor inverter temperature sensor B circuit high
 P0AF6|HYBRID|Drive motor inverter temperature sensor B circuit intermittent/erratic
 P0AF7|CONTROL_MODULE|14 volt power module internal temperature too high
-P0AF8|HYBRID|hybrid/EV battery system voltage
-P0AF9|HYBRID|hybrid/EV battery system voltage unstable
-P0AFA|HYBRID|hybrid/EV battery system voltage low
-P0AFB|HYBRID|hybrid/EV battery system voltage high
+P0AF8|HYBRID|Hybrid/EV battery system voltage
+P0AF9|HYBRID|Hybrid/EV battery system voltage unstable
+P0AFA|HYBRID|Hybrid/EV battery system voltage low
+P0AFB|HYBRID|Hybrid/EV battery system voltage high
 P0B00|TRANS_GENERAL|Electric/auxiliary transmission fluid pump motor phase U current
 P0B01|TRANS_GENERAL|Electric/auxiliary transmission fluid pump motor phase U current low
 P0B02|TRANS_GENERAL|Electric/auxiliary transmission fluid pump motor phase U current high
