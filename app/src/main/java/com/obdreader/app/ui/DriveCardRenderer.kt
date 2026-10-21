@@ -62,9 +62,10 @@ class DriveCardRenderer(private val context: Context) {
     /**
      * [route]: the drive's outline, from its recording when the route was saved; drawn as a line on
      * the card's own background with a start dot and an end dot. Null or empty: no outline.
-     * [roast]: a short line about the score, under the date.
+     * [roast]: a short line about the score, under the date. [hideRoast] keeps its space but leaves
+     * it blank, for the preview before sharing: the card looks the same, the roast stays a surprise.
      */
-    fun render(trip: TripSummary, style: DrivingScore.Style, carLabel: String?, format: Format, route: Route? = null, roast: String? = null): Bitmap {
+    fun render(trip: TripSummary, style: DrivingScore.Style, carLabel: String?, format: Format, route: Route? = null, roast: String? = null, hideRoast: Boolean = false): Bitmap {
         val w = format.width; val h = format.height
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
@@ -98,7 +99,7 @@ class DriveCardRenderer(private val context: Context) {
         c.drawText(if (layout == DashLayout.CYBERPUNK) dateLine.uppercase(Locale.getDefault()) else dateLine, 72f, y, paint)
         if (!roast.isNullOrBlank()) {
             paint.typeface = uiBold; paint.color = if (layout == DashLayout.CYBERPUNK) s2 else s1; paint.textSize = if (story) 42f else 36f
-            for (line in wrap("“$roast”", w - 144f).take(2)) { y += paint.textSize * 1.3f; c.drawText(line, 72f, y, paint) }
+            for (line in wrap("“$roast”", w - 144f).take(2)) { y += paint.textSize * 1.3f; if (!hideRoast) c.drawText(line, 72f, y, paint) }
         }
 
         // The score.
