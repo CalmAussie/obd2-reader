@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.9.2 (22 October 2026)
+- **ThinkCar ThinkDiag and other maker-locked adapters.** ThinkDiag adapters are made for ThinkCar's own app. If one answers like a standard ELM327, it connects like any other adapter. If it doesn't, the app now says so plainly (it's a ThinkDiag, made for ThinkCar's app, and any ELM327-compatible adapter works), instead of "Couldn't connect" and retrying. BlueDriver adapters get the same message. A car with the ignition off is never blamed on the adapter: the message only shows when the adapter itself never answered like an ELM327.
+
 ## 1.9.1 (21 October 2026)
 - **Engines for every model in the car list.** Choose your car now lists engines for all 640 petrol, diesel and hybrid models in the catalogue (up from 121), from 2000 to 2026: each with the years it was offered, its approximate redline for the rev dial, and whether it's diesel or hybrid (which changes the "may not work on your car" list). Models that already had engines gained ones that were missing, such as the 2000–2004 HiLux, the 2020-on Accord and S-Class, and the Cayenne Turbo models. Engines vary by country, so if yours isn't listed you can still type it.
 - Fully electric models (Tesla, Leaf, Polestar 2 and others) say "Electric: there's no engine to choose" instead of asking you to type one.
