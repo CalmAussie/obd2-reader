@@ -2212,7 +2212,13 @@ class MainActivity : AppCompatActivity() {
             engineInput.setAdapter(AllItemsAdapter(this, engines))
             engineLayout.endIconMode = if (engines.isEmpty()) com.google.android.material.textfield.TextInputLayout.END_ICON_NONE
                 else com.google.android.material.textfield.TextInputLayout.END_ICON_DROPDOWN_MENU
-            engineLayout.helperText = getString(if (engines.isEmpty()) R.string.car_engine_none else R.string.car_engine_help)
+            val model = modelInput.text?.toString()?.trim().orEmpty()
+            val electric = model.isNotEmpty() && VehicleCatalog.isElectric(VehicleCatalog.Car(make, year, model), model.lowercase(Locale.US))
+            engineLayout.helperText = getString(when {
+                engines.isNotEmpty() -> R.string.car_engine_help
+                electric -> R.string.car_engine_electric
+                else -> R.string.car_engine_none
+            })
         }
 
         fun refreshModels() {

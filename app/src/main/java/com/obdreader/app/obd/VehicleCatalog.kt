@@ -40,7 +40,7 @@ object VehicleCatalog {
     private fun e(name: String, from: Int, to: Int, redline: Int, fuel: Fuel = Fuel.PETROL) = Engine(name, from, to, redline, fuel)
     private val D = Fuel.DIESEL
 
-    val MAKES: List<Make> = listOf(
+    internal val BASE_MAKES: List<Make> = listOf(
         Make("Ford", listOf(
             Model("Escape", 2001, 2026, listOf(
                 e("2.0 I4", 2001, 2004, 6500), e("2.3 I4", 2005, 2008, 6500), e("3.0 V6", 2001, 2008, 6250),
@@ -74,7 +74,7 @@ object VehicleCatalog {
             Model("121 / Mazda2", 2000, 2026), Model("323", 2000, 2003), Model("626", 2000, 2002),
             Model("B-Series / Bravo", 2000, 2006), Model("BT-50", 2006, 2026, listOf(
                 e("2.5 diesel", 2006, 2011, 4500, D), e("3.0 diesel", 2006, 2011, 4500, D), e("2.2 diesel", 2011, 2020, 4500, D),
-                e("3.2 diesel", 2011, 2020, 4500, D), e("3.0 diesel", 2020, 2026, 4500, D),
+                e("3.2 diesel", 2011, 2020, 4500, D), e("3.0 diesel (2020 on)", 2020, 2026, 4500, D),
             )), Model("CX-3", 2015, 2026),
             Model("CX-30", 2019, 2026), Model("CX-5", 2012, 2026, listOf(
                 e("2.0", 2012, 2026, 6500), e("2.5", 2012, 2026, 6500), e("2.2 diesel", 2012, 2026, 5000, D), e("2.5 turbo", 2018, 2026, 6000),
@@ -102,7 +102,7 @@ object VehicleCatalog {
                 e("2.0", 2000, 2006, 6800), e("2.4", 2002, 2017, 6800), e("1.5 turbo", 2017, 2026, 6500),
             )), Model("CR-Z", 2011, 2016),
             Model("HR-V", 2015, 2026), Model("Insight", 2000, 2014), Model("Integra", 2000, 2006),
-            Model("Jazz / Fit", 2001, 2020, listOf(e("1.3", 2002, 2008, 6500), e("1.5", 2002, 2020, 6800))), Model("Legend", 2000, 2012), Model("Odyssey", 2000, 2021),
+            Model("Jazz / Fit", 2001, 2020, listOf(e("1.3", 2001, 2008, 6500), e("1.5", 2001, 2020, 6800))), Model("Legend", 2000, 2012), Model("Odyssey", 2000, 2021),
             Model("Pilot", 2003, 2026), Model("Prelude", 2000, 2001), Model("S2000", 2000, 2009, listOf(e("2.0", 2000, 2004, 9000), e("2.2", 2004, 2009, 8000))),
             Model("ZR-V", 2023, 2026),
         )),
@@ -119,8 +119,8 @@ object VehicleCatalog {
             Model("Echo / Yaris", 2000, 2026, listOf(e("1.3", 2000, 2011, 6400), e("1.5", 2000, 2026, 6400))),
             Model("Fortuner", 2015, 2026), Model("HiAce", 2000, 2026),
             Model("HiLux", 2000, 2026, listOf(
-                e("2.7 petrol", 2005, 2026, 5600), e("4.0 V6 petrol", 2005, 2015, 6000), e("2.5 diesel", 2005, 2015, 4400, D),
-                e("3.0 diesel", 2005, 2015, 4400, D), e("2.4 diesel", 2015, 2026, 4400, D), e("2.8 diesel", 2015, 2026, 4400, D),
+                e("2.7 petrol", 2000, 2026, 5600), e("4.0 V6 petrol", 2005, 2015, 6000), e("2.5 diesel", 2005, 2015, 4400, D),
+                e("3.0 diesel", 2000, 2015, 4400, D), e("2.4 diesel", 2015, 2026, 4400, D), e("2.8 diesel", 2015, 2026, 4400, D),
             )),
             Model("Kluger / Highlander", 2003, 2026, listOf(
                 e("3.0 V6", 2003, 2007, 6200), e("3.5 V6", 2007, 2026, 6300), e("2.5 hybrid", 2021, 2026, 5500, Fuel.HYBRID),
@@ -130,7 +130,7 @@ object VehicleCatalog {
                 e("4.6 V8 petrol", 2012, 2021, 5800), e("3.3 V6 diesel", 2021, 2026, 4400, D),
             )),
             Model("LandCruiser Prado", 2000, 2026, listOf(
-                e("3.4 V6", 2000, 2002, 5200), e("4.0 V6", 2003, 2017, 6000), e("3.0 diesel", 2006, 2015, 4400, D),
+                e("3.4 V6", 2000, 2002, 5200), e("4.0 V6", 2003, 2017, 6000), e("3.0 diesel", 2000, 2015, 4400, D),
                 e("2.8 diesel", 2015, 2026, 4400, D),
             )),
             Model("Prius", 2001, 2026, listOf(
@@ -138,7 +138,7 @@ object VehicleCatalog {
                 e("2.0 hybrid", 2023, 2026, 5500, Fuel.HYBRID),
             )),
             Model("RAV4", 2000, 2026, listOf(
-                e("2.0", 2000, 2005, 6400), e("2.4", 2005, 2012, 6000), e("2.5", 2012, 2026, 6200),
+                e("2.0", 2000, 2018, 6400), e("2.4", 2005, 2012, 6000), e("2.5", 2012, 2026, 6200),
                 e("2.5 hybrid", 2016, 2026, 5500, Fuel.HYBRID),
             )),
             Model("Supra", 2019, 2026, listOf(e("2.0 turbo", 2019, 2026, 6500), e("3.0 I6 turbo", 2019, 2026, 6500))),
@@ -170,7 +170,7 @@ object VehicleCatalog {
                 e("3.0 diesel", 2004, 2026, 4800, D), e("2.0 turbo", 2011, 2026, 6500), e("3.0 I6 turbo", 2011, 2026, 7000),
             )),
             Model("X5", 2000, 2026, listOf(
-                e("3.0 I6", 2000, 2006, 6500), e("4.4 V8", 2000, 2006, 6000), e("4.8 V8", 2004, 2010, 6500),
+                e("3.0 I6", 2000, 2010, 6500), e("4.4 V8", 2000, 2006, 6000), e("4.8 V8", 2004, 2010, 6500),
                 e("3.0 diesel", 2003, 2026, 4800, D), e("3.0 I6 turbo", 2010, 2026, 7000),
             )),
             Model("X6", 2008, 2026), Model("Z3", 2000, 2002),
@@ -204,7 +204,7 @@ object VehicleCatalog {
             )),
             Model("GLS / GL", 2006, 2026),
             Model("S-Class", 2000, 2026, listOf(
-                e("5.0 V8", 2000, 2006, 6000), e("5.5 V8", 2006, 2013, 6000), e("3.0 V6 diesel", 2006, 2013, 4600, D),
+                e("5.0 V8", 2000, 2006, 6000), e("5.5 V8", 2006, 2013, 6000), e("3.0 V6 diesel", 2006, 2017, 4600, D),
                 e("4.7 V8 twin-turbo", 2013, 2020, 6200),
             )),
             Model("SL", 2000, 2026), Model("SLK / SLC", 2000, 2020),
@@ -440,7 +440,7 @@ object VehicleCatalog {
         Make("Fiat", listOf(
             Model("124 Spider", 2016, 2020),
             Model("500", 2007, 2026, listOf(
-                e("1.2", 2007, 2019, 6500), e("1.4", 2007, 2015, 6800), e("0.9 TwinAir turbo", 2010, 2019, 6000),
+                e("1.2", 2007, 2024, 6500), e("1.4", 2007, 2015, 6800), e("0.9 TwinAir turbo", 2010, 2019, 6000),
             )),
             Model("500X", 2015, 2026), Model("Bravo", 2007, 2014), Model("Doblo", 2001, 2026),
             Model("Ducato", 2000, 2026, listOf(
@@ -726,6 +726,20 @@ object VehicleCatalog {
             Model("ZS", 2017, 2026), Model("ZS (Rover era)", 2001, 2005), Model("ZT", 2001, 2005),
         )),
     )
+
+    /**
+     * The catalogue, with the engines from [EngineData] added to each model (after its own, and
+     * skipping any it already lists), trimmed to the years each model was sold.
+     */
+    val MAKES: List<Make> = BASE_MAKES.map { make ->
+        make.copy(models = make.models.map { m ->
+            val own = m.engines.map { it.name }.toSet()
+            val extra = EngineData.byModel[make.name to m.name].orEmpty().filter { it.name !in own }
+            m.copy(engines = (m.engines + extra)
+                .map { it.copy(from = maxOf(it.from, m.from), to = minOf(it.to, m.to)) }
+                .filter { it.from <= it.to })
+        })
+    }
 
     private val GM_NORTH_AMERICA = setOf("Chevrolet", "GMC", "Cadillac", "Buick", "Pontiac", "Saturn", "Hummer", "Oldsmobile")
     private val VW_GROUP = setOf("Volkswagen", "Audi", "Skoda", "SEAT / Cupra", "Porsche", "Lamborghini", "Bentley", "Bugatti")

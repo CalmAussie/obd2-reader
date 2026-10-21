@@ -3,6 +3,8 @@
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
 ## 1.9.1 (21 October 2026)
+- **Engines for every model in the car list.** Choose your car now lists engines for all 640 petrol, diesel and hybrid models in the catalogue (up from 121), from 2000 to 2026: each with the years it was offered, its approximate redline for the rev dial, and whether it's diesel or hybrid (which changes the "may not work on your car" list). Models that already had engines gained ones that were missing, such as the 2000–2004 HiLux, the 2020-on Accord and S-Class, and the Cayenne Turbo models. Engines vary by country, so if yours isn't listed you can still type it.
+- Fully electric models (Tesla, Leaf, Polestar 2 and others) say "Electric: there's no engine to choose" instead of asking you to type one.
 - **Throttle on the Race telemetry trace.** The 30-second trace now shows throttle (green, 0–100%) along with engine speed and road speed, with a key under it. If a car doesn't report throttle, the line has a gap rather than dropping to zero. Standard OBD2 has no brake reading, so brake isn't shown.
 - Fixed: in **Choose your car** (and **Diagnostics → Your car**), the **Engine** box worked like a plain text box. The list of engines only opened on a second tap, and only showed engines matching what was already typed. It's now a dropdown with an arrow, like Manufacturer and Year: one tap lists every engine offered for that model and year. You can still type an engine that isn't listed.
 
