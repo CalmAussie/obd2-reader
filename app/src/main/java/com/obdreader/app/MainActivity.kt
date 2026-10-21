@@ -975,13 +975,16 @@ class MainActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.share_picture)
             .setItems(formats.map { it.label }.toTypedArray()) { _, i ->
-                val bmp = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, formats[i], routeFor(trip))
+                val roast = com.obdreader.app.obd.Roast.line(scoreStyle, trip.scores[scoreStyle], trip.startedAt)
+                val bmp = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, formats[i], routeFor(trip), roast)
                 val name = "OBD2Reader_drive_" + java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).format(java.util.Date(trip.startedAt)) + "_${formats[i].name.lowercase(Locale.US)}.png"
                 val file = Exports.exportFile(this, name)
                 file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
                 bmp.recycle()
                 Exports.saveToPictures(this, file)
-                Exports.share(this, file, "image/png", "My drive")
+                // The post's text: the roast and the score, ready to paste or post as the caption.
+                val score = trip.scores[scoreStyle]
+                Exports.share(this, file, "image/png", "My drive", text = "$roast ${score?.let { "($it/100, ${scoreStyle.label.lowercase(Locale.getDefault())})" } ?: ""}".trim() + " #OBD2Reader")
             }
             .setNegativeButton("Cancel", null)
             .show()
