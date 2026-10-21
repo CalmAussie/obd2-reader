@@ -3,6 +3,7 @@
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
 ## 1.9.1 (21 October 2026)
+- **Throttle on the Race telemetry trace.** The 30-second trace now shows throttle (green, 0–100%) along with engine speed and road speed, with a key under it. If a car doesn't report throttle, the line has a gap rather than dropping to zero. Standard OBD2 has no brake reading, so brake isn't shown.
 - Fixed: in **Choose your car** (and **Diagnostics → Your car**), the **Engine** box worked like a plain text box. The list of engines only opened on a second tap, and only showed engines matching what was already typed. It's now a dropdown with an arrow, like Manufacturer and Year: one tap lists every engine offered for that model and year. You can still type an engine that isn't listed.
 
 ## 1.9.0 (21 October 2026)

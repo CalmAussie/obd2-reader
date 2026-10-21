@@ -639,7 +639,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
           <div><div class="tl">Speed</div><div class="tv tn" id="teleSpeed">—</div><div class="tu">km/h</div></div>
         </div>
         <div class="tele-trace"><svg id="teleTrace" viewBox="0 0 300 96" preserveAspectRatio="none" role="img" aria-label="Engine speed and road speed over the last 30 seconds"></svg>
-          <div class="legend"><span style="--c:var(--ch-rpm)">rpm</span><span style="--c:var(--ch-speed)">km/h</span><span class="w">Last 30 s</span></div></div>
+          <div class="legend"><span style="--c:var(--ch-rpm)">rpm</span><span style="--c:var(--ch-speed)">km/h</span><span style="--c:var(--ch-throttle)">throttle</span><span class="w">Last 30 s</span></div></div>
         <div class="tele-pair"><div><span class="tl">Coolant</span><b class="tn" id="teleCool">—</b><small>°C</small></div><div><span class="tl">Fuel</span><b class="tn" id="teleFuel">—</b><small>%</small></div></div>
       </div>
       <div class="lay-cockpit">
@@ -952,9 +952,17 @@ function sparkPath(arr, lo, hi, w, h) {
   const span = hi - lo || 1, dx = w / (HIST_LEN - 1), x0 = w - (arr.length - 1) * dx;
   return arr.map((v, i) => `${i ? "L" : "M"}${(x0 + i * dx).toFixed(1)} ${(h - 2 - (Math.max(lo, Math.min(hi, v)) - lo) / span * (h - 4)).toFixed(1)}`).join("");
 }
+/* A trace with gaps where the car gave no reading (mirrors TraceView's throttle line) */
+function gapPath(arr, lo, hi, w, h) {
+  if (!arr || arr.length < 2) return "";
+  const dx = w / (HIST_LEN - 1), x0 = w - (arr.length - 1) * dx; let pen = false, d = "";
+  arr.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? "L" : "M"}${(x0 + i * dx).toFixed(1)} ${(h - 2 - (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (h - 4)).toFixed(1)}`; pen = true; });
+  return d;
+}
 function drawTeleTrace() {
   const grid = [24, 48, 72].map(y => `<line x1="0" y1="${y}" x2="300" y2="${y}" stroke="var(--line)" stroke-width="1"/>`).join("");
   $("teleTrace").innerHTML = grid +
+    `<path d="${gapPath(hist.THR, 0, 100, 300, 96)}" fill="none" stroke="var(--ch-throttle)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>` +
     `<path d="${sparkPath(hist.RPM, 0, rpmGauge.max, 300, 96)}" fill="none" stroke="var(--ch-rpm)" stroke-width="2" vector-effect="non-scaling-stroke"/>` +
     `<path d="${sparkPath(hist.SPD, 0, 160, 300, 96)}" fill="none" stroke="var(--ch-speed)" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
 }
@@ -1049,8 +1057,8 @@ let lastRpm = null, lastSpeed = null;
 }
 /* Sample engine and road speed for the trace at the same rate as the other readings */
 setInterval(() => {
-  if (state !== "connected") { hist.RPM = []; hist.SPD = []; cyHist.length = 0; }
-  else { pushHist("RPM", lastRpm ?? 0); pushHist("SPD", lastSpeed ?? 0); if (lastRpm != null) { cyHist.push(lastRpm); if (cyHist.length > CY_HIST) cyHist.shift(); } }
+  if (state !== "connected") { hist.RPM = []; hist.SPD = []; hist.THR = []; cyHist.length = 0; }
+  else { pushHist("RPM", lastRpm ?? 0); pushHist("SPD", lastSpeed ?? 0); pushHist("THR", typeof live !== "undefined" && live["11"] != null ? live["11"] : null); if (lastRpm != null) { cyHist.push(lastRpm); if (cyHist.length > CY_HIST) cyHist.shift(); } }
   drawTeleTrace();
 }, 320);
 drawCockpit(null, null);

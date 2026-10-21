@@ -145,7 +145,7 @@ Tap the palette icon on the Dashboard to choose a style. Your choice is saved. E
 | Pit lane | A light style in black and red, for sunlight |
 | Drift | Hot pink and teal |
 | Apex | Volt yellow on carbon black, sharply raked |
-| Race telemetry | A data-logger screen: shift lights, big numbers and live 30-second traces |
+| Race telemetry | A data-logger screen: shift lights, big numbers and a live 30-second trace of engine speed, road speed and throttle |
 | Digital cockpit | One big speed in a glowing ring, on layered glass |
 | Cyberpunk | A neon heads-up display: a climbing rev bar, split-colour speed digits and glowing readouts |
 
