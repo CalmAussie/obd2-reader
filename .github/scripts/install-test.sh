@@ -160,6 +160,18 @@ done
 if [ $SEEN = 1 ]; then
   adb exec-out screencap -p > "$OUT/0-choose-car.png"
   log "car picker: shown first"
+  # Engine: one tap on the box opens the list of engines for the model and year (Ford, 2010 by default).
+  if tap_text "Model"; then
+    adb shell input text "Escape"; sleep 1
+    adb shell input keyevent KEYCODE_ENTER; sleep 1
+    tap_text "Engine" > /dev/null; sleep 2
+    adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-engine.xml" 2>/dev/null
+    adb exec-out screencap -p > "$OUT/0b-engine-list.png"
+    grep -q 'text="2.5 I4"' "$OUT/ui-engine.xml" && log "engine list: opens on one tap" || { log "engine list: FAILED (no list)"; FAIL=1; }
+    tap_contains "First, choose your car" > /dev/null; sleep 1   # closes the list without closing the sheet
+  else
+    log "engine list: FAILED (no Model box)"; FAIL=1
+  fi
   tap_text "Not listed" || { log "car picker: FAILED (no Not listed button)"; FAIL=1; }
   sleep 1
 else

@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.9.1 (21 October 2026)
+- Fixed: in **Choose your car** (and **Diagnostics → Your car**), the **Engine** box worked like a plain text box. The list of engines only opened on a second tap, and only showed engines matching what was already typed. It's now a dropdown with an arrow, like Manufacturer and Year: one tap lists every engine offered for that model and year. You can still type an engine that isn't listed.
+
 ## 1.9.0 (21 October 2026)
 - **Battery charging status.** Beside the battery voltage, the app now says whether the battery looks like it's charging: charging, charging weakly, not charging or overcharging with the engine running, and engine off (or engine off, low) when it isn't. It's on every style's battery readout, the live-data list and the Android Auto battery tile.
 - It's an estimate, marked **(est.)**: standard OBD2 has no battery-current (amps) reading, so it's worked out from the voltage and engine speed, with the same limits as the battery alerts. It waits a few seconds before changing (20 seconds for "not charging"), so a moment's dip doesn't flip it. Cars with smart charging lower the voltage while cruising, which shows as "charging weakly". **Diagnostics → Help → Battery status** explains the limits.
