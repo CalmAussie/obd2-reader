@@ -22,6 +22,7 @@ private fun View.dp(v: Float) = v * resources.displayMetrics.density
 object Channels {
     val RPM = Color.parseColor("#FF3B30")
     val SPEED = Color.parseColor("#3D9BFF")
+    val THROTTLE = Color.parseColor("#34D17A")
     private val byPid = mapOf(
         "11" to "#34D17A", "04" to "#FFB000", "0F" to "#34C8E0", "0B" to "#B57CFF", "10" to "#FF7AC6",
         "0E" to "#E6E15A", "46" to "#9AA3AD", "5C" to "#FF8A3D", "VOLT" to "#7DD3A0",
@@ -80,32 +81,35 @@ class TraceView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
     var rpmMax = 8000f
     private val rpm = ArrayDeque<Float>()
     private val speed = ArrayDeque<Float>()
+    /** Throttle 0–100 %, or null where the car gave no reading (the line breaks there rather than dropping to 0). */
+    private val throttle = ArrayDeque<Float?>()
     private val grid = Paint().apply { color = context.themeColor(R.attr.obdOutline); strokeWidth = dp(1f) }
     private val line = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = dp(2f); strokeJoin = Paint.Join.ROUND }
     private val path = Path()
 
     init {
-        contentDescription = "Engine speed and road speed over the last 30 seconds"
+        contentDescription = "Engine speed, road speed and throttle over the last 30 seconds"
     }
 
     private var lastPushMs = 0L
 
-    fun push(r: Float?, s: Float?) {
+    fun push(r: Float?, s: Float?, t: Float? = null) {
         // One point every 320 ms however fast readings arrive, so the trace always spans 30 seconds.
         val now = android.os.SystemClock.uptimeMillis()
         if (rpm.isNotEmpty() && now - lastPushMs < TowerRowView.TRACE_STEP_MS) {
-            rpm[rpm.size - 1] = r ?: 0f; speed[speed.size - 1] = s ?: 0f
+            rpm[rpm.size - 1] = r ?: 0f; speed[speed.size - 1] = s ?: 0f; throttle[throttle.size - 1] = t
             invalidate()
             return
         }
         lastPushMs = now
-        rpm.addLast(r ?: 0f); speed.addLast(s ?: 0f)
+        rpm.addLast(r ?: 0f); speed.addLast(s ?: 0f); throttle.addLast(t)
         while (rpm.size > TowerRowView.HISTORY) rpm.removeFirst()
         while (speed.size > TowerRowView.HISTORY) speed.removeFirst()
+        while (throttle.size > TowerRowView.HISTORY) throttle.removeFirst()
         invalidate()
     }
 
-    fun clear() { rpm.clear(); speed.clear(); invalidate() }
+    fun clear() { rpm.clear(); speed.clear(); throttle.clear(); invalidate() }
 
     /** Height in pixels; landscape shortens it so the whole telemetry column fits the screen. */
     var fixedHeight: Int? = null
@@ -119,20 +123,26 @@ class TraceView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
         val w = width.toFloat()
         val h = height.toFloat()
         for (i in 1..3) canvas.drawLine(0f, h * i / 4f, w, h * i / 4f, grid)
+        // Throttle first and thinner, so engine speed and road speed stay on top.
+        draw(canvas, throttle, 100f, Channels.THROTTLE, w, h, dp(1.5f))
         draw(canvas, rpm, rpmMax, Channels.RPM, w, h)
         draw(canvas, speed, 160f, Channels.SPEED, w, h)
     }
 
-    private fun draw(canvas: Canvas, data: ArrayDeque<Float>, max: Float, colour: Int, w: Float, h: Float) {
+    private fun draw(canvas: Canvas, data: ArrayDeque<out Float?>, max: Float, colour: Int, w: Float, h: Float, width: Float = dp(2f)) {
         if (data.size < 2) return
         val dx = w / (TowerRowView.HISTORY - 1)
         val x0 = w - (data.size - 1) * dx
         path.reset()
+        var pen = false
         data.forEachIndexed { i, v ->
+            if (v == null) { pen = false; return@forEachIndexed }
             val y = h - dp(2f) - (v / max).coerceIn(0f, 1f) * (h - dp(4f))
-            if (i == 0) path.moveTo(x0 + i * dx, y) else path.lineTo(x0 + i * dx, y)
+            if (!pen) path.moveTo(x0 + i * dx, y) else path.lineTo(x0 + i * dx, y)
+            pen = true
         }
         line.color = colour
+        line.strokeWidth = width
         canvas.drawPath(path, line)
     }
 }

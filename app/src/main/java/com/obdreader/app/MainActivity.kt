@@ -1311,9 +1311,9 @@ class MainActivity : AppCompatActivity() {
                 val start = length
                 append("■ ")
                 setSpan(android.text.style.ForegroundColorSpan(colour), start, length, 0)
-                append(label).append("     ")
+                append(label).append("    ")
             }
-            key("rpm", Channels.RPM); key(Units.speedUnit, Channels.SPEED); append("Last 30 s")
+            key("rpm", Channels.RPM); key(Units.speedUnit, Channels.SPEED); key("throttle", Channels.THROTTLE); append("Last 30 s")
         }
 
         fun pid(n: Int) = Pids.dashboard.first { it.number == n }
@@ -1392,7 +1392,7 @@ class MainActivity : AppCompatActivity() {
         cockpitRing.set(lastSpeed, value)
         cyberHud.set(lastSpeed, value)
         if (ObdSession.state.value.isConnected) {
-            trace.push(value, lastSpeed)
+            trace.push(value, lastSpeed, ObdSession.state.value.readings[THROTTLE_KEY]?.toFloat())
             cyberHud.push(value)
         } else if (value == null) {
             cyberHud.push(null)
@@ -2750,6 +2750,7 @@ class MainActivity : AppCompatActivity() {
         private val RPM_KEY = String.format(Locale.US, "%02X", Pids.RPM)
         private val SPEED_KEY = String.format(Locale.US, "%02X", Pids.SPEED)
         private const val COOLANT_KEY = "05"
+        private const val THROTTLE_KEY = "11"
         private const val PREF_GRAPHS = "graph_channels"
         private const val MAX_GRAPHS = 4
         private const val FUEL_KEY = "2F"
