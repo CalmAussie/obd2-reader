@@ -2374,12 +2374,14 @@ function renderDriveCard(t, fmt) {
   c.fillStyle = fg; c.font = `italic 900 ${story ? 96 : 78}px Archivo`; c.textAlign = "left"; c.fillText("My drive", 72, y);
   y += story ? 62 : 54; c.fillStyle = fg2; c.font = "500 36px Archivo";
   c.fillText([new Date(t.start).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" }), myCar && carLabel(myCar)].filter(Boolean).join("  ·  "), 72, y);
-  const sc = t.scores[scoreStyle], cx = story ? W / 2 : 240, cy = story ? y + 260 : y + 230, r = story ? 190 : 150;
+  /* Route outline (mirrors DriveCardRenderer.drawRoute). The demo car has no GPS, so the preview draws a made-up demo route. */
+  const route = DEMO_ROUTE, showRoute = route.length > 1;
+  const sc = t.scores[scoreStyle], cx = story ? (showRoute ? 270 : W / 2) : 240, cy = story ? y + 260 : y + 230, r = story ? (showRoute ? 170 : 190) : 150;
   c.lineCap = "round"; c.lineWidth = story ? 34 : 26; c.strokeStyle = track; c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI); c.stroke();
   if (sc != null) { c.strokeStyle = col(sc); c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, 0.75 * Math.PI + 1.5 * Math.PI * sc / 100); c.stroke(); }
   c.textAlign = "center"; c.fillStyle = fg; const big = story ? 170 : 120; c.font = `italic 900 ${big}px Archivo`; c.fillText(sc ?? "—", cx, cy + big * 0.32);
   c.fillStyle = fg2; c.font = `600 ${story ? 38 : 30}px Archivo`; c.fillText(`${SCORE_STYLES[scoreStyle].label} score`, cx, cy + r * 0.78);
-  const stats = [["Distance", tripKm(unitsMph ? t.km * 0.621371 : t.km).replace(" km", unitsMph ? " mi" : " km")], ["Driving time", tripDur(t.drive)], t.top != null && ["Top speed", uSpeedText(t.top)], t.avg != null && ["Average", uSpeedText(t.avg)], t.best != null && ["0–100 km/h", `${t.best.toFixed(1)} s`], ["Idling", tripDur(t.idle)]].filter(Boolean).slice(0, story ? 6 : 4);
+  const stats = [["Distance", tripKm(unitsMph ? t.km * 0.621371 : t.km).replace(" km", unitsMph ? " mi" : " km")], ["Driving time", tripDur(t.drive)], t.top != null && ["Top speed", uSpeedText(t.top)], t.avg != null && ["Average", uSpeedText(t.avg)], t.best != null && ["0–100 km/h", `${t.best.toFixed(1)} s`], ["Idling", tripDur(t.idle)]].filter(Boolean).slice(0, story ? 6 : showRoute ? 2 : 4);
   const gl = story ? 72 : 470, gr = W - 72, gap = 24, tw = (gr - gl - gap) / 2, th = 170; let gy = story ? cy + r + 80 : y + 70;
   for (let i = 0; i < stats.length; i++) {
     const x = gl + (i % 2) * (tw + gap); if (i && i % 2 === 0) gy += th + gap;
@@ -2388,6 +2390,7 @@ function renderDriveCard(t, fmt) {
     let fs = story ? 76 : 64; c.fillStyle = fg; do { c.font = `italic 900 ${fs}px Archivo`; fs -= 2; } while (c.measureText(stats[i][1]).width > tw - 60 && fs > 24);
     c.fillText(stats[i][1], x + 36, gy + th - 40);
   }
+  if (showRoute) story ? drawRoute(c, route, 520, cy - 190, W - 72, cy + 190, bg, s1, s2, fg) : drawRoute(c, route, gl, gy + th + gap + 10, gr, H - 110, bg, s1, s2, fg);
   if (story) {
     gy += th + gap + 20; c.fillStyle = panel; c.beginPath(); c.roundRect(72, gy, W - 144, 200, 20); c.fill();
     ["EFFICIENCY", "EVERYDAY", "RACING"].forEach((k, i) => { const sx = 72 + (W - 144) / 3 * (i + 0.5), val = t.scores[k];
@@ -2397,6 +2400,22 @@ function renderDriveCard(t, fmt) {
   const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, s1); g.addColorStop(1, s2); c.fillStyle = g; c.fillRect(0, H - 14, W, 14);
   c.textAlign = "left"; c.fillStyle = fg; c.globalAlpha = .8; c.font = "italic 900 40px Archivo"; c.fillText("OBD2 Reader", 72, H - 60); c.globalAlpha = 1;
   return cv;
+}
+/* A made-up demo route (lat, lon) for the preview's demo car: a loop around a few blocks. */
+const DEMO_ROUTE = (() => { const p = []; for (let i = 0; i <= 120; i++) { const a = i / 120 * Math.PI * 2;
+  p.push([-33.87 + 0.012 * Math.sin(a) + 0.004 * Math.sin(3 * a), 151.21 + 0.018 * Math.cos(a) * (0.8 + 0.2 * Math.cos(2 * a))]); } return p.slice(0, 110); })();
+/* The route as a line on the card's own background with a start dot and an end dot (mirrors Route.fit and drawRoute). */
+function drawRoute(c, pts, left, top, right, bottom, bg, s1, s2, fg) {
+  const w = right - left, h = bottom - top, pad = 28, k = Math.cos(pts.reduce((a, p) => a + p[0], 0) / pts.length * Math.PI / 180);
+  const xs = pts.map(p => p[1] * k), ys = pts.map(p => p[0]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  const sx = Math.max(maxX - minX, 1e-9), sy = Math.max(maxY - minY, 1e-9), sc = Math.min((w - 2 * pad) / sx, (h - 2 * pad) / sy);
+  const ox = pad + ((w - 2 * pad) - sx * sc) / 2, oy = pad + ((h - 2 * pad) - sy * sc) / 2;
+  const P = xs.map((x, i) => [left + ox + (x - minX) * sc, top + h - (oy + (ys[i] - minY) * sc)]);
+  c.lineCap = "round"; c.lineJoin = "round"; c.strokeStyle = s1; c.lineWidth = 10; c.beginPath(); P.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
+  const [a, b] = [P[0], P[P.length - 1]];
+  c.fillStyle = bg; c.beginPath(); c.arc(a[0], a[1], 20, 0, 7); c.fill(); c.strokeStyle = s2; c.lineWidth = 8; c.beginPath(); c.arc(a[0], a[1], 16, 0, 7); c.stroke();
+  c.fillStyle = s1; c.beginPath(); c.arc(b[0], b[1], 20, 0, 7); c.fill(); c.strokeStyle = fg; c.lineWidth = 5; c.beginPath(); c.arc(b[0], b[1], 24, 0, 7); c.stroke();
 }
 function showDriveCard(t) {
   const s = overlay(`<h3>Share as a picture</h3><div class="seg ov-seg"><button role="radio" aria-checked="true" data-f="story">Story 9:16</button><button role="radio" aria-checked="false" data-f="square">Square 1:1</button></div>

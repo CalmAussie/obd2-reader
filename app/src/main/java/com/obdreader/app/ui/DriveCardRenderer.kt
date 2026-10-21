@@ -10,6 +10,7 @@ import android.graphics.Shader
 import androidx.core.graphics.ColorUtils
 import com.obdreader.app.R
 import com.obdreader.app.obd.DrivingScore
+import com.obdreader.app.obd.Route
 import com.obdreader.app.obd.TripSummary
 import com.obdreader.app.obd.Units
 import java.text.SimpleDateFormat
@@ -51,12 +52,17 @@ class DriveCardRenderer(private val context: Context) {
 
     private fun scoreColour(s: Int) = when { s >= 80 -> ok; s >= 55 -> warn; else -> danger }
 
-    fun render(trip: TripSummary, style: DrivingScore.Style, carLabel: String?, format: Format): Bitmap {
+    /**
+     * [route]: the drive's outline, from its recording when the route was saved; drawn as a line
+     * on the card's own background with a start dot and an end dot. Null or empty: no outline.
+     */
+    fun render(trip: TripSummary, style: DrivingScore.Style, carLabel: String?, format: Format, route: Route? = null): Bitmap {
         val w = format.width; val h = format.height
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
         c.drawColor(bg)
         val story = format == Format.STORY
+        val showRoute = route != null && !route.isEmpty
 
         // Livery bands raked across the top.
         c.save()
@@ -76,9 +82,10 @@ class DriveCardRenderer(private val context: Context) {
 
         // The driving score in the chosen style, in a ring.
         val score = trip.scores[style]
-        val cx = if (story) w / 2f else 240f
+        // With a route, the story card puts the ring on the left and the outline beside it.
+        val cx = if (story && !showRoute) w / 2f else if (story) 270f else 240f
         val cy = if (story) y + 260f else y + 230f
-        val r = if (story) 190f else 150f
+        val r = if (story && !showRoute) 190f else if (story) 170f else 150f
         rect.set(cx - r, cy - r, cx + r, cy + r)
         stroke.strokeWidth = if (story) 34f else 26f
         stroke.shader = null; stroke.color = track
@@ -100,7 +107,7 @@ class DriveCardRenderer(private val context: Context) {
             trip.averageSpeed?.let { "Average" to Units.speedText(it) },
             trip.best0to100?.let { "0–100 km/h" to String.format(Locale.US, "%.1f s", it) },
             "Idling" to TripSummary.duration(trip.idleSeconds),
-        ).take(if (story) 6 else 4)
+        ).take(if (story) 6 else if (showRoute) 2 else 4)
         val gridLeft = if (story) 72f else 470f
         val gridRight = w - 72f
         val gap = 24f
@@ -123,6 +130,12 @@ class DriveCardRenderer(private val context: Context) {
                 c.drawText(value, x + 36f, gy + tileH - 40f, paint)
             }
             gy += tileH + gap
+        }
+
+        // The route: on the story card beside the ring, on the square card under the stats.
+        if (showRoute) {
+            if (story) drawRoute(c, route!!, 520f, cy - 190f, w - 72f, cy + 190f)
+            else drawRoute(c, route!!, gridLeft, gy + 10f, gridRight, h - 110f)
         }
 
         // All three styles.
@@ -150,6 +163,23 @@ class DriveCardRenderer(private val context: Context) {
         paint.textAlign = Paint.Align.LEFT; paint.typeface = title; paint.color = ColorUtils.setAlphaComponent(text, 200); paint.textSize = 40f
         c.drawText("OBD2 Reader", 72f, h - 60f, paint)
         return bmp
+    }
+
+    /** The route as a line on the card's own background, with a start dot and an end dot. */
+    private fun drawRoute(c: Canvas, route: Route, left: Float, top: Float, right: Float, bottom: Float) {
+        val pts = route.fit(right - left, bottom - top, 28f)
+        if (pts.size < 2) return
+        val path = android.graphics.Path()
+        pts.forEachIndexed { i, (x, y) -> if (i == 0) path.moveTo(left + x, top + y) else path.lineTo(left + x, top + y) }
+        stroke.shader = null; stroke.color = s1; stroke.strokeWidth = 10f; stroke.strokeJoin = Paint.Join.ROUND
+        c.drawPath(path, stroke)
+        val (sx, sy) = pts.first(); val (ex, ey) = pts.last()
+        // Start: a ring in the second livery colour. End: a solid dot in the first, with a ring.
+        fill.shader = null
+        fill.color = bg; c.drawCircle(left + sx, top + sy, 20f, fill)
+        stroke.color = s2; stroke.strokeWidth = 8f; c.drawCircle(left + sx, top + sy, 16f, stroke)
+        fill.color = s1; c.drawCircle(left + ex, top + ey, 20f, fill)
+        stroke.color = text; stroke.strokeWidth = 5f; c.drawCircle(left + ex, top + ey, 24f, stroke)
     }
 
     /** Shrinks the paint's text size until [s] fits [maxWidth]. */

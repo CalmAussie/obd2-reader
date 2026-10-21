@@ -248,6 +248,14 @@ class MainActivity : AppCompatActivity() {
             else toast("Permission is needed to find and talk to the adapter")
         }
 
+    /** Location for a recorded drive's route: asked when recording starts, never otherwise. */
+    private val routePermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            val fine = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
+            if (!fine) toast("Recording without the route")
+            beginRecording(withLocation = fine)
+        }
+
     /** Asked once, so the connection notification (with its Disconnect button) can show. */
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -967,7 +975,7 @@ class MainActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.share_picture)
             .setItems(formats.map { it.label }.toTypedArray()) { _, i ->
-                val bmp = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, formats[i])
+                val bmp = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, formats[i], routeFor(trip))
                 val name = "OBD2Reader_drive_" + java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).format(java.util.Date(trip.startedAt)) + "_${formats[i].name.lowercase(Locale.US)}.png"
                 val file = Exports.exportFile(this, name)
                 file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
@@ -977,6 +985,22 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    /**
+     * The route of [trip], from the recording(s) made during it with the route saved. Location
+     * lives only in those files, so with no recording there's simply no outline.
+     */
+    private fun routeFor(trip: TripSummary): com.obdreader.app.obd.Route? {
+        val stamp = java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US)
+        val routes = LogRecorder.saved(this)
+            .filter { f ->
+                val start = try { stamp.parse(f.nameWithoutExtension.removePrefix("OBD2Reader_"))?.time } catch (e: Exception) { null } ?: return@filter false
+                start <= trip.endedAt && f.lastModified() >= trip.startedAt
+            }
+            .sortedBy { it.name }
+            .map { com.obdreader.app.obd.Route.parse(it.readLines()) }
+        return com.obdreader.app.obd.Route.join(routes).takeIf { !it.isEmpty }
     }
 
     /** A tile one shade lighter than the sheet behind it. */
@@ -1043,7 +1067,7 @@ class MainActivity : AppCompatActivity() {
         }
         recordBtn.text = getString(R.string.record_drive)
         recordBtn.setOnClickListener {
-            if (LogRecorder.active.value != null) LogRecorder.stop() else LogRecorder.start(this)
+            if (LogRecorder.active.value != null) LogRecorder.stop() else startRecording()
         }
         findViewById<View>(R.id.savedLogsButton).setOnClickListener { showSavedDrives() }
         buildGraphs(chosen)
@@ -1088,7 +1112,7 @@ class MainActivity : AppCompatActivity() {
         recordBtn.kind = if (r == null) SkewButton.Kind.PRIMARY else SkewButton.Kind.DANGER
         recordStatus.text = if (r == null) getString(R.string.record_hint) else {
             val secs = (System.currentTimeMillis() - r.startedMs) / 1000
-            String.format(Locale.US, "Recording %d:%02d, %,d rows. Saved as %s", secs / 60, secs % 60, r.rows, r.file.name)
+            String.format(Locale.US, "Recording %d:%02d, %,d rows%s. Saved as %s", secs / 60, secs % 60, r.rows, if (r.withLocation) ", with route" else "", r.file.name)
         }
     }
 
@@ -1569,6 +1593,28 @@ class MainActivity : AppCompatActivity() {
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
         }
         withPermissions(perms) { withBluetoothOn { showBluetoothPicker(it) } }
+    }
+
+    /**
+     * Records a drive. The first time, asks whether to save the route too: location goes only into
+     * this drive's file (for a map in other software and the outline on the drive card).
+     */
+    private fun startRecording() {
+        if (com.obdreader.app.session.LocationFeed.permitted(this)) { beginRecording(withLocation = true); return }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.route_title)
+            .setMessage(R.string.route_message)
+            .setPositiveButton(R.string.route_yes) { _, _ ->
+                routePermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+            }
+            .setNegativeButton(R.string.route_no) { _, _ -> beginRecording(withLocation = false) }
+            .show()
+    }
+
+    private fun beginRecording(withLocation: Boolean) {
+        LogRecorder.start(this, withLocation)
+        val r = LogRecorder.active.value
+        if (withLocation && r?.withLocation == false) toast("Location is off on this phone, so the route isn't being saved")
     }
 
     private fun connectWifi() {

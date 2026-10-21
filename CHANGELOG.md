@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.10.0 (22 October 2026)
+- **Your route in recorded drives.** When you tap **Record drive**, the app asks whether to save the route too. If you say yes, each row of the drive's CSV gets **Latitude**, **Longitude** and **Location accuracy (m)** columns, so mapping software (Google My Maps, QGIS, Excel's map charts and the like) can draw where you were for every reading. The route keeps recording with the screen off. Rows with no recent GPS fix are left blank rather than repeating an old position.
+- **Route outline on drive cards.** A drive that was recorded with its route gets its outline on the shareable picture: a line on the card's own background, with a ring where you started and a dot where you finished. No map, street names or coordinates are drawn.
+- **Location stays in the recording.** Your location is only used while a drive is recording with the route, is written only into that drive's file on your phone, and is never kept anywhere else (not in trip summaries, alerts, settings or backups). Delete the drive and the route goes with it. Shared drive cards carry only the outline's shape.
+
 ## 1.9.2 (22 October 2026)
 - **ThinkCar ThinkDiag and other maker-locked adapters.** ThinkDiag adapters are made for ThinkCar's own app. If one answers like a standard ELM327, it connects like any other adapter. If it doesn't, the app now says so plainly (it's a ThinkDiag, made for ThinkCar's app, and any ELM327-compatible adapter works), instead of "Couldn't connect" and retrying. BlueDriver adapters get the same message. A car with the ignition off is never blamed on the adapter: the message only shows when the adapter itself never answered like an ELM327.
 

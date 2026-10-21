@@ -66,7 +66,8 @@ object LiveHistory {
  */
 object LogRecorder {
 
-    data class Recording(val file: File, val startedMs: Long, val rows: Int)
+    /** [withLocation]: the route is being saved into this drive's file too. */
+    data class Recording(val file: File, val startedMs: Long, val rows: Int, val withLocation: Boolean = false)
 
     private const val ROW_MS = 200L
 
@@ -83,13 +84,17 @@ object LogRecorder {
     fun saved(context: Context): List<File> =
         folder(context).listFiles { f -> f.extension == "csv" }?.sortedByDescending { it.lastModified() }.orEmpty()
 
-    fun start(context: Context) {
+    /** Starts recording; [withLocation] also saves the route (Latitude, Longitude) in this drive's file only. */
+    fun start(context: Context, withLocation: Boolean = false) {
         if (job?.isActive == true) return
+        val located = withLocation && LocationFeed.start(context)
+        // The background service needs to say it uses location while this drive records the route.
+        if (located) ObdConnectionService.start(context)
         // Seconds in the name, so two drives recorded in the same minute don't overwrite each other.
         val stamp = SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).format(Date())
         val file = File(folder(context), "OBD2Reader_$stamp.csv")
         val started = System.currentTimeMillis()
-        _active.value = Recording(file, started, 0)
+        _active.value = Recording(file, started, 0, located)
         val latest = mutableMapOf<String, Double>()
         var fresh = false
 
@@ -97,7 +102,7 @@ object LogRecorder {
             val out: BufferedWriter = file.bufferedWriter()
             val recording = coroutineContext[Job]
             try {
-                out.write("Time,Seconds," + columns.joinToString(",") { csv(it.second) })
+                out.write("Time,Seconds," + columns.joinToString(",") { csv(it.second) } + (if (located) ",Latitude,Longitude,Location accuracy (m)" else ""))
                 out.newLine()
                 val listener = launch {
                     ObdSession.samples.collect { s -> synchronized(latest) { latest[s.key] = s.value; fresh = true } }
@@ -118,10 +123,15 @@ object LogRecorder {
                     val now = System.currentTimeMillis()
                     out.write(clock.format(Date(now)) + "," + String.format(Locale.US, "%.1f", (now - started) / 1000.0) + "," +
                         row.joinToString(",") { v -> v?.let { String.format(Locale.US, "%.2f", it) } ?: "" })
+                    if (located) {
+                        // Blank when there's no recent fix, never an old position.
+                        val fix = LocationFeed.current()
+                        out.write(if (fix == null) ",,," else String.format(Locale.US, ",%.6f,%.6f,%s", fix.latitude, fix.longitude, fix.accuracyM?.let { String.format(Locale.US, "%.0f", it) } ?: ""))
+                    }
                     out.newLine()
                     rows++
                     if (rows % 25 == 0) out.flush()
-                    _active.value = Recording(file, started, rows)
+                    _active.value = Recording(file, started, rows, located)
                 }
                 listener.cancel(); stop.cancel()
             } finally {
@@ -129,6 +139,7 @@ object LogRecorder {
                 out.close()
                 // Nothing was recorded (never connected): don't leave an empty file behind.
                 if ((_active.value?.rows ?: 0) == 0) file.delete()
+                if (located) LocationFeed.stop()
                 _active.value = null
             }
         }
