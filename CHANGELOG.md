@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.11.1 (22 October 2026)
+- **Code support table.** [docs/CODE-SUPPORT.md](docs/CODE-SUPPORT.md) lists every make and model in the car list, whether the generic codes apply, and how many manufacturer-specific codes are explained for each model year. It's built from the app's own car list and code library, and a test fails if it falls out of date.
+
 ## 1.11.0 (22 October 2026)
 - **The full standard code list.** About 2,860 generic trouble codes are now explained, up from about 370: nearly every standard P0, P2 and U0 code, the P34 cylinder-deactivation codes and the U3 codes. Each has its standard name and an explanation for its kind of part, with how urgent it is, common causes and what to check. New kinds include hybrid and electric drive systems (with a warning about orange high-voltage parts), cylinder deactivation and variable valve lift, glow plugs, exhaust temperature and pressure, coolant pumps and level, engine oil level and condition, cruise control, power steering, and transmission switches and actuators.
 - Every name was checked against more than one copy of the standard list, and a code was only added when they agreed on its name, letters, numbers and bank. The few they disagree on are left out and still say which system they belong to.
