@@ -2425,7 +2425,7 @@ function renderDriveCard(t, fmt, hideRoast) {
   lines.slice(0, 2).forEach(l => { y += rs * 1.3; if (!hideRoast) c.fillText(l, 72, y); });
   /* Score */
   const route = DEMO_ROUTE, showRoute = route.length > 1;
-  const cx = story ? (showRoute ? 270 : W / 2) : 240, r = story ? (showRoute ? 170 : 190) : 150, cy = y + (story ? 60 : 40) + r;
+  const r = story ? (showRoute ? 170 : 190) : showRoute ? 130 : 150, cx = story ? (showRoute ? 270 : W / 2) : showRoute ? 72 + r + 8 : 240, cy = y + (story ? 60 : 40) + r;
   const label = up(`${card.label} score`), n = sc == null ? "—" : String(sc);
   if (L === "telemetry") {
     c.fillStyle = RPM; c.fillRect(cx - r, cy - r * 0.62, 10, r * 1.24);
@@ -2454,7 +2454,7 @@ function renderDriveCard(t, fmt, hideRoast) {
   }
   /* Stats */
   const stats = [["Distance", tripKm(unitsMph ? t.km * 0.621371 : t.km).replace(" km", unitsMph ? " mi" : " km")], ["Driving time", tripDur(t.drive)], t.top != null && ["Top speed", uSpeedText(t.top)], t.avg != null && ["Average", uSpeedText(t.avg)], t.best != null && ["0–100 km/h", `${t.best.toFixed(1)} s`], ["Idling", tripDur(t.idle)]].filter(Boolean).slice(0, story ? 6 : showRoute ? 2 : 4);
-  const gl = story ? 72 : 470, gr = W - 72, gap = 24, tw = (gr - gl - gap) / 2, th = story ? 150 : 160; let gy = story ? cy + r + 60 : y + 50;
+  const gl = story || showRoute ? 72 : 470, gr = W - 72, gap = 24, tw = (gr - gl - gap) / 2, th = story ? 150 : 160; let gy = story ? cy + r + 60 : showRoute ? cy + r + 28 : y + 50;
   for (let i = 0; i < stats.length; i++) {
     const x = gl + (i % 2) * (tw + gap); if (i && i % 2 === 0) gy += th + gap;
     panel(x, gy, x + tw, gy + th);
@@ -2466,7 +2466,7 @@ function renderDriveCard(t, fmt, hideRoast) {
     c.fillText(stats[i][1], x + 36, gy + th - 34);
   }
   if (stats.length) gy += th + gap;
-  if (showRoute) { const rc = L === "cockpit" || L === "cyberpunk" ? s2 : s1; story ? drawRoute(c, route, 520, cy - 190, W - 72, cy + 190, bg, rc, rc === s1 ? s2 : s1, fg) : drawRoute(c, route, gl, gy, gr, H - 110, bg, rc, rc === s1 ? s2 : s1, fg); }
+  if (showRoute) { const rc = L === "cockpit" || L === "cyberpunk" ? s2 : s1; drawRoute(c, route, cx + r + 48, cy - r, W - 72, cy + r, bg, rc, rc === s1 ? s2 : s1, fg); }
   if (story && card.parts.length) {
     gy += 16; panel(72, gy, W - 72, gy + 190);
     card.parts.forEach(([k, val], i) => { const sx = 72 + (W - 144) / card.parts.length * (i + 0.5);

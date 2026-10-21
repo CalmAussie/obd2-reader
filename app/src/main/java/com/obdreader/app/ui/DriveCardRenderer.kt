@@ -103,9 +103,9 @@ class DriveCardRenderer(private val context: Context) {
             for (line in wrap("“$roast”", w - 144f).take(2)) { y += paint.textSize * 1.3f; if (!hideRoast) c.drawText(line, 72f, y, paint) }
         }
 
-        // The score.
-        val cx = if (story && !showRoute) w / 2f else if (story) 270f else 240f
-        val r = if (story && !showRoute) 190f else if (story) 170f else 150f
+        // The score. With a route, the score and the outline share one row at the same height.
+        val r = if (story && !showRoute) 190f else if (story) 170f else if (showRoute) 130f else 150f
+        val cx = if (story && !showRoute) w / 2f else if (story) 270f else if (showRoute) 72f + r + 8f else 240f
         val cy = y + (if (story) 60f else 40f) + r
         scoreBlock(c, cx, cy, r, score, card.kind.label, story)
 
@@ -118,12 +118,12 @@ class DriveCardRenderer(private val context: Context) {
             trip.best0to100?.let { "0–100 km/h" to String.format(Locale.US, "%.1f s", it) },
             "Idling" to TripSummary.duration(trip.idleSeconds),
         ).take(if (story) 6 else if (showRoute) 2 else 4)
-        val gridLeft = if (story) 72f else 470f
+        val gridLeft = if (story || showRoute) 72f else 470f
         val gridRight = w - 72f
         val gap = 24f
         val tileW = (gridRight - gridLeft - gap) / 2
         val tileH = if (story) 150f else 160f
-        var gy = if (story) cy + r + 60f else y + 50f
+        var gy = if (story) cy + r + 60f else if (showRoute) cy + r + 28f else y + 50f
         stats.chunked(2).forEachIndexed { rowIndex, row ->
             row.forEachIndexed { i, (label, value) ->
                 tile(c, gridLeft + i * (tileW + gap), gy, tileW, tileH, label, value, rowIndex * 2 + i, story)
@@ -131,11 +131,8 @@ class DriveCardRenderer(private val context: Context) {
             gy += tileH + gap
         }
 
-        // The route: on the story card beside the score, on the square card under the stats.
-        if (showRoute) {
-            if (story) drawRoute(c, route!!, 520f, cy - 190f, w - 72f, cy + 190f)
-            else drawRoute(c, route!!, gridLeft, gy, gridRight, h - 110f)
-        }
+        // The route: beside the score, exactly as tall as it.
+        if (showRoute) drawRoute(c, route!!, cx + r + 48f, cy - r, w - 72f, cy + r)
 
         // What the drive score is made of: Everyday and Efficiency. The racing card shows Racing only.
         if (story && card.parts.isNotEmpty()) {
