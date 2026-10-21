@@ -1416,6 +1416,15 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.teleSpeedUnit).setIfChanged(t?.let { "${Units.speedUnit} · top ${it.roundToInt()}" } ?: Units.speedUnit)
     }
 
+    /** A dropdown list that always shows all its items, ignoring what's typed in the box. */
+    private class AllItemsAdapter(context: android.content.Context, private val items: List<String>) :
+        ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, items) {
+        override fun getFilter(): android.widget.Filter = object : android.widget.Filter() {
+            override fun performFiltering(constraint: CharSequence?) = FilterResults().apply { values = items; count = items.size }
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) = notifyDataSetChanged()
+        }
+    }
+
     /** Shows the estimated charging status beside the battery voltage, wherever the battery is shown. */
     private fun showCharging(state: ChargingStatus.State?) {
         val k = VOLTAGE_KEY
@@ -2198,7 +2207,11 @@ class MainActivity : AppCompatActivity() {
 
         fun refreshEngines() {
             val engines = VehicleCatalog.engines(make, year, modelInput.text?.toString()).map { it.name }
-            engineInput.setAdapter(ArrayAdapter(this, android.R.layout.simple_list_item_1, engines))
+            // Always lists every engine for this model and year, whatever is typed (a plain adapter
+            // would only show the ones matching the text already in the box).
+            engineInput.setAdapter(AllItemsAdapter(this, engines))
+            engineLayout.endIconMode = if (engines.isEmpty()) com.google.android.material.textfield.TextInputLayout.END_ICON_NONE
+                else com.google.android.material.textfield.TextInputLayout.END_ICON_DROPDOWN_MENU
             engineLayout.helperText = getString(if (engines.isEmpty()) R.string.car_engine_none else R.string.car_engine_help)
         }
 
@@ -2235,7 +2248,9 @@ class MainActivity : AppCompatActivity() {
             refreshResult()
         }
         engineInput.doAfterTextChanged { refreshResult() }
+        // Open the list on the first tap, like the Manufacturer and Year boxes.
         engineInput.setOnClickListener { if ((engineInput.adapter?.count ?: 0) > 0) engineInput.showDropDown() }
+        engineInput.setOnFocusChangeListener { _, focused -> if (focused && (engineInput.adapter?.count ?: 0) > 0) engineInput.post { engineInput.showDropDown() } }
         modelInput.setOnClickListener { if (modelInput.adapter?.count ?: 0 > 0) modelInput.showDropDown() }
         refreshModels()
         refreshEngines()

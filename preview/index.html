@@ -601,6 +601,9 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .scan-l { font-size: 13px; padding: 3px 0; font-variant-numeric: tabular-nums; }
 .scan-l.dim { color: var(--fg-2); }
 .perf-est { text-align: center; font-size: 13px; color: var(--amber, #FFB000); margin: -6px 0 12px; line-height: 1.4; }
+
+/* The Engine box is a dropdown (with its arrow) when the catalogue has engines for the car, like Manufacturer and Year. */
+.ofield input.dd { background-image: linear-gradient(45deg, transparent 50%, var(--fg-2) 50%), linear-gradient(135deg, var(--fg-2) 50%, transparent 50%); background-position: calc(100% - 22px) 26px, calc(100% - 16px) 26px; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 40px; }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -1259,15 +1262,15 @@ function showCarPicker() {
   };
   const suggestEngine = () => {
     const q = $("carEngine").value.trim().toLowerCase();
-    const list = enginesFor(make, year, $("carModel").value).filter(e => !q || e[0].toLowerCase().includes(q));
+    const list = enginesFor(make, year, $("carModel").value); /* always every engine, like a dropdown (mirrors AllItemsAdapter) */
     const box = $("engSugg");
-    const exact = list.length === 1 && list[0][0].toLowerCase() === q;
-    box.hidden = !list.length || exact || document.activeElement !== $("carEngine");
+    box.hidden = !list.length || document.activeElement !== $("carEngine");
+    $("carEngine").classList.toggle("dd", list.length > 0);
     box.innerHTML = list.map(e => `<button type="button">${e[0]}</button>`).join("");
     box.querySelectorAll("button").forEach(b => b.onmousedown = ev => { ev.preventDefault(); $("carEngine").value = b.textContent; box.hidden = true; refresh(); });
   };
   $("carEngine").oninput = () => { refresh(); suggestEngine(); };
-  $("carEngine").onfocus = suggestEngine;
+  $("carEngine").onfocus = suggestEngine; $("carEngine").onclick = suggestEngine;
   $("carEngine").onblur = () => setTimeout(() => { if ($("engSugg")) $("engSugg").hidden = true; }, 120);
   const suggest = () => {
     const q = $("carModel").value.trim().toLowerCase();
