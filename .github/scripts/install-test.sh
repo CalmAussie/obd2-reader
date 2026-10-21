@@ -299,10 +299,29 @@ adb shell input keyevent KEYCODE_BACK; sleep 2
 tap_tab Diagnostics && { tap_text "Read codes" || grep -q "P0133" "$OUT/ui.xml"; } && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
 tap_tab Graphs && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
 # Video overlay: record a short drive on Graphs, then make an overlay video from it.
+# Route: allow location up front (so the "save the route?" question is skipped) and feed the
+# emulator a moving GPS position while it records; the recording should then say "with route".
+adb shell pm grant $PKG android.permission.ACCESS_FINE_LOCATION 2>/dev/null
+adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION 2>/dev/null
+adb shell settings put secure location_mode 3 2>/dev/null
+adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
 XY=$(view_center_bottom recordButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY
-sleep 20
+ROUTE=0
+for i in $(seq 1 10); do
+  adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1
+  sleep 2
+done
+adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-recording.xml" 2>/dev/null
+grep -q "with route" "$OUT/ui-recording.xml" && ROUTE=1
 XY=$(view_center_bottom recordButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8a-recorded
+# Debug builds: check the file itself has positions.
+F=$(adb shell run-as $PKG ls files/logs 2>/dev/null | tr -d '\r' | grep csv | tail -1)
+if [ -n "$F" ]; then
+  adb exec-out run-as $PKG cat "files/logs/$F" > "$OUT/recorded.csv"
+  head -1 "$OUT/recorded.csv" | grep -q "Latitude" && awk -F, 'NR>1 && $(NF-2) != "" {n++} END {exit !(n > 0)}' "$OUT/recorded.csv" && ROUTE=1
+fi
+[ $ROUTE = 1 ] && log "route: saved with the recording" || { log "route: FAILED (not saved)"; FAIL=1; }
 tap_tab Dashboard; scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
 tap_text "Done" > /dev/null || true
 tap_tab Graphs; sleep 2

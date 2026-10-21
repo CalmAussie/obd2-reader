@@ -9,13 +9,10 @@
     <uses-permission
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
-    <!-- BLE scanning on Android 11 and below requires location -->
-    <uses-permission
-        android:name="android.permission.ACCESS_COARSE_LOCATION"
-        android:maxSdkVersion="30" />
-    <uses-permission
-        android:name="android.permission.ACCESS_FINE_LOCATION"
-        android:maxSdkVersion="30" />
+    <!-- Location: BLE scanning on Android 11 and below needs it, and a recorded drive can save its
+         route (only inside that drive's file, and only when the user chooses to). -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!-- Bluetooth, Android 12+ -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -27,6 +24,8 @@
     <!-- Background connection (keeps the link alive with the screen off and in Android Auto) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <!-- Keeps a recorded drive's route going with the screen off (only while recording with location) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Lets the connected-device service start for Wi-Fi adapters too (Android 14 rule) -->
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
@@ -76,7 +75,7 @@
         <service
             android:name=".session.ObdConnectionService"
             android:exported="false"
-            android:foregroundServiceType="connectedDevice" />
+            android:foregroundServiceType="connectedDevice|location" />
 
         <!-- Shares recorded drives and reports with other apps -->
         <provider

@@ -40,9 +40,8 @@ class ObdConnectionService : Service() {
     override fun onCreate() {
         super.onCreate()
         createChannel()
-        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE else 0
         try {
-            ServiceCompat.startForeground(this, NOTIFICATION_ID, build(ObdSession.state.value), type)
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, build(ObdSession.state.value), foregroundType())
         } catch (e: RuntimeException) {
             // Android can refuse a foreground service (for example started from the background on
             // Android 12+). The connection still works while the app or Android Auto is open.
@@ -63,8 +62,20 @@ class ObdConnectionService : Service() {
         }
     }
 
+    /** Connected device, plus location only while a recorded drive is saving its route. */
+    private fun foregroundType(): Int {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return 0
+        var type = ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+        if (LocationFeed.running) type = type or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+        return type
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_DISCONNECT) ObdSession.disconnect()
+        else if (LocationFeed.running) {
+            // A drive started recording its route: keep the location going with the screen off.
+            try { ServiceCompat.startForeground(this, NOTIFICATION_ID, build(ObdSession.state.value), foregroundType()) } catch (ignored: RuntimeException) {}
+        }
         return START_NOT_STICKY
     }
 
