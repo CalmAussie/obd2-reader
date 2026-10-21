@@ -158,12 +158,14 @@ object Exports {
 
     private fun authority(context: Context) = "${context.packageName}.files"
 
-    fun share(context: Context, file: File, mime: String, subject: String) {
+    /** [text]: the post's caption, for apps that take one (Instagram, X, WhatsApp and the like). */
+    fun share(context: Context, file: File, mime: String, subject: String, text: String? = null) {
         val uri = FileProvider.getUriForFile(context, authority(context), file)
         val send = Intent(Intent.ACTION_SEND).apply {
             type = mime
             putExtra(Intent.EXTRA_STREAM, uri)
             putExtra(Intent.EXTRA_SUBJECT, subject)
+            text?.let { putExtra(Intent.EXTRA_TEXT, it) }
             clipData = ClipData.newRawUri(subject, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }

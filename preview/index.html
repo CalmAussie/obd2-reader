@@ -2360,45 +2360,117 @@ function showOverlayVideo(d) {
 }
 
 
-/* ===== Shareable drive card (mirrors ui/DriveCardRenderer.kt) ===== */
+/* ===== Shareable drive card (mirrors ui/DriveCardRenderer.kt): drawn in the look of the layout
+   it's shared from, with a cheeky line about the score (mirrors obd/Roast.kt). ===== */
+const ROAST = {"EVERYDAY": [["Smooth as a hotel lift. Your passengers could have threaded a needle.", "Butter-smooth. Not a single coffee was spilled.", "Driving instructors would like your autograph."], ["Pretty tidy. A couple of spirited moments, but we won't tell.", "Mostly smooth, with the odd surprise for the passengers.", "Good drive. The cup holder only filed one complaint."], ["A solid C+. The brakes are drafting a strongly worded letter.", "Not bad. Your passengers only grabbed the handle twice.", "Respectable, if you squint a bit."], ["Your passengers are now holding the handle above the door.", "The car would like a quiet word about the braking.", "Somewhere, a set of brake pads is crying."], ["That wasn't a drive, that was a stunt audition.", "Bold. Very bold. The car needs a lie-down.", "Your seatbelt earned its keep today."]], "EFFICIENCY": [["Sipping fuel like it's a fine wine.", "Hypermiler energy. The fuel gauge forgot you exist.", "Your fuel bill just sent you a thank-you card."], ["Efficient-ish. The fuel gauge barely noticed.", "Pretty frugal. Your wallet is mildly impressed.", "Good on fuel, with the odd heavy-footed lapse."], ["Middle of the road. The fuel company says thanks.", "Not wasteful, not thrifty. Just vibes.", "Your right foot has opinions, and they cost money."], ["Fuel economy has left the chat.", "Every red light was a drag race, apparently.", "The servo knows you by name."], ["Somewhere, an oil executive just bought a yacht.", "That drive burned fuel like a bonfire on cracker night.", "Your fuel gauge needs therapy."]], "RACING": [["The pit wall says: good lap. Mic drop.", "Fast and tidy. Someone call the scouts.", "Clean, quick, committed. Chef's kiss."], ["Quick, but the stopwatch has notes.", "Solid pace. A few apexes went missing.", "Fast enough to brag, slow enough to stay humble."], ["Track-day ready... for the parade lap.", "Spirited, in a Sunday-drive kind of way.", "The tyres barely broke a sweat."], ["Your lap time has grown a beard.", "Lots of revs, not much progress.", "The racing line called. It wants a word."], ["Even the safety car overtook you.", "That lap was sponsored by the brake pedal.", "Bold strategy: be the slowest car on track."]], "TOO_SHORT": ["Barely left the driveway. Bold.", "A drive so short the engine didn't warm up.", "Blink and you'd miss it. We did."]};
+function roastLine(style, score, seed) {
+  const pick = l => l[((seed % l.length) + l.length) % l.length];
+  if (score == null) return pick(ROAST.TOO_SHORT);
+  const band = score >= 90 ? 0 : score >= 75 ? 1 : score >= 55 ? 2 : score >= 35 ? 3 : 4;
+  return pick((ROAST[style] || ROAST.EVERYDAY)[band]);
+}
 function renderDriveCard(t, fmt) {
   const W = 1080, H = fmt === "story" ? 1920 : 1080, story = fmt === "story";
+  const L = $("phone").dataset.layout || "livery";
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const c = cv.getContext("2d");
   const css = getComputedStyle($("phone")), v = n => css.getPropertyValue(n).trim();
-  const bg = v("--base"), panel = v("--panel"), s1 = v("--s1"), s2 = v("--s2"), fg = v("--fg"), fg2 = v("--fg-2"), track = v("--track");
+  const bg = v("--base"), panelC = v("--panel"), s1 = v("--s1"), s2 = v("--s2"), fg = v("--fg"), fg2 = v("--fg-2"), track = v("--track");
+  const RPM = "#FF3B30", SPD = "#3D9BFF";
   const col = s => s >= 80 ? "#34D17A" : s >= 55 ? "#FFB000" : "#FF3B30";
-  c.fillStyle = bg; c.fillRect(0, 0, W, H);
-  c.save(); c.translate(W / 2, 120); c.rotate(-7 * Math.PI / 180); c.translate(-W / 2, -120);
-  c.fillStyle = s1; c.fillRect(-200, 60, W + 400, 80); c.fillStyle = s2; c.fillRect(-200, 160, W + 400, 30); c.fillStyle = s1; c.fillRect(-200, 210, W + 400, 16); c.restore();
-  let y = story ? 380 : 340;
-  c.fillStyle = fg; c.font = `italic 900 ${story ? 96 : 78}px Archivo`; c.textAlign = "left"; c.fillText("My drive", 72, y);
-  y += story ? 62 : 54; c.fillStyle = fg2; c.font = "500 36px Archivo";
-  c.fillText([new Date(t.start).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" }), myCar && carLabel(myCar)].filter(Boolean).join("  ·  "), 72, y);
-  /* Route outline (mirrors DriveCardRenderer.drawRoute). The demo car has no GPS, so the preview draws a made-up demo route. */
+  const up = s => L === "cyberpunk" ? s.toUpperCase() : s;
+  const numFont = size => L === "cockpit" ? `300 ${size}px Archivo` : L === "telemetry" ? `700 ${size}px Archivo` : `italic 900 ${size}px Archivo`;
+  const chamfer = (l, tp, r, b, cut) => { c.beginPath(); c.moveTo(l + cut, tp); c.lineTo(r, tp); c.lineTo(r, b - cut); c.lineTo(r - cut, b); c.lineTo(l, b); c.lineTo(l, tp + cut); c.closePath(); };
+  const sc = t.scores[scoreStyle];
+  /* Background */
+  if (L === "livery") {
+    c.fillStyle = bg; c.fillRect(0, 0, W, H);
+    c.save(); c.translate(W / 2, 120); c.rotate(-7 * Math.PI / 180); c.translate(-W / 2, -120);
+    c.fillStyle = s1; c.fillRect(-200, 60, W + 400, 80); c.fillStyle = s2; c.fillRect(-200, 160, W + 400, 30); c.fillStyle = s1; c.fillRect(-200, 210, W + 400, 16); c.restore();
+  } else if (L === "telemetry") {
+    c.fillStyle = bg; c.fillRect(0, 0, W, H);
+    const lit = Math.round((sc || 0) * 15 / 100), n = 15, gap = 10, lw = (W - 144 - gap * (n - 1)) / n;
+    for (let i = 0; i < n; i++) { c.fillStyle = i < lit ? (i < 5 ? "#34D17A" : i < 10 ? "#FFB000" : "#FF3B30") : track; c.beginPath(); c.roundRect(72 + i * (lw + gap), 120, lw, 40, 6); c.fill(); }
+    c.fillStyle = RPM; c.fillRect(72, 190, W / 2 - 80, 6); c.fillStyle = SPD; c.fillRect(W / 2 + 8, 190, W / 2 - 80, 6);
+  } else {
+    const g = L === "cockpit" ? c.createRadialGradient(W / 2, H * 0.15, 0, W / 2, H * 0.15, H * 0.75) : c.createRadialGradient(W / 2, 0, 0, W / 2, 0, H * 0.7);
+    if (L === "cockpit") { g.addColorStop(0, "#13203F"); g.addColorStop(0.6, "#070A12"); g.addColorStop(1, bg); } else { g.addColorStop(0, "#2A0A3A"); g.addColorStop(0.55, "#0B0716"); g.addColorStop(1, bg); }
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    if (L === "cyberpunk") { c.fillStyle = "rgba(255,255,255,.04)"; for (let y = 0; y < H; y += 6) c.fillRect(0, y, W, 2); chamfer(36, 36, W - 36, H - 36, 40); c.strokeStyle = s2; c.globalAlpha = .8; c.lineWidth = 4; c.stroke(); c.globalAlpha = 1; }
+  }
+  const panel = (l, tp, r, b) => {
+    if (L === "livery") { c.fillStyle = panelC; c.beginPath(); c.roundRect(l, tp, r - l, b - tp, 20); c.fill(); }
+    else if (L === "telemetry") { c.fillStyle = panelC; c.fillRect(l, tp, r - l, b - tp); }
+    else if (L === "cockpit") { c.fillStyle = "rgba(255,255,255,.06)"; c.beginPath(); c.roundRect(l, tp, r - l, b - tp, 32); c.fill(); c.strokeStyle = "rgba(255,255,255,.16)"; c.lineWidth = 2; c.stroke(); }
+    else { chamfer(l, tp, r, b, 26); c.fillStyle = panelC; c.fill(); c.strokeStyle = s2; c.globalAlpha = .67; c.lineWidth = 3; c.stroke(); c.globalAlpha = 1; }
+  };
+  /* Title, date, roast */
+  let y = story ? 360 : 330;
+  const head = L === "cyberpunk" ? "MY DRIVE" : "My drive";
+  c.textAlign = "left";
+  c.font = L === "telemetry" ? `700 ${story ? 84 : 70}px Archivo` : L === "cockpit" ? `300 ${story ? 92 : 76}px Archivo` : L === "cyberpunk" ? `italic 900 ${story ? 86 : 70}px Archivo` : `italic 900 ${story ? 96 : 78}px Archivo`;
+  if (L === "cyberpunk") { c.letterSpacing = "6px"; c.fillStyle = s1; c.fillText(head, 68, y); c.fillStyle = s2; c.fillText(head, 76, y); }
+  c.fillStyle = fg; c.fillText(head, 72, y); c.letterSpacing = "0px";
+  y += story ? 60 : 52; c.fillStyle = fg2; c.font = "500 36px Archivo";
+  c.fillText(up([new Date(t.start).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" }), myCar && carLabel(myCar)].filter(Boolean).join("  ·  ")), 72, y);
+  const roast = roastLine(scoreStyle, sc, Math.floor(t.start));
+  c.fillStyle = L === "cyberpunk" ? s2 : s1; const rs = story ? 42 : 36; c.font = `600 ${rs}px Archivo`;
+  const words = `“${roast}”`.split(" "), lines = []; let ln = "";
+  for (const wd of words) { const nx = ln ? ln + " " + wd : wd; if (c.measureText(nx).width <= W - 144 || !ln) ln = nx; else { lines.push(ln); ln = wd; } } if (ln) lines.push(ln);
+  lines.slice(0, 2).forEach(l => { y += rs * 1.3; c.fillText(l, 72, y); });
+  /* Score */
   const route = DEMO_ROUTE, showRoute = route.length > 1;
-  const sc = t.scores[scoreStyle], cx = story ? (showRoute ? 270 : W / 2) : 240, cy = story ? y + 260 : y + 230, r = story ? (showRoute ? 170 : 190) : 150;
-  c.lineCap = "round"; c.lineWidth = story ? 34 : 26; c.strokeStyle = track; c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI); c.stroke();
-  if (sc != null) { c.strokeStyle = col(sc); c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, 0.75 * Math.PI + 1.5 * Math.PI * sc / 100); c.stroke(); }
-  c.textAlign = "center"; c.fillStyle = fg; const big = story ? 170 : 120; c.font = `italic 900 ${big}px Archivo`; c.fillText(sc ?? "—", cx, cy + big * 0.32);
-  c.fillStyle = fg2; c.font = `600 ${story ? 38 : 30}px Archivo`; c.fillText(`${SCORE_STYLES[scoreStyle].label} score`, cx, cy + r * 0.78);
+  const cx = story ? (showRoute ? 270 : W / 2) : 240, r = story ? (showRoute ? 170 : 190) : 150, cy = y + (story ? 60 : 40) + r;
+  const label = up(`${SCORE_STYLES[scoreStyle].label} score`), n = sc == null ? "—" : String(sc);
+  if (L === "telemetry") {
+    c.fillStyle = RPM; c.fillRect(cx - r, cy - r * 0.62, 10, r * 1.24);
+    c.textAlign = "left"; c.fillStyle = fg2; c.font = `700 ${story ? 40 : 32}px Archivo`; c.fillText(label, cx - r + 40, cy - r * 0.38);
+    c.font = `500 ${story ? 48 : 40}px Archivo`; const ow = c.measureText("/100").width;
+    let fs = story ? 220 : 170; do { c.font = numFont(fs); fs -= 4; } while (c.measureText(n).width + ow + 56 > 2 * r && fs > 60);
+    const nw = c.measureText(n).width; c.fillStyle = sc == null ? fg : col(sc); c.fillText(n, cx - r + 36, cy + r * 0.5);
+    c.fillStyle = fg2; c.font = `500 ${story ? 48 : 40}px Archivo`; c.fillText("/100", cx - r + 46 + nw, cy + r * 0.5);
+  } else if (L === "cockpit") {
+    c.lineCap = "round"; c.lineWidth = 8; c.strokeStyle = track; c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI); c.stroke();
+    if (sc != null) { const end = 0.75 * Math.PI + 1.5 * Math.PI * sc / 100; c.save(); c.shadowColor = s2; c.shadowBlur = 30; c.strokeStyle = s2; c.lineWidth = 10; c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, end); c.stroke(); c.restore(); }
+    c.textAlign = "center"; c.fillStyle = fg; const fs = story ? 160 : 116; c.font = numFont(fs); c.fillText(n, cx, cy + fs * 0.34);
+    c.fillStyle = fg2; c.font = `500 ${story ? 36 : 28}px Archivo`; c.fillText(label, cx, cy + r * 0.78);
+  } else if (L === "cyberpunk") {
+    const segs = 24, each = 1.5 * Math.PI / segs; c.lineCap = "butt"; c.lineWidth = story ? 30 : 24;
+    const mix = (a, b, f) => { const h = x => [1, 3, 5].map(i => parseInt(x.slice(i, i + 2), 16)); const A = h(a), B = h(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * f)).join(",")})`; };
+    for (let i = 0; i < segs; i++) { const on = sc != null && (i + 0.5) / segs <= sc / 100; c.strokeStyle = on ? mix(s2, s1, i / (segs - 1)) : track; c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI + i * each, 0.75 * Math.PI + (i + 1) * each - 0.05); c.stroke(); }
+    c.textAlign = "center"; const fs = story ? 160 : 116; c.font = numFont(fs); const by = cy + fs * 0.32;
+    c.fillStyle = s1; c.fillText(n, cx - 5, by); c.fillStyle = s2; c.fillText(n, cx + 5, by); c.fillStyle = fg; c.fillText(n, cx, by);
+    c.fillStyle = s1; c.font = `600 ${story ? 32 : 26}px Archivo`; c.letterSpacing = "6px"; c.fillText(label, cx, cy + r * 0.78); c.letterSpacing = "0px";
+  } else {
+    c.lineCap = "round"; c.lineWidth = story ? 34 : 26; c.strokeStyle = track; c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI); c.stroke();
+    if (sc != null) { c.strokeStyle = col(sc); c.beginPath(); c.arc(cx, cy, r, 0.75 * Math.PI, 0.75 * Math.PI + 1.5 * Math.PI * sc / 100); c.stroke(); }
+    c.textAlign = "center"; c.fillStyle = fg; const big = story ? 170 : 120; c.font = numFont(big); c.fillText(n, cx, cy + big * 0.32);
+    c.fillStyle = fg2; c.font = `600 ${story ? 38 : 30}px Archivo`; c.fillText(label, cx, cy + r * 0.78);
+  }
+  /* Stats */
   const stats = [["Distance", tripKm(unitsMph ? t.km * 0.621371 : t.km).replace(" km", unitsMph ? " mi" : " km")], ["Driving time", tripDur(t.drive)], t.top != null && ["Top speed", uSpeedText(t.top)], t.avg != null && ["Average", uSpeedText(t.avg)], t.best != null && ["0–100 km/h", `${t.best.toFixed(1)} s`], ["Idling", tripDur(t.idle)]].filter(Boolean).slice(0, story ? 6 : showRoute ? 2 : 4);
-  const gl = story ? 72 : 470, gr = W - 72, gap = 24, tw = (gr - gl - gap) / 2, th = 170; let gy = story ? cy + r + 80 : y + 70;
+  const gl = story ? 72 : 470, gr = W - 72, gap = 24, tw = (gr - gl - gap) / 2, th = story ? 150 : 160; let gy = story ? cy + r + 60 : y + 50;
   for (let i = 0; i < stats.length; i++) {
     const x = gl + (i % 2) * (tw + gap); if (i && i % 2 === 0) gy += th + gap;
-    c.fillStyle = panel; c.beginPath(); c.roundRect(x, gy, tw, th, 20); c.fill(); c.fillStyle = s1; c.fillRect(x, gy + 24, 8, th - 48);
-    c.textAlign = "left"; c.fillStyle = fg2; c.font = "500 32px Archivo"; c.fillText(stats[i][0], x + 36, gy + 62);
-    let fs = story ? 76 : 64; c.fillStyle = fg; do { c.font = `italic 900 ${fs}px Archivo`; fs -= 2; } while (c.measureText(stats[i][1]).width > tw - 60 && fs > 24);
-    c.fillText(stats[i][1], x + 36, gy + th - 40);
+    panel(x, gy, x + tw, gy + th);
+    if (L === "livery") { c.fillStyle = s1; c.fillRect(x, gy + 24, 8, th - 48); } else if (L === "telemetry") { c.fillStyle = i % 2 ? SPD : RPM; c.fillRect(x, gy, 6, th); }
+    c.textAlign = "left"; c.fillStyle = L === "cyberpunk" ? s1 : fg2; c.font = L === "cyberpunk" ? "600 26px Archivo" : "500 32px Archivo"; if (L === "cyberpunk") c.letterSpacing = "5px";
+    { let ls = L === "cyberpunk" ? 26 : 32; while (c.measureText(up(stats[i][0])).width > tw - 56 && ls > 16) { ls -= 2; c.font = `${L === "cyberpunk" ? 600 : 500} ${ls}px Archivo`; } }
+    c.fillText(up(stats[i][0]), x + 36, gy + 58); c.letterSpacing = "0px";
+    let fs = story ? 72 : 62; c.fillStyle = fg; do { c.font = numFont(fs); fs -= 2; } while (c.measureText(stats[i][1]).width > tw - 60 && fs > 24);
+    c.fillText(stats[i][1], x + 36, gy + th - 34);
   }
-  if (showRoute) story ? drawRoute(c, route, 520, cy - 190, W - 72, cy + 190, bg, s1, s2, fg) : drawRoute(c, route, gl, gy + th + gap + 10, gr, H - 110, bg, s1, s2, fg);
+  if (stats.length) gy += th + gap;
+  if (showRoute) { const rc = L === "cockpit" || L === "cyberpunk" ? s2 : s1; story ? drawRoute(c, route, 520, cy - 190, W - 72, cy + 190, bg, rc, rc === s1 ? s2 : s1, fg) : drawRoute(c, route, gl, gy, gr, H - 110, bg, rc, rc === s1 ? s2 : s1, fg); }
   if (story) {
-    gy += th + gap + 20; c.fillStyle = panel; c.beginPath(); c.roundRect(72, gy, W - 144, 200, 20); c.fill();
+    gy += 16; panel(72, gy, W - 72, gy + 190);
     ["EFFICIENCY", "EVERYDAY", "RACING"].forEach((k, i) => { const sx = 72 + (W - 144) / 3 * (i + 0.5), val = t.scores[k];
-      c.textAlign = "center"; c.font = "italic 900 76px Archivo"; c.fillStyle = val == null ? fg2 : col(val); c.fillText(val ?? "—", sx, gy + 110);
-      c.font = "500 30px Archivo"; c.fillStyle = fg2; c.fillText(SCORE_STYLES[k].label, sx, gy + 160); });
+      c.textAlign = "center"; c.font = numFont(72); c.fillStyle = val == null ? fg2 : col(val); c.fillText(val ?? "—", sx, gy + 104);
+      c.font = "500 30px Archivo"; c.fillStyle = fg2; c.fillText(up(SCORE_STYLES[k].label), sx, gy + 152); });
   }
-  const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, s1); g.addColorStop(1, s2); c.fillStyle = g; c.fillRect(0, H - 14, W, 14);
-  c.textAlign = "left"; c.fillStyle = fg; c.globalAlpha = .8; c.font = "italic 900 40px Archivo"; c.fillText("OBD2 Reader", 72, H - 60); c.globalAlpha = 1;
+  if (L === "livery" || L === "cyberpunk") { const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, s1); g.addColorStop(1, s2); c.fillStyle = g; c.fillRect(0, H - 14, W, 14); }
+  c.textAlign = "left"; c.fillStyle = fg; c.globalAlpha = .8; c.font = L === "livery" ? "italic 900 40px Archivo" : L === "cockpit" ? "300 40px Archivo" : "700 40px Archivo";
+  c.fillText(L === "cyberpunk" ? "OBD2 READER" : "OBD2 Reader", 72, H - 64); c.globalAlpha = 1;
+  cv.dataset.roast = roast;
   return cv;
 }
 /* A made-up demo route (lat, lon) for the preview's demo car: a loop around a few blocks. */
@@ -2419,9 +2491,10 @@ function drawRoute(c, pts, left, top, right, bottom, bg, s1, s2, fg) {
 }
 function showDriveCard(t) {
   const s = overlay(`<h3>Share as a picture</h3><div class="seg ov-seg"><button role="radio" aria-checked="true" data-f="story">Story 9:16</button><button role="radio" aria-checked="false" data-f="square">Square 1:1</button></div>
-    <div id="cardBox" style="margin-top:12px;text-align:center"></div><p class="msg" style="margin-top:10px">In the app this opens Android's share sheet (YouTube, TikTok, Instagram…) and keeps a copy in Pictures › OBD2 Reader.</p>
+    <div id="cardBox" style="margin-top:12px;text-align:center"></div><p class="msg" id="cardCaption" style="margin-top:10px"></p><p class="msg" style="margin-top:6px">In the app this opens Android's share sheet (YouTube, TikTok, Instagram…) with that caption, and keeps a copy in Pictures › OBD2 Reader.</p>
     <div class="btns"><button id="cardClose">Close</button></div>`);
-  const show = f => { const cv = renderDriveCard(t, f); cv.style.cssText = `width:${f === "story" ? 56 : 100}%;border-radius:8px`; $("cardBox").replaceChildren(cv); };
+  const show = f => { const cv = renderDriveCard(t, f); cv.style.cssText = `width:${f === "story" ? 56 : 100}%;border-radius:8px`; $("cardBox").replaceChildren(cv);
+    const sc = t.scores[scoreStyle]; $("cardCaption").textContent = `Caption: ${cv.dataset.roast}${sc != null ? ` (${sc}/100, ${SCORE_STYLES[scoreStyle].label.toLowerCase()})` : ""} #OBD2Reader`; };
   s.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { s.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-checked", x === b)); show(b.dataset.f); });
   $("cardClose").onclick = closeOverlay; show("story");
 }
