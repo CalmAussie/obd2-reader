@@ -217,7 +217,7 @@ object Exports {
             }
             appendLine("${codes.total} trouble codes (${codes.stored.size} stored, ${codes.pending.size} pending)")
             fun section(code: String, stored: Boolean) {
-                val d = DtcLibrary.lookup(code, ObdSession.carMake(context))
+                val d = DtcLibrary.lookup(code, ObdSession.carMake(context), ObdSession.carYear(context))
                 appendLine()
                 appendLine("$code  ${d.title}")
                 appendLine("Status: " + if (stored) "Stored, check-engine light on" else "Pending, not yet confirmed")

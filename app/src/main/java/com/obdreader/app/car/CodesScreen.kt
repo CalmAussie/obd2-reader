@@ -70,7 +70,7 @@ class CodesScreen(carContext: CarContext) : Screen(carContext) {
 
     /** Each code on the same plate as the phone's Diagnostics tab, beside its description. */
     private fun row(code: String, kind: String) = Row.Builder()
-        .setTitle(DtcLibrary.title(code, ObdSession.carMake(carContext)))
+        .setTitle(DtcLibrary.title(code, ObdSession.carMake(carContext), ObdSession.carYear(carContext)))
         .addText("$code, $kind")
         .setImage(CarLivery.plate(carContext, code, stored = kind.startsWith("Stored")), Row.IMAGE_TYPE_LARGE)
         .build()

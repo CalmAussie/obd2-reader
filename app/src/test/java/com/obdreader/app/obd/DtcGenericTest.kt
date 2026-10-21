@@ -9,7 +9,7 @@ class DtcGenericTest {
     @Test
     fun everyDefinitionIsAGenericCodeWithFullAdvice() {
         for (code in DtcGeneric.codes) {
-            assertTrue(code, Regex("^(P0|P2|U0)[0-9A-F]{3}$").matches(code))
+            assertTrue(code, Regex("^(P0|P2|U0|U3)[0-9A-F]{3}$|^P34[0-9A-F]{2}$").matches(code))
             val info = DtcLibrary.lookup(code)
             assertTrue(code, info.known)
             assertTrue(code, info.meaning.isNotBlank() && info.causes.isNotEmpty() && info.checks.isNotEmpty())
@@ -35,6 +35,31 @@ class DtcGenericTest {
         assertTrue(DtcLibrary.lookup("P0109").meaning.startsWith("The signal drops out"))
         // An oxygen sensor reading lean can be a real lean mixture, not only wiring.
         assertTrue(DtcLibrary.lookup("P2195").meaning.contains("real lean mixture"))
+    }
+
+    @Test
+    fun theFullStandardListIsCovered() {
+        // From the open SAE lists, cross-checked.
+        assertTrue(DtcGeneric.codes.size > 2800)
+        assertEquals("Exhaust gas temperature sensor circuit (bank 1 sensor 1)", DtcLibrary.title("P0544"))
+        assertEquals("O2 sensor circuit range/performance (bank 1 sensor 3)", DtcLibrary.title("P2A02"))
+        assertEquals("Cylinder 1 deactivation/intake valve control circuit/open", DtcLibrary.title("P3401"))
+        assertEquals("Lost communication with HVAC control module - rear", DtcLibrary.title("U0165"))
+        assertTrue(DtcLibrary.lookup("P3401").system.contains("generic"))
+        assertTrue(DtcLibrary.lookup("P0A80").known)
+        assertTrue(DtcLibrary.lookup("P0A80").checks.any { "high-voltage" in it })
+        // Still manufacturer-specific: not filled in from the generic list.
+        assertTrue(!DtcLibrary.lookup("P1000").known)
+        assertTrue(!DtcLibrary.lookup("P3000").known)
+    }
+
+    @Test
+    fun everyFamilyNameInTheListIsReal() {
+        for (chunk in DtcGenericData.CHUNKS) for (line in chunk.lines().filter { it.isNotBlank() }) {
+            val p = line.split('|')
+            assertEquals(line, 3, p.size)
+            assertTrue(line, Regex("^[PU][0-9A-F]{4}$").matches(p[0]))
+        }
     }
 
     @Test

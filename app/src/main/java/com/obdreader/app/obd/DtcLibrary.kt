@@ -534,9 +534,10 @@ object DtcLibrary {
             else -> "Unknown system"
         }
         // P0 and P2 codes are generic, as are B0, C0, U0 and the B3, C3 and U3 ranges.
-        // P1, B1, B2, C1, C2, U1, U2 and most P3 codes are defined by each manufacturer.
+        // So is P3400-P34FF (cylinder deactivation). P1, B1, B2, C1, C2, U1, U2 and the rest of the
+        // P3 range are defined by each manufacturer.
         val second = c.getOrNull(1)
-        val generic = second == '0' || (c.firstOrNull() == 'P' && second == '2') || (c.firstOrNull() != 'P' && second == '3')
+        val generic = second == '0' || (c.firstOrNull() == 'P' && second == '2') || (c.firstOrNull() != 'P' && second == '3') || c.startsWith("P34")
         return "$system, ${if (generic) "generic code (same meaning on every car)" else "manufacturer-specific code"}"
     }
 
@@ -561,10 +562,12 @@ object DtcLibrary {
     /**
      * Full explanation of [raw], from the catalogue or worked out from the code's structure.
      * [make] is the user's car (or the make read from the VIN): manufacturer-specific codes mean
-     * different things on different brands, so they're explained for that make.
+     * different things on different brands, so they're explained for that make. With the model
+     * [year] too, a maker's own published definition is used where there is one for that car.
      */
-    fun lookup(raw: String, make: String? = null): DtcInfo {
+    fun lookup(raw: String, make: String? = null, year: Int? = null): DtcInfo {
         val code = raw.trim().uppercase(Locale.US)
+        MakerCodes.lookup(code, make, year)?.let { return it }
         catalogue[code]?.let { return it.copy(system = systemOf(code)) }
         DtcGeneric.lookup(code, systemOf(code))?.let { return it }
         if (!CODE.matches(code)) {
@@ -611,11 +614,11 @@ object DtcLibrary {
     }
 
     /** Short name for [code], for lists and the car screen. */
-    fun title(code: String, make: String? = null): String = lookup(code, make).title
+    fun title(code: String, make: String? = null, year: Int? = null): String = lookup(code, make, year).title
 
     /** One line for the adapter log: the code, what it is and how urgent it is. */
-    fun logLine(code: String, make: String? = null): String {
-        val d = lookup(code, make)
+    fun logLine(code: String, make: String? = null, year: Int? = null): String {
+        val d = lookup(code, make, year)
         val urgency = if (d.severity == Severity.UNKNOWN) "Urgency varies by car" else d.severity.label
         return "${d.code}: ${d.title}. $urgency."
     }

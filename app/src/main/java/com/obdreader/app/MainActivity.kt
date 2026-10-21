@@ -2454,7 +2454,7 @@ class MainActivity : AppCompatActivity() {
      * what you might notice, common causes and what to check first.
      */
     private fun addDtcRow(code: String, pending: Boolean) {
-        val info = DtcLibrary.lookup(code, ObdSession.carMake(this))
+        val info = DtcLibrary.lookup(code, ObdSession.carMake(this), ObdSession.carYear(this))
         val pad = dp(14f).toInt()
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL

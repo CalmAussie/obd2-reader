@@ -380,6 +380,11 @@ object ObdSession {
         context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.make }
             ?: _state.value.vin?.let { com.obdreader.app.obd.VinDecoder.decode(it).make }
 
+    /** The car's model year, the same way: the car the user chose, else the VIN's year. */
+    fun carYear(context: Context?): Int? =
+        context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.year }
+            ?: _state.value.vin?.let { com.obdreader.app.obd.VinDecoder.decode(it).modelYear }
+
     private var appContext: Context? = null
 
     /** Throttle measured from its closed position, so it reads 0% with your foot off. Learnt per car. */
@@ -584,7 +589,7 @@ object ObdSession {
     private fun logCodes(codes: List<String>, pending: Boolean): List<String> {
         val kind = if (pending) "pending" else "stored"
         val lines = if (codes.isEmpty()) listOf("= No $kind codes")
-        else listOf("= ${codes.size} $kind ${if (codes.size == 1) "code" else "codes"}:") + codes.map { "=   " + DtcLibrary.logLine(it, carMake(appContext)) }
+        else listOf("= ${codes.size} $kind ${if (codes.size == 1) "code" else "codes"}:") + codes.map { "=   " + DtcLibrary.logLine(it, carMake(appContext), carYear(appContext)) }
         lines.forEach { appendLog(it) }
         return lines
     }
