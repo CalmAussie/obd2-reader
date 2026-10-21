@@ -311,8 +311,14 @@ for i in $(seq 1 10); do
   adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1
   sleep 2
 done
-adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-recording.xml" 2>/dev/null
-grep -q "with route" "$OUT/ui-recording.xml" && ROUTE=1
+# The Graphs tab animates, so screen dumps often fail: try a few, and also ask Android whether
+# the app is getting GPS updates right now (release builds can't be read with run-as afterwards).
+for i in 1 2 3 4; do
+  adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-recording.xml" 2>/dev/null
+  grep -q "with route" "$OUT/ui-recording.xml" && { ROUTE=1; break; }; sleep 1
+done
+adb shell dumpsys location > "$OUT/location.txt" 2>/dev/null
+[ $ROUTE = 0 ] && grep -i "gps" "$OUT/location.txt" | grep -q "$PKG" && ROUTE=1
 XY=$(view_center_bottom recordButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8a-recorded
 # Debug builds: check the file itself has positions.
