@@ -58,6 +58,10 @@ class ElmClient(
      * [carOrder] comes from the user's chosen car ([VehicleCatalog.recommend]). Its first
      * protocol is tried early and given a longer wait, since that's the likeliest one.
      */
+    /** True once the adapter has answered ATI like an ELM327 or STN chip (so a later failure is the car, not the adapter). */
+    var identified = false
+        private set
+
     suspend fun initialize(
         protocol: String = ObdProtocols.AUTO,
         lastWorking: String? = null,
@@ -68,7 +72,9 @@ class ElmClient(
         for (cmd in listOf("ATE0", "ATL0", "ATS0", "ATH0", "ATAT1")) {
             command(cmd)
         }
-        val version = command("ATI").firstOrNull() ?: "ELM327"
+        val ati = command("ATI")
+        val version = ati.firstOrNull() ?: "ELM327"
+        identified = ati.any { line -> listOf("ELM", "STN", "OBD", "VLINK").any { line.uppercase().contains(it) } }
 
         val forced = protocol != ObdProtocols.AUTO
         val attempts: List<String> = if (forced) {

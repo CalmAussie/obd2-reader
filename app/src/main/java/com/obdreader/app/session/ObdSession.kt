@@ -13,6 +13,7 @@ import com.obdreader.app.obd.ThrottleCalibration
 import com.obdreader.app.obd.CarCoverage
 import com.obdreader.app.obd.ChargingStatus
 import com.obdreader.app.obd.ElmParser
+import com.obdreader.app.obd.LockedAdapters
 import com.obdreader.app.obd.BleTransport
 import com.obdreader.app.obd.BluetoothTransport
 import com.obdreader.app.obd.DemoTransport
@@ -269,8 +270,15 @@ object ObdSession {
         val chosen = prefs.getString(AppPrefs.PROTOCOL, ObdProtocols.AUTO) ?: ObdProtocols.AUTO
         val lastWorking = if (isDemo) null else prefs.getString(AppPrefs.LAST_PROTOCOL, null)
         val carOrder = if (isDemo) null else AppPrefs.savedCar(prefs)?.let { VehicleCatalog.recommend(it).order }
-        val info = c.initialize(chosen, lastWorking, carOrder) { step ->
-            _state.update { it.copy(title = "Talking to the car…", detail = step) }
+        val info = try {
+            c.initialize(chosen, lastWorking, carOrder) { step ->
+                _state.update { it.copy(title = "Talking to the car…", detail = step) }
+            }
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            // A maker-locked adapter (ThinkDiag, BlueDriver) that doesn't speak ELM327: say why, and don't keep retrying.
+            if (!c.identified) LockedAdapters.match(t.name)?.let { throw NotAnAdapter(LockedAdapters.message(it)) }
+            throw e
         }
 
         client = c

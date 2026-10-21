@@ -85,7 +85,8 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics â
 | Bluetooth Classic | ELM327 v1.4 and newer, and ELM327-compatible clones and STN-based adapters | Listed under Bluetooth; the app pairs it if needed |
 | Bluetooth LE | "iPhone-compatible" ELM327 adapters, for example the Veepeak OBDCheck BLE+ | Listed under Bluetooth; no pairing needed |
 | Wi-Fi | ELM327 Wi-Fi adapters | Default address `192.168.0.10`, port `35000`, changeable in the app |
-| Not supported | Adapters locked to their maker's own app (for example BlueDriver), and USB adapters | |
+| Maker-locked | ThinkCar ThinkDiag, BlueDriver and similar adapters made for their maker's own app | They work only if they answer like an ELM327. If not, the app tells you it's a maker-locked adapter |
+| Not supported | USB adapters | |
 
 **OBD2 protocols** (all nine an ELM327 supports, tried automatically)
 | Protocol | Typical cars |
