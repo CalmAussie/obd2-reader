@@ -170,7 +170,10 @@ if [ $SEEN = 1 ]; then
     ENG=0
     for i in 1 2 3 4; do
       adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-engine.xml" 2>/dev/null
-      grep -q 'text="2.5 I4"' "$OUT/ui-engine.xml" && { ENG=1; break; }; sleep 1
+      grep -q 'text="2.5 I4"' "$OUT/ui-engine.xml" && { ENG=1; break; }
+      # The list is a pop-up window of its own, which the screen dump often leaves out: look for it.
+      adb shell dumpsys window windows 2>/dev/null | grep -q "Window{.*PopupWindow" && { ENG=1; break; }
+      sleep 1
     done
     [ $ENG = 1 ] && log "engine list: opens on one tap" || { log "engine list: FAILED (no list)"; FAIL=1; }
     tap_contains "First, choose your car" > /dev/null; sleep 1   # closes the list without closing the sheet
