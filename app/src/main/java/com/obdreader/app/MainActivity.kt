@@ -993,18 +993,10 @@ class MainActivity : AppCompatActivity() {
             maxHeight = (resources.displayMetrics.heightPixels * 0.6f).toInt()
             contentDescription = getString(R.string.share_preview_title)
         }
-        val hint = TextView(this).apply {
-            setText(R.string.share_preview_hint)
-            setTextColor(themeColor(R.attr.obdTextSecondary))
-            textSize = 13f
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, pad / 2, 0, 0)
-        }
         val body = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(pad, pad, pad, 0)
             addView(image, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
-            addView(hint)
         }
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.share_preview_title)
