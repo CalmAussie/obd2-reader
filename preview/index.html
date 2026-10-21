@@ -2499,12 +2499,12 @@ function showDriveCard(t) {
   /* Mirrors MainActivity.previewDriveCard: a preview with the roast's space left blank, then Share. */
   let fmt = "story", shared = false;
   const s = overlay(`<h3 id="cardTitle">Preview</h3><div class="seg ov-seg"><button role="radio" aria-checked="true" data-f="story">Story 9:16</button><button role="radio" aria-checked="false" data-f="square">Square 1:1</button></div>
-    <div id="cardBox" style="margin-top:12px;text-align:center"></div><p class="msg" id="cardHint" style="margin-top:8px;text-align:center">Your roast is added when you share.</p><p class="msg" id="cardCaption" style="margin-top:10px" hidden></p><p class="msg" id="cardNote" style="margin-top:6px" hidden>In the app this opens Android's share sheet (YouTube, TikTok, Instagram…) with that caption, and keeps a copy in Pictures › OBD2 Reader.</p>
+    <div id="cardBox" style="margin-top:12px;text-align:center"></div><p class="msg" id="cardCaption" style="margin-top:10px" hidden></p><p class="msg" id="cardNote" style="margin-top:6px" hidden>In the app this opens Android's share sheet (YouTube, TikTok, Instagram…) with that caption, and keeps a copy in Pictures › OBD2 Reader.</p>
     <div class="btns"><button id="cardClose">Cancel</button><button class="primary" id="cardShare">Share</button></div>`);
   const show = () => { const cv = renderDriveCard(t, fmt, !shared); cv.style.cssText = `width:${fmt === "story" ? 56 : 100}%;border-radius:8px`; $("cardBox").replaceChildren(cv);
     const sc = cv.dataset.score; $("cardCaption").textContent = `Caption: ${cv.dataset.roast}${sc !== "" ? ` (${sc}/100, ${cv.dataset.kind.toLowerCase()} score)` : ""} #OBD2Reader`; };
   s.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { s.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-checked", x === b)); fmt = b.dataset.f; show(); });
-  $("cardShare").onclick = () => { shared = true; $("cardTitle").textContent = "Shared picture"; $("cardHint").hidden = true; $("cardCaption").hidden = false; $("cardNote").hidden = false; $("cardShare").hidden = true; $("cardClose").textContent = "Close"; show(); };
+  $("cardShare").onclick = () => { shared = true; $("cardTitle").textContent = "Shared picture"; $("cardCaption").hidden = false; $("cardNote").hidden = false; $("cardShare").hidden = true; $("cardClose").textContent = "Close"; show(); };
   $("cardClose").onclick = closeOverlay; show();
 }
 
