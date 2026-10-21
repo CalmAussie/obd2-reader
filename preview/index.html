@@ -2369,7 +2369,7 @@ function roastLine(style, score, seed) {
   const band = score >= 90 ? 0 : score >= 75 ? 1 : score >= 55 ? 2 : score >= 35 ? 3 : 4;
   return pick((ROAST[style] || ROAST.EVERYDAY)[band]);
 }
-function renderDriveCard(t, fmt) {
+function renderDriveCard(t, fmt, hideRoast) {
   const W = 1080, H = fmt === "story" ? 1920 : 1080, story = fmt === "story";
   const L = $("phone").dataset.layout || "livery";
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const c = cv.getContext("2d");
@@ -2416,7 +2416,7 @@ function renderDriveCard(t, fmt) {
   c.fillStyle = L === "cyberpunk" ? s2 : s1; const rs = story ? 42 : 36; c.font = `600 ${rs}px Archivo`;
   const words = `“${roast}”`.split(" "), lines = []; let ln = "";
   for (const wd of words) { const nx = ln ? ln + " " + wd : wd; if (c.measureText(nx).width <= W - 144 || !ln) ln = nx; else { lines.push(ln); ln = wd; } } if (ln) lines.push(ln);
-  lines.slice(0, 2).forEach(l => { y += rs * 1.3; c.fillText(l, 72, y); });
+  lines.slice(0, 2).forEach(l => { y += rs * 1.3; if (!hideRoast) c.fillText(l, 72, y); });
   /* Score */
   const route = DEMO_ROUTE, showRoute = route.length > 1;
   const cx = story ? (showRoute ? 270 : W / 2) : 240, r = story ? (showRoute ? 170 : 190) : 150, cy = y + (story ? 60 : 40) + r;
@@ -2490,13 +2490,16 @@ function drawRoute(c, pts, left, top, right, bottom, bg, s1, s2, fg) {
   c.fillStyle = s1; c.beginPath(); c.arc(b[0], b[1], 20, 0, 7); c.fill(); c.strokeStyle = fg; c.lineWidth = 5; c.beginPath(); c.arc(b[0], b[1], 24, 0, 7); c.stroke();
 }
 function showDriveCard(t) {
-  const s = overlay(`<h3>Share as a picture</h3><div class="seg ov-seg"><button role="radio" aria-checked="true" data-f="story">Story 9:16</button><button role="radio" aria-checked="false" data-f="square">Square 1:1</button></div>
-    <div id="cardBox" style="margin-top:12px;text-align:center"></div><p class="msg" id="cardCaption" style="margin-top:10px"></p><p class="msg" style="margin-top:6px">In the app this opens Android's share sheet (YouTube, TikTok, Instagram…) with that caption, and keeps a copy in Pictures › OBD2 Reader.</p>
-    <div class="btns"><button id="cardClose">Close</button></div>`);
-  const show = f => { const cv = renderDriveCard(t, f); cv.style.cssText = `width:${f === "story" ? 56 : 100}%;border-radius:8px`; $("cardBox").replaceChildren(cv);
+  /* Mirrors MainActivity.previewDriveCard: a preview with the roast's space left blank, then Share. */
+  let fmt = "story", shared = false;
+  const s = overlay(`<h3 id="cardTitle">Preview</h3><div class="seg ov-seg"><button role="radio" aria-checked="true" data-f="story">Story 9:16</button><button role="radio" aria-checked="false" data-f="square">Square 1:1</button></div>
+    <div id="cardBox" style="margin-top:12px;text-align:center"></div><p class="msg" id="cardHint" style="margin-top:8px;text-align:center">Your roast is added when you share.</p><p class="msg" id="cardCaption" style="margin-top:10px" hidden></p><p class="msg" id="cardNote" style="margin-top:6px" hidden>In the app this opens Android's share sheet (YouTube, TikTok, Instagram…) with that caption, and keeps a copy in Pictures › OBD2 Reader.</p>
+    <div class="btns"><button id="cardClose">Cancel</button><button class="primary" id="cardShare">Share</button></div>`);
+  const show = () => { const cv = renderDriveCard(t, fmt, !shared); cv.style.cssText = `width:${fmt === "story" ? 56 : 100}%;border-radius:8px`; $("cardBox").replaceChildren(cv);
     const sc = t.scores[scoreStyle]; $("cardCaption").textContent = `Caption: ${cv.dataset.roast}${sc != null ? ` (${sc}/100, ${SCORE_STYLES[scoreStyle].label.toLowerCase()})` : ""} #OBD2Reader`; };
-  s.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { s.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-checked", x === b)); show(b.dataset.f); });
-  $("cardClose").onclick = closeOverlay; show("story");
+  s.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { s.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-checked", x === b)); fmt = b.dataset.f; show(); });
+  $("cardShare").onclick = () => { shared = true; $("cardTitle").textContent = "Shared picture"; $("cardHint").hidden = true; $("cardCaption").hidden = false; $("cardNote").hidden = false; $("cardShare").hidden = true; $("cardClose").textContent = "Close"; show(); };
+  $("cardClose").onclick = closeOverlay; show();
 }
 
 

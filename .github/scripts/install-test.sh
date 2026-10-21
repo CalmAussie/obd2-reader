@@ -263,6 +263,12 @@ shot 7-trip-summary
 if grep -q "Your drive" "$OUT/ui-trip.xml" && grep -q "Top speed" "$OUT/ui-trip.xml"; then log "trip summary: shown"; else log "trip summary: FAILED (not shown)"; FAIL=1; fi
 # Share the drive as a picture: the image is made and Android's share sheet opens.
 if tap_text "Share as a picture" && tap_contains "Story (9:16)"; then
+  # A preview comes first, with the roast's space left blank; Share sends the real card.
+  sleep 3
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-preview.xml"
+  shot 8b-share-preview
+  if grep -q "Your roast is added when you share" "$OUT/ui-preview.xml"; then log "share preview: shown"; else log "share preview: FAILED (not shown)"; FAIL=1; fi
+  tap_text "Share" > /dev/null || true
   sleep 3
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-share.xml"
   if [ -n "$(pull_made story.png Pictures "$OUT/9-drive-card.png")" ]; then

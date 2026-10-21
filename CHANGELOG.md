@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.12.0 (22 October 2026)
+- **Preview before you share a drive.** After you pick Story or Square, the card is shown as it'll look, with a **Share** button and **Cancel**. The roast stays a surprise: its space on the card is left blank in the preview, and it's only added to the picture and caption when you tap **Share**. Nothing is saved or sent until then.
+
 ## 1.11.1 (22 October 2026)
 - **Code support table.** [docs/CODE-SUPPORT.md](docs/CODE-SUPPORT.md) lists every make and model in the car list, whether the generic codes apply, and how many manufacturer-specific codes are explained for each model year. It's built from the app's own car list and code library, and a test fails if it falls out of date.
 

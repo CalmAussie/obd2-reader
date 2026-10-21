@@ -974,20 +974,56 @@ class MainActivity : AppCompatActivity() {
         val formats = DriveCardRenderer.Format.values()
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.share_picture)
-            .setItems(formats.map { it.label }.toTypedArray()) { _, i ->
-                val roast = com.obdreader.app.obd.Roast.line(scoreStyle, trip.scores[scoreStyle], trip.startedAt)
-                val bmp = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, formats[i], routeFor(trip), roast)
-                val name = "OBD2Reader_drive_" + java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).format(java.util.Date(trip.startedAt)) + "_${formats[i].name.lowercase(Locale.US)}.png"
-                val file = Exports.exportFile(this, name)
-                file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
-                bmp.recycle()
-                Exports.saveToPictures(this, file)
-                // The post's text: the roast and the score, ready to paste or post as the caption.
-                val score = trip.scores[scoreStyle]
-                Exports.share(this, file, "image/png", "My drive", text = "$roast ${score?.let { "($it/100, ${scoreStyle.label.lowercase(Locale.getDefault())})" } ?: ""}".trim() + " #OBD2Reader")
-            }
+            .setItems(formats.map { it.label }.toTypedArray()) { _, i -> previewDriveCard(trip, formats[i]) }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    /** The card as it'll look, before it's shared. The roast's space is left blank: it's a surprise. */
+    private fun previewDriveCard(trip: TripSummary, format: DriveCardRenderer.Format) {
+        val roast = com.obdreader.app.obd.Roast.line(scoreStyle, trip.scores[scoreStyle], trip.startedAt)
+        val route = routeFor(trip)
+        val preview = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, format, route, roast, hideRoast = true)
+        val pad = (16 * resources.displayMetrics.density).toInt()
+        val image = android.widget.ImageView(this).apply {
+            setImageBitmap(preview)
+            adjustViewBounds = true
+            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            maxHeight = (resources.displayMetrics.heightPixels * 0.6f).toInt()
+            contentDescription = getString(R.string.share_preview_title)
+        }
+        val hint = TextView(this).apply {
+            setText(R.string.share_preview_hint)
+            setTextColor(themeColor(R.attr.obdTextSecondary))
+            textSize = 13f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, pad / 2, 0, 0)
+        }
+        val body = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, pad, pad, 0)
+            addView(image, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+            addView(hint)
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.share_preview_title)
+            .setView(body)
+            .setPositiveButton(R.string.share_preview_share) { _, _ -> sendDriveCard(trip, format, route, roast) }
+            .setNegativeButton("Cancel", null)
+            .setOnDismissListener { image.setImageDrawable(null); preview.recycle() }
+            .show()
+    }
+
+    private fun sendDriveCard(trip: TripSummary, format: DriveCardRenderer.Format, route: com.obdreader.app.obd.Route?, roast: String) {
+        val bmp = DriveCardRenderer(this).render(trip, scoreStyle, savedCar()?.label, format, route, roast)
+        val name = "OBD2Reader_drive_" + java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).format(java.util.Date(trip.startedAt)) + "_${format.name.lowercase(Locale.US)}.png"
+        val file = Exports.exportFile(this, name)
+        file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+        bmp.recycle()
+        Exports.saveToPictures(this, file)
+        // The post's text: the roast and the score, ready to paste or post as the caption.
+        val score = trip.scores[scoreStyle]
+        Exports.share(this, file, "image/png", "My drive", text = "$roast ${score?.let { "($it/100, ${scoreStyle.label.lowercase(Locale.getDefault())})" } ?: ""}".trim() + " #OBD2Reader")
     }
 
     /**
