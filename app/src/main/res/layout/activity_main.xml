@@ -1087,6 +1087,38 @@
 
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="8dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/updatesRow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/archivo_medium" android:text="@string/updates" android:textColor="?attr/obdTextPrimary" android:textSize="15sp" />
+
+                            <TextView
+                                android:id="@+id/updatesSub"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/updates_sub"
+                                android:textColor="?attr/obdTextSecondary"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="8dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
+                    </LinearLayout>
                 </LinearLayout>
             </FrameLayout>
         </androidx.core.widget.NestedScrollView>

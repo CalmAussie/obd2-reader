@@ -722,6 +722,10 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
           <div class="r"><span>Help</span><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
           <div class="h">Connecting an adapter, choosing your car and Android Auto</div>
         </button>
+        <button class="setting" id="updatesRow">
+          <div class="r"><span>App updates</span><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
+          <div class="h" id="updatesSub">Version 1.13.0 · checks for new versions once a day</div>
+        </button>
       </div>
     </div>
   </div>
@@ -2754,6 +2758,11 @@ $("noChargeBtn").onclick = () => {
   if (!simNoCharge) setTimeout(() => { simNoCharge = false; }, 0);
 };
 setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn").hidden && simNoCharge) $("noChargeBtn").click(); }, 500);
+
+/* ===== App updates (mirrors MainActivity.checkForUpdate). The browser preview can't install an APK,
+   so it shows what the app says when it's already on the latest release. ===== */
+(() => { const row = document.getElementById("updatesRow"); if (!row) return;
+  row.onclick = () => { toast("Checking for updates…"); setTimeout(() => toast("You're on the latest version (1.13.0). In the app, a newer release opens What's new with Update and Later."), 1200); }; })();
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

@@ -190,6 +190,11 @@ fi
 remember_tabs
 shot 1-opened
 alive && log "open: OK" || { log "open: FAILED (app not running)"; FAIL=1; }
+# The daily update check runs a few seconds after opening. If an older build is being tested
+# and GitHub has a newer one, it offers the update: say Later so the tour can carry on.
+sleep 6
+adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-update.xml"
+grep -q "is available" "$OUT/ui-update.xml" && tap_text "Later" > /dev/null
 for b in "Connect" "Demo car"; do
   check_button "$b"; r=$?
   case $r in 0) log "button '$b': visible";; 1) log "button '$b': FAILED (too small to tap)"; FAIL=1;; *) log "button '$b': FAILED (missing)"; FAIL=1;; esac
@@ -303,6 +308,25 @@ if grep -q "Performance timers" "$OUT/ui-perf.xml" || grep -q "Performance timer
 adb shell input keyevent KEYCODE_BACK; sleep 2
 # Codes are now also read on their own shortly after connecting, so they may already be listed.
 tap_tab Diagnostics && { tap_text "Read codes" || grep -q "P0133" "$OUT/ui.xml"; } && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
+# App updates: the row is on Diagnostics, near the bottom. Tapping it asks GitHub for the latest release.
+for i in 1 2 3 4 5 6 7 8; do
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-updates.xml"
+  grep -q 'text="App updates"' "$OUT/ui-updates.xml" && break
+  adb shell input swipe 540 1600 540 600 300; sleep 1
+done
+if grep -q 'text="App updates"' "$OUT/ui-updates.xml"; then
+  tap_text "App updates" > /dev/null; sleep 8
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-updates2.xml"
+  shot 11-updates
+  grep -q "is available" "$OUT/ui-updates2.xml" && tap_text "Later" > /dev/null
+  CHECK=$(adb logcat -d -s OBD2Updater:I 2>/dev/null | grep -o "latest build [0-9]*, installed [0-9]*\|check failed.*" | tail -1)
+  case "$CHECK" in
+    "latest build"*) log "updates: GitHub checked ($CHECK)" ;;
+    *) log "updates: FAILED (${CHECK:-no check logged})"; FAIL=1 ;;
+  esac
+else
+  log "updates: FAILED (row missing)"; FAIL=1
+fi
 tap_tab Graphs && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
 # Video overlay: record a short drive on Graphs, then make an overlay video from it.
 # Route: allow location up front (so the "save the route?" question is skipped) and feed the
