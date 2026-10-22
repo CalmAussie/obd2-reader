@@ -194,6 +194,26 @@ object Exports {
         }
     }
 
+    /**
+     * Saves a copy of [file] to Downloads › OBD2 Reader (Android 10 and later). Returns false if
+     * it couldn't, so the caller can let the user pick a folder instead.
+     */
+    fun saveToDownloads(context: Context, file: File, mime: String): Boolean {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) return false
+        val values = android.content.ContentValues().apply {
+            put(android.provider.MediaStore.Downloads.DISPLAY_NAME, file.name)
+            put(android.provider.MediaStore.Downloads.MIME_TYPE, mime)
+            put(android.provider.MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/OBD2 Reader")
+        }
+        val resolver = context.contentResolver
+        val uri = resolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: return false
+        return try {
+            resolver.openOutputStream(uri)?.use { out -> file.inputStream().use { it.copyTo(out) } } != null
+        } catch (e: Exception) {
+            resolver.delete(uri, null, null); false
+        }
+    }
+
     fun exportFile(context: Context, name: String): File =
         File(File(context.cacheDir, "exports").apply { mkdirs() }, name)
 
@@ -208,7 +228,7 @@ object Exports {
             val vehicle = listOfNotNull(info?.make, info?.modelYear?.let { "$it model year" }).joinToString(", ")
             if (vehicle.isNotEmpty()) appendLine("Vehicle: $vehicle")
             if (carLabel != null) appendLine("Car chosen in the app: $carLabel")
-            s.vin?.let { appendLine("VIN: $it") }
+            s.vin?.let { appendLine("VIN: $it" + if (it.length == 17 && !VinDecoder.isValid(it)) " (failed its check digit, so it may be misread)" else "") }
             s.summary?.let { appendLine("Adapter and protocol: $it") }
             appendLine()
             if (codes == null || codes.total == 0) {

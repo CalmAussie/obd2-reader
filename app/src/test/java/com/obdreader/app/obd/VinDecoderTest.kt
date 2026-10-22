@@ -8,7 +8,7 @@ class VinDecoderTest {
 
     @Test
     fun fordNorthAmericaWithYear() {
-        val info = VinDecoder.decode("1FAHP3F20CL123456")
+        val info = VinDecoder.decode("1FAHP3F27CL123456")
         assertEquals("Ford", info.make)
         assertEquals(2012, info.modelYear)
     }
@@ -16,8 +16,8 @@ class VinDecoderTest {
     @Test
     fun earlyTwoThousandsUsesDigitCycle() {
         // Position 7 is a digit, so "4" means 2004, not 2034.
-        assertEquals(2004, VinDecoder.decode("1FAFP34P04W123456").modelYear)
-        assertEquals(2000, VinDecoder.decode("1HGCG1655YA123456").modelYear)
+        assertEquals(2004, VinDecoder.decode("1FAFP34PX4W123456").modelYear)
+        assertEquals(2000, VinDecoder.decode("1HGCG1658YA123456").modelYear)
     }
 
     @Test
@@ -59,7 +59,7 @@ class VinDecoderTest {
         assertEquals(2006, mazda.modelYear)
         val toyota = VinDecoder.decode(VinDecoder.sampleVin("Toyota", 2018))
         assertEquals("Toyota", toyota.make)
-        assertEquals("1FAHP3F20CL123456".length, VinDecoder.sampleVin(null, null).length)
+        assertEquals("1FAHP3F27CL123456".length, VinDecoder.sampleVin(null, null).length)
         assertEquals("Ford", VinDecoder.decode(VinDecoder.sampleVin(null, null)).make)
     }
 

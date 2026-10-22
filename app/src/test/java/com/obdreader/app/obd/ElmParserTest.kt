@@ -101,6 +101,39 @@ class ElmParserTest {
         assertEquals(vin, ElmParser.parseVin(lines))
     }
 
+    private fun legacyLines(vin: String) = (listOf(0, 0, 0) + vin.map { it.code }).chunked(4).mapIndexed { idx, chunk ->
+        "4902" + "%02X".format(idx + 1) + chunk.joinToString("") { "%02X".format(it) }
+    }
+
+    private fun canLines(vin: String): List<String> {
+        val hex = "490201" + vin.map { "%02X".format(it.code) }.joinToString("")
+        return listOf("0:" + hex.substring(0, 12), "1:" + hex.substring(12, 26), "2:" + hex.substring(26))
+    }
+
+    @Test
+    fun vinFromLegacyPartsOutOfOrder() {
+        val vin = "4F2YZ04136KM12345".let { it.substring(0, 8) + VinDecoder.checkDigit(it) + it.substring(9) }
+        assertEquals(vin, ElmParser.parseVin(legacyLines(vin).reversed()))
+    }
+
+    @Test
+    fun vinWhenTwoModulesAnswer() {
+        val vin = "4F2YZ04136KM12345".let { it.substring(0, 8) + VinDecoder.checkDigit(it) + it.substring(9) }
+        // A second module sending a different (bad) VIN must not get mixed into the first.
+        val other = "4F2YZ04130KM99999"
+        assertEquals(vin, ElmParser.parseVin(canLines(other) + canLines(vin)))
+        val legacyA = legacyLines(other); val legacyB = legacyLines(vin)
+        assertEquals(vin, ElmParser.parseVin(legacyA.zip(legacyB).flatMap { listOf(it.first, it.second) }))
+    }
+
+    @Test
+    fun vinValidity() {
+        assertTrue(VinDecoder.isValid("1HGCM82633A004352"))
+        assertTrue(!VinDecoder.isValid("1HGCM82643A004352"))
+        assertTrue(VinDecoder.isValid("JM0EP10A200123456")) // check digit optional outside North America
+        assertTrue(!VinDecoder.isValid("JM0EP10A2O0123456"))
+    }
+
     @Test
     fun protocolDetection() {
         assertTrue(ElmParser.isCanProtocol("A6"))
@@ -112,7 +145,7 @@ class ElmParserTest {
     fun demoTransportRoundTrip() {
         val t = DemoTransport().apply { open() }
         val vin = ElmParser.parseVin(ElmParser.cleanLines(t.exchange("0902", 1000), "0902"))
-        assertEquals("1FAHP3F20CL123456", vin)
+        assertEquals("1FAHP3F27CL123456", vin)
         val dtcs = ElmParser.parseDtcs(ElmParser.cleanLines(t.exchange("03", 1000), "03"), "43", isCan = true)
         assertEquals(listOf("P0133", "P0420"), dtcs)
     }

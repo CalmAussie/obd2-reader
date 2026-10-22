@@ -143,9 +143,22 @@ object VinDecoder {
         return if (r == 10) 'X' else ('0' + r)
     }
 
+    /**
+     * True if [vin] is 17 VIN characters and, where a check digit is required (North American
+     * and Chinese VINs), it matches. Other regions don't have to use one, so they pass on the
+     * characters alone.
+     */
+    fun isValid(vin: String): Boolean {
+        val v = vin.trim().uppercase(Locale.US)
+        if (v.length != 17 || v.any { !(it in 'A'..'Z' || it in '0'..'9') || it in "IOQ" }) return false
+        val required = v[0] in '1'..'5' || v[0] == 'L'
+        return !required || checkDigit(v) == v[8]
+    }
+
     fun decode(vin: String): Info {
         val v = vin.trim().uppercase(Locale.US)
-        if (v.length != 17) return Info(null, null)
+        // A VIN that fails its check is likely misread, so no make or year is taken from it.
+        if (!isValid(v)) return Info(null, null)
         return Info(WMI[v.substring(0, 3)], modelYear(v))
     }
 
