@@ -30,6 +30,8 @@ jobs:
           - api: 37
             level: "37.0"
             target: google_apis_ps16k
+            # Android 17 draws through ANGLE; the older SwiftShader mode crashes its display.
+            gpu: swangle_indirect
     steps:
       - uses: actions/checkout@v5
       - name: Download the published APK, as a user would
@@ -50,7 +52,7 @@ jobs:
           # Newer system images leave too little room for apps on the default disk.
           disk-size: 6000M
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu ${{ matrix.gpu || 'swiftshader_indirect' }} -noaudio -no-boot-anim -camera-back none
           script: bash .github/scripts/install-test.sh ${{ matrix.api }}
       - name: Summary
         if: always()
