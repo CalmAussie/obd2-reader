@@ -4,6 +4,7 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 
 ## 1.13.1 (22 October 2026)
 - **Share preview in the same window.** **Share as a picture** now shows the card straight away, with **Story (9:16)** and **Square (1:1)** buttons to switch between the two shapes, and **Share** and **Cancel** underneath. No second window.
+- **What's new since your version.** **Diagnostics → App updates** now has a **Check for updates** button. Tap the rest of the row to see the changelog for just the versions released after the one you have, with a button to get the newest. If you're up to date, it shows what's in your version.
 - **Tap and hold to see the card big.** Hold the preview and it grows smoothly out of its place to fill the screen; let go and it shrinks back.
 - The post's text is now just your score and #OBD2Reader, for example "My drive: 67/100 drive score. #OBD2Reader".
 - Fixed: on the Digital cockpit style, the **Connect** button stayed dark and faded after you disconnected (it looked stuck pressed) until the app was fully closed and reopened. It now goes straight back to its bright blue-to-teal look.

@@ -371,7 +371,7 @@ for i in 1 2 3 4 5 6 7 8; do
   adb shell input swipe 540 1600 540 600 300; sleep 1
 done
 if grep -q 'text="App updates"' "$OUT/ui-updates.xml"; then
-  tap_text "App updates" > /dev/null; sleep 8
+  tap_text "Check for updates" > /dev/null; sleep 8
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-updates2.xml"
   shot 11-updates
   grep -q "is available" "$OUT/ui-updates2.xml" && tap_text "Later" > /dev/null
@@ -380,6 +380,12 @@ if grep -q 'text="App updates"' "$OUT/ui-updates.xml"; then
     "latest build"*) log "updates: GitHub checked ($CHECK)" ;;
     *) log "updates: FAILED (${CHECK:-no check logged})"; FAIL=1 ;;
   esac
+  # The rest of the row: what's changed since this version, from the changelog on GitHub.
+  tap_text "App updates" > /dev/null; sleep 6
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-changes.xml"
+  shot 11b-whats-new
+  if grep -q "What&apos;s new since\|What's new since" "$OUT/ui-changes.xml" && ! grep -q "Couldn&apos;t load the changelog\|Couldn't load the changelog" "$OUT/ui-changes.xml"; then log "updates: changes since this version shown"; else log "updates: FAILED (changelog not shown)"; FAIL=1; fi
+  adb shell input keyevent KEYCODE_BACK; sleep 1
 else
   log "updates: FAILED (row missing)"; FAIL=1
 fi

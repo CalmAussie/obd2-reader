@@ -1115,6 +1115,16 @@
                                 android:text="@string/updates_sub"
                                 android:textColor="?attr/obdTextSecondary"
                                 android:textSize="13sp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/updatesCheck"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:minHeight="40dp"
+                                android:text="@string/updates_check"
+                                android:textAllCaps="false" />
                         </LinearLayout>
 
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="8dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />

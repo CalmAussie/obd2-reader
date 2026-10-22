@@ -604,6 +604,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 
 /* The Engine box is a dropdown (with its arrow) when the catalogue has engines for the car, like Manufacturer and Year. */
 .ofield input.dd { background-image: linear-gradient(45deg, transparent 50%, var(--fg-2) 50%), linear-gradient(135deg, var(--fg-2) 50%, transparent 50%); background-position: calc(100% - 22px) 26px, calc(100% - 16px) 26px; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 40px; }
+.upd-check { display: inline-block; margin-top: 8px; padding: 8px 14px; border: 1px solid var(--outline, rgba(255,255,255,.2)); border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--accent, #7FA6FF); cursor: pointer; }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -724,7 +725,8 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
         </button>
         <button class="setting" id="updatesRow">
           <div class="r"><span>App updates</span><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
-          <div class="h" id="updatesSub">Version 1.13.0 · checks for new versions once a day</div>
+          <div class="h" id="updatesSub">Version 1.13.1 · checks for new versions once a day</div>
+          <span class="upd-check" id="updatesCheck" role="button" tabindex="0">Check for updates</span>
         </button>
       </div>
     </div>
@@ -2785,10 +2787,18 @@ $("noChargeBtn").onclick = () => {
 };
 setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn").hidden && simNoCharge) $("noChargeBtn").click(); }, 500);
 
-/* ===== App updates (mirrors MainActivity.checkForUpdate). The browser preview can't install an APK,
-   so it shows what the app says when it's already on the latest release. ===== */
-(() => { const row = document.getElementById("updatesRow"); if (!row) return;
-  row.onclick = () => { toast("Checking for updates…"); setTimeout(() => toast("You're on the latest version (1.13.0). In the app, a newer release opens What's new with Update and Later."), 1200); }; })();
+/* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
+   can't install an APK, so it is always on the latest release. ===== */
+const CHANGES = {"version": "1.13.1", "date": "22 October 2026", "text": "• Share preview in the same window. Share as a picture now shows the card straight away, with Story (9:16) and Square (1:1) buttons to switch between the two shapes, and Share and Cancel underneath. No second window.\n• What's new since your version. Diagnostics → App updates now has a Check for updates button. Tap the rest of the row to see the changelog for just the versions released after the one you have, with a button to get the newest. If you're up to date, it shows what's in your version.\n• Tap and hold to see the card big. Hold the preview and it grows smoothly out of its place to fill the screen; let go and it shrinks back.\n• The post's text is now just your score and #OBD2Reader, for example \"My drive: 67/100 drive score. #OBD2Reader\".\n• Fixed: on the Digital cockpit style, the Connect button stayed dark and faded after you disconnected (it looked stuck pressed) until the app was fully closed and reopened. It now goes straight back to its bright blue-to-teal look.\n• Fixed: on the Digital cockpit style, the small level bars under the readouts were so faint they were nearly invisible. They now show at full strength, as does the Digital cockpit preview in the Style picker."};
+(() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
+  btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
+  row.onclick = () => {
+    const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    overlay(`<h3>What's new since ${CHANGES.version}</h3><p class="msg" style="margin-top:8px">You're on the latest version (${CHANGES.version}). Here's what's in it:</p>
+      <h4 style="margin:14px 0 4px">${CHANGES.version}  ·  ${CHANGES.date}</h4><p class="msg" style="white-space:pre-line;color:var(--fg)">${esc(CHANGES.text)}</p>
+      <div class="btns"><button id="chgClose">Close</button></div>`, { sheet: true });
+    $("chgClose").onclick = closeOverlay;
+  }; })();
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);
