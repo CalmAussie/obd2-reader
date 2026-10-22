@@ -21,17 +21,20 @@ jobs:
   install:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
+    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
         api: [29, 33, 35, 36, 37]
         include:
           # Android 17's image is named "android-37.0", and its x86_64 image uses 16 KB memory pages.
+          # Experimental: on GitHub's servers the Android 17 emulator's display crashes before any
+          # app can open (tried SwiftShader, ANGLE and guest graphics, 16 KB and Play Store images),
+          # so this job runs but doesn't fail a release. Tested on a real Android 17 phone instead.
           - api: 37
             level: "37.0"
             target: google_apis_ps16k
-            # Android 17 draws through ANGLE; the older SwiftShader mode crashes its display.
-            gpu: swangle_indirect
+            experimental: true
     steps:
       - uses: actions/checkout@v5
       - name: Download the published APK, as a user would
