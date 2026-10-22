@@ -21,6 +21,7 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -2148,6 +2149,67 @@ class MainActivity : AppCompatActivity() {
         // Swiped away or closed for good (not just minimised or rotated): stop the app's work.
         if (isFinishing && !isChangingConfigurations) com.obdreader.app.session.AppClose.closed(applicationContext)
         super.onDestroy()
+    }
+
+    // ---------- Swiping between tabs ----------
+
+    private val tabOrder = listOf(R.id.nav_dashboard, R.id.nav_graphs, R.id.nav_diagnostics)
+    private var swipeDownX = 0f
+    private var swipeDownY = 0f
+    private var swipeDownTime = 0L
+    private var swipeTracking = false
+    private var swiping = false
+
+    /**
+     * A sideways swipe across the screen moves to the next tab (right to left) or the previous one
+     * (left to right). A tap, a vertical scroll or a short sideways nudge does nothing, so buttons
+     * and scrolling work as before. Once a swipe is clearly sideways, the touch is taken away from
+     * whatever is under the finger, so a button under it isn't pressed.
+     */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                swipeDownX = ev.rawX; swipeDownY = ev.rawY; swipeDownTime = ev.eventTime
+                swipeTracking = ::bottomNav.isInitialized; swiping = false
+            }
+            MotionEvent.ACTION_POINTER_DOWN -> { swipeTracking = false; swiping = false }
+            MotionEvent.ACTION_MOVE -> if (swipeTracking && !swiping) {
+                val dx = ev.rawX - swipeDownX; val dy = ev.rawY - swipeDownY
+                when {
+                    kotlin.math.abs(dy) > dp(28f) && kotlin.math.abs(dy) > kotlin.math.abs(dx) -> swipeTracking = false
+                    kotlin.math.abs(dx) > dp(40f) && kotlin.math.abs(dx) > 2.5f * kotlin.math.abs(dy) -> {
+                        swiping = true
+                        val cancel = MotionEvent.obtain(ev).apply { action = MotionEvent.ACTION_CANCEL }
+                        super.dispatchTouchEvent(cancel); cancel.recycle()
+                    }
+                }
+            }
+            MotionEvent.ACTION_UP -> if (swiping) {
+                swiping = false; swipeTracking = false
+                val dx = ev.rawX - swipeDownX; val dy = ev.rawY - swipeDownY
+                val width = resources.displayMetrics.widthPixels
+                val quick = ev.eventTime - swipeDownTime < 350 && kotlin.math.abs(dx) > width * 0.25f
+                if ((kotlin.math.abs(dx) > width * 0.4f || quick) && kotlin.math.abs(dx) > 2f * kotlin.math.abs(dy)) {
+                    switchTabBySwipe(if (dx < 0) 1 else -1)
+                }
+                return true
+            }
+            MotionEvent.ACTION_CANCEL -> { swiping = false; swipeTracking = false }
+        }
+        if (swiping) return true
+        return super.dispatchTouchEvent(ev)
+    }
+
+    /** Moves [step] tabs along (1 = next, -1 = previous), sliding the new tab in from that side. */
+    private fun switchTabBySwipe(step: Int) {
+        val i = tabOrder.indexOf(bottomNav.selectedItemId)
+        val next = tabOrder.getOrNull(i + step) ?: return
+        android.util.Log.i("OBD2Swipe", "swiped to tab ${i + step}")
+        bottomNav.selectedItemId = next
+        val page = when (next) { R.id.nav_graphs -> pageGraphs; R.id.nav_diagnostics -> pageDiagnostics; else -> pageDashboard }
+        page.translationX = step * dp(56f); page.alpha = 0.4f
+        page.animate().translationX(0f).alpha(1f).setDuration(200)
+            .setInterpolator(android.view.animation.DecelerateInterpolator()).start()
     }
 
     override fun onResume() {
