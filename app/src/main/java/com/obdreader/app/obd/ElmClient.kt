@@ -133,8 +133,8 @@ class ElmClient(
         isCan = ElmParser.isCanProtocol(code)
         val described = ObdProtocols.byCode(code)?.name ?: command("ATDP").firstOrNull().orEmpty()
         return SessionInfo(
-            // Short enough for one line on a small phone: "ELM327 v1.5 · CAN 11-bit, 500 kbaud".
-            summary = listOf(version, shortProtocol(described)).filter { it.isNotBlank() }.joinToString(" · "),
+            // The same protocol name the Diagnostics tab shows: "ELM327 v1.5 · ISO 15765-4 CAN (11-bit, 500 kbaud)".
+            summary = listOf(version, described.trim()).filter { it.isNotBlank() }.joinToString(" · "),
             protocolCode = ObdProtocols.byCode(code)?.code,
         )
     }

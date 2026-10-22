@@ -353,6 +353,7 @@ class MainActivity : AppCompatActivity() {
         // Once a day, a quiet look at GitHub for a newer release.
         lifecycleScope.launch { kotlinx.coroutines.delay(4000); checkForUpdate(manual = false) }
         findViewById<View>(R.id.themeButton).setOnClickListener { showThemePicker() }
+        findViewById<android.widget.TextClock>(R.id.dashClock).typeface = uiTypeface(500)
         findViewById<View>(R.id.logShare).setOnClickListener {
             Exports.share(this, Exports.adapterLog(this, ObdSession.fullLog(), ObdSession.state.value), "text/plain", "OBD2 Reader adapter log")
         }
@@ -1989,6 +1990,10 @@ class MainActivity : AppCompatActivity() {
         if (s.isConnected) {
             protocolText.setIfChanged("Protocol: " + (ObdProtocols.byCode(s.protocolCode)?.name ?: s.summary.orEmpty()))
         }
+        if (s.isConnected != lastProtocolConnected || s.protocolCode != lastProtocolCode) {
+            lastProtocolConnected = s.isConnected; lastProtocolCode = s.protocolCode
+            updateProtocolSetting()
+        }
         if (s.vinChecked && !lastVinChecked) {
             showVin(s.vin)
             lastVinChecked = true
@@ -2697,9 +2702,19 @@ class MainActivity : AppCompatActivity() {
 
     // ---------- Protocol setting ----------
 
+    private var lastProtocolConnected = false
+    private var lastProtocolCode: String? = null
+
+    /** The protocol setting, and while connected on Automatic, the protocol it found: one name everywhere. */
     private fun updateProtocolSetting() {
         val chosen = prefs.getString(PREF_PROTOCOL, ObdProtocols.AUTO)
-        protocolSetting.text = ObdProtocols.byCode(chosen)?.name ?: getString(R.string.protocol_auto)
+        val forced = ObdProtocols.byCode(chosen)
+        val inUse = ObdSession.state.value.takeIf { it.isConnected }?.protocolCode?.let { ObdProtocols.byCode(it) }
+        protocolSetting.text = when {
+            forced != null -> forced.name
+            inUse != null -> getString(R.string.protocol_auto_using, inUse.name)
+            else -> getString(R.string.protocol_auto)
+        }
     }
 
     private fun showProtocolPicker() {

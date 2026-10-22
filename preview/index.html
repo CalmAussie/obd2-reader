@@ -605,6 +605,11 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 /* The Engine box is a dropdown (with its arrow) when the catalogue has engines for the car, like Manufacturer and Year. */
 .ofield input.dd { background-image: linear-gradient(45deg, transparent 50%, var(--fg-2) 50%), linear-gradient(135deg, var(--fg-2) 50%, transparent 50%); background-position: calc(100% - 22px) 26px, calc(100% - 16px) 26px; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 40px; }
 .upd-check { display: inline-block; margin-top: 8px; padding: 8px 14px; border: 1px solid var(--outline, rgba(255,255,255,.2)); border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--accent, #7FA6FF); cursor: pointer; }
+
+/* The time, just left of the style button (mirrors the TextClock in activity_main.xml). */
+.topbar { display: flex; align-items: center; }
+.topbar .wordmark { flex: 1; }
+.dash-clock { color: var(--fg-2); font-size: 17px; font-weight: 500; font-variant-numeric: tabular-nums; margin-right: 4px; white-space: nowrap; }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -623,7 +628,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
   <div class="scroll" id="pageDash">
     <div class="livery-clip" aria-hidden="true"><div class="livery"><i></i><i></i><i></i></div></div>
     <div class="content">
-      <div class="topbar"><div class="wordmark xb">OBD2 Reader</div><button class="icon-btn" id="themeBtn" aria-label="Livery"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,3c-4.97,0 -9,4.03 -9,9s4.03,9 9,9c0.83,0 1.5,-0.67 1.5,-1.5 0,-0.39 -0.15,-0.74 -0.39,-1.01 -0.23,-0.26 -0.38,-0.61 -0.38,-0.99 0,-0.83 0.67,-1.5 1.5,-1.5L16,16c2.76,0 5,-2.24 5,-5 0,-4.42 -4.03,-8 -9,-8zM6.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S5.67,9 6.5,9 8,9.67 8,10.5 7.33,12 6.5,12zM9.5,8C8.67,8 8,7.33 8,6.5S8.67,5 9.5,5s1.5,0.67 1.5,1.5S10.33,8 9.5,8zM14.5,8c-0.83,0 -1.5,-0.67 -1.5,-1.5S13.67,5 14.5,5s1.5,0.67 1.5,1.5S15.33,8 14.5,8zM17.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S16.67,9 17.5,9s1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/></svg></button></div>
+      <div class="topbar"><div class="wordmark xb">OBD2 Reader</div><span class="dash-clock" id="dashClock" aria-label="Time"></span><button class="icon-btn" id="themeBtn" aria-label="Livery"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,3c-4.97,0 -9,4.03 -9,9s4.03,9 9,9c0.83,0 1.5,-0.67 1.5,-1.5 0,-0.39 -0.15,-0.74 -0.39,-1.01 -0.23,-0.26 -0.38,-0.61 -0.38,-0.99 0,-0.83 0.67,-1.5 1.5,-1.5L16,16c2.76,0 5,-2.24 5,-5 0,-4.42 -4.03,-8 -9,-8zM6.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S5.67,9 6.5,9 8,9.67 8,10.5 7.33,12 6.5,12zM9.5,8C8.67,8 8,7.33 8,6.5S8.67,5 9.5,5s1.5,0.67 1.5,1.5S10.33,8 9.5,8zM14.5,8c-0.83,0 -1.5,-0.67 -1.5,-1.5S13.67,5 14.5,5s1.5,0.67 1.5,1.5S15.33,8 14.5,8zM17.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S16.67,9 17.5,9s1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/></svg></button></div>
       <div class="lay-livery">
       <div class="roundel-wrap"><svg id="rpmGauge" viewBox="0 0 240 240" role="img" aria-label="Engine speed"></svg></div>
       <div class="lights" id="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
@@ -725,7 +730,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
         </button>
         <button class="setting" id="updatesRow">
           <div class="r"><span>App updates</span><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
-          <div class="h" id="updatesSub">Version 1.13.1 · checks for new versions once a day</div>
+          <div class="h" id="updatesSub">Version 1.13.3 · checks for new versions once a day</div>
           <span class="upd-check" id="updatesCheck" role="button" tabindex="0">Check for updates</span>
         </button>
       </div>
@@ -1412,9 +1417,10 @@ async function startSession(name, onConnected, failure) {
   }
   car.start = performance.now(); car.cleared = false;
   state = "connected"; updateButtons();
-  setStatus("connected", `Connected to ${name}`, "ELM327 v1.5, CAN 500 kbaud");
+  setStatus("connected", `Connected to ${name}`, "ELM327 v1.5 · ISO 15765-4 CAN (11-bit, 500 kbaud)");
   ignition();
   $("protocol").textContent = "Protocol: ISO 15765-4 CAN (11-bit, 500 kbaud)";
+  if (!protoName(protocolChoice)) $("protocolSetting").textContent = "Automatic · ISO 15765-4 CAN (11-bit, 500 kbaud)";
   log("> 0902"); log("< " + VIN_FRAMES); showVin(demoVin());
   if (onConnected) onConnected();
   let cycle = 0;
@@ -1438,7 +1444,7 @@ async function startSession(name, onConnected, failure) {
 function disconnect() {
   session++; clearInterval(pollTimer); state = "idle"; updateButtons(); for (const k in live) delete live[k]; sharedCodes = null;
   setStatus("idle", "Not connected", "Plug your adapter into the car and turn the ignition on, or try demo mode.");
-  Object.values(tiles).forEach(f => f(null)); rpmGauge.set(null); speedGauge.set(null); updateTells();
+  Object.values(tiles).forEach(f => f(null)); rpmGauge.set(null); speedGauge.set(null); updateTells(); updateProtocolSetting();
 }
 
 /* Overlays inside the phone */
@@ -1833,7 +1839,7 @@ $("ignBtn").onclick = async () => {
     log("> 0100"); log("< 4100BE3FA813");
     await wait(900); if (id !== session) return;
     ignOff = false; state = "connected"; updateButtons();
-    setStatus("connected", "Connected to Demo vehicle", "ELM327 v1.5, CAN 500 kbaud");
+    setStatus("connected", "Connected to Demo vehicle", "ELM327 v1.5 · ISO 15765-4 CAN (11-bit, 500 kbaud)");
     ignition();
   }
   renderIgn();
@@ -2790,7 +2796,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.13.1", "date": "22 October 2026", "text": "• Your location, spelled out. A new Help → Your location topic, the Save the route too? question and the README now say plainly that your location is never sent to the developer or anyone else: it's only stored on your phone, in the CSV file of a drive you record with its route, and only used to draw that route's outline on your share card.\n• Share preview in the same window. Share as a picture now shows the card straight away, with Story (9:16) and Square (1:1) buttons to switch between the two shapes, and Share and Cancel underneath. No second window.\n• What's new since your version. Diagnostics → App updates now has a Check for updates button. Tap the rest of the row to see the changelog for just the versions released after the one you have, with a button to get the newest. If you're up to date, it shows what's in your version.\n• Tap and hold to see the card big. Hold the preview and it grows smoothly out of its place to fill the screen; let go and it shrinks back.\n• The post's text is now just your score and #OBD2Reader, for example \"My drive: 67/100 drive score. #OBD2Reader\".\n• Fixed: on the Digital cockpit style, the Connect button stayed dark and faded after you disconnected (it looked stuck pressed) until the app was fully closed and reopened. It now goes straight back to its bright blue-to-teal look.\n• Fixed: on the Digital cockpit style, the small level bars under the readouts were so faint they were nearly invisible. They now show at full strength, as does the Digital cockpit preview in the Style picker."};
+const CHANGES = {"version": "1.13.3", "date": "22 October 2026", "text": "• A clock on the Dashboard, just left of the style button. It follows your phone's 12 or 24-hour setting.\n• Fixed: the protocol was worded differently on the Dashboard (\"CAN 11-bit, 500 kbaud\") and the Diagnostics tab (\"ISO 15765-4 CAN (11-bit, 500 kbaud)\"), so the same protocol looked like two different ones. Both now use the full standard name. The Protocol setting on Diagnostics also says which protocol Automatic found while you're connected, for example \"Automatic · ISO 15765-4 CAN (11-bit, 500 kbaud)\", instead of just \"Automatic\"."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -2800,6 +2806,12 @@ const CHANGES = {"version": "1.13.1", "date": "22 October 2026", "text": "• Yo
       <div class="btns"><button id="chgClose">Close</button></div>`, { sheet: true });
     $("chgClose").onclick = closeOverlay;
   }; })();
+
+/* Dashboard clock: the phone's time, 12 or 24-hour as the phone is set. */
+(() => { const c = document.getElementById("dashClock"); if (!c) return;
+  // Same format as the phone's status bar above it, as on a real phone.
+  const tick = () => { const d = new Date(); c.textContent = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); };
+  tick(); setInterval(tick, 1000); })();
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);
