@@ -261,6 +261,34 @@ class MainActivity : AppCompatActivity() {
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
+    /** Android 9 and older: the user picks where a saved file goes. */
+    private var pendingSave: java.io.File? = null
+    private val saveDocumentLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+            val file = pendingSave; pendingSave = null
+            if (uri == null || file == null) return@registerForActivityResult
+            val ok = try { contentResolver.openOutputStream(uri)?.use { out -> file.inputStream().use { it.copyTo(out) } } != null } catch (e: Exception) { false }
+            toast(if (ok) getString(R.string.file_saved_picked) else getString(R.string.file_save_failed))
+        }
+
+    /** A text file the app made (code report, adapter log): save it to the phone, or share it. */
+    private fun offerFile(file: java.io.File, subject: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(subject.removePrefix("OBD2 Reader ").replaceFirstChar { it.uppercase() })
+            .setItems(arrayOf(getString(R.string.file_save), getString(R.string.share))) { _, i ->
+                if (i == 1) { Exports.share(this, file, "text/plain", subject); return@setItems }
+                if (Exports.saveToDownloads(this, file, "text/plain")) {
+                    android.util.Log.i("OBD2Save", "saved ${file.name} to Downloads")
+                    toast(getString(R.string.file_saved, file.name))
+                } else {
+                    pendingSave = file
+                    saveDocumentLauncher.launch(file.name)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private val enableBluetoothLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             val action = afterBluetoothOn
@@ -358,11 +386,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.themeButton).setOnClickListener { showThemePicker() }
         findViewById<android.widget.TextClock>(R.id.dashClock).typeface = uiTypeface(500)
         findViewById<View>(R.id.logShare).setOnClickListener {
-            Exports.share(this, Exports.adapterLog(this, ObdSession.fullLog(), ObdSession.state.value), "text/plain", "OBD2 Reader adapter log")
+            offerFile(Exports.adapterLog(this, ObdSession.fullLog(), ObdSession.state.value), "OBD2 Reader adapter log")
         }
         shareReportBtn = findViewById(R.id.shareReportButton)
         shareReportBtn.setOnClickListener {
-            Exports.share(this, Exports.codeReport(this, ObdSession.state.value, savedCar()?.label), "text/plain", "OBD2 Reader trouble code report")
+            offerFile(Exports.codeReport(this, ObdSession.state.value, savedCar()?.label), "OBD2 Reader trouble code report")
         }
         findViewById<MaterialSwitch>(R.id.reconnectSwitch).apply {
             isChecked = AppPrefs.autoReconnect(prefs)
@@ -2063,10 +2091,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showVin(vin: String?) {
+        val checked = vin == null || vin.length < 17 || VinDecoder.isValid(vin)
         vinText.text = vin ?: "Not reported"
         val info = vin?.let { VinDecoder.decode(it) }
         showVinMismatch(info)
         vehicleText.text = when {
+            !checked -> "This VIN failed its check digit, so the car may have sent it garbled. Compare it with the VIN plate; the make isn't taken from it."
             info?.make != null && info.modelYear != null -> "${info.make}, ${info.modelYear} model year"
             info?.make != null -> info.make
             vin != null -> "Make not recognised from VIN"

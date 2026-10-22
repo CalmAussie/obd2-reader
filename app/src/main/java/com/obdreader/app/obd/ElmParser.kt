@@ -140,20 +140,51 @@ object ElmParser {
 
     /** Parses a mode 09 PID 02 reply into a 17-character VIN. */
     fun parseVin(lines: List<String>): String? {
-        val sb = StringBuilder()
-        for (p in payloads(lines)) {
-            val data = dataAfter(p, "4902") ?: continue
-            if (data.length >= 2) sb.append(data.substring(2)) // skip message-count / sequence byte
+        val candidates = vinMessages(lines).map { vinChars(it) }.filter { it.isNotEmpty() }
+        // Prefer a full VIN that passes its check digit, then any full VIN, then whatever came back.
+        return candidates.firstOrNull { it.length == 17 && VinDecoder.isValid(it) }
+            ?: candidates.firstOrNull { it.length == 17 }
+            ?: candidates.maxByOrNull { it.length }
+    }
+
+    /** VIN characters only. I, O and Q are never used in a VIN, so they mark padding or noise. */
+    private fun vinChars(bytes: IntArray): String {
+        val s = bytes.map { Char(it) }.filter { (it in 'A'..'Z' || it in '0'..'9') && it !in "IOQ" }.joinToString("")
+        return if (s.length > 17) s.takeLast(17) else s
+    }
+
+    /**
+     * The VIN bytes from each module that answered 0902. CAN replies come as numbered frames
+     * ("0:", "1:", …); a new "0:" means a second module is answering, so it starts a new message.
+     * Older protocols send one line per part with a part number; the parts are put back in order
+     * and a repeated part number means a second module.
+     */
+    private fun vinMessages(lines: List<String>): List<IntArray> {
+        val compact = lines.map { it.replace(" ", "").uppercase(Locale.US) }
+        if (compact.any { FRAME.containsMatchIn(it) }) {
+            val messages = mutableListOf<StringBuilder>()
+            for (line in compact) {
+                if (!FRAME.containsMatchIn(line)) continue
+                val hex = hexOnly(line) ?: continue
+                if (line[0] == '0' || messages.isEmpty()) messages.add(StringBuilder())
+                messages.last().append(hex)
+            }
+            return messages.mapNotNull { m -> dataAfter(m.toString(), "4902")?.let { toBytes(it).drop(1).toIntArray() } }
         }
-        val chars = toBytes(sb.toString())
-            .map { Char(it) }
-            .filter { it in 'A'..'Z' || it in '0'..'9' }
-            .joinToString("")
-        return when {
-            chars.length >= 17 -> chars.takeLast(17)
-            chars.isNotEmpty() -> chars
-            else -> null
+        val parts = compact.mapNotNull { hexOnly(it) }.mapNotNull { p ->
+            val data = dataAfter(p, "4902") ?: return@mapNotNull null
+            val b = toBytes(data)
+            if (b.isEmpty()) null else b[0] to b.drop(1)
         }
+        if (parts.isEmpty()) return emptyList()
+        // Single-line replies (one line holding the whole VIN) have no part numbers to sort by.
+        if (parts.size == 1) return listOf(parts[0].second.toIntArray())
+        val modules = mutableListOf<MutableMap<Int, List<Int>>>()
+        for ((seq, bytes) in parts) {
+            val m = modules.firstOrNull { seq !in it } ?: mutableMapOf<Int, List<Int>>().also { modules.add(it) }
+            m[seq] = bytes
+        }
+        return modules.map { m -> m.toSortedMap().values.flatten().toIntArray() }
     }
 
     /** ATDPN returns e.g. "A6" or "6"; protocols 6-9 and A-C are CAN. */

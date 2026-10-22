@@ -378,6 +378,15 @@ if grep -q "Performance timers" "$OUT/ui-perf.xml" || grep -q "Performance timer
 adb shell input keyevent KEYCODE_BACK; sleep 2
 # Codes are now also read on their own shortly after connecting, so they may already be listed.
 tap_tab Diagnostics && { tap_text "Read codes" || grep -q "P0133" "$OUT/ui.xml"; } && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
+# Code report: saved straight to Downloads › OBD2 Reader (the other choice is Share).
+SAVED=0
+for i in 1 2 3 4; do tap_text "Save or share code report" > /dev/null && break; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
+if tap_text "Save to phone (Downloads)" > /dev/null; then
+  sleep 2; adb logcat -d -s OBD2Save:I 2>/dev/null | grep -q "saved .* to Downloads" && SAVED=1
+  adb shell ls "/sdcard/Download/OBD2 Reader/" 2>/dev/null | grep -q "." && SAVED=1
+fi
+[ $SAVED = 1 ] && log "code report: saved to Downloads" || { log "code report: FAILED (not saved)"; FAIL=1; }
+scroll_top
 # App updates: the row is on Diagnostics, near the bottom. Tapping it asks GitHub for the latest release.
 for i in 1 2 3 4 5 6 7 8; do
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-updates.xml"

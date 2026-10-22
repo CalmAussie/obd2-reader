@@ -11,7 +11,7 @@ import kotlin.math.sin
  */
 class DemoTransport(
     /** The VIN the demo car reports: made from the user's chosen car, so the demo matches it. */
-    private val vin: String = "1FAHP3F20CL123456",
+    private val vin: String = "1FAHP3F27CL123456",
 ) : ObdTransport {
     override val name = "Demo vehicle"
 
