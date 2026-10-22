@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.5 (23 October 2026)
+- **Swipe between tabs.** Swipe sideways across the screen to move to the next tab (right to left) or back to the previous one (left to right): Dashboard, Graphs, Diagnostics. Taps, scrolling up and down, and short sideways nudges work as before.
+
 ## 1.13.4 (22 October 2026)
 - **The phone doesn't lock while the app is open,** whether or not you're connected or recording. Minimise it and your phone locks as normal.
 - **Minimised, it keeps going.** With the app in the background (Home, or Back from the Dashboard), the connection stays up and a drive you're recording keeps recording, as before. Back from the Dashboard now minimises the app on every Android version, instead of closing it on Android 10 and 11.

@@ -572,6 +572,13 @@ fi
 adb shell dumpsys notification > "$OUT/notifications.txt" 2>/dev/null
 grep -q "mId='alerts'" "$OUT/notifications.txt" && log "alerts channel: created" || { log "alerts channel: FAILED (missing)"; FAIL=1; }
 alive && log "still running after tour: OK" || log "still running after tour: FAILED"
+# Swiping sideways across the screen moves between tabs: Dashboard → Graphs, then back.
+tap_tab Dashboard > /dev/null; sleep 2; adb logcat -c
+adb shell input swipe 980 1300 100 1320 250; sleep 2
+shot 14-swiped-to-graphs
+adb shell input swipe 100 1300 980 1320 250; sleep 2
+SW=$(adb logcat -d -s OBD2Swipe:I 2>/dev/null | grep -o "swiped to tab [0-9]" | tr '\n' ' ')
+case "$SW" in *"tab 1"*"tab 0"*) log "swipe between tabs: OK" ;; *) log "swipe between tabs: FAILED (${SW:-no swipe seen})"; FAIL=1 ;; esac
 # Open on screen, the phone doesn't lock, connected or not.
 adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
 if adb shell dumpsys window windows 2>/dev/null | grep -A12 "Window{.*$PKG/$PKG.MainActivity" | grep -q "KEEP_SCREEN_ON"; then log "screen stays on while open: OK"; else log "screen stays on while open: FAILED"; FAIL=1; fi
