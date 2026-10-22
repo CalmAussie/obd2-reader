@@ -79,6 +79,12 @@ class ObdConnectionService : Service() {
         return START_NOT_STICKY
     }
 
+    /** The app was swiped away from Recents: stop, unless Android Auto is showing it. */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        AppClose.closed(applicationContext)
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
         scope.cancel()
         super.onDestroy()

@@ -161,6 +161,7 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 4. Reconnect to your car. OBD2 Reader appears in Android Auto's app list.
 
 ## Good to know
+- **Open, minimised and closed:** while the app is open on screen, your phone doesn't lock. Minimised (Home, or Back from the Dashboard), it keeps running: the connection stays up and a drive you're recording keeps recording. Swipe it away from Recents to close it: it saves any recording, disconnects and stops, unless Android Auto is showing it on the car screen.
 - **Not every reading on every car:** cars only answer the readings they support, so some readings say **N/A**. **Diagnostics → Scan what your car reports** shows what your car supports.
 - **Finding adapters on Android 11 and older** needs Location turned on while searching (an Android rule).
 

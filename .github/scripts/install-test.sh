@@ -534,6 +534,27 @@ fi
 adb shell dumpsys notification > "$OUT/notifications.txt" 2>/dev/null
 grep -q "mId='alerts'" "$OUT/notifications.txt" && log "alerts channel: created" || { log "alerts channel: FAILED (missing)"; FAIL=1; }
 alive && log "still running after tour: OK" || log "still running after tour: FAILED"
+# Open on screen, the phone doesn't lock, connected or not.
+adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
+if adb shell dumpsys window windows 2>/dev/null | grep -A12 "Window{.*$PKG/$PKG.MainActivity" | grep -q "KEEP_SCREEN_ON"; then log "screen stays on while open: OK"; else log "screen stays on while open: FAILED"; FAIL=1; fi
+# Minimised (Home), the app keeps running in the background.
+tap_text "Demo car" > /dev/null || true; sleep 6
+adb shell input keyevent KEYCODE_HOME; sleep 15
+alive && log "minimised: still running" || { log "minimised: FAILED (app stopped)"; FAIL=1; }
+# Swiped away from Recents: the app stops its work.
+adb logcat -c
+adb shell input keyevent KEYCODE_APP_SWITCH; sleep 3
+shot 12-recents
+adb shell input swipe 540 1300 540 150 250; sleep 4
+shot 12b-recents-after
+if adb shell dumpsys activity recents 2>/dev/null | grep -q "A=.*$PKG\|realActivity=$PKG"; then
+  log "closed from Recents: not checked (couldn't swipe the app away on this emulator)"
+elif adb logcat -d -s OBD2Close:I 2>/dev/null | grep -q "closed: stopping"; then
+  log "closed from Recents: stopped"
+else
+  log "closed from Recents: FAILED (app didn't stop its work)"; FAIL=1
+fi
+adb shell input keyevent KEYCODE_HOME
 adb logcat -d > "$OUT/logcat.txt"
 if grep -q "FATAL EXCEPTION" "$OUT/logcat.txt" && grep -A3 "FATAL EXCEPTION" "$OUT/logcat.txt" | grep -q "$PKG"; then
   log "crashes: FOUND"; grep -A20 "FATAL EXCEPTION" "$OUT/logcat.txt" > "$OUT/crash.txt"; exit 1
