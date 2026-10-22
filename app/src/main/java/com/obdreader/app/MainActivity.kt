@@ -2100,6 +2100,27 @@ class MainActivity : AppCompatActivity() {
             ""
         }
 
+    override fun onResume() {
+        super.onResume()
+        Updater.showPrompt = { confirm -> showInstallPrompt(confirm) }
+        Updater.waitingPrompt?.let { Updater.waitingPrompt = null; showInstallPrompt(it) }
+    }
+
+    override fun onPause() {
+        Updater.showPrompt = null
+        super.onPause()
+    }
+
+    private fun showInstallPrompt(confirm: Intent) {
+        try {
+            androidx.core.app.NotificationManagerCompat.from(this).cancel(4101)
+            startActivity(confirm)
+        } catch (e: Exception) {
+            android.util.Log.i("OBD2Updater", "couldn't open the install prompt: ${e.message}")
+            toast("The update didn't install: ${e.message ?: "Android didn't open the installer"}")
+        }
+    }
+
     // ---------- App updates (from the GitHub releases) ----------
 
     private var availableUpdate: com.obdreader.app.obd.UpdateCheck.Release? = null
@@ -2264,11 +2285,18 @@ class MainActivity : AppCompatActivity() {
             .show()
         lifecycleScope.launch {
             val file = try {
-                Updater.download(this@MainActivity, release) { f -> bar.isIndeterminate = false; bar.setProgressCompat((f * 100).toInt(), true) }
-            } catch (e: Exception) { null }
+                Updater.download(this@MainActivity, release) { f ->
+                    if (bar.isIndeterminate) bar.isIndeterminate = false
+                    bar.setProgressCompat((f * 100).toInt(), false)
+                }
+            } catch (e: Exception) { android.util.Log.i("OBD2Updater", "download failed: ${e.message}"); null }
             dialog.dismiss()
             if (file == null) { toast(getString(R.string.updates_download_failed)); return@launch }
-            try { Updater.install(this@MainActivity, file) } catch (e: Exception) { toast("The update didn't install: ${e.message ?: "unknown error"}") }
+            android.util.Log.i("OBD2Updater", "downloaded ${file.length()} bytes")
+            try { Updater.install(this@MainActivity, file, release.build) } catch (e: Exception) {
+                android.util.Log.i("OBD2Updater", "install failed: ${e.message}")
+                toast("The update didn't install: ${e.message ?: "unknown error"}")
+            }
         }
     }
 

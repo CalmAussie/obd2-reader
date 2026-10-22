@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.2 (22 October 2026)
+- Fixed: tapping **Update** downloaded the new version, but Android's **Install** prompt sometimes never appeared, so nothing was installed. The app now shows the prompt from its own screen; if you've switched away, a notification appears, and tapping it opens the prompt.
+- The download's progress bar now moves smoothly to the end instead of stalling partway, and the download is faster.
+- After an update installs, Android closes the app to replace it. A notification now says it's updated, and tapping it opens the app again.
+
 ## 1.13.1 (22 October 2026)
 - **Your location, spelled out.** A new **Help → Your location** topic, the **Save the route too?** question and the README now say plainly that your location is never sent to the developer or anyone else: it's only stored on your phone, in the CSV file of a drive you record with its route, and only used to draw that route's outline on your share card.
 - **Share preview in the same window.** **Share as a picture** now shows the card straight away, with **Story (9:16)** and **Square (1:1)** buttons to switch between the two shapes, and **Share** and **Cancel** underneath. No second window.
