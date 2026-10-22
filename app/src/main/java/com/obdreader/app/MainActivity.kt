@@ -1175,6 +1175,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderRecording(r: LogRecorder.Recording?) {
         recordBtn.isEnabled = r != null || ObdSession.state.value.isConnected
+        showRecordGroup(ObdSession.state.value.isConnected)
         recordBtn.text = getString(if (r == null) R.string.record_drive else R.string.stop_recording)
         recordBtn.kind = if (r == null) SkewButton.Kind.PRIMARY else SkewButton.Kind.DANGER
         recordStatus.text = if (r == null) getString(R.string.record_hint) else {
@@ -1183,13 +1184,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Record drive lives on the Dashboard, shown only while connected (or recording, so it can be stopped). */
+    private fun showRecordGroup(connected: Boolean) {
+        val show = connected || LogRecorder.active.value != null
+        val v = findViewById<View>(R.id.recordGroup)
+        val want = if (show) View.VISIBLE else View.GONE
+        if (v.visibility != want) v.visibility = want
+    }
+
     /** Lists recorded drives: tap one to share it, or delete it. */
     private fun showSavedDrives() {
         val files = LogRecorder.saved(this)
         if (files.isEmpty()) {
             MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.saved_drives)
-                .setMessage("No drives recorded yet. Connect, open Graphs and tap Record drive.")
+                .setMessage("No drives recorded yet. Connect, then tap Record drive on the Dashboard.")
                 .setPositiveButton("OK", null)
                 .show()
             return
@@ -1910,6 +1919,7 @@ class MainActivity : AppCompatActivity() {
             else -> getString(R.string.graphs_hint)
         })
         recordBtn.isEnabled = s.isConnected || LogRecorder.active.value != null
+        showRecordGroup(s.isConnected)
 
         if (s.phase != lastPhase) {
             renderScore()

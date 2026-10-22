@@ -5,6 +5,7 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 ## 1.13.4 (22 October 2026)
 - **The phone doesn't lock while the app is open,** whether or not you're connected or recording. Minimise it and your phone locks as normal.
 - **Minimised, it keeps going.** With the app in the background (Home, or Back from the Dashboard), the connection stays up and a drive you're recording keeps recording, as before. Back from the Dashboard now minimises the app on every Android version, instead of closing it on Android 10 and 11.
+- **Record drive is on the Dashboard now,** under the Connect button, and only appears once you're connected to the car (it stays while a drive is recording, so you can stop it). Recorded drives are still under **Graphs → Saved drives**, where you can share them or make a video overlay even when you're not connected.
 - **Closed, it stops.** Swipe the app away from Recents and it finishes and saves any recording, disconnects from the car and stops running in the background. If Android Auto is showing the app on the car screen, the connection carries on for the car screen.
 
 ## 1.13.3 (22 October 2026)

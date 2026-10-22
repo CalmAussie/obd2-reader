@@ -202,6 +202,8 @@ fi
 remember_tabs
 shot 1-opened
 alive && log "open: OK" || { log "open: FAILED (app not running)"; FAIL=1; }
+adb shell dumpsys activity top > "$OUT/views-start.txt" 2>/dev/null
+if grep "app:id/recordGroup" "$OUT/views-start.txt" | grep -q "{[0-9a-f]* G"; then log "record drive: hidden until connected"; else log "record drive: FAILED (shown before connecting)"; FAIL=1; fi
 # The daily update check runs a few seconds after opening. If an older build is being tested
 # and GitHub has a newer one, it offers the update: say Later so the tour can carry on.
 sleep 6
@@ -402,14 +404,15 @@ else
   log "updates: FAILED (row missing)"; FAIL=1
 fi
 tap_tab Graphs && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
-# Video overlay: record a short drive on Graphs, then make an overlay video from it.
+# Video overlay: record a short drive on the Dashboard (Record drive shows once connected), then make an overlay video from it.
+tap_tab Dashboard; sleep 2; scroll_top
 # Route: allow location up front (so the "save the route?" question is skipped) and feed the
 # emulator a moving GPS position while it records; the recording should then say "with route".
 adb shell pm grant $PKG android.permission.ACCESS_FINE_LOCATION 2>/dev/null
 adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION 2>/dev/null
 adb shell settings put secure location_mode 3 2>/dev/null
 adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
-XY=$(view_center_bottom recordButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY
+XY=$(view_center recordButton); [ -n "$XY" ] && adb shell input tap $XY && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
 ROUTE=0
 for i in $(seq 1 10); do
   adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1
@@ -423,7 +426,7 @@ for i in 1 2 3 4; do
 done
 adb shell dumpsys location > "$OUT/location.txt" 2>/dev/null
 [ $ROUTE = 0 ] && grep -i "gps" "$OUT/location.txt" | grep -q "$PKG" && ROUTE=1
-XY=$(view_center_bottom recordButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+scroll_top; XY=$(view_center recordButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8a-recorded
 # Debug builds: check the file itself has positions.
 F=$(adb shell run-as $PKG ls files/logs 2>/dev/null | tr -d '\r' | grep csv | tail -1)

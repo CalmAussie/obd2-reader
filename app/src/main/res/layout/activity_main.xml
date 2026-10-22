@@ -332,6 +332,30 @@
                         android:textColor="?attr/obdTextSecondary"
                         android:textSize="13sp" />
 
+                    <!-- Record drive: only while connected to the car (or while a recording is running, to stop it). -->
+                    <LinearLayout
+                        android:id="@+id/recordGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <com.obdreader.app.ui.SkewButton
+                            android:id="@+id/recordButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:layout_marginTop="14dp" />
+
+                        <TextView
+                            android:id="@+id/recordStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/record_hint"
+                            android:textColor="?attr/obdTextSecondary"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/chooseCarButton"
                         style="@style/Widget.Material3.Button.TextButton.Icon"
@@ -496,18 +520,11 @@
                     android:layout_marginTop="8dp"
                     android:orientation="vertical" />
 
-                <com.obdreader.app.ui.SkewButton
-                    android:id="@+id/recordButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="16dp" />
-
                 <TextView
-                    android:id="@+id/recordStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/record_hint"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/record_where"
                     android:textColor="?attr/obdTextSecondary"
                     android:textSize="13sp" />
 
