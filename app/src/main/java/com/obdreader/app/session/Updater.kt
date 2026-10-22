@@ -160,11 +160,18 @@ object Updater {
      */
     @Volatile var waitingPrompt: Intent? = null
     @Volatile var showPrompt: ((Intent) -> Unit)? = null
+    /** Samsung's Auto Blocker stops apps installing updates themselves, often without a word. */
+    val isSamsung: Boolean get() = Build.MANUFACTURER.equals("samsung", ignoreCase = true)
+
+    /** When Android last answered an install (a prompt, a result or a refusal), to spot silence. */
+    @Volatile var lastAnswerMs = 0L
+
     /** Why an update didn't install, waiting to be shown on the app's screen. */
     @Volatile var waitingProblem: String? = null
     @Volatile var showProblem: ((String) -> Unit)? = null
 
     internal fun problem(context: Context, why: String) {
+        lastAnswerMs = android.os.SystemClock.elapsedRealtime()
         android.util.Log.i("OBD2Updater", "problem: $why")
         val show = showProblem
         if (show != null) { android.os.Handler(android.os.Looper.getMainLooper()).post { show(why) }; return }
@@ -184,7 +191,7 @@ object Updater {
     /** Android's install result in plain words. */
     fun explain(status: Int, message: String?): String {
         val base = when (status) {
-            PackageInstaller.STATUS_FAILURE_BLOCKED -> "Android blocked the install. Google Play Protect, a work profile or a device setting can do this."
+            PackageInstaller.STATUS_FAILURE_BLOCKED -> if (isSamsung) "The phone blocked the install. On Samsung phones this is usually Auto Blocker." else "Android blocked the install. Google Play Protect, a work profile or a device setting can do this."
             PackageInstaller.STATUS_FAILURE_CONFLICT -> "Android couldn't replace the installed app."
             PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> "This version isn't compatible with this phone."
             PackageInstaller.STATUS_FAILURE_INVALID -> "The downloaded file wasn't a valid app. It may not have downloaded fully."
@@ -201,6 +208,7 @@ object Updater {
     }
 
     internal fun promptReady(context: Context, confirm: Intent) {
+        lastAnswerMs = android.os.SystemClock.elapsedRealtime()
         android.util.Log.i("OBD2Updater", "install prompt ready")
         val show = showPrompt
         if (show != null) {
@@ -270,8 +278,9 @@ class UpdateReceiver : BroadcastReceiver() {
                 val confirm = (if (Build.VERSION.SDK_INT >= 33) intent.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java) else intent.getParcelableExtra(Intent.EXTRA_INTENT)) ?: return
                 Updater.promptReady(context, confirm)
             }
-            PackageInstaller.STATUS_SUCCESS -> android.util.Log.i("OBD2Updater", "installed")
+            PackageInstaller.STATUS_SUCCESS -> { Updater.lastAnswerMs = android.os.SystemClock.elapsedRealtime(); android.util.Log.i("OBD2Updater", "installed") }
             PackageInstaller.STATUS_FAILURE_ABORTED -> {
+                Updater.lastAnswerMs = android.os.SystemClock.elapsedRealtime()
                 android.util.Log.i("OBD2Updater", "install cancelled")
                 AppPrefs.of(context).edit().remove(Updater.UPDATING_TO).apply()
             }
