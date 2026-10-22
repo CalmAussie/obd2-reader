@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.1 (22 October 2026)
+- Fixed: on the Digital cockpit style, the **Connect** button stayed dark and faded after you disconnected (it looked stuck pressed) until the app was fully closed and reopened. It now goes straight back to its bright blue-to-teal look.
+- Fixed: on the Digital cockpit style, the small level bars under the readouts were so faint they were nearly invisible. They now show at full strength, as does the Digital cockpit preview in the Style picker.
+
 ## 1.13.0 (22 October 2026)
 - **Updates from inside the app.** Once a day the app checks GitHub for a newer release, and **Diagnostics → App updates** checks straight away. When there's a new version, it shows what's new with **Update** and **Later**. **Update** downloads it with a progress bar and hands it to Android, which asks you to tap **Install**. On Android 12 and newer, later updates may install without asking once the app has installed its own update. Your settings, drives and recordings are kept.
 - The first time, Android asks you to allow OBD2 Reader to install apps; the app takes you to that switch.

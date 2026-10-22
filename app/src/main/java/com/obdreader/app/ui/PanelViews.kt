@@ -2,6 +2,7 @@ package com.obdreader.app.ui
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
@@ -284,7 +285,7 @@ class TowerRowView(
                 paint.color = track
                 canvas.drawRect(x, y, right, y + dp(3f), paint)
                 if (layout == DashLayout.COCKPIT || layout == DashLayout.CYBERPUNK) {
-                    paint.shader = LinearGradient(x, 0f, right, 0f, if (layout == DashLayout.CYBERPUNK) stripe2 else stripe, if (layout == DashLayout.CYBERPUNK) stripe else stripe2, Shader.TileMode.CLAMP)
+                    paint.color = Color.BLACK; paint.shader = LinearGradient(x, 0f, right, 0f, if (layout == DashLayout.CYBERPUNK) stripe2 else stripe, if (layout == DashLayout.CYBERPUNK) stripe else stripe2, Shader.TileMode.CLAMP)
                 } else {
                     paint.color = if (hot) danger else muted
                 }
@@ -395,7 +396,12 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
         paint.shader = null
         if (kind == Kind.PRIMARY) {
             paint.style = Paint.Style.FILL
-            if (layout == DashLayout.COCKPIT) paint.shader = LinearGradient(0f, 0f, w, 0f, s1, s2, Shader.TileMode.CLAMP) else paint.color = accent
+            if (layout == DashLayout.COCKPIT) {
+                // Opaque first: a gradient is drawn at the paint's own alpha, which the pressed
+                // shading or the outline style left low, so the button stayed faded.
+                paint.color = Color.BLACK
+                paint.shader = LinearGradient(0f, 0f, w, 0f, s1, s2, Shader.TileMode.CLAMP)
+            } else paint.color = accent
             canvas.drawPath(path, paint)
             paint.shader = null
             textPaint.color = onAccent

@@ -77,7 +77,7 @@ class ThemeSwatchView(context: Context, theme: AppThemes.AppTheme) : View(contex
                 paint.style = Paint.Style.STROKE; paint.strokeWidth = 3 * u; paint.strokeCap = Paint.Cap.ROUND
                 paint.color = Color.argb(30, 255, 255, 255)
                 canvas.drawArc(ring, 140f, 260f, false, paint)
-                paint.shader = LinearGradient(17 * u, 0f, 55 * u, 0f, s1, s2, Shader.TileMode.CLAMP)
+                paint.color = Color.BLACK; paint.shader = LinearGradient(17 * u, 0f, 55 * u, 0f, s1, s2, Shader.TileMode.CLAMP)
                 canvas.drawArc(ring, 140f, 160f, false, paint)
                 paint.shader = null; paint.style = Paint.Style.FILL; paint.strokeCap = Paint.Cap.BUTT
                 text.typeface = t.uiTypeface(300); text.textSize = 14 * u; text.color = fg

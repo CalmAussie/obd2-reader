@@ -182,12 +182,12 @@ class DriveCardRenderer(private val context: Context) {
                 fill.color = Channels.SPEED; c.drawRect(w / 2f + 8f, 190f, w - 72f, 196f, fill)
             }
             DashLayout.COCKPIT -> {
-                fill.shader = RadialGradient(w / 2f, h * 0.15f, h * 0.75f, intArrayOf(Color.parseColor("#13203F"), Color.parseColor("#070A12"), bg), floatArrayOf(0f, 0.6f, 1f), Shader.TileMode.CLAMP)
+                fill.color = Color.BLACK; fill.shader = RadialGradient(w / 2f, h * 0.15f, h * 0.75f, intArrayOf(Color.parseColor("#13203F"), Color.parseColor("#070A12"), bg), floatArrayOf(0f, 0.6f, 1f), Shader.TileMode.CLAMP)
                 c.drawRect(0f, 0f, w.toFloat(), h.toFloat(), fill)
                 fill.shader = null
             }
             DashLayout.CYBERPUNK -> {
-                fill.shader = RadialGradient(w / 2f, 0f, h * 0.7f, intArrayOf(Color.parseColor("#2A0A3A"), Color.parseColor("#0B0716"), bg), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
+                fill.color = Color.BLACK; fill.shader = RadialGradient(w / 2f, 0f, h * 0.7f, intArrayOf(Color.parseColor("#2A0A3A"), Color.parseColor("#0B0716"), bg), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
                 c.drawRect(0f, 0f, w.toFloat(), h.toFloat(), fill)
                 fill.shader = null
                 // Scanlines and a neon frame.
@@ -317,7 +317,7 @@ class DriveCardRenderer(private val context: Context) {
 
     private fun footer(c: Canvas, w: Int, h: Int) {
         if (layout == DashLayout.LIVERY || layout == DashLayout.CYBERPUNK) {
-            fill.shader = LinearGradient(0f, 0f, w.toFloat(), 0f, s1, s2, Shader.TileMode.CLAMP)
+            fill.color = Color.BLACK; fill.shader = LinearGradient(0f, 0f, w.toFloat(), 0f, s1, s2, Shader.TileMode.CLAMP)
             c.drawRect(0f, h - 14f, w.toFloat(), h.toFloat(), fill)
             fill.shader = null
         }

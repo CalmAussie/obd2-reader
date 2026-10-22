@@ -257,6 +257,41 @@ for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk" "Asphalt"; do
   shot "6-$SLUG-landscape"
   alive && log "style $STYLE: upright and sideways OK" || { log "style $STYLE: FAILED (app stopped)"; FAIL=1; }
   adb shell settings put system user_rotation 0; sleep 4
+  # Digital cockpit: after Disconnect, Connect must be drawn at full brightness again (it once
+  # kept the faded look of the pressed or outline style until the app was reopened).
+  if [ $PASS = normal ] && [ "$STYLE" = "Digital cockpit" ]; then
+    scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
+    tap_text "Done" > /dev/null || true; sleep 2
+    scroll_top; XY=$(view_center connectButton); shot "6b-$SLUG-after-disconnect"
+    # Left of centre, clear of the "Connect" label.
+    set -- $XY; PX=$(( ${1:-400} - 220 )); PY=${2:-0}
+    LUM=$(python3 - "$OUT/6b-$SLUG-after-disconnect.png" $PX $PY <<'PY'
+import sys, zlib, struct
+# A small PNG reader (no extra packages): returns the brightest channel at x, y.
+path, x, y = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+data = open(path, 'rb').read(); pos = 8; idat = b''; w = h = 0; ctype = 6
+while pos < len(data):
+    n, kind = struct.unpack('>I4s', data[pos:pos + 8]); body = data[pos + 8:pos + 8 + n]; pos += 12 + n
+    if kind == b'IHDR': w, h, depth, ctype = struct.unpack('>IIBB', body[:10])
+    elif kind == b'IDAT': idat += body
+bpp = 4 if ctype == 6 else 3; raw = zlib.decompress(idat); stride = w * bpp; prev = bytearray(stride); row = None
+for r in range(y + 1):
+    f = raw[r * (stride + 1)]; line = bytearray(raw[r * (stride + 1) + 1:(r + 1) * (stride + 1)])
+    for i in range(stride):
+        a = line[i - bpp] if i >= bpp else 0; b = prev[i]; c = prev[i - bpp] if i >= bpp else 0
+        if f == 1: line[i] = (line[i] + a) & 255
+        elif f == 2: line[i] = (line[i] + b) & 255
+        elif f == 3: line[i] = (line[i] + (a + b) // 2) & 255
+        elif f == 4:
+            p = a + b - c; pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
+            line[i] = (line[i] + (a if pa <= pb and pa <= pc else b if pb <= pc else c)) & 255
+    prev = line
+print(max(prev[x * bpp:x * bpp + 3]))
+PY
+)
+    if [ "${LUM:-0}" -ge 120 ]; then log "cockpit Connect after disconnect: bright ($LUM)"; else log "cockpit Connect after disconnect: FAILED (faded, $LUM)"; FAIL=1; fi
+    tap_text "Demo car" > /dev/null; sleep 6   # carry on connected, as the next style expects
+  fi
 done
 done
 adb shell wm density reset; adb shell settings put system font_scale 1.0; sleep 3
