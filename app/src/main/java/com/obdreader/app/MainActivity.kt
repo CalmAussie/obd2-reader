@@ -274,6 +274,9 @@ class MainActivity : AppCompatActivity() {
         setTheme(AppThemes.byId(prefs.getString(PREF_THEME, null)).style)
         AppPrefs.applyUnits(prefs)
         super.onCreate(savedInstanceState)
+        // While the app is open on screen, the phone doesn't lock, connected or not. Android drops
+        // this by itself when the app is minimised, so it never keeps the screen on in the background.
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         // Dark status-bar icons on the light theme, light icons on the dark ones.
         val lightTheme = themeBool(R.attr.obdIsLight)
@@ -406,8 +409,9 @@ class MainActivity : AppCompatActivity() {
                 if (pageDiagnostics.visibility == View.VISIBLE || pageGraphs.visibility == View.VISIBLE) {
                     bottomNav.selectedItemId = R.id.nav_dashboard
                 } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
+                    // Back from the Dashboard minimises the app (as Android 12 and newer do), so the
+                    // connection and any recording carry on. Only swiping it away closes it.
+                    moveTaskToBack(true)
                 }
             }
         })
@@ -1290,7 +1294,6 @@ class MainActivity : AppCompatActivity() {
             .setCancelable(false)
             .setNegativeButton("Cancel") { _, _ -> overlayJob?.cancel() }
             .show()
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val started = android.os.SystemClock.elapsedRealtime()
         overlayJob = lifecycleScope.launch {
             try {
@@ -1319,7 +1322,6 @@ class MainActivity : AppCompatActivity() {
                     .setPositiveButton(R.string.done, null)
                     .show()
             } finally {
-                if (!ObdSession.state.value.isConnected) window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
     }
@@ -1925,8 +1927,6 @@ class MainActivity : AppCompatActivity() {
             }
             // Lights out, then the rev ring sweeps: like a car's self-test when you turn the key.
             if (s.isConnected && (lastPhase == ObdSession.Phase.CONNECTING || lastPhase == ObdSession.Phase.WAITING)) roundel.sweep()
-            if (s.isConnected) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             if (!s.isConnected && s.phase != ObdSession.Phase.WAITING && s.phase != ObdSession.Phase.CONNECTING) {
                 // Disconnected: blank the gauges so old readings aren't mistaken for live ones.
                 // Codes and the VIN stay on screen until the next connection.
@@ -2104,6 +2104,12 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             ""
         }
+
+    override fun onDestroy() {
+        // Swiped away or closed for good (not just minimised or rotated): stop the app's work.
+        if (isFinishing && !isChangingConfigurations) com.obdreader.app.session.AppClose.closed(applicationContext)
+        super.onDestroy()
+    }
 
     override fun onResume() {
         super.onResume()

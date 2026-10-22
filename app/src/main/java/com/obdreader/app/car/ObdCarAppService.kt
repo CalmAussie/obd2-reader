@@ -24,6 +24,14 @@ class ObdCarAppService : CarAppService() {
         }
 
     override fun onCreateSession(): Session = object : Session() {
+        init {
+            // While the car screen is open, closing the phone app doesn't stop the connection.
+            lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+                override fun onCreate(owner: androidx.lifecycle.LifecycleOwner) { com.obdreader.app.session.AppClose.carScreenOpen = true }
+                override fun onDestroy(owner: androidx.lifecycle.LifecycleOwner) { com.obdreader.app.session.AppClose.carScreenOpen = false }
+            })
+        }
+
         override fun onCreateScreen(intent: Intent): Screen {
             // Plugging the phone into the car usually means the ignition is on: connect straight away.
             com.obdreader.app.session.DriveScorer.start()

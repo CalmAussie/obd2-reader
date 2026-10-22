@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.4 (22 October 2026)
+- **The phone doesn't lock while the app is open,** whether or not you're connected or recording. Minimise it and your phone locks as normal.
+- **Minimised, it keeps going.** With the app in the background (Home, or Back from the Dashboard), the connection stays up and a drive you're recording keeps recording, as before. Back from the Dashboard now minimises the app on every Android version, instead of closing it on Android 10 and 11.
+- **Closed, it stops.** Swipe the app away from Recents and it finishes and saves any recording, disconnects from the car and stops running in the background. If Android Auto is showing the app on the car screen, the connection carries on for the car screen.
+
 ## 1.13.3 (22 October 2026)
 - **A clock on the Dashboard,** just left of the style button. It follows your phone's 12 or 24-hour setting.
 - Fixed: the protocol was worded differently on the Dashboard ("CAN 11-bit, 500 kbaud") and the Diagnostics tab ("ISO 15765-4 CAN (11-bit, 500 kbaud)"), so the same protocol looked like two different ones. Both now use the full standard name. The **Protocol** setting on Diagnostics also says which protocol Automatic found while you're connected, for example "Automatic · ISO 15765-4 CAN (11-bit, 500 kbaud)", instead of just "Automatic".
