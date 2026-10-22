@@ -89,7 +89,7 @@ PY
 }
 # Centre of a view inside a scrolled page, after scrolling that page all the way down.
 view_center_bottom() {   # $1 view id, $2 scrolling page id
-  for k in 1 2 3; do adb shell input swipe 540 2000 540 500 150; done; sleep 1
+  for k in 1 2 3 4 5; do adb shell input swipe 540 2000 540 500 150; done; sleep 2
   adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
   python3 - "$1" "$2" "$OUT/views.txt" <<'PY'
 import re, sys
