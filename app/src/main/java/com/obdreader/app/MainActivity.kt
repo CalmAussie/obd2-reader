@@ -2293,6 +2293,7 @@ class MainActivity : AppCompatActivity() {
             R.string.help_auto_title to R.string.help_auto_body,
             R.string.help_codes_title to R.string.help_codes_body,
             R.string.help_battery_title to R.string.help_battery_body,
+            R.string.help_location_title to R.string.help_location_body,
             R.string.help_safety_title to R.string.help_safety_body,
         )
         for ((title, body) in sections) {

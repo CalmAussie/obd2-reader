@@ -3,6 +3,7 @@
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
 ## 1.13.1 (22 October 2026)
+- **Your location, spelled out.** A new **Help → Your location** topic, the **Save the route too?** question and the README now say plainly that your location is never sent to the developer or anyone else: it's only stored on your phone, in the CSV file of a drive you record with its route, and only used to draw that route's outline on your share card.
 - **Share preview in the same window.** **Share as a picture** now shows the card straight away, with **Story (9:16)** and **Square (1:1)** buttons to switch between the two shapes, and **Share** and **Cancel** underneath. No second window.
 - **What's new since your version.** **Diagnostics → App updates** now has a **Check for updates** button. Tap the rest of the row to see the changelog for just the versions released after the one you have, with a button to get the newest. If you're up to date, it shows what's in your version.
 - **Tap and hold to see the card big.** Hold the preview and it grows smoothly out of its place to fill the screen; let go and it shrinks back.
