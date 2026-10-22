@@ -610,6 +610,9 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .topbar { display: flex; align-items: center; }
 .topbar .wordmark { flex: 1; }
 .dash-clock { color: var(--fg-2); font-size: 17px; font-weight: 500; font-variant-numeric: tabular-nums; margin-right: 4px; white-space: nowrap; }
+
+.record-group { margin-top: 14px; }
+.record-group .rec-status { margin-top: 8px; }
 </style>
 
 <p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -669,6 +672,10 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
         <button class="demo" id="demoBtn"><span>Demo car</span></button>
       </div>
       <div class="status"><span id="status">Not connected</span><small id="detail"></small></div>
+      <div id="recordGroup" class="record-group" hidden>
+        <button class="go-btn xb rec" id="recordBtn"><span id="recordLabel">Record drive</span></button>
+        <div class="rec-status" id="recordStatus">Recording is off. Tap Record drive to save every reading to a CSV file on this phone, which you can open in Excel or Google Sheets, and the route too if you choose.</div>
+      </div>
       <button class="sim-btn" id="ignBtn" hidden>Preview only: turn the demo car's ignition off</button>
       <button class="car-btn" id="chooseCarBtn" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5,14h-0.79l-0.28,-0.27C15.41,12.59 16,11.11 16,9.5 16,5.91 13.09,3 9.5,3S3,5.91 3,9.5 5.91,16 9.5,16c1.61,0 3.09,-0.59 4.23,-1.57l0.27,0.28v0.79l5,4.99L20.49,19l-4.99,-5zM9.5,14C7.01,14 5,11.99 5,9.5S7.01,5 9.5,5 14,7.01 14,9.5 11.99,14 9.5,14z"/></svg>Choose your car</button>
       <div class="h2 xb">Driving score</div>
@@ -689,8 +696,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
         <button class="link-btn" id="graphPause">Pause</button>
       </div>
       <div id="graphList"></div>
-      <button class="go-btn xb rec" id="recordBtn"><span id="recordLabel">Record drive</span></button>
-      <div class="rec-status" id="recordStatus">Recording is off. Nothing about your drives is saved unless you tap Record drive; then every reading goes into a CSV file on this phone that you can open in Excel or Google Sheets. Recordings aren't included in phone backups.</div>
+      <div class="rec-status">Record drives from the Dashboard once you're connected. Recorded drives are kept here under Saved drives, to share or make a video overlay from.</div>
       <button class="car-btn" id="savedBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18,16.08c-0.76,0 -1.44,0.3 -1.96,0.77L8.91,12.7c0.05,-0.23 0.09,-0.46 0.09,-0.7s-0.04,-0.47 -0.09,-0.7l7.05,-4.11c0.54,0.5 1.25,0.81 2.04,0.81 1.66,0 3,-1.34 3,-3s-1.34,-3 -3,-3 -3,1.34 -3,3c0,0.24 0.04,0.47 0.09,0.7L8.04,9.81C7.5,9.31 6.79,9 6,9c-1.66,0 -3,1.34 -3,3s1.34,3 3,3c0.79,0 1.5,-0.31 2.04,-0.81l7.12,4.16c-0.05,0.21 -0.08,0.43 -0.08,0.65 0,1.61 1.31,2.92 2.92,2.92 1.61,0 2.92,-1.31 2.92,-2.92s-1.31,-2.92 -2.92,-2.92z"/></svg>Saved drives</button>
     </div>
   </div>
@@ -1749,7 +1755,7 @@ let rec = null;
 function stamp(d = new Date()) { const z = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`; }
 function renderRec() {
   $("recordLabel").textContent = rec ? "Stop recording" : "Record drive"; $("recordBtn").classList.toggle("on", !!rec);
-  if (!rec) return $("recordStatus").textContent = "Recording is off. Nothing about your drives is saved unless you tap Record drive; then every reading goes into a CSV file on this phone that you can open in Excel or Google Sheets. Recordings aren't included in phone backups.";
+  if (!rec) return $("recordStatus").textContent = "Recording is off. Tap Record drive to save every reading to a CSV file on this phone, which you can open in Excel or Google Sheets, and the route too if you choose.";
   const s = Math.floor((Date.now() - rec.started) / 1000);
   $("recordStatus").textContent = `Recording ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}, ${rec.rows.toLocaleString("en-AU")} rows. Saved as ${rec.name}`;
 }
@@ -1758,6 +1764,8 @@ $("recordBtn").onclick = () => {
   if (rec) { stopRec(); return toast("Drive saved. Open Saved drives to share it."); }
   rec = { name: `OBD2Reader_${stamp()}.csv`, started: Date.now(), rows: 0, samples: [] }; renderRec();
 };
+/* Record drive is on the Dashboard, shown only while connected or recording (mirrors MainActivity.showRecordGroup). */
+setInterval(() => { const show = state === "connected" || !!rec; const el = $("recordGroup"); if (el.hidden === show) el.hidden = !show; }, 250);
 setInterval(() => {
   if (!rec) return;
   if (state === "idle") return stopRec();
