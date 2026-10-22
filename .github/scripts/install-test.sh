@@ -17,7 +17,19 @@ adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
 adb logcat -c
 
-if adb install OBD2Reader.apk > "$OUT/install.txt" 2>&1; then log "install: OK"; else log "install: FAILED $(tail -1 "$OUT/install.txt")"; exit 1; fi
+# Newer Android (17) can still be starting its system services after "boot completed":
+# wait until the package installer answers, then install, trying again if it isn't ready.
+for i in $(seq 1 60); do
+  [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ] && adb shell pm path android > /dev/null 2>&1 && break
+  sleep 5
+done
+INSTALLED=0
+for i in 1 2 3 4 5; do
+  if adb install OBD2Reader.apk > "$OUT/install.txt" 2>&1; then INSTALLED=1; break; fi
+  grep -q "Can't find service\|not enough space" "$OUT/install.txt" || break
+  sleep 15
+done
+if [ $INSTALLED = 1 ]; then log "install: OK"; else log "install: FAILED $(tail -1 "$OUT/install.txt")"; exit 1; fi
 adb shell dumpsys package $PKG | grep -E "versionName|versionCode|targetSdk" | head -3 | sed 's/^ */  /' | tee -a "$OUT/result.txt"
 
 adb shell am start -W -n $PKG/.MainActivity > /dev/null
