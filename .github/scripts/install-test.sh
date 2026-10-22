@@ -385,7 +385,9 @@ for i in 1 2 3 4 5 6 7 8; do
   adb shell input swipe 540 1600 540 600 300; sleep 1
 done
 if grep -q 'text="App updates"' "$OUT/ui-updates.xml"; then
-  tap_text "Check for updates" > /dev/null; sleep 8
+  # The button sits under the row's text: scroll a little more until it's on screen, then tap it.
+  for i in 1 2 3; do tap_text "Check for updates" > /dev/null && break; adb shell input swipe 540 1500 540 1100 300; sleep 1; done
+  sleep 8
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-updates2.xml"
   shot 11-updates
   grep -q "is available" "$OUT/ui-updates2.xml" && tap_text "Later" > /dev/null
