@@ -384,7 +384,6 @@ class MainActivity : AppCompatActivity() {
         // Once a day, a quiet look at GitHub for a newer release.
         lifecycleScope.launch { kotlinx.coroutines.delay(4000); checkForUpdate(manual = false) }
         findViewById<View>(R.id.themeButton).setOnClickListener { showThemePicker() }
-        findViewById<android.widget.TextClock>(R.id.dashClock).typeface = uiTypeface(500)
         findViewById<View>(R.id.logShare).setOnClickListener {
             offerFile(Exports.adapterLog(this, ObdSession.fullLog(), ObdSession.state.value), "OBD2 Reader adapter log")
         }

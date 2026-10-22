@@ -54,19 +54,24 @@
                             android:fontFamily="?attr/obdTitleFont"
                 android:tag="@string/tag_title_font"
                             android:text="@string/app_name"
+                            android:includeFontPadding="false"
                             android:textColor="?attr/obdTextPrimary"
                             android:textSize="22sp" />
 
-                        <!-- The time, just left of the style button; follows the phone's 12 or 24-hour setting. -->
+                        <!-- The time, just left of the style button, in the same font, size and colour as
+                             the app name so the two read as one line. Follows the phone's 12 or 24-hour setting. -->
                         <TextClock
                             android:id="@+id/dashClock"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="4dp"
+                            android:fontFamily="?attr/obdTitleFont"
+                            android:tag="@string/tag_title_font"
                             android:fontFeatureSettings="tnum"
                             android:importantForAccessibility="yes"
-                            android:textColor="?attr/obdTextSecondary"
-                            android:textSize="17sp" />
+                            android:includeFontPadding="false"
+                            android:textColor="?attr/obdTextPrimary"
+                            android:textSize="22sp" />
 
                         <ImageButton
                             android:id="@+id/themeButton"
