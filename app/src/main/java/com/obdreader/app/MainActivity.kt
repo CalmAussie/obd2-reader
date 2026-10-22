@@ -2104,10 +2104,13 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         Updater.showPrompt = { confirm -> showInstallPrompt(confirm) }
         Updater.waitingPrompt?.let { Updater.waitingPrompt = null; showInstallPrompt(it) }
+        Updater.showProblem = { why -> updateProblem(why) }
+        Updater.waitingProblem?.let { Updater.waitingProblem = null; updateProblem(it) }
     }
 
     override fun onPause() {
         Updater.showPrompt = null
+        Updater.showProblem = null
         super.onPause()
     }
 
@@ -2117,8 +2120,22 @@ class MainActivity : AppCompatActivity() {
             startActivity(confirm)
         } catch (e: Exception) {
             android.util.Log.i("OBD2Updater", "couldn't open the install prompt: ${e.message}")
-            toast("The update didn't install: ${e.message ?: "Android didn't open the installer"}")
+            updateProblem("Android didn't open its Install screen." + (e.message?.let { "\n\nAndroid said: $it" } ?: ""))
         }
+    }
+
+    /** Why an update didn't go through, said plainly, with a way to get the APK by hand. */
+    private fun updateProblem(why: String) {
+        if (isFinishing || isDestroyed) return
+        androidx.core.app.NotificationManagerCompat.from(this).cancel(4101)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.updates_problem_title)
+            .setMessage(why + "\n\n" + getString(R.string.updates_problem_manual))
+            .setPositiveButton(R.string.updates_open_page) { _, _ ->
+                try { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(Updater.RELEASES_PAGE))) } catch (e: Exception) {}
+            }
+            .setNegativeButton("Close", null)
+            .show()
     }
 
     // ---------- App updates (from the GitHub releases) ----------
@@ -2283,19 +2300,23 @@ class MainActivity : AppCompatActivity() {
             .setView(android.widget.FrameLayout(this).apply { setPadding(pad, dp(12f).toInt(), pad, dp(8f).toInt()); addView(bar) })
             .setCancelable(false)
             .show()
+        var downloadError: String? = null
         lifecycleScope.launch {
             val file = try {
                 Updater.download(this@MainActivity, release) { f ->
                     if (bar.isIndeterminate) bar.isIndeterminate = false
                     bar.setProgressCompat((f * 100).toInt(), false)
                 }
-            } catch (e: Exception) { android.util.Log.i("OBD2Updater", "download failed: ${e.message}"); null }
+            } catch (e: Exception) { android.util.Log.i("OBD2Updater", "download failed: ${e.message}"); downloadError = e.message; null }
             dialog.dismiss()
-            if (file == null) { toast(getString(R.string.updates_download_failed)); return@launch }
+            if (file == null) {
+                updateProblem(getString(R.string.updates_download_failed) + (downloadError?.let { "\n\nWhat happened: $it" } ?: ""))
+                return@launch
+            }
             android.util.Log.i("OBD2Updater", "downloaded ${file.length()} bytes")
             try { Updater.install(this@MainActivity, file, release.build) } catch (e: Exception) {
                 android.util.Log.i("OBD2Updater", "install failed: ${e.message}")
-                toast("The update didn't install: ${e.message ?: "unknown error"}")
+                updateProblem("Android didn't accept the update." + (e.message?.let { "\n\nAndroid said: $it" } ?: ""))
             }
         }
     }
