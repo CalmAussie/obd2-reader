@@ -4,6 +4,7 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 
 ## 1.13.2 (22 October 2026)
 - Fixed: tapping **Update** downloaded the new version, but Android's **Install** prompt sometimes never appeared, so nothing was installed. The app now shows the prompt from its own screen; if you've switched away, a notification appears, and tapping it opens the prompt.
+- If an update can't install, the app now says why in a message that stays on screen, with Android's own reason (for example, Google Play Protect blocking it, or a download that didn't finish) and a button to get the new version from the release page instead. Before, it only showed a brief message that was easy to miss.
 - The download's progress bar now moves smoothly to the end instead of stalling partway, and the download is faster.
 - After an update installs, Android closes the app to replace it. A notification now says it's updated, and tapping it opens the app again.
 

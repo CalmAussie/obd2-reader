@@ -9,7 +9,6 @@ import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import android.widget.Toast
 import com.obdreader.app.obd.UpdateCheck
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -161,6 +160,39 @@ object Updater {
      */
     @Volatile var waitingPrompt: Intent? = null
     @Volatile var showPrompt: ((Intent) -> Unit)? = null
+    /** Why an update didn't install, waiting to be shown on the app's screen. */
+    @Volatile var waitingProblem: String? = null
+    @Volatile var showProblem: ((String) -> Unit)? = null
+
+    internal fun problem(context: Context, why: String) {
+        android.util.Log.i("OBD2Updater", "problem: $why")
+        val show = showProblem
+        if (show != null) { android.os.Handler(android.os.Looper.getMainLooper()).post { show(why) }; return }
+        waitingProblem = why
+        channel(context)
+        val open = PendingIntent.getActivity(context, NOTE_INSTALL,
+            Intent(context, com.obdreader.app.MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        notify(context, NOTE_INSTALL, androidx.core.app.NotificationCompat.Builder(context, CHANNEL)
+            .setSmallIcon(com.obdreader.app.R.drawable.ic_speed)
+            .setContentTitle("The update didn't install")
+            .setContentText(why)
+            .setStyle(androidx.core.app.NotificationCompat.BigTextStyle().bigText(why))
+            .setContentIntent(open).setAutoCancel(true).build())
+    }
+
+    /** Android's install result in plain words. */
+    fun explain(status: Int, message: String?): String {
+        val base = when (status) {
+            PackageInstaller.STATUS_FAILURE_BLOCKED -> "Android blocked the install. Google Play Protect, a work profile or a device setting can do this."
+            PackageInstaller.STATUS_FAILURE_CONFLICT -> "Android couldn't replace the installed app."
+            PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> "This version isn't compatible with this phone."
+            PackageInstaller.STATUS_FAILURE_INVALID -> "The downloaded file wasn't a valid app. It may not have downloaded fully."
+            PackageInstaller.STATUS_FAILURE_STORAGE -> "There isn't enough storage space on the phone."
+            else -> "Android didn't install the update."
+        }
+        return if (message.isNullOrBlank()) base else "$base\n\nAndroid said: $message"
+    }
 
     private fun channel(context: Context) {
         if (Build.VERSION.SDK_INT >= 26) context.getSystemService(android.app.NotificationManager::class.java)?.createNotificationChannel(
@@ -245,9 +277,8 @@ class UpdateReceiver : BroadcastReceiver() {
             }
             else -> {
                 AppPrefs.of(context).edit().remove(Updater.UPDATING_TO).apply()
-                val why = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
-                android.util.Log.i("OBD2Updater", "install failed: $why")
-                Toast.makeText(context, "The update didn't install" + (why?.let { ": $it" } ?: "."), Toast.LENGTH_LONG).show()
+                val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
+                Updater.problem(context, Updater.explain(status, intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)))
             }
         }
     }
