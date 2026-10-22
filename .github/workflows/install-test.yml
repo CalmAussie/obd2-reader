@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api: [26, 29, 33, 35, 36, 37]
+        api: [29, 33, 35, 36, 37]
         include:
           # Android 17's image is named "android-37.0", and its x86_64 image uses 16 KB memory pages.
           - api: 37
