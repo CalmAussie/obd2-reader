@@ -27,6 +27,11 @@ object UpdateCheck {
 
     fun isNewer(release: Release, installedBuild: Long): Boolean = release.build > installedBuild
 
+    /** The tag in a release page's address, such as ".../releases/tag/v1.13.1-build51", or null. */
+    fun tagFromReleaseUrl(url: String): String? =
+        url.substringAfterLast("/releases/tag/", "").substringBefore('?').substringBefore('#')
+            .takeIf { it.isNotBlank() }?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+
     /** How long between automatic checks. */
     const val CHECK_EVERY_MS = 24L * 60 * 60 * 1000
 

@@ -56,8 +56,32 @@ object Updater {
         } finally { conn.disconnect() }
     }
 
-    /** The latest release on GitHub. Throws IOException when GitHub can't be reached. */
-    suspend fun latest(): UpdateCheck.Release = withContext(Dispatchers.IO) {
+    /**
+     * The latest release on GitHub. Throws IOException when GitHub can't be reached. GitHub's API
+     * allows 60 checks an hour per internet address, which a shared network can use up, so if it
+     * says no, the release page itself is asked instead.
+     */
+    suspend fun latest(): UpdateCheck.Release = try { fromApi() } catch (e: IOException) { fromReleasePage() }
+
+    /** github.com/<repo>/releases/latest redirects to the latest release's tag; the APK is at a fixed path under it. */
+    private suspend fun fromReleasePage(): UpdateCheck.Release = withContext(Dispatchers.IO) {
+        val conn = (URL(RELEASES_PAGE).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10_000; readTimeout = 15_000; instanceFollowRedirects = false
+            setRequestProperty("User-Agent", "OBD2Reader")
+        }
+        val location = try {
+            if (conn.responseCode !in 300..399) throw IOException("GitHub answered ${conn.responseCode}")
+            conn.getHeaderField("Location") ?: throw IOException("No release found")
+        } finally { conn.disconnect() }
+        val tag = UpdateCheck.tagFromReleaseUrl(location) ?: throw IOException("No release found")
+        val (version, build) = UpdateCheck.parseTag(tag) ?: throw IOException("Unexpected release tag $tag")
+        val notes = try {
+            com.obdreader.app.obd.Changelog.parse(changelog()).firstOrNull { it.version == version }?.text ?: ""
+        } catch (e: Exception) { "" }
+        UpdateCheck.Release(tag, version, build, notes, "https://github.com/$REPO/releases/download/$tag/$APK_NAME", 0L, location)
+    }
+
+    private suspend fun fromApi(): UpdateCheck.Release = withContext(Dispatchers.IO) {
         val conn = (URL(LATEST).openConnection() as HttpURLConnection).apply {
             connectTimeout = 10_000; readTimeout = 15_000
             setRequestProperty("Accept", "application/vnd.github+json")
@@ -96,7 +120,7 @@ object Updater {
         }
         try {
             if (conn.responseCode != 200) throw IOException("Download failed (${conn.responseCode})")
-            val total = release.apkSize.takeIf { it > 0 } ?: conn.contentLengthLong
+            val total = release.apkSize.takeIf { it > 0 } ?: conn.contentLengthLong.takeIf { it > 0 } ?: 0L
             var done = 0L
             conn.inputStream.use { input ->
                 file.outputStream().use { out ->
@@ -108,7 +132,7 @@ object Updater {
                     }
                 }
             }
-            if (release.apkSize > 0 && file.length() != release.apkSize) { file.delete(); throw IOException("The download was incomplete") }
+            if (total > 0 && file.length() != total) { file.delete(); throw IOException("The download was incomplete") }
             file
         } finally { conn.disconnect() }
     }
