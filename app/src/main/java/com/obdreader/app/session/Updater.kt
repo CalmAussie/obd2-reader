@@ -42,6 +42,20 @@ object Updater {
     /** Test (debug) builds are signed differently, so a release can't install over them. */
     fun isTestBuild(context: Context): Boolean = context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
 
+    private const val CHANGELOG = "https://raw.githubusercontent.com/$REPO/main/CHANGELOG.md"
+
+    /** The app's changelog from GitHub, so it's never older than the latest release. */
+    suspend fun changelog(): String = withContext(Dispatchers.IO) {
+        val conn = (URL(CHANGELOG).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10_000; readTimeout = 15_000
+            setRequestProperty("User-Agent", "OBD2Reader")
+        }
+        try {
+            if (conn.responseCode != 200) throw IOException("GitHub answered ${conn.responseCode}")
+            conn.inputStream.bufferedReader().use { it.readText() }
+        } finally { conn.disconnect() }
+    }
+
     /** The latest release on GitHub. Throws IOException when GitHub can't be reached. */
     suspend fun latest(): UpdateCheck.Release = withContext(Dispatchers.IO) {
         val conn = (URL(LATEST).openConnection() as HttpURLConnection).apply {

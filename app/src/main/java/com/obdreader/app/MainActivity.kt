@@ -346,7 +346,9 @@ class MainActivity : AppCompatActivity() {
         vinBtn.setOnClickListener { readVin() }
         findViewById<View>(R.id.logCard).setOnClickListener { toggleLog() }
         findViewById<View>(R.id.helpRow).setOnClickListener { showHelp() }
-        findViewById<View>(R.id.updatesRow).setOnClickListener { checkForUpdate(manual = true) }
+        // The button checks GitHub; the rest of the row shows what's changed since this version.
+        findViewById<View>(R.id.updatesRow).setOnClickListener { showChangesSince() }
+        findViewById<View>(R.id.updatesCheck).setOnClickListener { checkForUpdate(manual = true) }
         showUpdateRow(null)
         // Once a day, a quiet look at GitHub for a newer release.
         lifecycleScope.launch { kotlinx.coroutines.delay(4000); checkForUpdate(manual = false) }
@@ -2138,6 +2140,65 @@ class MainActivity : AppCompatActivity() {
                 // The daily check: once per new version, and not while driving.
                 !ObdSession.state.value.isConnected && prefs.getInt(Updater.SNOOZED_BUILD, 0) != release.build -> offerUpdate(release)
             }
+        }
+    }
+
+    /** The changelog, but only the versions after the one installed: what an update brings. */
+    private fun showChangesSince() {
+        val installed = appVersion()
+        val sheet = BottomSheetDialog(this)
+        val pad = dp(20f).toInt()
+        val list = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, dp(8f).toInt(), pad, dp(28f).toInt())
+        }
+        list.addView(TextView(this).apply {
+            text = getString(R.string.updates_changes_title, installed)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f); typeface = uiTypeface(600)
+            setTextColor(themeColor(R.attr.obdTextPrimary))
+        })
+        val status = TextView(this).apply {
+            setText(R.string.updates_changes_loading)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdTextSecondary))
+            setPadding(0, dp(10f).toInt(), 0, dp(4f).toInt())
+        }
+        list.addView(status)
+        fun entry(e: com.obdreader.app.obd.Changelog.Entry) {
+            list.addView(TextView(this).apply {
+                text = listOf(e.version, e.date).filter { it.isNotBlank() }.joinToString("  ·  ")
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f); typeface = uiTypeface(600)
+                setTextColor(themeColor(R.attr.obdTextPrimary)); setPadding(0, dp(16f).toInt(), 0, dp(4f).toInt())
+            })
+            list.addView(TextView(this).apply {
+                text = e.text
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setLineSpacing(0f, 1.15f)
+                setTextColor(themeColor(R.attr.obdTextPrimary))
+            })
+        }
+        sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(list) })
+        sheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        sheet.behavior.skipCollapsed = true
+        sheet.show()
+        lifecycleScope.launch {
+            val entries = try { com.obdreader.app.obd.Changelog.parse(Updater.changelog()) } catch (e: Exception) { null }
+            if (!sheet.isShowing) return@launch
+            if (entries == null) { status.setText(R.string.updates_changes_failed); return@launch }
+            val newer = com.obdreader.app.obd.Changelog.since(entries, installed)
+            if (newer.isEmpty()) {
+                status.text = getString(R.string.updates_changes_none, installed)
+                entries.firstOrNull { com.obdreader.app.obd.Changelog.compare(it.version, installed) == 0 }?.let { entry(it) }
+            } else {
+                status.visibility = View.GONE
+                newer.forEach { entry(it) }
+                if (!Updater.isTestBuild(this@MainActivity)) list.addView(MaterialButton(this@MainActivity).apply {
+                    text = getString(R.string.updates_changes_get, newer.first().version)
+                    setOnClickListener {
+                        sheet.dismiss()
+                        availableUpdate?.let { offerUpdate(it) } ?: checkForUpdate(manual = true)
+                    }
+                }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(18f).toInt() })
+            }
+            list.applyTitleFonts()
         }
     }
 
