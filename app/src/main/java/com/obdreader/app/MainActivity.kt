@@ -2130,7 +2130,7 @@ class MainActivity : AppCompatActivity() {
         androidx.core.app.NotificationManagerCompat.from(this).cancel(4101)
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.updates_problem_title)
-            .setMessage(why + "\n\n" + getString(R.string.updates_problem_manual))
+            .setMessage(why + (if (Updater.isSamsung) "\n\n" + getString(R.string.updates_samsung) else "") + "\n\n" + getString(R.string.updates_problem_manual))
             .setPositiveButton(R.string.updates_open_page) { _, _ ->
                 try { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(Updater.RELEASES_PAGE))) } catch (e: Exception) {}
             }
@@ -2257,7 +2257,7 @@ class MainActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             setPadding(pad, dp(8f).toInt(), pad, 0)
             addView(TextView(context).apply {
-                text = getString(R.string.updates_available_body, appVersion())
+                text = getString(R.string.updates_available_body, appVersion()) + (if (Updater.isSamsung) "\n\n" + getString(R.string.updates_samsung) else "")
                 setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             })
             if (release.notes.isNotBlank()) {
@@ -2314,7 +2314,16 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
             android.util.Log.i("OBD2Updater", "downloaded ${file.length()} bytes")
-            try { Updater.install(this@MainActivity, file, release.build) } catch (e: Exception) {
+            val handedOver = android.os.SystemClock.elapsedRealtime()
+            try {
+                Updater.install(this@MainActivity, file, release.build)
+                // Some phones (Samsung's Auto Blocker) refuse an app's own update without a word.
+                kotlinx.coroutines.delay(20_000)
+                if (Updater.lastAnswerMs < handedOver && !isFinishing && !isDestroyed) {
+                    android.util.Log.i("OBD2Updater", "no answer from the installer")
+                    updateProblem(getString(R.string.updates_no_answer))
+                }
+            } catch (e: Exception) {
                 android.util.Log.i("OBD2Updater", "install failed: ${e.message}")
                 updateProblem("Android didn't accept the update." + (e.message?.let { "\n\nAndroid said: $it" } ?: ""))
             }
