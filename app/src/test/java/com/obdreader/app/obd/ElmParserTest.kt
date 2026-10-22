@@ -112,13 +112,13 @@ class ElmParserTest {
 
     @Test
     fun vinFromLegacyPartsOutOfOrder() {
-        val vin = "4F2YZ04136KM12345".let { it.substring(0, 8) + VinDecoder.checkDigit(it) + it.substring(9) }
+        val vin = "4F2YZ04196KM12345".let { it.substring(0, 8) + VinDecoder.checkDigit(it) + it.substring(9) }
         assertEquals(vin, ElmParser.parseVin(legacyLines(vin).reversed()))
     }
 
     @Test
     fun vinWhenTwoModulesAnswer() {
-        val vin = "4F2YZ04136KM12345".let { it.substring(0, 8) + VinDecoder.checkDigit(it) + it.substring(9) }
+        val vin = "4F2YZ04196KM12345".let { it.substring(0, 8) + VinDecoder.checkDigit(it) + it.substring(9) }
         // A second module sending a different (bad) VIN must not get mixed into the first.
         val other = "4F2YZ04130KM99999"
         assertEquals(vin, ElmParser.parseVin(canLines(other) + canLines(vin)))

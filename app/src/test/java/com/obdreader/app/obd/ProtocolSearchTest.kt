@@ -169,7 +169,7 @@ class ToyotaBmwTest {
         assertEquals("Toyota", VinDecoder.decode("6T1BF3EK5CX123456").make)
         assertEquals("Lexus (Toyota)", VinDecoder.decode("JTHBA30G465123456").make)
         assertEquals("BMW", VinDecoder.decode("WBAVA31070N123456").make)
-        assertEquals(2016, VinDecoder.decode("5UXKR0C55G0P12345").modelYear)
+        assertEquals(2016, VinDecoder.decode("5UXKR0C50G0P12345").modelYear)
     }
 }
 
@@ -197,8 +197,8 @@ class MercedesTest {
         assertEquals(listOf("2.6 V6", "3.2 V6", "1.8 supercharged", "2.1 diesel"), VehicleCatalog.engines("Mercedes-Benz", 2003, "C-Class").map { it.name })
         assertEquals(7200, rec(2010, "C-Class", "6.2 V8 (AMG)").redline)
         assertEquals("Mercedes-Benz", VinDecoder.decode("WDD2040482A123456").make)
-        assertEquals("Mercedes-Benz", VinDecoder.decode("4JGBB86E17A123456").make)
-        assertEquals(2007, VinDecoder.decode("4JGBB86E17A123456").modelYear)
+        assertEquals("Mercedes-Benz", VinDecoder.decode("4JGBB86E37A123456").make)
+        assertEquals(2007, VinDecoder.decode("4JGBB86E37A123456").modelYear)
     }
 }
 
@@ -247,8 +247,8 @@ class GmAndVwGroupTest {
         assertEquals(VehicleCatalog.OTHER_MAKE, VehicleCatalog.makeNames.last())
         assertEquals("Holden", VinDecoder.decode("6G1ZK52F67L123456").make)
         assertEquals("Volkswagen", VinDecoder.decode("WVWZZZ1KZ6W123456").make)
-        assertEquals("Chevrolet", VinDecoder.decode("1GCEK19T03E123456").make)
-        assertEquals(2003, VinDecoder.decode("1GCEK19T03E123456").modelYear)
+        assertEquals("Chevrolet", VinDecoder.decode("1GCEK19T63E123456").make)
+        assertEquals(2003, VinDecoder.decode("1GCEK19T63E123456").modelYear)
     }
 }
 
@@ -284,8 +284,8 @@ class StellantisTest {
 
     @Test
     fun vins() {
-        assertEquals("Jeep", VinDecoder.decode("1J4GW58N14C123456").make)
-        assertEquals(2004, VinDecoder.decode("1J4GW58N14C123456").modelYear)
+        assertEquals("Jeep", VinDecoder.decode("1J4GW58N84C123456").make)
+        assertEquals(2004, VinDecoder.decode("1J4GW58N84C123456").modelYear)
         assertEquals("Peugeot", VinDecoder.decode("VF33C9HYB84123456").make)
         assertEquals("Fiat", VinDecoder.decode("ZFA31200000123456").make)
     }
@@ -353,8 +353,8 @@ class RemainingBrandsTest {
     fun vins() {
         assertEquals("Nissan", VinDecoder.decode("JN1TANT31U0123456").make)
         assertEquals("Subaru", VinDecoder.decode("JF1GE7E68BG123456").make)
-        assertEquals("Tesla", VinDecoder.decode("5YJ3E1EA7KF123456").make)
-        assertEquals(2019, VinDecoder.decode("5YJ3E1EA7KF123456").modelYear)
+        assertEquals("Tesla", VinDecoder.decode("5YJ3E1EA6KF123456").make)
+        assertEquals(2019, VinDecoder.decode("5YJ3E1EA6KF123456").modelYear)
         assertEquals("Volvo", VinDecoder.decode("YV1CZ91H641123456").make)
         assertEquals("Land Rover", VinDecoder.decode("SALLAAA146A123456").make)
     }
