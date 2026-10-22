@@ -248,6 +248,12 @@ for line in open(sys.argv[2], encoding='utf-8', errors='ignore'):
         print(ox + (x1 + x2) // 2, oy + (y1 + y2) // 2); sys.exit(0)
 PY
 }
+# Scrolls down from where the page is, a little at a time, until a button with this label is on
+# screen, then taps it (labels come from the view's text or its spoken description).
+tap_scrolled() {
+  for i in 1 2 3 4 5 6 7 8; do tap_text "$1" > /dev/null && return 0; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
+  return 1
+}
 # Scrolls the page back to the very top, so positions read from the view tree are on screen.
 scroll_top() { adb shell input swipe 540 800 540 2000 200; adb shell input swipe 540 800 540 2000 200; sleep 1; }
 # Each style with its own layout, upright and sideways, with the demo car running. The second
@@ -423,7 +429,7 @@ adb shell pm grant $PKG android.permission.ACCESS_FINE_LOCATION 2>/dev/null
 adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION 2>/dev/null
 adb shell settings put secure location_mode 3 2>/dev/null
 adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
-XY=$(view_center_bottom recordButton pageDashboard); [ -n "$XY" ] && adb shell input tap $XY && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
+tap_scrolled "Record drive" && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
 ROUTE=0
 for i in $(seq 1 10); do
   adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1
@@ -437,7 +443,7 @@ for i in 1 2 3 4; do
 done
 adb shell dumpsys location > "$OUT/location.txt" 2>/dev/null
 [ $ROUTE = 0 ] && grep -i "gps" "$OUT/location.txt" | grep -q "$PKG" && ROUTE=1
-XY=$(view_center_bottom recordButton pageDashboard); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+scroll_top; tap_scrolled "Stop recording"; sleep 2
 shot 8a-recorded
 # Debug builds: check the file itself has positions.
 F=$(adb shell run-as $PKG ls files/logs 2>/dev/null | tr -d '\r' | grep csv | tail -1)
