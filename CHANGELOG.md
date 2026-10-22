@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.0 (22 October 2026)
+- **Updates from inside the app.** Once a day the app checks GitHub for a newer release, and **Diagnostics → App updates** checks straight away. When there's a new version, it shows what's new with **Update** and **Later**. **Update** downloads it with a progress bar and hands it to Android, which asks you to tap **Install**. On Android 12 and newer, later updates may install without asking once the app has installed its own update. Your settings, drives and recordings are kept.
+- The first time, Android asks you to allow OBD2 Reader to install apps; the app takes you to that switch.
+- The daily check never interrupts while you're connected to the car, and **Later** stops it asking again about that version. Only the version check and the download go to GitHub.
+
 ## 1.12.0 (22 October 2026)
 - **Preview before you share a drive.** After you pick Story or Square, the card is shown as it'll look, with a **Share** button and **Cancel**. Nothing is saved or sent until you tap **Share**.
 - **One score on each drive card.** Shared from **Race telemetry**, the card shows only your Racing score. From any other layout, it shows your **drive score**: the average of your Everyday and Efficiency scores, with those two shown underneath on the Story card. If a drive was too short for one of them, the drive score uses the other.

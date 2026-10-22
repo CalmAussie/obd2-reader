@@ -33,6 +33,10 @@
     <!-- Wi-Fi adapters -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Updates from the app's GitHub releases: Android asks before installing. On Android 12
+         and newer, later updates the app installs itself may go through without asking. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 
     <uses-feature
         android:name="android.hardware.bluetooth"
@@ -78,6 +82,17 @@
             android:foregroundServiceType="connectedDevice|location" />
 
         <!-- Shares recorded drives and reports with other apps -->
+        <receiver
+            android:name=".session.UpdateReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".session.UpdatedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.files"

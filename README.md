@@ -35,7 +35,7 @@ All you need is the APK. There's no Play Store listing, account, sign-in or othe
 3. If Google Play Protect warns about an unknown developer, tap **More details → Install anyway**. Every app from outside the Play Store gets this warning.
 4. Open OBD2 Reader and choose your car (or **Not listed**). Then tap **Demo car** to try it straight away, or plug in an adapter and tap **Connect**.
 
-To update, install a newer APK over the old one. Your settings are kept.
+**Updates:** the app checks GitHub for a new release once a day (and whenever you tap **Diagnostics → App updates**). When there is one, it shows what's new and, if you tap **Update**, downloads it and hands it to Android, which asks you to **Install**. The first time, Android asks you to allow OBD2 Reader to install apps. Your settings, drives and recordings are kept. Only the version check and the download go to GitHub. You can still install a newer APK over the old one by hand.
 
 Every release is checked automatically: the published APK is downloaded, installed on fresh Android 8, 10, 13 and 15 phones (emulators), opened, run with the demo car and checked for crashes.
 

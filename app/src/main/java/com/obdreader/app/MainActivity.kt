@@ -44,6 +44,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.obdreader.app.obd.DtcLibrary
 import com.obdreader.app.session.AppPrefs
 import com.obdreader.app.session.Exports
+import com.obdreader.app.session.Updater
 import com.obdreader.app.session.LiveHistory
 import com.obdreader.app.session.LogRecorder
 import com.obdreader.app.session.ObdSession
@@ -345,6 +346,10 @@ class MainActivity : AppCompatActivity() {
         vinBtn.setOnClickListener { readVin() }
         findViewById<View>(R.id.logCard).setOnClickListener { toggleLog() }
         findViewById<View>(R.id.helpRow).setOnClickListener { showHelp() }
+        findViewById<View>(R.id.updatesRow).setOnClickListener { checkForUpdate(manual = true) }
+        showUpdateRow(null)
+        // Once a day, a quiet look at GitHub for a newer release.
+        lifecycleScope.launch { kotlinx.coroutines.delay(4000); checkForUpdate(manual = false) }
         findViewById<View>(R.id.themeButton).setOnClickListener { showThemePicker() }
         findViewById<View>(R.id.logShare).setOnClickListener {
             Exports.share(this, Exports.adapterLog(this, ObdSession.fullLog(), ObdSession.state.value), "text/plain", "OBD2 Reader adapter log")
@@ -1328,7 +1333,7 @@ class MainActivity : AppCompatActivity() {
                 setGradientCenter(0.5f, 0f)
             }
         }
-        listOf(R.id.carRow, R.id.protocolRow, R.id.logCard, R.id.helpRow).forEach { findViewById<View>(it).background = panelBackground() }
+        listOf(R.id.carRow, R.id.protocolRow, R.id.logCard, R.id.helpRow, R.id.updatesRow).forEach { findViewById<View>(it).background = panelBackground() }
         val vinDecal = findViewById<VinDecalView>(R.id.vinDecal)
         vinText.setTextColor(vinDecal.inkColor)
         findViewById<TextView>(R.id.vinLabel).setTextColor(androidx.core.graphics.ColorUtils.setAlphaComponent(vinDecal.inkColor, 180))
@@ -2072,6 +2077,119 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             ""
         }
+
+    // ---------- App updates (from the GitHub releases) ----------
+
+    private var availableUpdate: com.obdreader.app.obd.UpdateCheck.Release? = null
+
+    private fun showUpdateRow(release: com.obdreader.app.obd.UpdateCheck.Release?) {
+        val sub = findViewById<TextView>(R.id.updatesSub)
+        sub.text = when {
+            Updater.isTestBuild(this) -> getString(R.string.updates_sub_test, appVersion())
+            release != null -> getString(R.string.updates_sub_available, release.version)
+            else -> getString(R.string.updates_sub, appVersion())
+        }
+        sub.setTextColor(if (release != null) themeColor(R.attr.obdAccent) else themeColor(R.attr.obdTextSecondary))
+    }
+
+    /**
+     * [manual]: the user tapped App updates, so say what was found. Otherwise it's the daily check:
+     * silent unless there's a new version, and never while connected to the car.
+     */
+    private fun checkForUpdate(manual: Boolean) {
+        val now = System.currentTimeMillis()
+        if (!manual && !com.obdreader.app.obd.UpdateCheck.dueForCheck(prefs.getLong(Updater.LAST_CHECK, 0L), now)) {
+            return
+        }
+        if (manual) toast(getString(R.string.updates_checking))
+        lifecycleScope.launch {
+            val release = try { Updater.latest() } catch (e: Exception) { android.util.Log.i("OBD2Updater", "check failed: ${e.message}"); null }
+            if (release == null) { if (manual) toast(getString(R.string.updates_failed)); return@launch }
+            android.util.Log.i("OBD2Updater", "latest build ${release.build}, installed ${Updater.installedBuild(this@MainActivity)}")
+            prefs.edit().putLong(Updater.LAST_CHECK, now).apply()
+            val newer = com.obdreader.app.obd.UpdateCheck.isNewer(release, Updater.installedBuild(this@MainActivity))
+            availableUpdate = release.takeIf { newer }
+            showUpdateRow(availableUpdate)
+            if (isFinishing || isDestroyed) return@launch
+            when {
+                Updater.isTestBuild(this@MainActivity) -> if (manual) offerReleasePage(release)
+                !newer -> { if (manual) toast(getString(R.string.updates_latest, appVersion())) }
+                manual -> offerUpdate(release)
+                // The daily check: once per new version, and not while driving.
+                !ObdSession.state.value.isConnected && prefs.getInt(Updater.SNOOZED_BUILD, 0) != release.build -> offerUpdate(release)
+            }
+        }
+    }
+
+    private fun offerReleasePage(release: com.obdreader.app.obd.UpdateCheck.Release) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.updates_available_title, release.version))
+            .setMessage(R.string.updates_test_body)
+            .setPositiveButton(R.string.updates_open_page) { _, _ ->
+                try { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(release.pageUrl))) } catch (e: Exception) { toast(Updater.RELEASES_PAGE) }
+            }
+            .setNegativeButton(R.string.updates_later, null)
+            .show()
+    }
+
+    private fun offerUpdate(release: com.obdreader.app.obd.UpdateCheck.Release) {
+        val pad = dp(20f).toInt()
+        val body = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, dp(8f).toInt(), pad, 0)
+            addView(TextView(context).apply {
+                text = getString(R.string.updates_available_body, appVersion())
+                setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            })
+            if (release.notes.isNotBlank()) {
+                addView(TextView(context).apply {
+                    setText(R.string.updates_whats_new); typeface = uiTypeface(600)
+                    setTextColor(themeColor(R.attr.obdTextPrimary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                    setPadding(0, dp(14f).toInt(), 0, dp(4f).toInt())
+                })
+                addView(TextView(context).apply {
+                    text = release.notes
+                    setTextColor(themeColor(R.attr.obdTextPrimary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                    setLineSpacing(0f, 1.15f)
+                })
+            }
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.updates_available_title, release.version))
+            .setView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+            .setPositiveButton(R.string.updates_update) { _, _ -> downloadAndInstall(release) }
+            .setNegativeButton(R.string.updates_later) { _, _ -> prefs.edit().putInt(Updater.SNOOZED_BUILD, release.build).apply() }
+            .show()
+    }
+
+    private fun downloadAndInstall(release: com.obdreader.app.obd.UpdateCheck.Release) {
+        if (!Updater.canInstall(this)) {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.updates_permission_title)
+                .setMessage(R.string.updates_permission_body)
+                .setPositiveButton(R.string.updates_open_settings) { _, _ ->
+                    try { startActivity(Updater.permissionIntent(this)) } catch (e: Exception) { toast(getString(R.string.updates_permission_body)) }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+            return
+        }
+        val bar = com.google.android.material.progressindicator.LinearProgressIndicator(this).apply { isIndeterminate = true; max = 100 }
+        val pad = dp(24f).toInt()
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.updates_downloading, release.version))
+            .setView(android.widget.FrameLayout(this).apply { setPadding(pad, dp(12f).toInt(), pad, dp(8f).toInt()); addView(bar) })
+            .setCancelable(false)
+            .show()
+        lifecycleScope.launch {
+            val file = try {
+                Updater.download(this@MainActivity, release) { f -> bar.isIndeterminate = false; bar.setProgressCompat((f * 100).toInt(), true) }
+            } catch (e: Exception) { null }
+            dialog.dismiss()
+            if (file == null) { toast(getString(R.string.updates_download_failed)); return@launch }
+            try { Updater.install(this@MainActivity, file) } catch (e: Exception) { toast("The update didn't install: ${e.message ?: "unknown error"}") }
+        }
+    }
 
     /** Setup help inside the app, so someone given just the APK can get going without the README. */
     private fun showHelp() {
