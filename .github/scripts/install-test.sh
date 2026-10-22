@@ -254,6 +254,24 @@ tap_scrolled() {
   for i in 1 2 3 4 5 6 7 8; do tap_text "$1" > /dev/null && return 0; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
   return 1
 }
+# Record drive sits just below the bottom of the screen on the Dashboard, and the Dashboard
+# animates, so screen dumps of it fail. Scroll it up by a known 600px (a slow drag held still
+# before letting go, so it doesn't fling) and tap where the view tree puts the button.
+drag_up_600() {
+  if adb shell input motionevent DOWN 540 1700 > /dev/null 2>&1; then
+    for y in 1600 1500 1400 1300 1200 1100; do adb shell input motionevent MOVE 540 $y; done
+    sleep 1; adb shell input motionevent UP 540 1100
+  else
+    adb shell input swipe 540 1700 540 1100 2500
+  fi
+  sleep 1
+}
+tap_record() {
+  scroll_top
+  local XY; XY=$(view_center recordButton); [ -n "$XY" ] || return 1
+  set -- $XY
+  if [ "$2" -gt 2000 ]; then drag_up_600; adb shell input tap $1 $(( $2 - 580 )); else adb shell input tap $1 $2; fi
+}
 # Scrolls the page back to the very top, so positions read from the view tree are on screen.
 scroll_top() { adb shell input swipe 540 800 540 2000 200; adb shell input swipe 540 800 540 2000 200; sleep 1; }
 # Each style with its own layout, upright and sideways, with the demo car running. The second
@@ -429,7 +447,7 @@ adb shell pm grant $PKG android.permission.ACCESS_FINE_LOCATION 2>/dev/null
 adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION 2>/dev/null
 adb shell settings put secure location_mode 3 2>/dev/null
 adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
-tap_scrolled "Record drive" && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
+tap_record && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
 ROUTE=0
 for i in $(seq 1 10); do
   adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1
@@ -443,7 +461,7 @@ for i in 1 2 3 4; do
 done
 adb shell dumpsys location > "$OUT/location.txt" 2>/dev/null
 [ $ROUTE = 0 ] && grep -i "gps" "$OUT/location.txt" | grep -q "$PKG" && ROUTE=1
-scroll_top; tap_scrolled "Stop recording"; sleep 2
+tap_record; sleep 2
 shot 8a-recorded
 # Debug builds: check the file itself has positions.
 F=$(adb shell run-as $PKG ls files/logs 2>/dev/null | tr -d '\r' | grep csv | tail -1)
@@ -571,6 +589,9 @@ if adb shell dumpsys activity recents 2>/dev/null | grep -q "A=.*$PKG\|realActiv
   log "closed from Recents: not checked (couldn't swipe the app away on this emulator)"
 elif adb logcat -d -s OBD2Close:I 2>/dev/null | grep -q "closed: stopping"; then
   log "closed from Recents: stopped"
+elif ! alive; then
+  # The demo runs without the background service, so Android may end the whole app at once.
+  log "closed from Recents: stopped (Android ended the app)"
 else
   log "closed from Recents: FAILED (app didn't stop its work)"; FAIL=1
 fi
