@@ -37,7 +37,7 @@ All you need is the APK. There's no Play Store listing, account, sign-in or othe
 
 **Updates:** the app checks GitHub for a new release once a day (and whenever you tap **Check for updates** under **Diagnostics → App updates**; tap the rest of that row to see what's changed since your version). When there is one, it shows what's new and, if you tap **Update**, downloads it and hands it to Android, which asks you to **Install**. The first time, Android asks you to allow OBD2 Reader to install apps. Your settings, drives and recordings are kept. Only the version check and the download go to GitHub. You can still install a newer APK over the old one by hand.
 
-Every release is checked automatically: the published APK is downloaded, installed on fresh Android 8, 10, 13 and 15 phones (emulators), opened, run with the demo car and checked for crashes.
+Every release is checked automatically: the published APK is downloaded, installed on fresh Android 8, 10, 13, 15, 16 and 17 phones (emulators), opened, run with the demo car and checked for crashes.
 
 ## Use it
 1. Plug the adapter into the OBD2 port (under the dashboard, driver's side) and turn the ignition on.
@@ -170,7 +170,7 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 
 **Preview:** [`preview/index.html`](preview/index.html) is an interactive mock-up of the app, with a demo car, every style, the Graphs and Diagnostics tabs and the Android Auto screen. Open it in a browser. It mirrors the app's layouts and logic but is a separate web page, so check changes in the app itself too.
 
-**Install test:** [`.github/workflows/install-test.yml`](.github/workflows/install-test.yml) runs after every release. It installs the published APK on emulators (Android 8, 10, 13 and 15), starts the demo car, visits every tab and fails on any crash. Screenshots and results are pushed to the `install-test-reports` branch.
+**Install test:** [`.github/workflows/install-test.yml`](.github/workflows/install-test.yml) runs after every release. It installs the published APK on emulators (Android 8, 10, 13, 15, 16 and 17), starts the demo car, visits every tab and fails on any crash. Screenshots and results are pushed to the `install-test-reports` branch.
 
 **QA:** push to the `qa` branch to run Android Lint, the unit tests and a build with compiler warnings, without publishing a release ([`.github/workflows/qa.yml`](.github/workflows/qa.yml)). The reports are committed back to `qa-reports/` on that branch.
 

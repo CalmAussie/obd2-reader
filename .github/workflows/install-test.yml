@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api: [26, 29, 33, 35]
+        api: [26, 29, 33, 35, 36, 37]
     steps:
       - uses: actions/checkout@v5
       - name: Download the published APK, as a user would
