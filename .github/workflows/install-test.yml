@@ -25,6 +25,11 @@ jobs:
       fail-fast: false
       matrix:
         api: [26, 29, 33, 35, 36, 37]
+        include:
+          # Android 17's image is named "android-37.0", and its x86_64 image uses 16 KB memory pages.
+          - api: 37
+            level: "37.0"
+            target: google_apis_ps16k
     steps:
       - uses: actions/checkout@v5
       - name: Download the published APK, as a user would
@@ -38,8 +43,8 @@ jobs:
       - name: Install and run on Android API ${{ matrix.api }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api }}
-          target: google_apis
+          api-level: ${{ matrix.level || matrix.api }}
+          target: ${{ matrix.target || 'google_apis' }}
           arch: x86_64
           profile: pixel_6
           disable-animations: true
