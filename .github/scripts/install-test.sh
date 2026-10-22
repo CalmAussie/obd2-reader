@@ -414,7 +414,7 @@ adb shell pm grant $PKG android.permission.ACCESS_FINE_LOCATION 2>/dev/null
 adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION 2>/dev/null
 adb shell settings put secure location_mode 3 2>/dev/null
 adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
-XY=$(view_center recordButton); [ -n "$XY" ] && adb shell input tap $XY && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
+XY=$(view_center_bottom recordButton pageDashboard); [ -n "$XY" ] && adb shell input tap $XY && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
 ROUTE=0
 for i in $(seq 1 10); do
   adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1
@@ -428,7 +428,7 @@ for i in 1 2 3 4; do
 done
 adb shell dumpsys location > "$OUT/location.txt" 2>/dev/null
 [ $ROUTE = 0 ] && grep -i "gps" "$OUT/location.txt" | grep -q "$PKG" && ROUTE=1
-scroll_top; XY=$(view_center recordButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+XY=$(view_center_bottom recordButton pageDashboard); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8a-recorded
 # Debug builds: check the file itself has positions.
 F=$(adb shell run-as $PKG ls files/logs 2>/dev/null | tr -d '\r' | grep csv | tail -1)
