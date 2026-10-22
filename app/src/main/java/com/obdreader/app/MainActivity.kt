@@ -977,38 +977,55 @@ class MainActivity : AppCompatActivity() {
     /** A picture of the drive in this style, for Shorts, TikTok, Reels or an Instagram post. */
     private fun shareDriveCard(trip: TripSummary) {
         val formats = DriveCardRenderer.Format.values()
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.share_picture)
-            .setItems(formats.map { it.label }.toTypedArray()) { _, i -> previewDriveCard(trip, formats[i]) }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    /** The card as it'll look, before it's shared. The roast's space is left blank: it's a surprise. */
-    private fun previewDriveCard(trip: TripSummary, format: DriveCardRenderer.Format) {
         val card = shareScore(trip)
         val roast = com.obdreader.app.obd.Roast.line(card, trip.startedAt)
         val route = routeFor(trip)
-        val preview = DriveCardRenderer(this).render(trip, card, savedCar()?.label, format, route, roast, hideRoast = true)
-        val pad = (16 * resources.displayMetrics.density).toInt()
+        var format = DriveCardRenderer.Format.STORY
+        var preview: android.graphics.Bitmap? = null
+        val pad = dp(20f).toInt()
         val image = android.widget.ImageView(this).apply {
-            setImageBitmap(preview)
             adjustViewBounds = true
             scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
-            maxHeight = (resources.displayMetrics.heightPixels * 0.6f).toInt()
+            maxHeight = (resources.displayMetrics.heightPixels * 0.5f).toInt()
             contentDescription = getString(R.string.share_preview_title)
         }
+        val use = TextView(this).apply {
+            setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            gravity = Gravity.CENTER; setPadding(0, dp(6f).toInt(), 0, dp(10f).toInt())
+        }
+        // The card as it'll look, drawn again whenever the shape changes. The roast's space stays blank.
+        fun show(f: DriveCardRenderer.Format) {
+            format = f
+            image.setImageDrawable(null); preview?.recycle()
+            preview = DriveCardRenderer(this).render(trip, card, savedCar()?.label, f, route, roast, hideRoast = true)
+            image.setImageBitmap(preview)
+            use.text = f.label.substringAfter(") ").replaceFirstChar { it.uppercase() }
+        }
+        val group = com.google.android.material.button.MaterialButtonToggleGroup(this).apply {
+            isSingleSelection = true; isSelectionRequired = true
+        }
+        val ids = formats.associateWith { View.generateViewId() }
+        formats.forEach { f ->
+            group.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                id = ids.getValue(f); text = f.label.substringBefore(" for"); isAllCaps = false
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        group.check(ids.getValue(format))
+        group.addOnButtonCheckedListener { _, id, checked -> if (checked) formats.firstOrNull { ids[it] == id }?.let { show(it) } }
         val body = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(pad, pad, pad, 0)
-            addView(image, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+            setPadding(pad, dp(8f).toInt(), pad, 0)
+            addView(group, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(use, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(image, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
+        show(format)
         MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.share_preview_title)
-            .setView(body)
+            .setTitle(R.string.share_picture)
+            .setView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
             .setPositiveButton(R.string.share_preview_share) { _, _ -> sendDriveCard(trip, card, format, route, roast) }
             .setNegativeButton("Cancel", null)
-            .setOnDismissListener { image.setImageDrawable(null); preview.recycle() }
+            .setOnDismissListener { image.setImageDrawable(null); preview?.recycle(); preview = null }
             .show()
     }
 
@@ -1022,9 +1039,10 @@ class MainActivity : AppCompatActivity() {
         file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
         bmp.recycle()
         Exports.saveToPictures(this, file)
-        // The post's text: the roast and the score, ready to paste or post as the caption.
+        // The post's text: just the score and the tag. The line on the card stays on the card.
         val score = card.score
-        Exports.share(this, file, "image/png", "My drive", text = "$roast ${score?.let { "($it/100, ${card.kind.label.lowercase(Locale.getDefault())} score)" } ?: ""}".trim() + " #OBD2Reader")
+        val text = listOfNotNull(score?.let { "My drive: $it/100 ${card.kind.label.lowercase(Locale.getDefault())} score." }, "#OBD2Reader").joinToString(" ")
+        Exports.share(this, file, "image/png", "My drive", text = text)
     }
 
     /**

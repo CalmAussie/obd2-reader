@@ -3,6 +3,8 @@
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
 ## 1.13.1 (22 October 2026)
+- **Share preview in the same window.** **Share as a picture** now shows the card straight away, with **Story (9:16)** and **Square (1:1)** buttons to switch between the two shapes, and **Share** and **Cancel** underneath. No second window.
+- The post's text is now just your score and #OBD2Reader, for example "My drive: 67/100 drive score. #OBD2Reader".
 - Fixed: on the Digital cockpit style, the **Connect** button stayed dark and faded after you disconnected (it looked stuck pressed) until the app was fully closed and reopened. It now goes straight back to its bright blue-to-teal look.
 - Fixed: on the Digital cockpit style, the small level bars under the readouts were so faint they were nearly invisible. They now show at full strength, as does the Digital cockpit preview in the Style picker.
 
@@ -14,7 +16,6 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 ## 1.12.0 (22 October 2026)
 - **Preview before you share a drive.** After you pick Story or Square, the card is shown as it'll look, with a **Share** button and **Cancel**. Nothing is saved or sent until you tap **Share**.
 - **One score on each drive card.** Shared from **Race telemetry**, the card shows only your Racing score. From any other layout, it shows your **drive score**: the average of your Everyday and Efficiency scores, with those two shown underneath on the Story card. If a drive was too short for one of them, the drive score uses the other.
-- **Roasts follow the card's score.** Race telemetry cards get racing roasts for the Racing score. Other cards get new drive-score roasts that tease smoothness and fuel together, picked for the average ("A solid C+. Smooth-ish, thirsty-ish, very average-ish."). The caption says which score it is, for example "(67/100, drive score)".
 - **Score and route side by side.** On both the Story and Square cards, the score and the route's outline now sit on one row at the same height. On the Square card the stats move underneath.
 
 ## 1.11.1 (22 October 2026)
@@ -27,7 +28,6 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 
 ## 1.10.0 (22 October 2026)
 - **Drive cards in your layout's style.** The shareable picture now looks like the Dashboard layout you share it from: livery stripes and a score ring on the liveries; shift lights lit by your score, a data-logger readout and channel-coloured panels on Race telemetry; a soft blue glow, a fine glowing ring and glass panels on the Digital cockpit; neon haze, scanlines, a segmented neon ring and split-colour digits on Cyberpunk.
-- **A cheeky roast of your score.** Every card carries a short line about the drive, picked for your score and style ("A solid C+. The brakes are drafting a strongly worded letter."), and the same line goes in the post's caption with the score. It teases the driving, never the driver.
 - **Your route in recorded drives.** When you tap **Record drive**, the app asks whether to save the route too. If you say yes, each row of the drive's CSV gets **Latitude**, **Longitude** and **Location accuracy (m)** columns, so mapping software (Google My Maps, QGIS, Excel's map charts and the like) can draw where you were for every reading. The route keeps recording with the screen off. Rows with no recent GPS fix are left blank rather than repeating an old position.
 - **Route outline on drive cards.** A drive that was recorded with its route gets its outline on the shareable picture: a line on the card's own background, with a ring where you started and a dot where you finished. No map, street names or coordinates are drawn.
 - **Location stays in the recording.** Your location is only used while a drive is recording with the route, is written only into that drive's file on your phone, and is never kept anywhere else (not in trip summaries, alerts, settings or backups). Delete the drive and the route goes with it. Shared drive cards carry only the outline's shape.
