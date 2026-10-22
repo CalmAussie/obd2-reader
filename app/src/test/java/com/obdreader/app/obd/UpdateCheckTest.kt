@@ -19,6 +19,13 @@ class UpdateCheckTest {
     }
 
     @Test
+    fun readsTheTagFromTheReleasePageAddress() {
+        assertEquals("v1.13.1-build51", UpdateCheck.tagFromReleaseUrl("https://github.com/CalmAussie/obd2-reader/releases/tag/v1.13.1-build51"))
+        assertEquals("v1.13.1-build51", UpdateCheck.tagFromReleaseUrl("https://github.com/x/y/releases/tag/v1.13.1-build51?from=latest"))
+        assertNull(UpdateCheck.tagFromReleaseUrl("https://github.com/x/y/releases"))
+    }
+
+    @Test
     fun onlyABiggerBuildIsAnUpdate() {
         assertTrue(UpdateCheck.isNewer(release(50), 49))
         assertFalse(UpdateCheck.isNewer(release(49), 49))

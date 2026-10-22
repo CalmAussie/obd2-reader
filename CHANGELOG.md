@@ -8,6 +8,7 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 - **What's new since your version.** **Diagnostics → App updates** now has a **Check for updates** button. Tap the rest of the row to see the changelog for just the versions released after the one you have, with a button to get the newest. If you're up to date, it shows what's in your version.
 - **Tap and hold to see the card big.** Hold the preview and it grows smoothly out of its place to fill the screen; let go and it shrinks back.
 - The post's text is now just your score and #OBD2Reader, for example "My drive: 67/100 drive score. #OBD2Reader".
+- Fixed: checking for updates could fail on a busy shared network (work, a café or a hotspot), because GitHub limits how often one internet address can ask. The app now falls back to GitHub's release page when that happens.
 - Fixed: on the Digital cockpit style, the **Connect** button stayed dark and faded after you disconnected (it looked stuck pressed) until the app was fully closed and reopened. It now goes straight back to its bright blue-to-teal look.
 - Fixed: on the Digital cockpit style, the small level bars under the readouts were so faint they were nearly invisible. They now show at full strength, as does the Digital cockpit preview in the Style picker.
 
