@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.3 (22 October 2026)
+- **A clock on the Dashboard,** just left of the style button. It follows your phone's 12 or 24-hour setting.
+- Fixed: the protocol was worded differently on the Dashboard ("CAN 11-bit, 500 kbaud") and the Diagnostics tab ("ISO 15765-4 CAN (11-bit, 500 kbaud)"), so the same protocol looked like two different ones. Both now use the full standard name. The **Protocol** setting on Diagnostics also says which protocol Automatic found while you're connected, for example "Automatic · ISO 15765-4 CAN (11-bit, 500 kbaud)", instead of just "Automatic".
+
 ## 1.13.2 (22 October 2026)
 - Fixed: tapping **Update** downloaded the new version, but Android's **Install** prompt sometimes never appeared, so nothing was installed. The app now shows the prompt from its own screen; if you've switched away, a notification appears, and tapping it opens the prompt.
 - If an update can't install, the app now says why in a message that stays on screen, with Android's own reason (for example, Google Play Protect blocking it, or a download that didn't finish) and a button to get the new version from the release page instead. Before, it only showed a brief message that was easy to miss.
