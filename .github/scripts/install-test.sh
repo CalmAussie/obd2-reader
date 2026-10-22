@@ -308,6 +308,27 @@ if tap_text "Share as a picture" && tap_contains "Story (9:16)"; then
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-preview.xml"
   shot 8b-share-preview
   if grep -q 'content-desc="Preview"' "$OUT/ui-preview.xml" && grep -qi 'text="Share"' "$OUT/ui-preview.xml"; then log "share preview: shown"; else log "share preview: FAILED (not shown)"; FAIL=1; fi
+  # Tap and hold the preview: it grows into a full-screen layer, and goes when the finger lifts.
+  PXY=$(python3 - "$OUT/ui-preview.xml" <<'PY'
+import re, sys
+xml = open(sys.argv[1], encoding='utf-8', errors='ignore').read()
+m = re.search(r'content-desc="Preview"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
+if m: x1, y1, x2, y2 = map(int, m.groups()); print((x1 + x2) // 2, (y1 + y2) // 2)
+PY
+)
+  if [ -n "$PXY" ]; then
+    set -- $PXY
+    adb shell input swipe $1 $2 $1 $2 3000 &
+    HOLD=$!
+    sleep 2
+    shot 8c-share-preview-held
+    PEEK=$(adb shell dumpsys window windows 2>/dev/null | grep -c "Window{.*PopupWindow")
+    wait $HOLD; sleep 1
+    AFTER=$(adb shell dumpsys window windows 2>/dev/null | grep -c "Window{.*PopupWindow")
+    if [ "${PEEK:-0}" -ge 1 ] && [ "${AFTER:-0}" -lt "${PEEK:-0}" ]; then log "share preview: enlarges on hold"; else log "share preview: FAILED (hold: ${PEEK:-0} layers, after: ${AFTER:-0})"; FAIL=1; fi
+  else
+    log "share preview: FAILED (preview not found to hold)"; FAIL=1
+  fi
   tap_text "Share" > /dev/null || true
   sleep 3
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-share.xml"

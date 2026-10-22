@@ -2499,13 +2499,39 @@ function drawRoute(c, pts, left, top, right, bottom, bg, s1, s2, fg) {
   c.fillStyle = bg; c.beginPath(); c.arc(a[0], a[1], 20, 0, 7); c.fill(); c.strokeStyle = s2; c.lineWidth = 8; c.beginPath(); c.arc(a[0], a[1], 16, 0, 7); c.stroke();
   c.fillStyle = s1; c.beginPath(); c.arc(b[0], b[1], 20, 0, 7); c.fill(); c.strokeStyle = fg; c.lineWidth = 5; c.beginPath(); c.arc(b[0], b[1], 24, 0, 7); c.stroke();
 }
+/* Mirrors ui/PeekZoom.kt: tap and hold the preview to see it big. It grows smoothly out of its place
+   to fill the phone screen, and shrinks back when you let go. */
+function peekZoom(cv) {
+  let timer = null, layer = null;
+  const open = () => {
+    const phone = $("phone"), pr = phone.getBoundingClientRect(), r = cv.getBoundingClientRect();
+    const m = 16, fit = Math.min((pr.width - 2 * m) / cv.width, (pr.height - 4 * m) / cv.height);
+    const w = cv.width * fit, h = cv.height * fit, left = (pr.width - w) / 2, top = (pr.height - h) / 2;
+    layer = document.createElement("div");
+    layer.style.cssText = "position:absolute;inset:0;z-index:60;background:rgba(0,0,0,0);transition:background .26s;pointer-events:none;border-radius:inherit";
+    const img = document.createElement("img"); img.src = cv.toDataURL();
+    img.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${w}px;height:${h}px;border-radius:12px;transform-origin:0 0;transition:transform .26s cubic-bezier(.2,.8,.3,1)`;
+    const s0 = r.width / w; img.style.transform = `translate(${r.left - pr.left - left}px,${r.top - pr.top - top}px) scale(${s0})`;
+    layer.dataset.back = img.style.transform; layer.appendChild(img); phone.appendChild(layer); cv.style.opacity = 0;
+    requestAnimationFrame(() => requestAnimationFrame(() => { img.style.transform = "none"; layer.style.background = "rgba(0,0,0,.86)"; }));
+  };
+  const close = () => {
+    clearTimeout(timer); timer = null; if (!layer) return;
+    const l = layer, img = l.firstChild; layer = null;
+    img.style.transition = "transform .2s cubic-bezier(.4,0,.6,1)"; img.style.transform = l.dataset.back; l.style.background = "rgba(0,0,0,0)";
+    setTimeout(() => { l.remove(); cv.style.opacity = 1; }, 210);
+  };
+  cv.addEventListener("pointerdown", e => { e.preventDefault(); timer = setTimeout(open, 400); });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev => cv.addEventListener(ev, close));
+  cv.addEventListener("contextmenu", e => e.preventDefault());
+}
 function showDriveCard(t) {
   /* Mirrors MainActivity.previewDriveCard: a preview with the roast's space left blank, then Share. */
   let fmt = "story", shared = false;
   const s = overlay(`<h3 id="cardTitle">Share as a picture</h3><div class="seg ov-seg"><button role="radio" aria-checked="true" data-f="story">Story (9:16)</button><button role="radio" aria-checked="false" data-f="square">Square (1:1)</button></div>
     <div id="cardBox" style="margin-top:12px;text-align:center"></div><p class="msg" id="cardCaption" style="margin-top:10px" hidden></p><p class="msg" id="cardNote" style="margin-top:6px" hidden>In the app this opens Android's share sheet (YouTube, TikTok, Instagram…) with that caption, and keeps a copy in Pictures › OBD2 Reader.</p>
     <div class="btns"><button id="cardClose">Cancel</button><button class="primary" id="cardShare">Share</button></div>`);
-  const show = () => { const cv = renderDriveCard(t, fmt, !shared); cv.style.cssText = `width:${fmt === "story" ? 56 : 100}%;border-radius:8px`; $("cardBox").replaceChildren(cv);
+  const show = () => { const cv = renderDriveCard(t, fmt, !shared); cv.style.cssText = `width:${fmt === "story" ? 56 : 100}%;border-radius:8px;touch-action:none;user-select:none`; $("cardBox").replaceChildren(cv); peekZoom(cv);
     const sc = cv.dataset.score; $("cardCaption").textContent = `Caption: ${sc !== "" ? `My drive: ${sc}/100 ${cv.dataset.kind.toLowerCase()} score. ` : ""}#OBD2Reader`; };
   s.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { s.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-checked", x === b)); fmt = b.dataset.f; show(); });
   $("cardShare").onclick = () => { shared = true; $("cardTitle").textContent = "Shared picture"; $("cardCaption").hidden = false; $("cardNote").hidden = false; $("cardShare").hidden = true; $("cardClose").textContent = "Close"; show(); };

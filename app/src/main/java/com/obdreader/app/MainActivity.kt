@@ -989,6 +989,8 @@ class MainActivity : AppCompatActivity() {
             maxHeight = (resources.displayMetrics.heightPixels * 0.5f).toInt()
             contentDescription = getString(R.string.share_preview_title)
         }
+        // Tap and hold to see the card big.
+        com.obdreader.app.ui.PeekZoom.attach(image) { preview }
         val use = TextView(this).apply {
             setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             gravity = Gravity.CENTER; setPadding(0, dp(6f).toInt(), 0, dp(10f).toInt())
