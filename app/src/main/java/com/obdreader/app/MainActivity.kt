@@ -464,7 +464,10 @@ class MainActivity : AppCompatActivity() {
                 launch { DriveScorer.topSpeed.collect { showTopSpeed(it) } }
                 // When a drive ends, sum it up (once), and keep it as the last drive.
                 launch {
-                    DriveScorer.lastTrip.collect { trip ->
+                    DriveScorer.lastTrip.collect { latest ->
+                        // A drive that ended while the app was away (even closed) is kept on the phone,
+                        // so it's summed up the next time the app is on screen.
+                        val trip = latest ?: savedTrip()
                         if (trip == null || trip.endedAt <= prefs.getLong(PREF_LAST_TRIP_SHOWN, 0L)) return@collect
                         prefs.edit().putString(PREF_LAST_TRIP, trip.encode()).putLong(PREF_LAST_TRIP_SHOWN, trip.endedAt).apply()
                         lastTripButton?.visibility = View.VISIBLE
@@ -495,7 +498,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupScore() {
         scoreCard = findViewById(R.id.scoreCard)
         scoreCard.background = panelBackground()
-        DriveScorer.start()
+        DriveScorer.start(this)
         scoreStyle = DrivingScore.Style.values().firstOrNull { it.name == prefs.getString(PREF_SCORE_STYLE, null) } ?: DrivingScore.Style.EVERYDAY
         val ids = mapOf(DrivingScore.Style.EFFICIENCY to R.id.styleEfficiency, DrivingScore.Style.EVERYDAY to R.id.styleEveryday, DrivingScore.Style.RACING to R.id.styleRacing)
         // Narrow padding and one line each, so "Efficiency" isn't cut short on small phones or with large text.

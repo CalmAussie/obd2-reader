@@ -54,7 +54,7 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics �
 - **Battery charging status:** beside the voltage, an estimate (marked est.) of whether the battery is charging, worked out from voltage and engine speed. Standard OBD2 has no battery-current (amps) reading.
 - **Top speed:** the highest speed of the current drive shows beside the speed, on the phone and in Android Auto.
 - **Swipe between tabs:** swipe sideways across the screen to move between the Dashboard, Graphs and Diagnostics.
-- **Trip summary:** distance, driving and idle time, average and top speed, best 0–100 and scores when each drive ends.
+- **Trip summary:** distance, driving and idle time, average and top speed, best 0–100 and scores when each drive ends (when you disconnect, or the ignition has been off for 3 minutes).
 - **Driving alerts:** sound, vibration and a notification (on Android Auto too) for a hot engine or oil, a battery not charging, overcharging or low, and new trouble codes. Switch off under **Diagnostics → Alerts**.
 - **Performance timers:** 0–100 km/h, 80–120 km/h and the quarter mile (an estimate, worked out from speed), or 0–60 and 50–70 mph, with your best times.
 - **Video overlay and drive cards:** turn a recorded drive into an MP4 gauge overlay for your video editor ([how to use it](#video-overlay)), or a drive into a picture card for Shorts, TikTok, Reels or Instagram, drawn in the style of your Dashboard layout, with one score (your Racing score from Race telemetry, otherwise your drive score: the average of Everyday and Efficiency) and the route's outline when the drive was recorded with it. You see a preview of the card before it's shared.
