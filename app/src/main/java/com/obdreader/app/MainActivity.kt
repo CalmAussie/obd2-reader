@@ -812,7 +812,7 @@ class MainActivity : AppCompatActivity() {
                 val text = buildString {
                     appendLine("OBD2 Reader car scan, ${java.text.SimpleDateFormat("d MMM yyyy, h:mm a", Locale.getDefault()).format(java.util.Date())}")
                     savedCar()?.label?.let { appendLine("Car: $it") }
-                    ObdSession.state.value.vin?.let { appendLine("VIN: $it") }
+                    Exports.vinLines(this@MainActivity, ObdSession.state.value.vin).forEach { appendLine(it) }
                     appendLine("Protocol: ${ObdProtocols.byCode(ObdSession.state.value.protocolCode)?.name ?: "unknown"}")
                     appendLine(); appendLine("Standard readings:")
                     readings.forEach { appendLine(String.format(Locale.US, "  %02X  %s", it, CarCoverage.name(it))) }
@@ -2090,18 +2090,70 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showVin(vin: String?) {
+    /**
+     * Shows the VIN: the one the user entered from their VIN plate if there is one, else the one
+     * the car sent ([carVin]). The car's VIN comes from its engine computer, which can hold a VIN
+     * that isn't the car's (a typo when it was programmed, or a computer from another car), so when
+     * the two differ both are shown.
+     */
+    private fun showVin(carVin: String?) {
+        val userVin = AppPrefs.userVin(prefs)
+        val vin = userVin ?: carVin
         val checked = vin == null || vin.length < 17 || VinDecoder.isValid(vin)
         vinText.text = vin ?: "Not reported"
+        findViewById<TextView>(R.id.vinLabel).setText(if (userVin != null) R.string.vin_entered else R.string.vin)
+        findViewById<MaterialButton>(R.id.vinEnter).apply {
+            setText(if (userVin != null) R.string.vin_change else R.string.vin_enter)
+            setOnClickListener { askForVin(carVin) }
+        }
+        val note = findViewById<TextView>(R.id.vinNote)
+        note.text = when {
+            userVin != null && carVin != null && carVin != userVin ->
+                "Your car's engine computer reports $carVin, which doesn't match your VIN plate. That happens on some cars: the VIN stored in the computer can have a typo from when it was programmed, or come from another car if the computer was replaced. It doesn't affect live data or trouble codes."
+            userVin == null && carVin != null && !checked ->
+                "This VIN fails its check digit, so it may not be your car's. If it doesn't match your VIN plate, enter the right one below."
+            else -> null
+        }
+        note.visibility = if (note.text.isNullOrEmpty()) View.GONE else View.VISIBLE
         val info = vin?.let { VinDecoder.decode(it) }
         showVinMismatch(info)
         vehicleText.text = when {
-            !checked -> "This VIN failed its check digit, so the car may have sent it garbled. Compare it with the VIN plate; the make isn't taken from it."
+            !checked -> "Make and year not taken from this VIN"
             info?.make != null && info.modelYear != null -> "${info.make}, ${info.modelYear} model year"
             info?.make != null -> info.make
             vin != null -> "Make not recognised from VIN"
             savedCar() != null -> "Your car: ${savedCar()?.label}. It doesn't report a VIN."
             else -> "Older cars often don't report a VIN. Live data and codes still work."
+        }
+    }
+
+    /** Lets the user type their VIN from the plate, or go back to the one the car sends. */
+    private fun askForVin(carVin: String?) {
+        val input = com.google.android.material.textfield.TextInputEditText(this).apply {
+            setText(AppPrefs.userVin(prefs) ?: carVin ?: "")
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS or android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            filters = arrayOf(android.text.InputFilter.AllCaps(), android.text.InputFilter.LengthFilter(20))
+            typeface = uiTypeface(500)
+            setSelection(text?.length ?: 0)
+        }
+        val box = com.google.android.material.textfield.TextInputLayout(this).apply {
+            setPadding(dp(20f).toInt(), dp(8f).toInt(), dp(20f).toInt(), 0)
+            addView(input)
+        }
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.vin_dialog_title)
+            .setMessage(R.string.vin_dialog_text)
+            .setView(box)
+            .setPositiveButton(R.string.save, null)
+            .setNegativeButton(android.R.string.cancel, null)
+            .apply { if (AppPrefs.userVin(prefs) != null) setNeutralButton(R.string.vin_use_car) { _, _ -> AppPrefs.setUserVin(prefs, null); showVin(ObdSession.state.value.vin) } }
+            .show()
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val vin = VinDecoder.normalise(input.text?.toString().orEmpty())
+            if (vin == null) { box.error = getString(R.string.vin_dialog_bad); return@setOnClickListener }
+            AppPrefs.setUserVin(prefs, if (vin == ObdSession.state.value.vin) null else vin)
+            dialog.dismiss()
+            showVin(ObdSession.state.value.vin)
         }
     }
 
@@ -2727,7 +2779,7 @@ class MainActivity : AppCompatActivity() {
             applyRedline()
             sheet.dismiss()
             if (lastCodes != null) lastCodes?.let { renderCodes(it) } // re-explain codes for the new make
-            showVinMismatch(ObdSession.state.value.vin?.let { VinDecoder.decode(it) })
+            showVin(ObdSession.state.value.vin) // an entered VIN belongs to the car it was entered for
             val after = {
                 when {
                     onDone != null -> onDone()
@@ -3132,6 +3184,7 @@ class MainActivity : AppCompatActivity() {
         roundel.checkEngine = false
         vinText.setText(R.string.vin_unknown)
         vehicleText.setText(R.string.vehicle_unknown)
+        if (AppPrefs.userVin(prefs) != null) showVin(null)
         protocolText.setText(R.string.protocol_unknown)
         dtcContainer.removeAllViews()
         setCodeBadge(0)

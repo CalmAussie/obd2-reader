@@ -378,12 +378,16 @@ object ObdSession {
     /** The car's make, for explaining manufacturer-specific codes: the car the user chose, else the VIN's maker. */
     fun carMake(context: Context?): String? =
         context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.make }
-            ?: _state.value.vin?.let { com.obdreader.app.obd.VinDecoder.decode(it).make }
+            ?: vinFor(context)?.let { com.obdreader.app.obd.VinDecoder.decode(it).make }
 
     /** The car's model year, the same way: the car the user chose, else the VIN's year. */
     fun carYear(context: Context?): Int? =
         context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.year }
-            ?: _state.value.vin?.let { com.obdreader.app.obd.VinDecoder.decode(it).modelYear }
+            ?: vinFor(context)?.let { com.obdreader.app.obd.VinDecoder.decode(it).modelYear }
+
+    /** The VIN to go by: the one the user entered from their VIN plate, else the one the car sent. */
+    fun vinFor(context: Context?): String? =
+        context?.let { AppPrefs.userVin(AppPrefs.of(it)) } ?: _state.value.vin
 
     private var appContext: Context? = null
 

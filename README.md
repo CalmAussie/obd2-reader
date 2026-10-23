@@ -68,7 +68,7 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics â
 - **Read-only:** the app never clears codes, turns off the check-engine light or changes anything in the car. Every command is checked before it's sent, and anything that isn't a read is blocked.
 - **Reconnects by itself:** picks the adapter back up when you open the app, start Android Auto or turn the ignition back on.
 - **Readable adapter log:** every message to and from the adapter is explained in plain English (for example "Engine RPM: 3,176 rpm" under the raw reply), with the latest trouble codes and their definitions pinned at the top. Share it as a text file when troubleshooting.
-- **Vehicle ID:** reads the VIN, checks its check digit and shows the make and model year.
+- **Vehicle ID:** reads the VIN and shows the make and model year. If the car's VIN doesn't match your VIN plate, enter the right one (kept on your phone only).
 - **Finds the right protocol:** tries every OBD2 protocol automatically. If your car won't connect, choose it under **Diagnostics â†’ Your car** (69 makes from 2000 on) so the app tries that car's usual protocol first.
 - **Background connection:** keeps working with the screen off, with a notification showing live RPM, speed and coolant.
 

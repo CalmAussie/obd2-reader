@@ -769,6 +769,26 @@
                         android:textColor="?attr/obdAccent"
                         android:visibility="gone" />
 
+                    <!-- When the car's VIN doesn't match the plate: what the car reports, and why. -->
+                    <TextView
+                        android:id="@+id/vinNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="?attr/obdTextSecondary"
+                        android:textIsSelectable="true"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/vinEnter"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-12dp"
+                        android:text="@string/vin_enter"
+                        android:textColor="?attr/obdAccent" />
+
                     <TextView
                         style="@style/ObdHeading"
                         android:layout_width="wrap_content"

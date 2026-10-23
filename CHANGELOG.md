@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.7 (23 October 2026)
+- **Enter your VIN from the plate.** Some cars send a VIN that isn't quite theirs: the VIN stored in the engine computer can have a typo from when it was programmed, or belong to another car if the computer was replaced. **Diagnostics → Not your VIN? Enter it** lets you type the VIN from your VIN plate. It's kept on this phone only and used for the make and year and in reports instead. When the car's VIN is different, Diagnostics shows what the engine computer reports underneath, and reports list both, so a mechanic sees both too. Choosing a different car stops using the VIN you entered.
+- Fixed: VINs from cars built outside North America, including many built in China for other markets, were wrongly called "may be misread" because their check digit didn't add up. Only North American VINs must use a check digit, so only those are checked now.
+
 ## 1.13.6 (23 October 2026)
 - Fixed: after disconnecting and closing the app from Recents, the connection notification could stay behind, and tapping its **Disconnect** button didn't take it away. The notification now goes as soon as there's nothing connected (and no route being recorded), and **Disconnect** on a leftover notification clears it.
 
