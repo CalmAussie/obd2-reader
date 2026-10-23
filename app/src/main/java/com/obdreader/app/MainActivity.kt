@@ -1015,6 +1015,7 @@ class MainActivity : AppCompatActivity() {
         val card = shareScore(trip)
         val roast = com.obdreader.app.obd.Roast.line(card, trip.startedAt)
         val route = routeFor(trip)
+        android.util.Log.i("OBD2Share", "drive card: route of ${route?.points?.size ?: 0} points")
         var format = DriveCardRenderer.Format.STORY
         var preview: android.graphics.Bitmap? = null
         val pad = dp(20f).toInt()
