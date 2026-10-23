@@ -487,6 +487,16 @@ if [ -n "$F" ]; then
 fi
 [ $ROUTE = 1 ] && log "route: saved with the recording" || { log "route: FAILED (not saved)"; FAIL=1; }
 tap_tab Dashboard; scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
+# The drive card for this drive should draw the route that was just recorded.
+adb logcat -c
+if tap_text "Share as a picture"; then
+  sleep 3; shot 8a2-card-with-route
+  PTS=$(adb logcat -d -s OBD2Share:I 2>/dev/null | grep -o "route of [0-9]* points" | grep -o "[0-9]*" | tail -1)
+  [ "${PTS:-0}" -ge 2 ] && log "drive card: route outline ($PTS points)" || { log "drive card: FAILED (no route outline, ${PTS:-0} points)"; FAIL=1; }
+  tap_text "Cancel" > /dev/null || adb shell input keyevent KEYCODE_BACK; sleep 1
+else
+  log "drive card: FAILED (no trip summary after the recorded drive)"; FAIL=1
+fi
 tap_text "Done" > /dev/null || true
 tap_tab Graphs; sleep 2
 XY=$(view_center_bottom savedLogsButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
