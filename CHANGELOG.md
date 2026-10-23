@@ -4,6 +4,8 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 
 ## 1.13.8 (23 October 2026)
 - Fixed: a drive that ended by switching the car off, without tapping **Disconnect**, never ended in the app. Many cars keep the OBD2 port powered with the ignition off, so the app just waited for the car to start again: the trip summary didn't come up, and **Last drive summary** still showed the drive before, so its drive card had no route outline from the drive you'd just recorded. A drive now ends once the ignition has been off for 3 minutes (a shorter stop carries on as the same drive), and its summary comes up.
+- **Fewer gaps in the route.** On Android 12 and newer, recordings use the phone's fused location, which adds the phone's motion sensors to GPS, so short dropouts are bridged. Positions still come only from your phone's own location service and are only saved in the drive you record.
+- **Route outline at the start and end of a drive without GPS.** When a drive starts or ends with no GPS fix (an underground car park, or a tunnel at the very end), the outline on the drive card is carried on by how far the car's speed readings say it went, in the direction it was heading. In the middle of a drive, a tunnel is still drawn as a straight line between where GPS was lost and found again: without maps, the app can't know the road's curves. The drive's CSV file is unchanged: rows without a fix stay blank.
 - Fixed: a drive that ended while the app was in the background or closed could be lost. It's now kept on the phone the moment it ends, and its summary comes up the next time you open the app.
 
 ## 1.13.7 (23 October 2026)
