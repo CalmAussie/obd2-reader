@@ -1,0 +1,27 @@
+Location Manager State:
+  User Info:
+    current users: u[]
+  Location Settings:
+    Location Setting: true
+    Location Allow/Deny Packages:
+    Throttling Allow Packages:
+      com.google.android.gms
+    Emergency Bypass Allow Packages:
+      com.google.android.dialer[*]
+      com.google.android.gms[.thunderbird]
+      com.google.android.apps.scone[satellite_esos]
+      com.android.phone[telephony]
+  Location Providers:
+    passive provider:
+      service: unregistered
+      last location=null
+      enabled=true
+      allowed=true
+      identity=1000/android[LocationService]
+      properties=ProviderProperties[powerUsage=Low, accuracy=Fine]
+  Historical Aggregate Location Provider Data:
+  Historical Aggregate Gnss Measurement Provider Data:
+  Geofence Manager:
+    service: unregistered
+  Event Log:
+    10-23 12:14:30.190: passive provider [u0] enabled

@@ -1,0 +1,87 @@
+--------- beginning of main
+10-23 12:23:36.239  1018  1618 D TaplEvents: Main / onOverviewToggle
+--------- beginning of system
+10-23 12:23:36.241   483   504 D AutofillManagerService: Close system dialogs
+10-23 12:23:36.242   754   754 I vol.VolumeDialogImpl: mDialog.dismiss() reason: volume_controller from: com.android.systemui.volume.VolumeDialogImpl$7.onDismissRequested:2
+10-23 12:23:36.243  1018  1018 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=FULL
+10-23 12:23:36.251  1018  1018 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARING
+10-23 12:23:36.252  1018  1018 D MainContentCaptureSession: Flushing 2 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARED
+10-23 12:23:36.264  1018  1691 D EGL_emulation: app_time_stats: avg=4943.39ms min=20.60ms max=14591.28ms count=3
+10-23 12:23:36.279  1018  1018 D b/246283207: LauncherRecentsView#onLayout() -> if(mScroller.isFinished() && pageScrollChanged) -> getNextPage(): 0, getScrollForPage(getNextPage()): 294
+10-23 12:23:36.286  1018  1058 I AiAiSuggestUi: Connecting to system intelligence module.
+10-23 12:23:36.292  1018  1018 I AiAiSuggestUi: Clearing suggestions.
+10-23 12:23:36.292  1018  1018 I AiAiSuggestUi: Requesting to show indicators
+10-23 12:23:36.293  1018  1018 I AiAiSuggestUi: Fetching contents, isPrimaryTask = false
+10-23 12:23:36.309   754   803 D EGL_emulation: app_time_stats: avg=497190.91ms min=497190.91ms max=497190.91ms count=1
+10-23 12:23:36.313  1018  3119 I AiAiSuggestUi: Successfully connected to system intelligence: 
+10-23 12:23:36.313  1018  1018 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARING
+10-23 12:23:36.313  1018  1018 D MainContentCaptureSession: Flushing 5 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARED
+10-23 12:23:36.329   121   121 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-23 12:23:36.330  1546  2838 I Gralloc4: mapper 4.x is not supported
+10-23 12:23:36.433  1546  2838 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+10-23 12:23:36.447  1546 14927 D libEGL  : loaded /vendor/lib64/egl/libEGL_emulation.so
+10-23 12:23:36.448  1546 14927 D libEGL  : loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+10-23 12:23:36.449  1546 14927 D libEGL  : loaded /vendor/lib64/egl/libGLESv2_emulation.so
+10-23 12:23:36.483  1546 14927 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+10-23 12:23:36.488  1546 14927 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+10-23 12:23:36.488  1546 14927 D EGL_emulation: eglCreateContext: 0x722ff6a0ff90: maj 3 min 0 rcv 3
+10-23 12:23:36.489  1546 14927 D EGL_emulation: eglMakeCurrent: 0x722ff6a0ff90: ver 3 0 (tinfo 0x7232231f7080) (first time)
+10-23 12:23:36.625  1018  1018 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARING
+10-23 12:23:36.629  1018  1018 D MainContentCaptureSession: Flushing 3 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARED
+10-23 12:23:36.745  6723  6723 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.feedback.internal.IFeedbackService dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }
+10-23 12:23:36.757  1018  1618 I AiAiSuggestUi: Fetched content back in callback
+10-23 12:23:36.758  1018  1018 I AiAiSuggestUi: Display indicators
+10-23 12:23:39.280 14930 14930 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+10-23 12:23:39.285   121   121 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-23 12:23:39.285 14930 14931 I Gralloc4: mapper 4.x is not supported
+10-23 12:23:39.305 14930 14931 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+10-23 12:23:39.421  1018  1018 D TaplEvents: Main / Touch event: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=540.0, y[0]=1300.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=1144254, downTime=1144254, deviceId=-1, source=0x1002, displayId=0, eventId=-178161246 }
+10-23 12:23:39.422  1018  1018 D TaplEvents: TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=540.0, y[0]=1300.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=1144254, downTime=1144254, deviceId=-1, source=0x1002, displayId=0, eventId=-178161246 }
+10-23 12:23:39.433  1018  1018 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARING
+10-23 12:23:39.433  1018  1018 D MainContentCaptureSession: Flushing 2 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARED
+10-23 12:23:39.446  1018  1691 D EGL_emulation: app_time_stats: avg=795.14ms min=27.04ms max=2785.42ms count=4
+10-23 12:23:39.701  1018  1018 D TaplEvents: Main / Touch event: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=540.0, y[0]=150.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=1144518, downTime=1144254, deviceId=-1, source=0x1002, displayId=0, eventId=-891433367 }
+10-23 12:23:39.702  1018  1018 D TaplEvents: TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=540.0, y[0]=150.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=1144518, downTime=1144254, deviceId=-1, source=0x1002, displayId=0, eventId=-891433367 }
+10-23 12:23:39.702  1018  1018 I AiAiSuggestUi: Clearing suggestions.
+10-23 12:23:39.703  1018  1018 I AiAiSuggestUi: Clearing suggestions.
+10-23 12:23:39.748  1018  1018 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=FULL
+10-23 12:23:39.748  1018  1018 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARING
+10-23 12:23:39.748  1018  1018 D MainContentCaptureSession: Flushing 13 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=VIEW_TREE_APPEARED
+10-23 12:23:39.809  4421  4421 I OBD2Close: closed: stopping recording, connection and service
+10-23 12:23:39.810  4421  4421 D AutofillManager: onActivityFinishing(): calling cancelLocked()
+10-23 12:23:39.812   483  1700 W InputManager-JNI: Input channel object '8bb6f30 com.obdreader.app/com.obdreader.app.MainActivity (client)' was disposed without first being removed with the input manager!
+10-23 12:23:39.814   483   507 I ActivityManager: Killing 4421:com.obdreader.app/u0a174 (adj 905): remove task
+10-23 12:23:39.815   483  1700 W InputManager-JNI: Input channel object 'Letterbox_left_ActivityRecord{d246fb4 u0 com.obdreader.app/.MainActivity} t9} (client)' was disposed without first being removed with the input manager!
+10-23 12:23:39.815   483  1700 W InputManager-JNI: Input channel object 'Letterbox_top_ActivityRecord{d246fb4 u0 com.obdreader.app/.MainActivity} t9} (client)' was disposed without first being removed with the input manager!
+10-23 12:23:39.815   483  1700 W InputManager-JNI: Input channel object 'Letterbox_right_ActivityRecord{d246fb4 u0 com.obdreader.app/.MainActivity} t9} (client)' was disposed without first being removed with the input manager!
+10-23 12:23:39.815   483  1700 W InputManager-JNI: Input channel object 'Letterbox_bottom_ActivityRecord{d246fb4 u0 com.obdreader.app/.MainActivity} t9} (client)' was disposed without first being removed with the input manager!
+10-23 12:23:39.822   341   409 W TransactionTracing: Could not find layer handle 0x79b363fd3550
+10-23 12:23:39.822   341   409 W TransactionTracing: Could not find layer handle 0x79b363fd4d50
+10-23 12:23:39.852   416   416 D BufferPoolAccessor2.0: bufferpool2 0x7bbae8214288 : 0(0 size) total buffers - 0(0 size) used buffers - 3095/3097 (recycle/alloc) - 8/3096 (fetch/transfer)
+10-23 12:23:39.852   416   416 D BufferPoolAccessor2.0: Destruction - bufferpool2 0x7bbae8214288 cached: 0/0M, 0/0% in use; allocs: 3097, 100% recycled; transfers: 3096, 100% unfetched
+10-23 12:23:39.852   483   514 W UsageStatsService: Unexpected activity event reported! (com.obdreader.app/com.obdreader.app.MainActivity event : 23 instanceId : 259388551)
+10-23 12:23:39.856   287   287 I Zygote  : Process 4421 exited due to signal 9 (Killed)
+10-23 12:23:39.857   483   517 I libprocessgroup: Successfully killed process cgroup uid 10174 pid 4421 in 35ms
+10-23 12:23:39.859   483   507 W ActivityManager: setHasOverlayUi called on unknown pid: 4421
+10-23 12:23:39.894   754   803 D EGL_emulation: app_time_stats: avg=3584.45ms min=3584.45ms max=3584.45ms count=1
+10-23 12:23:43.368   754   803 D EGL_emulation: app_time_stats: avg=29927.28ms min=29927.28ms max=29927.28ms count=1
+10-23 12:23:43.758 14942 14942 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+10-23 12:23:43.762   121   121 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-23 12:23:43.762 14942 14943 I Gralloc4: mapper 4.x is not supported
+10-23 12:23:43.785 14942 14943 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+10-23 12:23:44.011   483  1119 D WifiNl80211Manager: Scan result ready event
+10-23 12:23:44.011   483  1119 D WifiNative: Scan result ready event
+--------- beginning of kernel
+10-23 12:23:44.479     0     0 I logd    : logdr: UID=2000 GID=2000 PID=14948 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns
+10-23 12:23:44.324   483   504 D AutofillManagerService: Close system dialogs
+10-23 12:23:44.325   754   754 I vol.VolumeDialogImpl: mDialog.dismiss() reason: volume_controller from: com.android.systemui.volume.VolumeDialogImpl$7.onDismissRequested:2
+10-23 12:23:44.326   483   505 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity (has extras)} from uid 0
+10-23 12:23:44.333  1018  1018 D TaplTarget: Launcher.onNewIntent: Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity (has extras) }
+10-23 12:23:44.334  1018  1018 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=FULL
+10-23 12:23:44.334  1018  1018 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=FULL
+10-23 12:23:44.335   483   504 D AutofillManagerService: Close system dialogs
+10-23 12:23:44.335   754   754 I vol.VolumeDialogImpl: mDialog.dismiss() reason: volume_controller from: com.android.systemui.volume.VolumeDialogImpl$7.onDismissRequested:2
+10-23 12:23:44.335   754   754 D vol.VolumeDialogImpl: dismissH: skipping dismiss because isAnimatingDismiss is true and showingStateInconsistent is false
+10-23 12:23:44.338   483  1588 W AppSearchIcing: icing-search-engine.cc:217: Error: 5, Message: Document (com.google.android.googlequicksearchbox$OneSearchZeroStateGoogleSuggestions/default, zp) not found.
+10-23 12:23:44.339  1018  1871 D OneSearchSuggestProvider: Established or reuse existing binder channel authority=com.google.android.googlequicksearchbox
+10-23 12:23:44.514     0     0 I logd    : logdr: UID=2000 GID=2000 PID=14956 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns
