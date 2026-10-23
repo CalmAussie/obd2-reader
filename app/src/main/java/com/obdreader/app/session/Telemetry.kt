@@ -140,6 +140,8 @@ object LogRecorder {
                 // Nothing was recorded (never connected): don't leave an empty file behind.
                 if ((_active.value?.rows ?: 0) == 0) file.delete()
                 if (located) LocationFeed.stop()
+                // The service was only kept for the route: let it go if the car is disconnected too.
+                if (located && !ObdSession.isActive) ObdConnectionService.stop(context)
                 _active.value = null
             }
         }
