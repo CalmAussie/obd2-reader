@@ -1,0 +1,480 @@
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1416: Warning: The id R.id.teleCoolant has already been looked up in this method; possible cut & paste error? [CutPasteId]
+        teleCoolant = findViewById(R.id.teleCoolant)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1415: First usage here
+
+   Explanation for issues of type "CutPasteId":
+   This lint check looks for cases where you have cut & pasted calls to
+   findViewById but have forgotten to update the R.id field. It's possible
+   that your code is simply (redundantly) looking up the field repeatedly, but
+   lint cannot distinguish that from a case where you for example want to
+   initialize fields prev and next and you cut & pasted
+   findViewById(R.id.prev) and forgot to update the second initialization to
+   R.id.next.
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:389: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base), "Oxygen sensor heater control circuit (${bs(b, s)})", Kind.O2_HEATER)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:390: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 1), "Oxygen sensor heater control circuit low (${bs(b, s)})", Kind.O2_HEATER)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:391: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 2), "Oxygen sensor heater control circuit high (${bs(b, s)})", Kind.O2_HEATER)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:432: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base), "Throttle or pedal position sensor $letter circuit", Kind.THROTTLE_SENSOR)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:433: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 1), "Throttle or pedal position sensor $letter range/performance", Kind.THROTTLE_SENSOR)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:434: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 2), "Throttle or pedal position sensor $letter circuit low", Kind.THROTTLE_SENSOR)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:435: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 3), "Throttle or pedal position sensor $letter circuit high", Kind.THROTTLE_SENSOR)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:453: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base), "Oxygen sensor circuit (${bs(b, s)})", Kind.O2)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:454: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 1), "Oxygen sensor circuit low voltage (${bs(b, s)})", Kind.O2)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:455: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 2), "Oxygen sensor circuit high voltage (${bs(b, s)})", Kind.O2)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:456: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 3), "Oxygen sensor circuit slow response (${bs(b, s)})", Kind.O2)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:457: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 4), "Oxygen sensor circuit no activity detected (${bs(b, s)})", Kind.O2)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:458: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 5), "Oxygen sensor heater circuit (${bs(b, s)})", Kind.O2_HEATER)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:502: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+        for (n in 1..12) d(String.format("P%04d", 200 + n), "Fuel injector circuit (cylinder $n)", Kind.INJECTOR)
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:505: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base), "Fuel injector circuit low (cylinder $n)", Kind.INJECTOR)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:506: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 1), "Fuel injector circuit high (cylinder $n)", Kind.INJECTOR)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:518: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+        for (n in 1..12) d(String.format("P%04d", 300 + n), "Cylinder $n misfire detected", Kind.MISFIRE)
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:550: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+        for (n in 1..12) d(String.format("P%04d", 350 + n), "Ignition coil ${'A' + (n - 1)} primary or secondary circuit", Kind.IGNITION_COIL)
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:660: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", 730 + n), "$gear incorrect ratio", Kind.TRANS_RATIO)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:667: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base), "Shift solenoid $letter", Kind.TRANS_SOLENOID)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:668: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 1), "Shift solenoid $letter performance or stuck off", Kind.TRANS_SOLENOID)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:669: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 2), "Shift solenoid $letter stuck on", Kind.TRANS_SOLENOID)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/DtcGeneric.kt:670: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+            d(String.format("P%04d", base + 3), "Shift solenoid $letter electrical", Kind.TRANS_SOLENOID)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "DefaultLocale":
+   Calling String#toLowerCase() or #toUpperCase() without specifying an
+   explicit locale is a common source of bugs. The reason for that is that
+   those methods will use the current locale on the user's device, and even
+   though the code appears to work correctly when you are developing the app,
+   it will fail in some locales. For example, in the Turkish locale, the
+   uppercase replacement for i is not I.
+
+   If you want the methods to just perform ASCII replacement, for example to
+   convert an enum name, call String#toUpperCase(Locale.ROOT) instead. If you
+   really want to use the current locale, call
+   String#toUpperCase(Locale.getDefault()) instead.
+
+   https://developer.android.com/reference/java/util/Locale.html#default_locale
+
+/home/runner/work/obd2-reader/obd2-reader/app/build.gradle.kts:32: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
+        targetSdk = 34
+        ~~~~~~~~~~~~~~
+
+   Explanation for issues of type "OldTargetApi":
+   When your application runs on a version of Android that is more recent than
+   your targetSdkVersion specifies that it has been tested with, various
+   compatibility modes kick in. This ensures that your application continues
+   to work, but it may look out of place. For example, if the targetSdkVersion
+   is less than 14, your app may get an option button in the UI.
+
+   To fix this issue, set the targetSdkVersion to the highest available value.
+   Then test your app to make sure everything works correctly. You may want to
+   consult the compatibility notes to see what changes apply to each version
+   you are adding support for:
+   https://developer.android.com/reference/android/os/Build.VERSION_CODES.html
+   as well as follow this guide:
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.
+   html
+
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.html
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1594: Warning: Avoid passing null as the view root (needed to resolve layout parameters on the inflated layout's root element) [InflateParams]
+        val view = layoutInflater.inflate(R.layout.sheet_connect, null)
+                                                                  ~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2681: Warning: Avoid passing null as the view root (needed to resolve layout parameters on the inflated layout's root element) [InflateParams]
+        val view = layoutInflater.inflate(R.layout.sheet_car, null)
+                                                              ~~~~
+
+   Explanation for issues of type "InflateParams":
+   When inflating a layout, avoid passing in null as the parent view, since
+   otherwise any layout parameters on the root of the inflated layout will be
+   ignored.
+
+   https://www.bignerdranch.com/blog/understanding-androids-layoutinflater-inflate/
+
+/home/runner/work/obd2-reader/obd2-reader/app/build.gradle.kts:71: Warning: A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.19.1 [GradleDependency]
+    implementation("androidx.core:core-ktx:1.13.1")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/build.gradle.kts:72: Warning: A newer version of androidx.appcompat:appcompat than 1.7.0 is available: 1.8.0 [GradleDependency]
+    implementation("androidx.appcompat:appcompat:1.7.0")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/build.gradle.kts:73: Warning: A newer version of com.google.android.material:material than 1.12.0 is available: 1.14.0 [GradleDependency]
+    implementation("com.google.android.material:material:1.12.0")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/build.gradle.kts:74: Warning: A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.8.4 is available: 2.11.0 [GradleDependency]
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/build.gradle.kts:78: Warning: A newer version of androidx.car.app:app than 1.4.0 is available: 1.7.0 [GradleDependency]
+    implementation("androidx.car.app:app:1.4.0")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/build.gradle.kts:79: Warning: A newer version of androidx.car.app:app-projected than 1.4.0 is available: 1.7.0 [GradleDependency]
+    implementation("androidx.car.app:app-projected:1.4.0")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "GradleDependency":
+   This detector looks for usages of libraries where the version you are using
+   is not the current stable release. Using older versions is fine, and there
+   are cases where you deliberately want to stick with an older version.
+   However, you may simply not be aware that a more recent version is
+   available, and that is what this lint check helps find.
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/AndroidManifest.xml:69: Warning: Exported service does not require permission [ExportedService]
+        <service
+         ~~~~~~~
+
+   Explanation for issues of type "ExportedService":
+   Exported services (services which either set exported=true or contain an
+   intent-filter and do not specify exported=false) should define a permission
+   that an entity must have in order to launch the service or bind to it.
+   Without this, any application can use this service.
+
+   https://goo.gle/ExportedService
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/GraphStripView.kt:109: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                times = LongArray(series.times.size * 2)
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/GraphStripView.kt:110: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                values = DoubleArray(series.times.size * 2)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/LayoutViews.kt:298: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+            canvas.clipPath(Path().apply { addRoundRect(rect, radius, radius, Path.Direction.CW) })
+                            ~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/PanelViews.kt:288: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                    paint.color = Color.BLACK; paint.shader = LinearGradient(x, 0f, right, 0f, if (layout == DashLayout.CYBERPUNK) stripe2 else stripe, if (layout == DashLayout.CYBERPUNK) stripe else stripe2, Shader.TileMode.CLAMP)
+                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/PanelViews.kt:288: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                    paint.color = Color.BLACK; paint.shader = LinearGradient(x, 0f, right, 0f, if (layout == DashLayout.CYBERPUNK) stripe2 else stripe, if (layout == DashLayout.CYBERPUNK) stripe else stripe2, Shader.TileMode.CLAMP)
+                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/PanelViews.kt:403: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                paint.shader = LinearGradient(0f, 0f, w, 0f, s1, s2, Shader.TileMode.CLAMP)
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/PanelViews.kt:403: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                paint.shader = LinearGradient(0f, 0f, w, 0f, s1, s2, Shader.TileMode.CLAMP)
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/ThemeSwatchView.kt:41: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+        paint.shader = if (layout == DashLayout.COCKPIT) RadialGradient(w / 2, h * 0.3f, w * 0.8f, Color.parseColor("#16244A"), bg, Shader.TileMode.CLAMP) else null
+                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/ThemeSwatchView.kt:41: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+        paint.shader = if (layout == DashLayout.COCKPIT) RadialGradient(w / 2, h * 0.3f, w * 0.8f, Color.parseColor("#16244A"), bg, Shader.TileMode.CLAMP) else null
+                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/ThemeSwatchView.kt:64: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                for (i in 0 until 9) { paint.color = leds[i / 3]; canvas.drawRoundRect(RectF((6 + i * 6.8f) * u, 7 * u, (11 + i * 6.8f) * u, 11 * u), u, u, paint) }
+                                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/ThemeSwatchView.kt:76: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                val ring = RectF(17 * u, 10 * u, 55 * u, 48 * u)
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/ThemeSwatchView.kt:80: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                paint.color = Color.BLACK; paint.shader = LinearGradient(17 * u, 0f, 55 * u, 0f, s1, s2, Shader.TileMode.CLAMP)
+                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/ThemeSwatchView.kt:80: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]
+                paint.color = Color.BLACK; paint.shader = LinearGradient(17 * u, 0f, 55 * u, 0f, s1, s2, Shader.TileMode.CLAMP)
+                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "DrawAllocation":
+   You should avoid allocating objects during a drawing or layout operation.
+   These are called frequently, so a smooth UI can be interrupted by garbage
+   collection pauses caused by the object allocations.
+
+   The way this is generally handled is to allocate the needed objects up
+   front and to reuse them for each drawing operation.
+
+   Some methods allocate memory on your behalf (such as Bitmap.create), and
+   these should be handled in the same way.
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/session/Alerts.kt:97: Warning: Unnecessary; SDK_INT is never < 26 [ObsoleteSdkInt]
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/session/Updater.kt:142: Warning: Unnecessary; SDK_INT is never < 26 [ObsoleteSdkInt]
+    fun canInstall(context: Context): Boolean = Build.VERSION.SDK_INT < 26 || context.packageManager.canRequestPackageInstalls()
+                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/session/Updater.kt:205: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
+        if (Build.VERSION.SDK_INT >= 26) context.getSystemService(android.app.NotificationManager::class.java)?.createNotificationChannel(
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/mipmap-anydpi-v26: Warning: This folder configuration (v26) is unnecessary; minSdkVersion is 26. Merge all the resources in this folder into mipmap-anydpi. [ObsoleteSdkInt]
+
+   Explanation for issues of type "ObsoleteSdkInt":
+   This check flags version checks that are not necessary, because the
+   minSdkVersion (or surrounding known API level) is already at least as high
+   as the version checked for.
+
+   Similarly, it also looks for resources in -vNN folders, such as values-v14
+   where the version qualifier is less than or equal to the minSdkVersion,
+   where the contents should be merged into the best folder.
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/layout/activity_main.xml:943: Warning: This tag and its children can be replaced by one <TextView/> and a compound drawable [UseCompoundDrawables]
+                        <LinearLayout
+                         ~~~~~~~~~~~~
+
+   Explanation for issues of type "UseCompoundDrawables":
+   A LinearLayout which contains an ImageView and a TextView can be more
+   efficiently handled as a compound drawable (a single TextView, using the
+   drawableTop, drawableLeft, drawableRight and/or drawableBottom attributes
+   to draw one or more images adjacent to the text).
+
+   If the two widgets are offset from each other with margins, this can be
+   replaced with a drawablePadding attribute.
+
+   There's a lint quickfix to perform this conversion in the Eclipse plugin.
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/layout/activity_main.xml:111: Warning: Set android:baselineAligned="false" on this element for better performance [DisableBaselineAlignment]
+                        <LinearLayout
+                         ~~~~~~~~~~~~
+
+   Explanation for issues of type "DisableBaselineAlignment":
+   When a LinearLayout is used to distribute the space proportionally between
+   nested layouts, the baseline alignment property should be turned off to
+   make the layout computation faster.
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/layout/activity_main.xml:9: Warning: Possible overdraw: Root element paints background ?attr/obdBg with a theme that also paints a background (inferred theme is @style/Theme.ObdReader) [Overdraw]
+    android:background="?attr/obdBg"
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "Overdraw":
+   If you set a background drawable on a root view, then you should use a
+   custom theme where the theme background is null. Otherwise, the theme
+   background will be painted first, only to have your custom background
+   completely cover it; this is called "overdraw".
+
+   NOTE: This detector relies on figuring out which layouts are associated
+   with which activities based on scanning the Java code, and it's currently
+   doing that using an inexact pattern matching algorithm. Therefore, it can
+   incorrectly conclude which activity the layout is associated with and then
+   wrongly complain that a background-theme is hidden.
+
+   If you want your custom background on multiple pages, then you should
+   consider making a custom theme with your custom background and just using
+   that theme instead of a root element background.
+
+   Of course it's possible that your custom drawable is translucent and you
+   want it to be mixed with the background. However, you will get better
+   performance if you pre-mix the background with your drawable and use that
+   resulting image or color as a custom theme background instead.
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/drawable/ic_car_battery.xml:2: Warning: The resource R.drawable.ic_car_battery appears to be unused [UnusedResources]
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+^
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/drawable/ic_car_fuel.xml:2: Warning: The resource R.drawable.ic_car_fuel appears to be unused [UnusedResources]
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+^
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/drawable/ic_car_speed.xml:2: Warning: The resource R.drawable.ic_car_speed appears to be unused [UnusedResources]
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+^
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/drawable/ic_car_thermo.xml:2: Warning: The resource R.drawable.ic_car_thermo appears to be unused [UnusedResources]
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+^
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/drawable/ic_car_throttle.xml:2: Warning: The resource R.drawable.ic_car_throttle appears to be unused [UnusedResources]
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+^
+
+   Explanation for issues of type "UnusedResources":
+   Unused resources make applications larger and slow down builds.
+
+
+   The unused resource check can ignore tests. If you want to include
+   resources that are only referenced from tests, consider packaging them in a
+   test source set instead.
+
+   You can include test sources in the unused resource check by setting the
+   system property lint.unused-resources.include-tests =true, and to exclude
+   them (usually for performance reasons), use
+   lint.unused-resources.exclude-tests =true.
+   ,
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/layout/activity_main.xml:575: Warning: activity_main.xml has more than 80 views, bad for performance [TooManyViews]
+                    <TextView
+                     ~~~~~~~~
+
+   Explanation for issues of type "TooManyViews":
+   Using too many views in a single layout is bad for performance. Consider
+   using compound drawables or other tricks for reducing the number of views
+   in this layout.
+
+   The maximum view count defaults to 80 but can be configured with the
+   environment variable ANDROID_LINT_MAX_VIEW_COUNT.
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/CyberViews.kt:208: Warning: Custom view CyberChipView is missing constructor used by tools: (Context) or (Context,AttributeSet) or (Context,AttributeSet,int) [ViewConstructor]
+class CyberChipView(
+      ~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/GraphStripView.kt:24: Warning: Custom view GraphStripView is missing constructor used by tools: (Context) or (Context,AttributeSet) or (Context,AttributeSet,int) [ViewConstructor]
+class GraphStripView(
+      ~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/PanelViews.kt:43: Warning: Custom view DecalView is missing constructor used by tools: (Context) or (Context,AttributeSet) or (Context,AttributeSet,int) [ViewConstructor]
+class DecalView(
+      ~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/PanelViews.kt:157: Warning: Custom view TowerRowView is missing constructor used by tools: (Context) or (Context,AttributeSet) or (Context,AttributeSet,int) [ViewConstructor]
+class TowerRowView(
+      ~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/PanelViews.kt:426: Warning: Custom view PlateView is missing constructor used by tools: (Context) or (Context,AttributeSet) or (Context,AttributeSet,int) [ViewConstructor]
+class PlateView(context: Context, private val code: String, private val stored: Boolean) : View(context) {
+      ~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/ThemeSwatchView.kt:16: Warning: Custom view ThemeSwatchView is missing constructor used by tools: (Context) or (Context,AttributeSet) or (Context,AttributeSet,int) [ViewConstructor]
+class ThemeSwatchView(context: Context, theme: AppThemes.AppTheme) : View(context) {
+      ~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "ViewConstructor":
+   Some layout tools (such as the Android layout editor) need to find a
+   constructor with one of the following signatures:
+   * View(Context context)
+   * View(Context context, AttributeSet attrs)
+   * View(Context context, AttributeSet attrs, int defStyle)
+
+   If your custom view needs to perform initialization which does not apply
+   when used in a layout editor, you can surround the given code with a check
+   to see if View#isInEditMode() is false, since that method will return false
+   at runtime but true within a user interface editor.
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:413: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        findViewById<TextView>(R.id.unitsSetting).text = "${Units.speedUnit}, ${Units.temperatureUnit}"
+                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:564: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "/100"
+                    ~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:744: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "Recorded drives (CSV) and the adapter log stay in the car's own metric units."
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:794: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "What your car reports"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
+                    ~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:813: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "Share scan"
+                    ~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:953: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                text = "Best ${mode.label}: ${fmt(best)}"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:953: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                text = "Best ${mode.label}: ${fmt(best)}"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
+                        ~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:958: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    text = "${fmt(r)}  ·  ${day.format(java.util.Date(r.atMs))}"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:990: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                is PerformanceTimer.State.Aborted -> { big.text = "—"; status.text = "${s.reason}. Run again when you're ready."; again.visibility = View.VISIBLE }
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:990: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                is PerformanceTimer.State.Aborted -> { big.text = "—"; status.text = "${s.reason}. Run again when you're ready."; again.visibility = View.VISIBLE }
+                                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1295: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+            text = "Your readings as a video to lay over dashcam or GoPro footage: rpm, speed, shift lights, throttle and a 30-second trace, in your style's colours. ${TripSummary.duration(drive.duration.toInt())} long, 30 frames a second."
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1295: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "Your readings as a video to lay over dashcam or GoPro footage: rpm, speed, shift lights, throttle and a 30-second trace, in your style's colours. ${TripSummary.duration(drive.duration.toInt())} long, 30 frames a second."
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1295: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "Your readings as a video to lay over dashcam or GoPro footage: rpm, speed, shift lights, throttle and a 30-second trace, in your style's colours. ${TripSummary.duration(drive.duration.toInt())} long, 30 frames a second."
+                                                                                                                                                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1327: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        val label = TextView(this).apply { text = "Starting…"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary)) }
+                                                   ~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1345: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    label.text = "${(f * 100).toInt()}%" + (left?.let { " · about ${TripSummary.duration(it.coerceAtLeast(1))} left" } ?: "")
+                                 ~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1345: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                    label.text = "${(f * 100).toInt()}%" + (left?.let { " · about ${TripSummary.duration(it.coerceAtLeast(1))} left" } ?: "")
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2086: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            vinText.text = "Reading…"
+                            ~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2092: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                vinText.text = "Couldn't read it"
+                                ~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2180: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        note.text = "This car's VIN says it's a $fromVin, but your car is set to ${car.label}. Fault codes are explained for the car you choose."
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2180: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        note.text = "This car's VIN says it's a $fromVin, but your car is set to ${car.label}. Fault codes are explained for the car you choose."
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2180: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        note.text = "This car's VIN says it's a $fromVin, but your car is set to ${car.label}. Fault codes are explained for the car you choose."
+                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2180: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        note.text = "This car's VIN says it's a $fromVin, but your car is set to ${car.label}. Fault codes are explained for the car you choose."
+                                                                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2182: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        fix.text = "Set my car to $fromVin"
+                   ~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2182: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+        fix.text = "Set my car to $fromVin"
+                    ~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2428: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                text = getString(R.string.updates_available_body, appVersion()) + (if (Updater.isSamsung) "\n\n" + getString(R.string.updates_samsung) else "")
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2826: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+            text = "Based on what cars like yours usually report. When you connect, the app asks your car and shows everything it does report."
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2945: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                text = (if (pending) "Pending, not yet confirmed" else "Stored, check-engine light on") + ". " + info.severity.label + "."
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2945: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                text = (if (pending) "Pending, not yet confirmed" else "Stored, check-engine light on") + ". " + info.severity.label + "."
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2945: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                text = (if (pending) "Pending, not yet confirmed" else "Stored, check-engine light on") + ". " + info.severity.label + "."
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "SetTextI18n":
+   When calling TextView#setText
+   * Never call Number#toString() to format numbers; it will not handle
+   fraction separators and locale-specific digits properly. Consider using
+   String#format with proper format specifications (%d or %f) instead.
+   * Do not pass a string literal (e.g. "Hello") to display text. Hardcoded
+   text can not be properly translated to other languages. Consider using
+   Android resource strings instead.
+   * Do not build messages by concatenating text chunks. Such messages can not
+   be properly translated.
+
+   https://developer.android.com/guide/topics/resources/localization.html
+
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/layout/activity_main.xml:163: Warning: When you define paddingStart you should probably also define paddingEnd for right-to-left symmetry [RtlSymmetry]
+                                android:paddingStart="12dp">
+                                ~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/obd2-reader/obd2-reader/app/src/main/res/layout/activity_main.xml:191: Warning: When you define paddingStart you should probably also define paddingEnd for right-to-left symmetry [RtlSymmetry]
+                                android:paddingStart="12dp">
+                                ~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "RtlSymmetry":
+   If you specify padding or margin on the left side of a layout, you should
+   probably also specify padding on the right side (and vice versa) for
+   right-to-left layout symmetry.
+
+0 errors, 97 warnings
