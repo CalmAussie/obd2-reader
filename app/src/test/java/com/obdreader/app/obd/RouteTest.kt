@@ -36,4 +36,37 @@ class RouteTest {
         assertTrue(pts[1].second < pts[0].second)
         for ((x, y) in pts) assertTrue(x in 0f..200f && y in 0f..200f)
     }
+
+    @Test
+    fun aDriveThatEndsInATunnelCarriesOnByTheCarsSpeed() {
+        val lines = mutableListOf(header)
+        // Heading north at 72 km/h (20 m/s) with GPS, one row a second...
+        for (i in 0..10) lines += "t,$i,2000,72,${-33.9000 + i * 0.00018},151.2,5"
+        // ...then 60 s underground with no fix, still at 72 km/h: about 1.2 km more.
+        for (i in 11..70) lines += "t,$i,2000,72,,,"
+        val r = Route.parse(lines)
+        val end = r.points.last()
+        val lastFix = -33.9000 + 10 * 0.00018
+        val metresNorth = (end.first - lastFix) * 111_320.0
+        assertTrue("went on about 1.2 km, not $metresNorth m", metresNorth in 1100.0..1300.0)
+        assertEquals(151.2, end.second, 1e-4)
+    }
+
+    @Test
+    fun aGapInTheMiddleJustJoinsTheFixes() {
+        val lines = mutableListOf(header)
+        for (i in 0..5) lines += "t,$i,2000,72,${-33.9 + i * 0.00018},151.2,5"
+        for (i in 6..40) lines += "t,$i,2000,72,,,"
+        for (i in 41..45) lines += "t,$i,2000,72,${-33.89 + i * 0.00018},151.2,5"
+        val r = Route.parse(lines)
+        assertEquals(11, r.points.size) // only real fixes, nothing estimated
+    }
+
+    @Test
+    fun standingStillAddsNothing() {
+        val lines = mutableListOf(header)
+        for (i in 0..5) lines += "t,$i,2000,40,${-33.9 + i * 0.0001},151.2,5"
+        for (i in 6..60) lines += "t,$i,800,0,,,"
+        assertEquals(6, Route.parse(lines).points.size)
+    }
 }

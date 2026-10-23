@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.os.SystemClock
@@ -47,8 +48,26 @@ object LocationFeed {
         stop()
         manager = lm
         latest = null
+        // Android 12 and newer: the phone's fused location, which adds the phone's motion sensors
+        // (and Wi-Fi and mobile networks) to GPS, so short dropouts are bridged. Everything stays
+        // on the phone, the same as GPS. Older phones, or if it isn't there: GPS alone.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && lm.hasProvider(LocationManager.FUSED_PROVIDER) &&
+            lm.isProviderEnabled(LocationManager.FUSED_PROVIDER)) {
+            try {
+                val request = android.location.LocationRequest.Builder(1000L)
+                    .setQuality(android.location.LocationRequest.QUALITY_HIGH_ACCURACY)
+                    .setMinUpdateIntervalMillis(500L)
+                    .build()
+                lm.requestLocationUpdates(LocationManager.FUSED_PROVIDER, request, ContextCompat.getMainExecutor(context), listener)
+                provider = LocationManager.FUSED_PROVIDER
+                return true
+            } catch (e: Exception) {
+                // Fall back to GPS below.
+            }
+        }
         return try {
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, listener, Looper.getMainLooper())
+            provider = LocationManager.GPS_PROVIDER
             true
         } catch (e: Exception) {
             manager = null
@@ -56,12 +75,17 @@ object LocationFeed {
         }
     }
 
+    /** Which of the phone's location sources is in use (for the adapter log), or null when off. */
+    @Volatile var provider: String? = null
+        private set
+
     /** The latest fix, or null if there's no recent one. */
     fun current(): Fix? = latest?.takeIf { SystemClock.elapsedRealtime() - it.atElapsedMs <= MAX_AGE_MS }
 
     fun stop() {
         try { manager?.removeUpdates(listener) } catch (ignored: Exception) {}
         manager = null
+        provider = null
         latest = null
     }
 
