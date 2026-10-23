@@ -410,6 +410,22 @@ if tap_text "Save to phone (Downloads)" > /dev/null; then
   adb shell ls "/sdcard/Download/OBD2 Reader/" 2>/dev/null | grep -q "." && SAVED=1
 fi
 [ $SAVED = 1 ] && log "code report: saved to Downloads" || { log "code report: FAILED (not saved)"; FAIL=1; }
+# VIN from the plate: typed in, it's shown instead of the car's, with what the car reports.
+if tap_scrolled "Not your VIN? Enter it"; then
+  sleep 1; adb shell input keyevent KEYCODE_MOVE_END $(for i in $(seq 1 20); do printf 'KEYCODE_DEL '; done)
+  adb shell input text LFACTZ5NX62000375; sleep 1
+  tap_text "Save" > /dev/null; sleep 2
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin.xml"
+  shot 4b-vin-entered
+  if grep -q "LFACTZ5NX62000375" "$OUT/ui-vin.xml" && grep -q "from your VIN plate" "$OUT/ui-vin.xml" && grep -q "engine computer reports" "$OUT/ui-vin.xml"; then
+    log "VIN from the plate: shown, with the car's own"
+  else
+    log "VIN from the plate: FAILED (not shown)"; FAIL=1
+  fi
+  tap_text "Change the VIN you entered" > /dev/null && sleep 1 && tap_text "Use the car's VIN" > /dev/null; sleep 1
+else
+  log "VIN from the plate: FAILED (no button)"; FAIL=1
+fi
 scroll_top
 # App updates: the row is on Diagnostics, near the bottom. Tapping it asks GitHub for the latest release.
 for i in 1 2 3 4 5 6 7 8; do

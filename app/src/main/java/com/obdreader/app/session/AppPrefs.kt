@@ -24,6 +24,8 @@ object AppPrefs {
     const val ALERTS = "alerts"
     const val UNITS_MPH = "units_mph"
     const val UNITS_FAHRENHEIT = "units_fahrenheit"
+    const val USER_VIN = "user_vin"
+    const val USER_VIN_CAR = "user_vin_car"
 
     const val TYPE_CLASSIC = "classic"
     const val TYPE_BLE = "ble"
@@ -49,5 +51,20 @@ object AppPrefs {
         val make = prefs.getString(CAR_MAKE, null) ?: return null
         val year = prefs.getInt(CAR_YEAR, 0).takeIf { it > 0 } ?: return null
         return VehicleCatalog.Car(make, year, prefs.getString(CAR_MODEL, null), prefs.getString(CAR_ENGINE, null))
+    }
+
+    /**
+     * The VIN the user typed in from their VIN plate, if any. It belongs to the car that was chosen
+     * when it was entered, so choosing a different car stops using it.
+     */
+    fun userVin(prefs: SharedPreferences): String? {
+        val vin = prefs.getString(USER_VIN, null) ?: return null
+        val car = savedCar(prefs)?.label
+        return if (car == prefs.getString(USER_VIN_CAR, null)) vin else null
+    }
+
+    fun setUserVin(prefs: SharedPreferences, vin: String?) {
+        if (vin == null) prefs.edit().remove(USER_VIN).remove(USER_VIN_CAR).apply()
+        else prefs.edit().putString(USER_VIN, vin).putString(USER_VIN_CAR, savedCar(prefs)?.label).apply()
     }
 }

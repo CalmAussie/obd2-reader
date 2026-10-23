@@ -219,6 +219,20 @@ object Exports {
     fun exportFile(context: Context, name: String): File =
         File(File(context.cacheDir, "exports").apply { mkdirs() }, name)
 
+    /**
+     * The VIN lines for a report: the VIN from the user's plate if they entered one, and what the
+     * car's engine computer sent when that's different, so a mechanic sees both.
+     */
+    fun vinLines(context: Context, carVin: String?): List<String> {
+        val user = AppPrefs.userVin(AppPrefs.of(context))
+        return when {
+            user != null -> listOfNotNull("VIN: $user (from the VIN plate)",
+                carVin?.takeIf { it != user }?.let { "VIN reported by the car's engine computer: $it" })
+            carVin != null -> listOf("VIN: $carVin" + if (carVin.length == 17 && !VinDecoder.isValid(carVin)) " (fails its check digit, so it may not be this car's)" else "")
+            else -> emptyList()
+        }
+    }
+
     /** A plain-text report of the car's trouble codes with full explanations, for a mechanic or a forum post. */
     fun codeReport(context: Context, s: ObdSession.State, carLabel: String?): File {
         val codes = s.codes
@@ -226,11 +240,11 @@ object Exports {
         val text = buildString {
             appendLine("OBD2 Reader trouble code report")
             appendLine("Date: $stamp")
-            val info = s.vin?.let { VinDecoder.decode(it) }
+            val info = ObdSession.vinFor(context)?.let { VinDecoder.decode(it) }
             val vehicle = listOfNotNull(info?.make, info?.modelYear?.let { "$it model year" }).joinToString(", ")
             if (vehicle.isNotEmpty()) appendLine("Vehicle: $vehicle")
             if (carLabel != null) appendLine("Car chosen in the app: $carLabel")
-            s.vin?.let { appendLine("VIN: $it" + if (it.length == 17 && !VinDecoder.isValid(it)) " (failed its check digit, so it may be misread)" else "") }
+            vinLines(context, s.vin).forEach { appendLine(it) }
             s.summary?.let { appendLine("Adapter and protocol: $it") }
             appendLine()
             if (codes == null || codes.total == 0) {

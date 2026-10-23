@@ -144,15 +144,20 @@ object VinDecoder {
     }
 
     /**
-     * True if [vin] is 17 VIN characters and, where a check digit is required (North American
-     * and Chinese VINs), it matches. Other regions don't have to use one, so they pass on the
-     * characters alone.
+     * True if [vin] is 17 VIN characters and, for North American VINs (starting 1 to 5), its check
+     * digit matches. Only North America requires the check digit on every car: cars built for
+     * other markets, including many built in China (starting L), may have any character there,
+     * so they pass on the characters alone.
      */
     fun isValid(vin: String): Boolean {
-        val v = vin.trim().uppercase(Locale.US)
-        if (v.length != 17 || v.any { !(it in 'A'..'Z' || it in '0'..'9') || it in "IOQ" }) return false
-        val required = v[0] in '1'..'5' || v[0] == 'L'
-        return !required || checkDigit(v) == v[8]
+        val v = normalise(vin) ?: return false
+        return v[0] !in '1'..'5' || checkDigit(v) == v[8]
+    }
+
+    /** A VIN typed in by the user, cleaned up (capitals, no spaces), or null if it can't be a VIN. */
+    fun normalise(input: String): String? {
+        val v = input.uppercase(Locale.US).filter { !it.isWhitespace() && it != '-' }
+        return if (v.length == 17 && v.all { (it in 'A'..'Z' || it in '0'..'9') && it !in "IOQ" }) v else null
     }
 
     fun decode(vin: String): Info {
