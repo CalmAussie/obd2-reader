@@ -2824,7 +2824,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.13.5", "date": "23 October 2026", "text": "• Swipe between tabs. Swipe sideways across the screen to move to the next tab (right to left) or back to the previous one (left to right): Dashboard, Graphs, Diagnostics. Taps, scrolling up and down, and short sideways nudges work as before."};
+const CHANGES = {"version": "1.13.6", "date": "23 October 2026", "text": "• Fixed: after disconnecting and closing the app from Recents, the connection notification could stay behind, and tapping its Disconnect button didn't take it away. The notification now goes as soon as there's nothing connected (and no route being recorded), and Disconnect on a leftover notification clears it."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {

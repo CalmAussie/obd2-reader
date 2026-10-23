@@ -51,6 +51,9 @@ class ObdConnectionService : Service() {
 
         scope.launch {
             ObdSession.state.collect { s ->
+                // Nothing left to keep running (disconnected, not recording a route): stop, rather
+                // than leave a "Disconnected" notification behind that the app no longer owns.
+                if (idle()) { finish(); return@collect }
                 // Refresh at most every 2 seconds, plus whenever the connection state changes.
                 val now = SystemClock.elapsedRealtime()
                 if (s.phase != lastPhase || now - lastUpdate > 2000) {
@@ -71,7 +74,12 @@ class ObdConnectionService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_DISCONNECT) ObdSession.disconnect()
+        if (intent?.action == ACTION_DISCONNECT) {
+            ObdSession.disconnect()
+            // Tapped on a notification left over from an earlier connection, or the connection
+            // was already down: there's nothing to disconnect, so just take the notification away.
+            if (idle()) finish()
+        } else if (idle()) finish()
         else if (LocationFeed.running) {
             // A drive started recording its route: keep the location going with the screen off.
             try { ServiceCompat.startForeground(this, NOTIFICATION_ID, build(ObdSession.state.value), foregroundType()) } catch (ignored: RuntimeException) {}
@@ -87,7 +95,19 @@ class ObdConnectionService : Service() {
 
     override fun onDestroy() {
         scope.cancel()
+        // A refresh posted just as the service was stopping would otherwise stay on screen
+        // as an ordinary notification, with a Disconnect button that does nothing.
+        getSystemService(NotificationManager::class.java)?.cancel(NOTIFICATION_ID)
         super.onDestroy()
+    }
+
+    /** True when there's no connection (or attempt) and no route being recorded. */
+    private fun idle(): Boolean = !ObdSession.isActive && !LocationFeed.running
+
+    private fun finish() {
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+        getSystemService(NotificationManager::class.java)?.cancel(NOTIFICATION_ID)
+        stopSelf()
     }
 
     private fun build(s: ObdSession.State): Notification {

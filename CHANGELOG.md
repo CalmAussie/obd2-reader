@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.6 (23 October 2026)
+- Fixed: after disconnecting and closing the app from Recents, the connection notification could stay behind, and tapping its **Disconnect** button didn't take it away. The notification now goes as soon as there's nothing connected (and no route being recorded), and **Disconnect** on a leftover notification clears it.
+
 ## 1.13.5 (23 October 2026)
 - **Swipe between tabs.** Swipe sideways across the screen to move to the next tab (right to left) or back to the previous one (left to right): Dashboard, Graphs, Diagnostics. Taps, scrolling up and down, and short sideways nudges work as before.
 
