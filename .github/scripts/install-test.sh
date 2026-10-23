@@ -477,6 +477,14 @@ for i in 1 2 3 4; do
 done
 adb shell dumpsys location > "$OUT/location.txt" 2>/dev/null
 [ $ROUTE = 0 ] && grep -i "gps" "$OUT/location.txt" | grep -q "$PKG" && ROUTE=1
+# Minimised, the route must keep recording (positions further south, so they can be told apart).
+adb shell input keyevent KEYCODE_HOME; sleep 2
+for i in $(seq 1 12); do
+  adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1
+  sleep 2
+done
+adb shell dumpsys location > "$OUT/location-background.txt" 2>/dev/null
+adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
 tap_record; sleep 2
 shot 8a-recorded
 # Debug builds: check the file itself has positions.
@@ -486,6 +494,10 @@ if [ -n "$F" ]; then
   head -1 "$OUT/recorded.csv" | grep -q "Latitude" && awk -F, 'NR>1 && $(NF-2) != "" {n++} END {exit !(n > 0)}' "$OUT/recorded.csv" && ROUTE=1
 fi
 [ $ROUTE = 1 ] && log "route: saved with the recording" || { log "route: FAILED (not saved)"; FAIL=1; }
+if [ -s "$OUT/recorded.csv" ]; then
+  BG=$(awk -F, 'NR>1 && $(NF-2) != "" && $(NF-2)+0 < -33.8790 {n++} END {print n+0}' "$OUT/recorded.csv")
+  [ "$BG" -ge 5 ] && log "route while minimised: kept ($BG rows)" || { log "route while minimised: FAILED (only $BG rows with a position)"; FAIL=1; }
+fi
 tap_tab Dashboard; scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
 # The drive card for this drive should draw the route that was just recorded.
 adb logcat -c
