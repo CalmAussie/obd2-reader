@@ -415,6 +415,8 @@ if tap_scrolled "Not your VIN? Enter it"; then
   sleep 1; adb shell input keyevent KEYCODE_MOVE_END $(for i in $(seq 1 20); do printf 'KEYCODE_DEL '; done)
   adb shell input text LFACTZ5NX62000375; sleep 1
   tap_text "Save" > /dev/null; sleep 2
+  # The note sits under the VIN card, which can be at the bottom of the screen: bring it up first.
+  adb shell input swipe 540 1500 540 900 400; sleep 1
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin.xml"
   shot 4b-vin-entered
   if grep -q "LFACTZ5NX62000375" "$OUT/ui-vin.xml" && grep -q "from your VIN plate" "$OUT/ui-vin.xml" && grep -q "engine computer reports" "$OUT/ui-vin.xml"; then
