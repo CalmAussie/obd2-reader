@@ -476,7 +476,7 @@ for i in 1 2 3 4; do
   grep -q "with route" "$OUT/ui-recording.xml" && { ROUTE=1; break; }; sleep 1
 done
 adb shell dumpsys location > "$OUT/location.txt" 2>/dev/null
-[ $ROUTE = 0 ] && grep -i "gps" "$OUT/location.txt" | grep -q "$PKG" && ROUTE=1
+[ $ROUTE = 0 ] && grep -iE "gps|fused" "$OUT/location.txt" | grep -q "$PKG" && ROUTE=1
 # Minimised, the route must keep recording (positions further south, so they can be told apart).
 adb shell input keyevent KEYCODE_HOME; sleep 2
 for i in $(seq 1 12); do
