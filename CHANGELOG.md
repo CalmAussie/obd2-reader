@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.8 (23 October 2026)
+- Fixed: a drive that ended by switching the car off, without tapping **Disconnect**, never ended in the app. Many cars keep the OBD2 port powered with the ignition off, so the app just waited for the car to start again: the trip summary didn't come up, and **Last drive summary** still showed the drive before, so its drive card had no route outline from the drive you'd just recorded. A drive now ends once the ignition has been off for 3 minutes (a shorter stop carries on as the same drive), and its summary comes up.
+- Fixed: a drive that ended while the app was in the background or closed could be lost. It's now kept on the phone the moment it ends, and its summary comes up the next time you open the app.
+
 ## 1.13.7 (23 October 2026)
 - **Enter your VIN from the plate.** Some cars send a VIN that isn't quite theirs: the VIN stored in the engine computer can have a typo from when it was programmed, or belong to another car if the computer was replaced. **Diagnostics → Not your VIN? Enter it** lets you type the VIN from your VIN plate. It's kept on this phone only and used for the make and year and in reports instead. When the car's VIN is different, Diagnostics shows what the engine computer reports underneath, and reports list both, so a mechanic sees both too. Choosing a different car stops using the VIN you entered.
 - Fixed: VINs from cars built outside North America, including many built in China for other markets, were wrongly called "may be misread" because their check digit didn't add up. Only North American VINs must use a check digit, so only those are checked now.

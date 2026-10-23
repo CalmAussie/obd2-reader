@@ -303,6 +303,30 @@ object DriveScorer {
     /** The drive that just ended (when the connection closes), for the trip summary. */
     val lastTrip: StateFlow<com.obdreader.app.obd.TripSummary?> = _lastTrip.asStateFlow()
     private var tripStart = 0L
+    private var tripEnded = false
+    /** When the ignition went off during this drive with the adapter still connected, while it's off. */
+    private var offSince: Long? = null
+    private var appContext: Context? = null
+
+    private fun newTrip() {
+        score.reset(); latest.clear(); _topSpeed.value = null; publish(force = true)
+        tripStart = System.currentTimeMillis(); tripEnded = false; offSince = null
+    }
+
+    /**
+     * Sums up the drive that ended at [endedAt] and keeps it as the last drive on the phone straight
+     * away, so its summary (and its drive card, with the route) is there even if the app wasn't on
+     * screen when the drive ended.
+     */
+    private fun endTrip(endedAt: Long) {
+        if (tripEnded) return
+        tripEnded = true
+        val all = com.obdreader.app.obd.DrivingScore.Style.values().associateWith { score.result(it) }
+        val trip = com.obdreader.app.obd.TripSummary.from(all.values.first(), all, tripStart, maxOf(endedAt, tripStart))
+        if (!trip.isDrive) return
+        appContext?.let { AppPrefs.of(it).edit().putString(PREF_LAST_TRIP, trip.encode()).apply() }
+        _lastTrip.value = trip
+    }
 
     private var started = false
     private val latest = mutableMapOf<String, Double>()
@@ -311,7 +335,11 @@ object DriveScorer {
     /** Sets the redline used by the Racing score (from the car the user chose). */
     fun setRedline(rpm: Float) { score.redline = rpm }
 
-    fun start() {
+    /** Where the last drive is kept, so its summary can still be shown after the app was closed. */
+    const val PREF_LAST_TRIP = "last_trip"
+
+    fun start(context: Context? = null) {
+        context?.let { appContext = it.applicationContext }
         if (started) return
         started = true
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -319,17 +347,33 @@ object DriveScorer {
             var last: ObdSession.Phase? = null
             ObdSession.state.collect { s ->
                 if (s.phase == ObdSession.Phase.CONNECTING && (last == null || last == ObdSession.Phase.IDLE || last == ObdSession.Phase.ERROR)) {
-                    score.reset(); latest.clear(); _topSpeed.value = null; publish(force = true)
-                    tripStart = System.currentTimeMillis()
+                    newTrip()
+                }
+                // Back from ignition off: the same drive after a short stop, a new one after a long one.
+                if (s.phase == ObdSession.Phase.CONNECTED) {
+                    if (tripEnded) newTrip()
+                    offSince = null
+                }
+                if (s.phase == ObdSession.Phase.WAITING && offSince == null && last == ObdSession.Phase.CONNECTED) {
+                    offSince = System.currentTimeMillis()
                 }
                 // The drive ends when the connection closes (Disconnect, or the car stayed off).
                 val wasOn = last == ObdSession.Phase.CONNECTED || last == ObdSession.Phase.WAITING
                 if (wasOn && (s.phase == ObdSession.Phase.IDLE || s.phase == ObdSession.Phase.ERROR)) {
-                    val all = com.obdreader.app.obd.DrivingScore.Style.values().associateWith { score.result(it) }
-                    val trip = com.obdreader.app.obd.TripSummary.from(all.values.first(), all, tripStart, System.currentTimeMillis())
-                    if (trip.isDrive) _lastTrip.value = trip
+                    endTrip(offSince ?: System.currentTimeMillis())
+                    offSince = null
                 }
                 last = s.phase
+            }
+        }
+        // It also ends once the ignition has been off for a while with the adapter still connected
+        // (many cars keep the OBD2 port powered). Before, only Disconnect ended a drive, so one that
+        // ended with the car simply switched off never got its summary.
+        scope.launch {
+            while (true) {
+                kotlinx.coroutines.delay(15_000)
+                val off = offSince ?: continue
+                if (!tripEnded && com.obdreader.app.obd.TripRules.endedByIgnitionOff(off, System.currentTimeMillis())) endTrip(off)
             }
         }
         scope.launch {
