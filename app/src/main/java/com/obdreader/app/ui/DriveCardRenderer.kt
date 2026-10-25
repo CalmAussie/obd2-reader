@@ -346,15 +346,31 @@ class DriveCardRenderer(private val context: Context) {
         return out
     }
 
+    /** [colour] at a brightness for a stretch driven at [share] (0 slowest to 1 fastest; null: full). */
+    internal fun speedShade(colour: Int, share: Double?): Int {
+        if (share == null) return colour
+        val hsv = FloatArray(3); Color.colorToHSV(colour, hsv)
+        val full = hsv[2].coerceAtLeast(0.55f)
+        hsv[2] = (full * (0.5f + 0.5f * share.toFloat())).coerceAtLeast(0.35f)
+        return Color.HSVToColor(Color.alpha(colour), hsv)
+    }
+
     /** The route as a line on the card's own background, with a start dot and an end dot. */
     private fun drawRoute(c: Canvas, route: Route, left: Float, top: Float, right: Float, bottom: Float) {
         val pts = route.fit(right - left, bottom - top, 28f)
         if (pts.size < 2) return
-        val line = Path()
-        pts.forEachIndexed { i, (x, y) -> if (i == 0) line.moveTo(left + x, top + y) else line.lineTo(left + x, top + y) }
         val colour = if (layout == DashLayout.COCKPIT || layout == DashLayout.CYBERPUNK) s2 else s1
-        stroke.shader = null; stroke.color = colour; stroke.strokeWidth = 10f; stroke.strokeJoin = Paint.Join.ROUND
-        c.drawPath(line, stroke)
+        // Each stretch in the same colour, brighter the faster it was driven and dimmer the slower,
+        // but never darker than half of the colour (so never near black).
+        val shares = route.segmentSpeedShares()
+        stroke.shader = null; stroke.strokeWidth = 10f; stroke.strokeJoin = Paint.Join.ROUND
+        val cap = stroke.strokeCap
+        stroke.strokeCap = Paint.Cap.ROUND
+        for (i in 1 until pts.size) {
+            stroke.color = speedShade(colour, shares.getOrNull(i - 1))
+            c.drawLine(left + pts[i - 1].first, top + pts[i - 1].second, left + pts[i].first, top + pts[i].second, stroke)
+        }
+        stroke.strokeCap = cap
         val (sx, sy) = pts.first(); val (ex, ey) = pts.last()
         // Start: a ring. End: a solid dot with a ring.
         fill.shader = null

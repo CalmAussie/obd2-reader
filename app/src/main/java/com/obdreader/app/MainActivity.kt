@@ -1132,7 +1132,10 @@ class MainActivity : AppCompatActivity() {
         LiveHistory.start()
 
         val chips = findViewById<ChipGroup>(R.id.graphChips)
-        val chosen = (prefs.getString(PREF_GRAPHS, null) ?: "0C,0D,11").split(",").filter { it.isNotEmpty() }.toMutableSet()
+        // In the order they're shown: a newly picked reading goes to the bottom, and Change order moves them.
+        val chosen = (prefs.getString(PREF_GRAPHS, null) ?: "0C,0D,11").split(",").filter { k -> k.isNotEmpty() && channels.any { it.key == k } }.distinct().toMutableList()
+        graphOrderBtn = findViewById(R.id.graphOrder)
+        graphOrderBtn.setOnClickListener { showGraphOrder(chosen) }
         for (ch in channels) {
             chips.addView(Chip(this).apply {
                 text = ch.label
@@ -1144,7 +1147,7 @@ class MainActivity : AppCompatActivity() {
                         toast("Up to $MAX_GRAPHS graphs at once, so each one stays fast")
                         return@setOnCheckedChangeListener
                     }
-                    if (on) chosen += ch.key else chosen -= ch.key
+                    if (on) { if (ch.key !in chosen) chosen += ch.key } else chosen -= ch.key
                     prefs.edit().putString(PREF_GRAPHS, chosen.joinToString(",")).apply()
                     buildGraphs(chosen)
                 }
@@ -1172,11 +1175,55 @@ class MainActivity : AppCompatActivity() {
         buildGraphs(chosen)
     }
 
-    private fun buildGraphs(keys: Set<String>) {
+    private lateinit var graphOrderBtn: MaterialButton
+
+    /** Lets the user move the chosen graphs up and down; saved straight away. */
+    private fun showGraphOrder(chosen: MutableList<String>) {
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12f).toInt(), dp(4f).toInt(), dp(12f).toInt(), 0) }
+        fun label(k: String) = channels.first { it.key == k }.label
+        fun refresh() {
+            list.removeAllViews()
+            chosen.forEachIndexed { i, k ->
+                val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+                row.addView(TextView(this).apply {
+                    text = "${i + 1}.  ${label(k)}"
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                    setTextColor(themeColor(R.attr.obdTextPrimary))
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                fun move(by: Int, glyph: String, word: String) = MaterialButton(this, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
+                    text = glyph
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                    contentDescription = "Move ${label(k)} $word"
+                    minWidth = dp(48f).toInt(); minimumWidth = dp(48f).toInt()
+                    val j = i + by
+                    isEnabled = j in chosen.indices
+                    setOnClickListener {
+                        java.util.Collections.swap(chosen, i, j)
+                        prefs.edit().putString(PREF_GRAPHS, chosen.joinToString(",")).apply()
+                        buildGraphs(chosen)
+                        refresh()
+                    }
+                }
+                row.addView(move(-1, "▲", "up"))
+                row.addView(move(1, "▼", "down"))
+                list.addView(row)
+            }
+        }
+        refresh()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.graph_order_title)
+            .setView(list)
+            .setPositiveButton(R.string.done, null)
+            .show()
+    }
+
+    private fun buildGraphs(keys: List<String>) {
         graphList.removeAllViews()
         graphStrips.clear()
+        if (::graphOrderBtn.isInitialized) graphOrderBtn.visibility = if (keys.size >= 2) View.VISIBLE else View.GONE
+        android.util.Log.i("OBD2Graphs", "order: ${keys.joinToString(",")}")
         val fallback = themeColor(R.attr.obdAccent)
-        for (ch in channels.filter { it.key in keys }) {
+        for (ch in keys.mapNotNull { k -> channels.firstOrNull { it.key == k } }) {
             val colour = when (ch.key) {
                 RPM_KEY -> Channels.RPM
                 SPEED_KEY -> Channels.SPEED

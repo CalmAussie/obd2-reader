@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.13.9 (26 October 2026)
+- **Put the graphs in your order.** On **Graphs**, **Change graph order** lets you move each chosen reading up or down; the order is kept. A reading you turn on goes to the bottom.
+- **Speed on the route outline.** The outline on drive cards is now shaded by how fast you drove each part: brighter where you were faster, dimmer where you were slower, all in the card's own colour and never fading to black.
+
 ## 1.13.8 (23 October 2026)
 - Fixed: a drive that ended by switching the car off, without tapping **Disconnect**, never ended in the app. Many cars keep the OBD2 port powered with the ignition off, so the app just waited for the car to start again: the trip summary didn't come up, and **Last drive summary** still showed the drive before, so its drive card had no route outline from the drive you'd just recorded. A drive now ends once the ignition has been off for 3 minutes (a shorter stop carries on as the same drive), and its summary comes up.
 - **Fewer gaps in the route.** On Android 12 and newer, recordings use the phone's fused location, which adds the phone's motion sensors to GPS, so short dropouts are bridged. Positions still come only from your phone's own location service and are only saved in the drive you record.

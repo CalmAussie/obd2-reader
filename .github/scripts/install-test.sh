@@ -457,6 +457,20 @@ else
   log "updates: FAILED (row missing)"; FAIL=1
 fi
 tap_tab Graphs && sleep 4 && shot 3-graphs && log "graphs: OK" || { log "graphs: FAILED"; FAIL=1; }
+# Graph order: move Speed above RPM (paused, so the screen can be read), then put it back.
+scroll_top; XY=$(view_center graphPause); [ -n "$XY" ] && adb shell input tap $XY; sleep 1
+adb logcat -c
+XY=$(view_center graphOrder); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+if tap_text "Move Speed up" > /dev/null; then
+  sleep 1; shot 3b-graph-order; tap_text "Done" > /dev/null; sleep 1
+  ORDER=$(adb logcat -d -s OBD2Graphs:I 2>/dev/null | grep -o "order: [0-9A-Z,]*" | tail -1)
+  case "$ORDER" in "order: 0D,0C"*) log "graph order: changed ($ORDER)" ;; *) log "graph order: FAILED (${ORDER:-no change})"; FAIL=1 ;; esac
+  XY=$(view_center graphOrder); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+  tap_text "Move Speed down" > /dev/null; tap_text "Done" > /dev/null; sleep 1
+else
+  log "graph order: FAILED (couldn't open it)"; FAIL=1
+fi
+XY=$(view_center graphPause); [ -n "$XY" ] && adb shell input tap $XY; sleep 1
 # Video overlay: record a short drive on the Dashboard (Record drive shows once connected), then make an overlay video from it.
 tap_tab Dashboard; sleep 2; scroll_top
 # Route: allow location up front (so the "save the route?" question is skipped) and feed the

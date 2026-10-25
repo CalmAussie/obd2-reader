@@ -69,4 +69,18 @@ class RouteTest {
         for (i in 6..60) lines += "t,$i,800,0,,,"
         assertEquals(6, Route.parse(lines).points.size)
     }
+
+    @Test
+    fun stretchesAreRankedBySpeedForShading() {
+        val r = Route.parse(listOf(header,
+            "t,0,0,20,-33.9000,151.2,5",
+            "t,1,0,20,-33.9002,151.2,5",
+            "t,2,0,100,-33.9004,151.2,5",
+            "t,3,0,100,-33.9006,151.2,5"))
+        val shares = r.segmentSpeedShares()
+        assertEquals(3, shares.size)
+        assertEquals(0.0, shares[0]!!, 1e-9)   // slowest stretch
+        assertEquals(1.0, shares[2]!!, 1e-9)   // fastest stretch
+        assertTrue(shares[1]!! > 0.0 && shares[1]!! < 1.0)
+    }
 }
