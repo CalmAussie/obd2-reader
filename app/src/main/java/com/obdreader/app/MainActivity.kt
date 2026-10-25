@@ -1212,9 +1212,94 @@ class MainActivity : AppCompatActivity() {
         refresh()
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.graph_order_title)
+            .setMessage(R.string.graph_order_hint)
             .setView(list)
             .setPositiveButton(R.string.done, null)
             .show()
+    }
+
+    private var draggedGraph: View? = null
+
+    /**
+     * Tap and hold a graph, then drag it up or down to move it. The others slide out of its way,
+     * and the new order is saved when you let go. Also offered to screen readers as Move up / down.
+     */
+    private fun enableGraphDrag(strip: View, keys: MutableList<String>, label: String) {
+        var lastY = 0f
+        var waitForLayout = false
+        fun save() {
+            prefs.edit().putString(PREF_GRAPHS, keys.joinToString(",")).apply()
+            android.util.Log.i("OBD2Graphs", "order: ${keys.joinToString(",")}")
+            graphStrips.sortBy { graphList.indexOfChild(it) }
+        }
+        fun swapWith(by: Int) {
+            val i = graphList.indexOfChild(strip); val j = i + by
+            val other = graphList.getChildAt(j) ?: return
+            val shift = (other.height + (other.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin).toFloat()
+            // Move the neighbour, not the graph under the finger, so the finger keeps hold of it.
+            graphList.removeView(other)
+            graphList.addView(other, i)
+            java.util.Collections.swap(keys, i, j)
+            strip.translationY -= by * shift
+            other.translationY = by * shift
+            other.animate().translationY(0f).setDuration(160).start()
+            waitForLayout = true
+            graphList.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+                override fun onLayoutChange(v: View?, l: Int, t: Int, r: Int, b: Int, l0: Int, t0: Int, r0: Int, b0: Int) {
+                    waitForLayout = false; graphList.removeOnLayoutChangeListener(this)
+                }
+            })
+            graphList.requestLayout()
+        }
+        strip.isLongClickable = true
+        strip.setOnLongClickListener {
+            if (keys.size < 2) return@setOnLongClickListener false
+            draggedGraph = strip
+            strip.parent?.requestDisallowInterceptTouchEvent(true)
+            strip.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
+            strip.animate().scaleX(1.03f).scaleY(1.03f).translationZ(dp(8f)).setDuration(120).start()
+            true
+        }
+        strip.setOnTouchListener { v, e ->
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> { lastY = e.rawY; false }
+                MotionEvent.ACTION_MOVE -> {
+                    if (draggedGraph !== v) { lastY = e.rawY; return@setOnTouchListener false }
+                    v.parent?.requestDisallowInterceptTouchEvent(true)
+                    v.translationY += e.rawY - lastY; lastY = e.rawY
+                    if (!waitForLayout) {
+                        val i = graphList.indexOfChild(v)
+                        val mid = v.top + v.translationY + v.height / 2f
+                        val below = graphList.getChildAt(i + 1)
+                        val above = if (i > 0) graphList.getChildAt(i - 1) else null
+                        when {
+                            below != null && mid > below.top + below.height / 2f -> swapWith(1)
+                            above != null && mid < above.top + above.height / 2f -> swapWith(-1)
+                        }
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (draggedGraph !== v) return@setOnTouchListener false
+                    draggedGraph = null
+                    v.animate().translationY(0f).scaleX(1f).scaleY(1f).translationZ(0f).setDuration(160).start()
+                    save()
+                    true
+                }
+                else -> draggedGraph === v
+            }
+        }
+        // Screen readers: the same moves as actions on the graph.
+        ViewCompat.addAccessibilityAction(strip, "Move $label up") { _, _ ->
+            val i = keys.indexOf(strip.tag as? String ?: return@addAccessibilityAction false)
+            if (i <= 0) return@addAccessibilityAction false
+            java.util.Collections.swap(keys, i, i - 1); prefs.edit().putString(PREF_GRAPHS, keys.joinToString(",")).apply(); buildGraphs(keys); true
+        }
+        ViewCompat.addAccessibilityAction(strip, "Move $label down") { _, _ ->
+            val i = keys.indexOf(strip.tag as? String ?: return@addAccessibilityAction false)
+            if (i < 0 || i >= keys.size - 1) return@addAccessibilityAction false
+            java.util.Collections.swap(keys, i, i + 1); prefs.edit().putString(PREF_GRAPHS, keys.joinToString(",")).apply(); buildGraphs(keys); true
+        }
     }
 
     private fun buildGraphs(keys: List<String>) {
@@ -1230,6 +1315,7 @@ class MainActivity : AppCompatActivity() {
                 else -> Channels.forKey(ch.key, fallback)
             }
             val strip = GraphStripView(this, ch.key, ch.label, ch.unit, ch.decimals, ch.min, ch.max, colour).apply {
+                tag = ch.key
                 windowMs = graphWindowMs
                 paused = graphsPaused
             }
@@ -1237,6 +1323,7 @@ class MainActivity : AppCompatActivity() {
                 bottomMargin = dp(8f).toInt()
             })
             graphStrips += strip
+            if (keys is MutableList<String>) enableGraphDrag(strip, keys, ch.label)
         }
         updateFocus()
     }
@@ -2270,6 +2357,7 @@ class MainActivity : AppCompatActivity() {
      * whatever is under the finger, so a button under it isn't pressed.
      */
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (draggedGraph != null) { swipeTracking = false; swiping = false; return super.dispatchTouchEvent(ev) }
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 swipeDownX = ev.rawX; swipeDownY = ev.rawY; swipeDownTime = ev.eventTime
