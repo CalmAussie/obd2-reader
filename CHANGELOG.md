@@ -3,7 +3,7 @@
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
 ## 1.13.9 (26 October 2026)
-- **Put the graphs in your order.** On **Graphs**, **Change graph order** lets you move each chosen reading up or down; the order is kept. A reading you turn on goes to the bottom.
+- **Put the graphs in your order.** On **Graphs**, tap and hold a graph and drag it up or down, or use **Change graph order** to move each one with ▲ and ▼. The order is kept, and a reading you turn on goes to the bottom.
 - **Speed on the route outline.** The outline on drive cards is now shaded by how fast you drove each part: brighter where you were faster, dimmer where you were slower, all in the card's own colour and never fading to black.
 
 ## 1.13.8 (23 October 2026)

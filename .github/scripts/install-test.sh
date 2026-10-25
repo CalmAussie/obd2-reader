@@ -470,6 +470,37 @@ if tap_text "Move Speed up" > /dev/null; then
 else
   log "graph order: FAILED (couldn't open it)"; FAIL=1
 fi
+# Or tap and hold a graph and drag it: RPM dragged below Speed.
+scroll_top; adb logcat -c
+adb shell dumpsys activity top > "$OUT/views-graphs.txt" 2>/dev/null
+STRIPS=$(python3 - "$OUT/views-graphs.txt" <<'PY'
+import re, sys
+stack = []; out = []
+for line in open(sys.argv[1], encoding='utf-8', errors='ignore'):
+    m = re.search(r'^(\s*)(\S+)\{[^}]* (-?\d+),(-?\d+)-(-?\d+),(-?\d+)', line)
+    if not m: continue
+    depth = len(m.group(1)); x1, y1, x2, y2 = map(int, m.groups()[2:])
+    while stack and stack[-1][0] >= depth: stack.pop()
+    ox = sum(s[1] for s in stack); oy = sum(s[2] for s in stack)
+    stack.append((depth, x1, y1))
+    if 'GraphStripView' in m.group(2): out.append(f"{ox + (x1 + x2) // 2} {oy + (y1 + y2) // 2}")
+print(" ".join(out[:2]))
+PY
+)
+set -- $STRIPS
+if [ -n "$4" ] && adb shell input motionevent DOWN $1 $2 > /dev/null 2>&1; then
+  sleep 1.5
+  STEP=$(( ($4 - $2 + 200) / 8 ))
+  for k in 1 2 3 4 5 6 7 8; do adb shell input motionevent MOVE $1 $(( $2 + k * STEP )); done
+  sleep 1; adb shell input motionevent UP $1 $(( $2 + 8 * STEP )); sleep 2
+  shot 3c-graph-dragged
+  ORDER=$(adb logcat -d -s OBD2Graphs:I 2>/dev/null | grep -o "order: [0-9A-Z,]*" | tail -1)
+  case "$ORDER" in "order: 0D,0C"*) log "graph order: dragged ($ORDER)" ;; *) log "graph order: FAILED (drag: ${ORDER:-no change})"; FAIL=1 ;; esac
+  XY=$(view_center graphOrder); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+  tap_text "Move Speed down" > /dev/null; tap_text "Done" > /dev/null; sleep 1
+else
+  log "graph order: drag not checked (no touch events on this emulator)"
+fi
 XY=$(view_center graphPause); [ -n "$XY" ] && adb shell input tap $XY; sleep 1
 # Video overlay: record a short drive on the Dashboard (Record drive shows once connected), then make an overlay video from it.
 tap_tab Dashboard; sleep 2; scroll_top

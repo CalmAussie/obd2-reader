@@ -1719,6 +1719,30 @@ $("graphOrder").onclick = () => { $("graphOrderPanel").hidden = !$("graphOrderPa
 function buildStrips() {
   if ($("graphOrderPanel")) buildOrder();
   $("graphList").innerHTML = gChannels.map(k => `<div class="strip" data-k="${k}"><canvas role="img" aria-label="${CHANNELS.find(c => c.key === k).label} graph"></canvas></div>`).join("");
+  $("graphList").querySelectorAll(".strip").forEach(dragStrip);
+}
+/* Tap and hold a graph, then drag it up or down (mirrors MainActivity.enableGraphDrag). */
+function dragStrip(el) {
+  let timer = null, y0 = 0, on = false;
+  el.style.touchAction = "pan-y";
+  el.addEventListener("pointerdown", e => {
+    y0 = e.clientY; clearTimeout(timer);
+    timer = setTimeout(() => { if (gChannels.length < 2) return; on = true; el.setPointerCapture(e.pointerId); el.style.transition = "transform .12s"; el.style.transform = "scale(1.03)"; el.style.zIndex = 5; el.style.boxShadow = "0 10px 24px rgba(0,0,0,.45)"; el.style.touchAction = "none"; }, 450);
+  });
+  el.addEventListener("pointermove", e => {
+    if (!on) { if (Math.abs(e.clientY - y0) > 8) clearTimeout(timer); return; }
+    e.preventDefault(); el.style.transition = "none"; el.style.transform = `translateY(${e.clientY - y0}px) scale(1.03)`;
+  });
+  const end = e => {
+    clearTimeout(timer); if (!on) return; on = false;
+    const strips = [...$("graphList").querySelectorAll(".strip")], from = strips.indexOf(el);
+    const mid = el.getBoundingClientRect().top + el.offsetHeight / 2;
+    let to = strips.filter(s => s !== el && s.getBoundingClientRect().top + s.offsetHeight / 2 < mid).length;
+    const k = gChannels.splice(from, 1)[0]; gChannels.splice(to, 0, k);
+    try { localStorage.setItem("graphChannels", JSON.stringify(gChannels)); } catch (e) {}
+    buildStrips();
+  };
+  el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
 }
 document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
   gWindow = +b.dataset.w; document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-checked", x === b));
@@ -2849,7 +2873,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.13.9", "date": "26 October 2026", "text": "• Put the graphs in your order. On Graphs, Change graph order lets you move each chosen reading up or down; the order is kept. A reading you turn on goes to the bottom.\n• Speed on the route outline. The outline on drive cards is now shaded by how fast you drove each part: brighter where you were faster, dimmer where you were slower, all in the card's own colour and never fading to black."};
+const CHANGES = {"version": "1.13.9", "date": "26 October 2026", "text": "• Put the graphs in your order. On Graphs, tap and hold a graph and drag it up or down, or use Change graph order to move each one with ▲ and ▼. The order is kept, and a reading you turn on goes to the bottom.\n• Speed on the route outline. The outline on drive cards is now shaded by how fast you drove each part: brighter where you were faster, dimmer where you were slower, all in the card's own colour and never fading to black."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
