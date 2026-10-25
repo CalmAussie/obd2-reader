@@ -691,7 +691,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
     <div class="content">
       <div class="topbar"><h1 class="xb" style="flex:1">Graphs</h1></div>
       <div class="lede" id="graphRate">Connect on the Dashboard tab to see live graphs.</div>
-      <div class="chips" id="graphChips" role="group" aria-label="Readings to graph"></div>
+      <div class="chips" id="graphChips" role="group" aria-label="Readings to graph"></div><button class="link-btn" id="graphOrder" hidden style="margin-top:6px">Change graph order</button><div id="graphOrderPanel" hidden style="margin:4px 0 8px"><div id="graphOrderList"></div></div>
       <div class="graph-tools">
         <div class="seg" role="radiogroup" aria-label="Time shown"><button role="radio" data-w="10000" aria-checked="false">10 s</button><button role="radio" data-w="30000" aria-checked="true">30 s</button><button role="radio" data-w="60000" aria-checked="false">60 s</button></div>
         <button class="link-btn" id="graphPause">Pause</button>
@@ -1700,12 +1700,24 @@ function buildChips() {
     if (!on && gChannels.length >= 4) return toast("Up to 4 graphs at once. Turn one off first.");
     if (on && gChannels.length === 1) return;
     gChannels = on ? gChannels.filter(x => x !== k) : gChannels.concat(k);
-    gChannels = CHANNELS.map(c => c.key).filter(x => gChannels.includes(x));
     try { localStorage.setItem("graphChannels", JSON.stringify(gChannels)); } catch (e) {}
     buildChips(); buildStrips();
   });
 }
+/* Change graph order (mirrors MainActivity.showGraphOrder): move the chosen graphs up and down. */
+function buildOrder() {
+  $("graphOrder").hidden = gChannels.length < 2;
+  const label = k => CHANNELS.find(c => c.key === k).label;
+  $("graphOrderList").innerHTML = gChannels.map((k, i) => `<div style="display:flex;align-items:center;gap:6px;padding:4px 0"><span style="flex:1">${i + 1}.&nbsp; ${label(k)}</span><button class="link-btn" data-mv="${i}" data-by="-1" aria-label="Move ${label(k)} up" ${i === 0 ? "disabled" : ""}>▲</button><button class="link-btn" data-mv="${i}" data-by="1" aria-label="Move ${label(k)} down" ${i === gChannels.length - 1 ? "disabled" : ""}>▼</button></div>`).join("");
+  $("graphOrderList").querySelectorAll("[data-mv]").forEach(b => b.onclick = () => {
+    const i = +b.dataset.mv, j = i + +b.dataset.by; [gChannels[i], gChannels[j]] = [gChannels[j], gChannels[i]];
+    try { localStorage.setItem("graphChannels", JSON.stringify(gChannels)); } catch (e) {}
+    buildStrips();
+  });
+}
+$("graphOrder").onclick = () => { $("graphOrderPanel").hidden = !$("graphOrderPanel").hidden; buildOrder(); };
 function buildStrips() {
+  if ($("graphOrderPanel")) buildOrder();
   $("graphList").innerHTML = gChannels.map(k => `<div class="strip" data-k="${k}"><canvas role="img" aria-label="${CHANNELS.find(c => c.key === k).label} graph"></canvas></div>`).join("");
 }
 document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
@@ -2523,9 +2535,17 @@ function renderDriveCard(t, fmt, hideRoast) {
   cv.dataset.roast = roast; cv.dataset.score = sc ?? ""; cv.dataset.kind = card.label;
   return cv;
 }
-/* A made-up demo route (lat, lon) for the preview's demo car: a loop around a few blocks. */
+/* A made-up demo route (lat, lon, km/h) for the preview's demo car: a loop around a few blocks. */
 const DEMO_ROUTE = (() => { const p = []; for (let i = 0; i <= 120; i++) { const a = i / 120 * Math.PI * 2;
-  p.push([-33.87 + 0.012 * Math.sin(a) + 0.004 * Math.sin(3 * a), 151.21 + 0.018 * Math.cos(a) * (0.8 + 0.2 * Math.cos(2 * a))]); } return p.slice(0, 110); })();
+  p.push([-33.87 + 0.012 * Math.sin(a) + 0.004 * Math.sin(3 * a), 151.21 + 0.018 * Math.cos(a) * (0.8 + 0.2 * Math.cos(2 * a)), 55 + 45 * Math.sin(2 * a + 1)]); } return p.slice(0, 110); })();
+/* Mirrors DriveCardRenderer.speedShade: the same colour, dimmer for slower stretches, never below half (never black). */
+function speedShade(col, share) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(col).trim()); if (!m || share == null) return col;
+  const n = parseInt(m[1], 16); let r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+  const v = Math.max(r, g, b), full = Math.max(v, 0.55), nv = Math.max(full * (0.5 + 0.5 * share), 0.35), k = v > 0 ? nv / v : 0;
+  const h = x => Math.round(Math.min(1, x * k) * 255).toString(16).padStart(2, "0");
+  return "#" + h(r) + h(g) + h(b);
+}
 /* The route as a line on the card's own background with a start dot and an end dot (mirrors Route.fit and drawRoute). */
 function drawRoute(c, pts, left, top, right, bottom, bg, s1, s2, fg) {
   const w = right - left, h = bottom - top, pad = 28, k = Math.cos(pts.reduce((a, p) => a + p[0], 0) / pts.length * Math.PI / 180);
@@ -2534,7 +2554,9 @@ function drawRoute(c, pts, left, top, right, bottom, bg, s1, s2, fg) {
   const sx = Math.max(maxX - minX, 1e-9), sy = Math.max(maxY - minY, 1e-9), sc = Math.min((w - 2 * pad) / sx, (h - 2 * pad) / sy);
   const ox = pad + ((w - 2 * pad) - sx * sc) / 2, oy = pad + ((h - 2 * pad) - sy * sc) / 2;
   const P = xs.map((x, i) => [left + ox + (x - minX) * sc, top + h - (oy + (ys[i] - minY) * sc)]);
-  c.lineCap = "round"; c.lineJoin = "round"; c.strokeStyle = s1; c.lineWidth = 10; c.beginPath(); P.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
+  const sp = pts.map(p => p[2]), seg = P.slice(1).map((_, i) => (sp[i] + sp[i + 1]) / 2), lo = Math.min(...seg), hi = Math.max(...seg);
+  c.lineCap = "round"; c.lineJoin = "round"; c.lineWidth = 10;
+  for (let i = 1; i < P.length; i++) { c.strokeStyle = speedShade(s1, hi - lo < 1 ? 1 : (seg[i - 1] - lo) / (hi - lo)); c.beginPath(); c.moveTo(...P[i - 1]); c.lineTo(...P[i]); c.stroke(); }
   const [a, b] = [P[0], P[P.length - 1]];
   c.fillStyle = bg; c.beginPath(); c.arc(a[0], a[1], 20, 0, 7); c.fill(); c.strokeStyle = s2; c.lineWidth = 8; c.beginPath(); c.arc(a[0], a[1], 16, 0, 7); c.stroke();
   c.fillStyle = s1; c.beginPath(); c.arc(b[0], b[1], 20, 0, 7); c.fill(); c.strokeStyle = fg; c.lineWidth = 5; c.beginPath(); c.arc(b[0], b[1], 24, 0, 7); c.stroke();
@@ -2827,7 +2849,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.13.8", "date": "23 October 2026", "text": "• Fixed: a drive that ended by switching the car off, without tapping Disconnect, never ended in the app. Many cars keep the OBD2 port powered with the ignition off, so the app just waited for the car to start again: the trip summary didn't come up, and Last drive summary still showed the drive before, so its drive card had no route outline from the drive you'd just recorded. A drive now ends once the ignition has been off for 3 minutes (a shorter stop carries on as the same drive), and its summary comes up.\n• Fewer gaps in the route. On Android 12 and newer, recordings use the phone's fused location, which adds the phone's motion sensors to GPS, so short dropouts are bridged. Positions still come only from your phone's own location service and are only saved in the drive you record.\n• Route outline at the start and end of a drive without GPS. When a drive starts or ends with no GPS fix (an underground car park, or a tunnel at the very end), the outline on the drive card is carried on by how far the car's speed readings say it went, in the direction it was heading. In the middle of a drive, a tunnel is still drawn as a straight line between where GPS was lost and found again: without maps, the app can't know the road's curves. The drive's CSV file is unchanged: rows without a fix stay blank.\n• Fixed: a drive that ended while the app was in the background or closed could be lost. It's now kept on the phone the moment it ends, and its summary comes up the next time you open the app."};
+const CHANGES = {"version": "1.13.9", "date": "26 October 2026", "text": "• Put the graphs in your order. On Graphs, Change graph order lets you move each chosen reading up or down; the order is kept. A reading you turn on goes to the bottom.\n• Speed on the route outline. The outline on drive cards is now shaded by how fast you drove each part: brighter where you were faster, dimmer where you were slower, all in the card's own colour and never fading to black."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {

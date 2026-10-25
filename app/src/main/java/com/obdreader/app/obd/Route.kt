@@ -9,7 +9,11 @@ import kotlin.math.cos
  * Location is only ever kept inside a drive the user chose to record; this reads it back from
  * there, for the outline on the drive card.
  */
-class Route private constructor(val points: List<Pair<Double, Double>>) {
+class Route private constructor(
+    val points: List<Pair<Double, Double>>,
+    /** The car's speed (km/h) at each point, from the same CSV row, or null where it wasn't read. */
+    val speeds: List<Double?> = points.map { null },
+) {
 
     val isEmpty: Boolean get() = points.size < 2
 
@@ -34,12 +38,28 @@ class Route private constructor(val points: List<Pair<Double, Double>>) {
         }
     }
 
+    /**
+     * How fast each stretch between two points was driven, from 0 (the slowest on this drive) to 1
+     * (the fastest), for shading the outline. Null for a stretch with no speed reading.
+     */
+    fun segmentSpeedShares(): List<Double?> {
+        val seg = (1 until points.size).map { i ->
+            val a = speeds.getOrNull(i - 1); val b = speeds.getOrNull(i)
+            when { a != null && b != null -> (a + b) / 2; else -> a ?: b }
+        }
+        val known = seg.filterNotNull()
+        if (known.isEmpty()) return seg
+        val lo = known.min(); val hi = known.max()
+        if (hi - lo < 1.0) return seg.map { it?.let { 1.0 } }
+        return seg.map { v -> v?.let { ((it - lo) / (hi - lo)).coerceIn(0.0, 1.0) } }
+    }
+
     companion object {
         /** Largest fix error to use; worse fixes would draw spikes. */
         private const val MAX_ACCURACY_M = 50.0
 
         /** Several recordings' routes joined in order (a drive recorded in parts). */
-        fun join(routes: List<Route>): Route = Route(routes.flatMap { it.points })
+        fun join(routes: List<Route>): Route = Route(routes.flatMap { it.points }, routes.flatMap { it.speeds })
 
         /**
          * Reads the route from the app's drive CSV, or an empty route when it has no location.
@@ -70,19 +90,26 @@ class Route private constructor(val points: List<Pair<Double, Double>>) {
                 Row(f.getOrNull(iSec)?.toDoubleOrNull(), if (iSpeed >= 0) f.getOrNull(iSpeed)?.toDoubleOrNull() else null, if (good) lat!! to lon!! else null)
             }
             val pts = mutableListOf<Pair<Double, Double>>()
+            val kmh = mutableListOf<Double?>()
             // Rows repeat the last fix between GPS updates; keep each place once.
-            for (r in rows) r.fix?.let { if (pts.lastOrNull() != it) pts += it }
-            if (pts.size < 2) return Route(pts)
+            for (r in rows) r.fix?.let { if (pts.lastOrNull() != it) { pts += it; kmh += r.kmh } }
+            if (pts.size < 2) return Route(pts, kmh)
             val first = rows.indexOfFirst { it.fix != null }
             val last = rows.indexOfLast { it.fix != null }
             // Before the first fix: back from it, against the direction it set off in.
             val before = metresDriven(rows.subList(0, first + 1).map { it.sec to it.kmh })
-            if (before >= MIN_ESTIMATE_M) heading(pts, fromStart = true)?.let { h -> pts.add(0, move(pts.first(), h + 180.0, before)) }
+            if (before >= MIN_ESTIMATE_M) heading(pts, fromStart = true)?.let { h ->
+                pts.add(0, move(pts.first(), h + 180.0, before)); kmh.add(0, averageSpeed(rows.subList(0, first + 1).map { it.kmh }))
+            }
             // After the last fix: on from it, the way it was going.
             val after = metresDriven(rows.subList(last, rows.size).map { it.sec to it.kmh })
-            if (after >= MIN_ESTIMATE_M) heading(pts, fromStart = false)?.let { h -> pts.add(move(pts.last(), h, after)) }
-            return Route(pts)
+            if (after >= MIN_ESTIMATE_M) heading(pts, fromStart = false)?.let { h ->
+                pts.add(move(pts.last(), h, after)); kmh.add(averageSpeed(rows.subList(last, rows.size).map { it.kmh }))
+            }
+            return Route(pts, kmh)
         }
+
+        private fun averageSpeed(v: List<Double?>): Double? = v.filterNotNull().takeIf { it.isNotEmpty() }?.average()
 
         /** Shortest stretch worth adding to the outline, and the most that will be estimated. */
         private const val MIN_ESTIMATE_M = 30.0
