@@ -280,8 +280,9 @@ scroll_top() { adb shell input swipe 540 800 540 2000 200; adb shell input swipe
 # pass is a small phone with large text (360 dp wide, text at 115%), where crowding shows up.
 for PASS in normal small; do
 if [ $PASS = small ]; then adb shell wm density 480; adb shell settings put system font_scale 1.15; sleep 3; fi
-for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk" "Asphalt"; do
+for STYLE in "Race telemetry" "Digital cockpit" "Cyberpunk" "British racing" "Asphalt"; do
   [ $PASS = normal ] && [ "$STYLE" = "Asphalt" ] && continue
+  [ $PASS = small ] && [ "$STYLE" = "British racing" ] && continue
   SLUG=$(echo "$STYLE" | tr ' A-Z' '-a-z'); [ $PASS = small ] && SLUG="small-$SLUG"
   scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3   # disconnect, so the screen is still
   tap_text "Done" > /dev/null || true   # close the trip summary if that drive was long enough for one

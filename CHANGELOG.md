@@ -2,7 +2,8 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
-## 1.17.1 (26 October 2026)
+## 1.18.0 (26 October 2026)
+- **British racing, a new style.** Cream and gold on British racing green, like a classic sports racer: cream and gold livery stripes, a cream race-number roundel and a gold rev ring. It's under the palette icon on the Dashboard, and carries into Android Auto in gold.
 - **A new app icon: Spark.** A spark plug at an angle, cream on British racing green. On Android 13 and newer with themed icons turned on, it takes your home screen's colours like other apps.
 
 ## 1.17.0 (26 October 2026)
