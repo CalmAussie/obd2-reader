@@ -2923,7 +2923,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.16.0", "date": "26 October 2026", "text": "Four deeper checks under Diagnostics. Like everything else in the app they only read: nothing is cleared or changed in the car, and the app blocks any command that isn't a read.\n• Readiness monitors. The engine computer's own emission checks (catalyst, oxygen sensors, evaporative system, misfire and more) and whether each has finished since the codes were last cleared or the battery was disconnected. Emissions inspections usually want them complete. It also shows the check-engine light, the number of stored codes and the engine computer's software version (calibration ID).\n• Self-test results. The measurements the engine computer took the last time it ran each check, such as oxygen sensor switching and catalyst efficiency, with the limits each must stay within, marked ✓ or ✗. A result near its limit can show a part wearing before it sets a code. On CAN cars.\n• Codes from other modules. Asks the modules beyond the engine for their codes: on Ford and Mazda the ABS, airbags, body, instrument cluster, power steering, parking aid, all-wheel drive and climate control; on every make the engine and transmission computers. Each module shows its codes (stored or pending, with titles where known), \"No codes\", or that it didn't answer. On CAN cars.\n• Custom readings. Add a reading the app doesn't list by its request (service 01, 21 or 22), an optional module address, a formula using the reply bytes A, B, C… (for example (A*256+B)/4) and a unit. Readings are kept on your phone; touch and hold one to delete it."};
+const CHANGES = {"version": "1.16.0", "date": "26 October 2026", "text": "Four deeper checks under Diagnostics. Like everything else in the app they only read: nothing is cleared or changed in the car, and the app blocks any command that isn't a read.\n• Readiness monitors. The engine computer's own emission checks (catalyst, oxygen sensors, evaporative system, misfire and more) and whether each has finished since the codes were last cleared or the battery was disconnected. Emissions inspections usually want them complete. It also shows the check-engine light, the number of stored codes and the engine computer's software version (calibration ID).\n• Self-test results. The measurements the engine computer took the last time it ran each check, such as oxygen sensor switching and catalyst efficiency, with the limits each must stay within, marked ✓ or ✗. A result near its limit can show a part wearing before it sets a code. On CAN cars.\n• Codes from other modules. Asks the modules beyond the engine for their codes, at the addresses each maker uses: the ABS or stability control, airbags, power steering, instrument cluster, climate control, cruise radar and lane-keeping camera, as far as that make has them (for example Ford and Mazda's body, parking sensor and all-wheel-drive modules too; Honda's modules on their own 29-bit addresses; GM's transmission on its own address). Every make gets the engine and transmission computers. Each module shows its codes (stored or pending, with titles where known), \"No codes\", or that it didn't answer. Search every address then asks every address a module could use, about a minute, for modules the app doesn't know your make has; they're listed by their address. On CAN cars.\n• Custom readings. Add a reading the app doesn't list by its request (service 01, 21 or 22), an optional module address, a formula using the reply bytes A, B, C… (for example (A*256+B)/4) and a unit. Readings are kept on your phone; touch and hold one to delete it."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3016,16 +3016,42 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     sheet("Self-test results", `<p>All 8 tests within their limits.</p>` + groups.map(([g, ts]) => head(g) + ts.map(([t, v]) => line(`✓  Test ${t}: ${v}`, true)).join("")).join("") +
       head("What this means") + line("These are the engine computer's own measurements from the last time it ran each check, with the limits they must stay between. A result close to a limit can show a part wearing out before it sets a trouble code. The test numbers are the maker's own, so what each one measures isn't always published.", true));
   };
-  $("modulesRow").onclick = () => {
-    if (!needCar()) return;
-    const ford = myCar && ["Ford", "Lincoln", "Mercury", "Mazda"].includes(myCar.make);
-    const brand = myCar && myCar.make ? `${myCar.make}-specific code` : "Manufacturer-specific code";
-    const mods = [["Engine computer (PCM)", ["P0133  Oxygen sensor slow response (bank 1, sensor 1) (stored)", "P0171  Fuel mixture too lean (bank 1) (pending)"]], ["Transmission (TCM)", []]]
-      .concat(ford ? [["ABS and stability control", [`C1145-1C  ${brand} (stored)`]], ["Airbags (restraints)", []], ...["Body / general electronics", "Instrument cluster", "Power steering", "Parking sensors", "All-wheel drive", "Climate control"].map(n => [n, null])] : []);
-    const total = mods.reduce((s, [, c]) => s + (c ? c.length : 0), 0);
-    sheet("Codes from other modules", `<p>${total} ${total === 1 ? "code" : "codes"} found.</p>` + mods.map(([n, c]) => head(n) + (c == null ? line("Didn't answer: not fitted, or on a part of the car's network the adapter can't reach.", true) : c.length ? c.map(x => line(x)).join("") : line("No codes", true))).join("") +
-      head("About this") + line("Read-only: the app asks each module for its codes and never clears them. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true));
+  /* Each make's known modules (mirrors ModuleScan.modulesFor); the demo car answers at 760, 737, 7E0 and 7E1, and a search finds 7A0 */
+  const FAMILIES = [
+    [["Ford", "Lincoln", "Mercury", "Mazda"], ["ABS and stability control:760", "Airbags (restraints):737", "Body / general electronics:726", "Instrument cluster:720", "Power steering:730", "Parking sensors:736", "All-wheel drive:703", "Climate control:733", "Adaptive cruise radar:764", "Front camera (lane keeping):706"]],
+    [["Toyota", "Lexus", "Scion"], ["Hybrid system:7E2", "ABS and stability control:7B0", "Airbags (SRS):780", "Power steering:7A1", "Climate control:7C4", "Radar cruise control:791"]],
+    [["Hyundai", "Kia"], ["ABS and stability control:7D1", "Power steering (MDPS):7D4", "Smart cruise radar:7D0", "Front camera (lane keeping):7C4", "Climate control:7B3", "Instrument cluster:7C6", "Parking assist:7B1"]],
+    [["Nissan", "Infiniti"], ["ABS and stability control:740", "Power steering:742", "Instrument cluster:743", "Front camera (lane keeping):707"]],
+    [["Subaru"], ["ABS and stability control:7B0", "Power steering:746", "EyeSight camera:787"]],
+    [["Volkswagen", "Audi", "Skoda", "SEAT / Cupra"], ["ABS and stability control:713", "Airbags:715", "Power steering:712", "Adaptive cruise radar:757", "Front camera (lane assist):74F"]],
+    [["Chrysler", "Dodge", "Jeep", "Ram"], ["Hybrid system:7E2", "ABS and stability control:747", "Airbags (occupant restraints):744", "Instrument cluster:742", "Power steering:75A", "Adaptive cruise radar:753"]],
+    [["Chevrolet", "GMC", "Buick", "Cadillac", "Holden", "Pontiac", "Saturn", "Hummer", "Oldsmobile"], ["Front camera (lane keeping):24B"]],
+    [["Honda", "Acura"], ["Stability control (VSA):18DA28F1", "Airbags (SRS):18DA53F1", "Power steering (EPS):18DA30F1", "Instrument cluster:18DA60F1", "Gateway:18DAEFF1", "Adaptive cruise radar:18DAB0F1", "Front camera (lane keeping):18DAB5F1", "Electric gear selector:18DA0BF1", "Electric brake booster:18DA2BF1", "Engine computer (PGM-FI):18DA10F1", "Transmission:18DA1EF1"]],
+    [["MG"], ["Power steering:721", "Front camera (lane keeping):733", "Adaptive cruise radar:734"]],
+  ];
+  const demoCodes = () => ({ "760": [`C1145-1C  ${myCar && myCar.make ? myCar.make + "-specific code" : "Manufacturer-specific code"} (stored)`], "737": [], "7E0": ["P0133  Oxygen sensor slow response (bank 1, sensor 1) (stored)", "P0171  Fuel mixture too lean (bank 1) (pending)"], "7E1": [], "7E2": [], "7A0": [] });
+  const modulesForCar = () => {
+    const make = myCar && myCar.make;
+    const gm = FAMILIES[7][0].includes(make);
+    const fam = FAMILIES.find(f => f[0].includes(make));
+    return [["Engine computer (PCM)", "7E0"], ["Transmission (TCM)", gm ? "7E2" : "7E1"]].concat(fam ? fam[1].map(x => x.split(":")) : []);
   };
+  const modulesHtml = mods => mods.map(([n, a]) => { const c = demoCodes()[a]; return head(n) + (c == null ? line("Didn't answer: not fitted, or on a part of the car's network the adapter can't reach.", true) : c.length ? c.map(x => line(x)).join("") : line("No codes", true)); }).join("");
+  const countCodes = mods => mods.reduce((s, [, a]) => s + (demoCodes()[a] ? demoCodes()[a].length : 0), 0);
+  const ABOUT = head("About this") + line("Read-only: the app asks each module for its codes and never clears them. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true);
+  const modulesSheet = found => {
+    const mods = modulesForCar(), total = countCodes(mods);
+    sheet("Codes from other modules", `<p>${total ? `${total} ${total === 1 ? "code" : "codes"} found.` : "No codes in the modules that answered."}</p>` + modulesHtml(mods) +
+      (found ? `<h2 style="font-size:17px;margin-top:24px">Found by searching</h2>` + (found.length ? modulesHtml(found) : line("No other modules answered.", true))
+        : `<button class="btn btn-out" id="modSearch" style="margin-top:16px">Search every address</button>` + line("Asks every address a module could use, for modules the app doesn't know your make has. Takes about a minute, and only reads.", true)) + ABOUT);
+    const b = $("modSearch");
+    if (b) b.onclick = () => {
+      closeOverlay();
+      const s = overlay(`<h3>Search every address</h3><p class="msg">Asking every module address in turn. This takes about a minute.</p><div style="height:4px;border-radius:2px;background:var(--line,#333);margin:14px 0"><div id="modBar" style="height:4px;width:0;border-radius:2px;background:var(--accent)"></div></div>`);
+      let p = 0; const t = setInterval(() => { p += 4; const el = $("modBar"); if (el) el.style.width = Math.min(100, p) + "%"; if (p >= 100) { clearInterval(t); closeOverlay(); const known = new Set(mods.map(m => m[1])); modulesSheet(known.has("7A0") ? [] : [["Module at 7A0", "7A0"]]); } }, 60);
+    };
+  };
+  $("modulesRow").onclick = () => { if (needCar()) modulesSheet(null); };
   let custom = [];
   const evalFormula = (f, b) => { try { const e = f.replace(/[A-H]/g, ch => `(${b["ABCDEFGH".indexOf(ch)] ?? NaN})`); if (!/^[\d\s+\-*/().NaN]*$/.test(e)) return null; const v = Function(`return (${e})`)(); return Number.isFinite(v) ? v : null; } catch (e) { return null; } };
   /* The demo car answers standard readings it has; anything else is "no answer", so N/A */

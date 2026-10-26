@@ -38,18 +38,15 @@ class DemoTransport(
             cmd == "ATDP" -> "AUTO, ISO 15765-4 (CAN 11/500)"
             cmd == "ATRV" -> String.format(Locale.US, "%.1fV", demoVoltage())
             cmd.startsWith("ATSH") -> { header = cmd.substring(4); "OK" }
+            cmd == "ATH1" || cmd == "ATH0" -> { headers = cmd == "ATH1"; "OK" }
             cmd.startsWith("AT") -> "OK"
             // Readiness: check-engine light on with 2 codes; all monitors done except the evaporative system.
             cmd == "0101" -> "410182076504"
             cmd == "0904" -> "490401" + "1L8A-14C204-AAA".padEnd(16, '\u0000').map { String.format(Locale.US, "%02X", it.code) }.joinToString("")
             cmd.length == 4 && cmd.startsWith("06") -> mode06(cmd.substring(2).toInt(16))?.let { "46$it" } ?: "NO DATA"
             // Other modules: the ABS has a stored code, the airbag module has none, the rest don't answer.
-            cmd == "1902FF" -> when (header) {
-                "760" -> "5902FF51451C0A"
-                "737", "7E1" -> "5902FF"
-                "7E0", "7DF" -> "5902FF0133000801710004"
-                else -> "NO DATA"
-            }
+            // With headers on (the module search), each answer comes as CAN frames from its address.
+            cmd == "1902FF" -> moduleCodes(header)?.let { if (headers) frames(header, it) else it } ?: "NO DATA"
             cmd == "03" -> "430201330420"
             cmd == "07" -> "47010171"
             cmd == "0902" -> vinFrames(vin)
@@ -117,6 +114,28 @@ class DemoTransport(
     }
 
     private var header = "7DF"
+    @Volatile private var headers = false
+
+    /**
+     * Other modules: the ABS has a stored code, the airbag module and the transmission have none,
+     * and one module the car's make isn't known for (at 7A0) answers the search with none.
+     */
+    private fun moduleCodes(h: String): String? = when (h) {
+        "760" -> "5902FF51451C0A"
+        "737", "7E1", "7A0" -> "5902FF"
+        "7E0", "7DF" -> "5902FF0133000801710004"
+        else -> null
+    }
+
+    /** [payload] as the CAN frames an 11-bit module at [request] sends back, headers on and no spaces. */
+    private fun frames(request: String, payload: String): String {
+        val id = String.format(Locale.US, "%03X", (request.toIntOrNull(16) ?: 0x7DF).let { if (it == 0x7DF) 0x7E0 else it } + 8)
+        val bytes = payload.chunked(2)
+        if (bytes.size <= 7) return id + String.format(Locale.US, "%02X", bytes.size) + payload
+        val out = mutableListOf(id + String.format(Locale.US, "1%03X", bytes.size) + bytes.take(6).joinToString(""))
+        bytes.drop(6).chunked(7).forEachIndexed { i, part -> out += id + String.format(Locale.US, "2%X", (i + 1) % 16) + part.joinToString("") }
+        return out.joinToString("\r")
+    }
 
     /** Self-test results: two oxygen sensor tests, the catalyst, and misfire counts for four cylinders. */
     private fun mode06(mid: Int): String? = when (mid) {

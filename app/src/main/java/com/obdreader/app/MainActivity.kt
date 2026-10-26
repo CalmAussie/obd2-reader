@@ -932,8 +932,12 @@ class MainActivity : AppCompatActivity() {
         }) }
         fill(heading, line, body)
         sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+        currentSheet = sheet
         sheet.show()
     }
+
+    /** The deeper-check sheet on screen, so a search can close it before showing its results. */
+    private var currentSheet: BottomSheetDialog? = null
 
     private suspend fun showReadiness() {
         val r = ObdSession.readReadiness()
@@ -976,18 +980,28 @@ class MainActivity : AppCompatActivity() {
 
     private suspend fun showModules() {
         val results = ObdSession.scanModules(this)
-        val make = ObdSession.carMake(this); val year = ObdSession.carYear(this)
-        android.util.Log.i("OBD2Deep", "modules: " + (results?.joinToString("; ") { (m, a) -> "${m.name}=" + when (a) {
+        logModules(results)
+        moduleSheet(results, null)
+    }
+
+    private fun logModules(results: List<Pair<ModuleScan.Module, ModuleScan.Answer>>?, tag: String = "modules") {
+        android.util.Log.i("OBD2Deep", "$tag: " + (results?.joinToString("; ") { (m, a) -> "${m.name}=" + when (a) {
             is ModuleScan.Answer.Codes -> a.codes.joinToString(",") { it.label }.ifEmpty { "none" }
             ModuleScan.Answer.Refused -> "refused"; ModuleScan.Answer.Silent -> "silent" } } ?: "not CAN"))
-        infoSheet(getString(R.string.modules_title)) { heading, line, _ ->
+    }
+
+    /** The modules sheet: the make's known modules, and after a search, any others that answered. */
+    private fun moduleSheet(results: List<Pair<ModuleScan.Module, ModuleScan.Answer>>?, found: List<Pair<ModuleScan.Module, ModuleScan.Answer>>?) {
+        val make = ObdSession.carMake(this); val year = ObdSession.carYear(this)
+        infoSheet(getString(R.string.modules_title)) { heading, line, body ->
             if (results == null) {
                 line("Other modules are read on CAN cars. This car uses an older protocol, where only the engine computer can be reached with a standard adapter.", true)
                 return@infoSheet
             }
-            val total = results.sumOf { (it.second as? ModuleScan.Answer.Codes)?.codes?.size ?: 0 }
+            val all = results + found.orEmpty()
+            val total = all.sumOf { (it.second as? ModuleScan.Answer.Codes)?.codes?.size ?: 0 }
             line(if (total == 0) "No codes in the modules that answered." else "$total ${if (total == 1) "code" else "codes"} found.", false)
-            results.forEach { (m, a) ->
+            fun show(list: List<Pair<ModuleScan.Module, ModuleScan.Answer>>) = list.forEach { (m, a) ->
                 heading(m.name)
                 when (a) {
                     is ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) line("No codes", true) else a.codes.forEach { c ->
@@ -998,8 +1012,48 @@ class MainActivity : AppCompatActivity() {
                     ModuleScan.Answer.Silent -> line("Didn't answer: not fitted, or on a part of the car's network the adapter can't reach.", true)
                 }
             }
+            show(results)
+            if (found != null) {
+                body.addView(TextView(this).apply {
+                    text = "Found by searching"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
+                    setPadding(0, dp(24f).toInt(), 0, 0)
+                })
+                if (found.isEmpty()) line("No other modules answered.", true) else show(found)
+            } else {
+                body.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                    text = getString(R.string.modules_search); setTextColor(themeColor(R.attr.obdAccent))
+                    setOnClickListener { searchAllModules(results) }
+                }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16f).toInt() })
+                line(getString(R.string.modules_search_help), true)
+            }
             heading("About this")
             line("Read-only: the app asks each module for its codes and never clears them. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true)
+        }
+    }
+
+    /** "Search every address", with a progress bar, then the sheet again with what it found. */
+    private fun searchAllModules(results: List<Pair<ModuleScan.Module, ModuleScan.Answer>>) {
+        if (!ObdSession.state.value.isConnected) { toast("Connect to your car first."); return }
+        currentSheet?.dismiss()
+        val bar = com.google.android.material.progressindicator.LinearProgressIndicator(this).apply {
+            isIndeterminate = false; max = 100; setPadding(dp(24f).toInt(), dp(16f).toInt(), dp(24f).toInt(), dp(8f).toInt())
+        }
+        val wait = MaterialAlertDialogBuilder(this).setTitle(R.string.modules_search).setView(bar)
+            .setMessage("Asking every module address in turn. This takes about a minute.").setCancelable(false).show()
+        lifecycleScope.launch {
+            try {
+                val known = results.filter { it.second !is ModuleScan.Answer.Silent }.map { it.first.request }.toSet()
+                val found = ObdSession.searchModules(this@MainActivity, known) { done, total ->
+                    runOnUiThread { bar.setProgressCompat(if (total == 0) 100 else done * 100 / total, true) }
+                }
+                logModules(found, "search")
+                wait.dismiss()
+                // A known module that was silent before but answered the search moves to the found list.
+                val foundReq = found.orEmpty().map { it.first.request }.toSet()
+                moduleSheet(results.filter { it.first.request !in foundReq }, found.orEmpty())
+            } catch (e: CancellationException) { throw e } catch (e: Exception) {
+                wait.dismiss(); toast("The car stopped answering. Try again.")
+            }
         }
     }
 

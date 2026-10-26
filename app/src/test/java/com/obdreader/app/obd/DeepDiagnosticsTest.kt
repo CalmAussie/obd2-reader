@@ -44,7 +44,56 @@ class DeepDiagnosticsTest {
         val kwp = ModuleScan.parseKwp(listOf("5801934220")) as ModuleScan.Answer.Codes
         assertEquals(listOf("B1342"), kwp.codes.map { it.label })
         assertTrue(ModuleScan.modulesFor("Mazda", "Tribute").any { it.name.startsWith("ABS") && it.request == "760" && it.reply == "768" })
-        assertEquals(2, ModuleScan.modulesFor("Toyota", "Corolla").size)
+        // A make with no known modules gets the engine and transmission computers.
+        assertEquals(listOf("7E0", "7E1"), ModuleScan.modulesFor("Peugeot", "308").map { it.request })
+    }
+
+    @Test
+    fun everyMakesModulesAnswerWhereTheyShould() {
+        fun mod(make: String, req: String, is29: Boolean = false) = ModuleScan.modulesFor(make, null, is29).first { it.request == req }
+        assertEquals("7B8", mod("Toyota", "7B0").reply)        // + 8
+        assertEquals("788", mod("Lexus", "780").reply)
+        assertEquals("760", mod("Nissan", "740").reply)        // + 0x20
+        assertEquals("77D", mod("Volkswagen", "713").reply)    // + 0x6A
+        assertEquals("77F", mod("SEAT / Cupra", "715").reply)
+        assertEquals("4C7", mod("Jeep", "747").reply)          // - 0x280
+        assertEquals("64B", mod("Holden", "24B").reply)        // + 0x400
+        assertEquals("7EA", mod("Chevrolet", "7E2").reply)     // GM's transmission computer
+        assertEquals("18DAF128", mod("Honda", "18DA28F1").reply)
+        assertEquals("7DC", mod("Kia", "7D4").reply)
+        // A car on 29-bit OBD2 has its engine and transmission computers there too.
+        assertEquals(listOf("18DA10F1", "18DA18F1"), ModuleScan.modulesFor("Volvo", null, true).map { it.request })
+        // Every make in the catalogue gets at least the engine and transmission, and no make repeats an address.
+        for (make in VehicleCatalog.MAKES.map { it.name }) {
+            val list = ModuleScan.modulesFor(make, null)
+            assertTrue(make, list.size >= 2)
+            assertEquals(make, list.size, list.map { it.request }.toSet().size)
+            assertTrue(make, ModuleScan.sweepsFor(make, false).isNotEmpty())
+        }
+    }
+
+    @Test
+    fun searchingEveryAddress() {
+        val toyota = ModuleScan.sweepsFor("Toyota", false).single()
+        assertTrue("7B0" in toyota.requests && "7DF" !in toyota.requests && "7E8" !in toyota.requests)
+        assertEquals(listOf("ATH1", "ATCF 700", "ATCM 700", "ATST 19"), ModuleScan.sweepSetup(toyota))
+        assertEquals("640", ModuleScan.sweepsFor("Cadillac", false).first().filter)
+        assertTrue(ModuleScan.sweepsFor("Honda", false).any { it.is29Bit })
+        assertEquals("ATSH DA28F1", ModuleScan.sweepProbe("18DA28F1"))
+        // Answers to the request count: a positive one, a "no", or the first frame of a long one.
+        assertEquals(setOf("7B8"), ModuleScan.answeringAddresses(listOf("7B8035902FF"), false))
+        assertEquals(setOf("7C8"), ModuleScan.answeringAddresses(listOf("7C8037F1911"), false))
+        assertEquals(setOf("768"), ModuleScan.answeringAddresses(listOf("76810135902FF5145", "76821..."), false))
+        assertEquals(setOf("18DAF128"), ModuleScan.answeringAddresses(listOf("18DAF128035902FF"), true))
+        // The car's own traffic, or errors, are never taken for a module.
+        assertTrue(ModuleScan.answeringAddresses(listOf("7A00811223344556677", "NO DATA", "CAN ERROR"), false).isEmpty())
+        assertEquals("Module at 7A0", ModuleScan.nameFor("Mazda", "7A0", false))
+        assertEquals("ABS and stability control", ModuleScan.nameFor("Mazda", "760", false))
+        assertEquals("ATSP7" to "ATSP6", ModuleScan.protocolSwitch("A6"))
+        assertEquals(null, ModuleScan.protocolSwitch("7"))
+        // The adapter commands are all allowed by the read-only guard.
+        (ModuleScan.sweepSetup(toyota) + ModuleScan.sweepTeardown("7DF") + ModuleScan.pointAt(ModuleScan.modulesFor("Honda", null).first { it.is29Bit }) + ModuleScan.pointBack("7DF"))
+            .forEach { assertTrue(it, ReadOnlyGuard.isAllowed(it)) }
     }
 
     @Test
@@ -84,5 +133,15 @@ class DeepDiagnosticsTest {
         assertEquals(listOf("C1145-1C"), (ModuleScan.parseUds(abs) as ModuleScan.Answer.Codes).codes.map { it.label })
         val none = c.sequence(listOf("ATSH 726" to 1000L, ModuleScan.UDS_REQUEST to 3000L), listOf("ATSH 7DF")).last()
         assertTrue(ModuleScan.parseUds(none) is ModuleScan.Answer.Silent)
+        // The search: headers on, the demo's modules answer from their own addresses.
+        val sweep = ModuleScan.sweepsFor("Mazda", false).single()
+        val probes = listOf("760", "7A0", "7B0").flatMap { listOf(ModuleScan.sweepProbe(it) to 1000L, ModuleScan.UDS_REQUEST to 1000L) }
+        val replies = c.sequence(ModuleScan.sweepSetup(sweep).map { it to 1000L } + probes, ModuleScan.sweepTeardown("7DF"))
+        val n = ModuleScan.sweepSetup(sweep).size
+        assertEquals(setOf("768"), ModuleScan.answeringAddresses(replies[n + 1], false))
+        assertEquals(setOf("7A8"), ModuleScan.answeringAddresses(replies[n + 3], false))
+        assertTrue(ModuleScan.answeringAddresses(replies[n + 5], false).isEmpty())
+        // Headers are off again afterwards, so ordinary readings parse as before.
+        assertEquals(listOf("C1145-1C"), (ModuleScan.parseUds(c.sequence(ModuleScan.pointAt(ModuleScan.Module("ABS", "760", "768")).map { it to 1000L } + (ModuleScan.UDS_REQUEST to 3000L), ModuleScan.pointBack("7DF")).last()) as ModuleScan.Answer.Codes).codes.map { it.label })
     }
 }
