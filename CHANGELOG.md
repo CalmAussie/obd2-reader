@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.17.1 (26 October 2026)
+- **A new app icon: Spark.** A spark plug at an angle, cream on British racing green. On Android 13 and newer with themed icons turned on, it takes your home screen's colours like other apps.
+
 ## 1.17.0 (26 October 2026)
 - **Enhanced diagnostics.** A new row under **Diagnostics** for readings your car's maker added beyond standard OBD2, read live while it's open. For Ford (and the Ford-built Mazda Tribute and later BT-50): transmission fluid temperature, gear, oil life, fuel pump and turbo wastegate duty, and the odometer, 12 V battery charge and battery temperature from the body module. For Toyota and Lexus: odometer, engine oil temperature and litres of fuel in the tank. For Subaru: transmission fluid temperature and airflow. For the Nissan Leaf (2011–2017): battery charge, capacity, voltage and temperature, and the 12 V battery. For the Renault Zoe (2013–2019): battery charge, health and temperature, range and odometer. For Opel and Vauxhall: oil life. Only the readings your car answers are shown. They come from owners testing them on their own cars rather than from the makers, and the app says so.
 - **Module information**, for every make: each module's part number, supplier, hardware and software versions, serial number and the VIN it holds, from the standard identifiers modules use. A module holding a different VIN from the car's is pointed out, which can show a module that came from another car or wasn't programmed when it was fitted.

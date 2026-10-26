@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A simple gauge: arc, needle and hub, kept inside the adaptive-icon safe zone. -->
+<!-- Spark: a spark plug at an angle, cream on British racing green. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M33,66 A23,23 0 1,1 75,66"
-        android:strokeWidth="5"
-        android:strokeColor="#FFFFFF"
-        android:strokeLineCap="round" />
-    <path
-        android:fillColor="#4FC3F7"
-        android:pathData="M51,60 L68,41 L57,64 Z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,62 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <!-- The same size as the design: every part stays within 33 units of the centre, the adaptive-icon safe zone. -->
+    <group>
+        <group android:pivotX="54" android:pivotY="52" android:rotation="35">
+            <path android:fillColor="#F3EBD3" android:pathData="M52.5,23 H55.5 A1.5,1.5 0 0,1 57,24.5 V28.5 A1.5,1.5 0 0,1 55.5,30 H52.5 A1.5,1.5 0 0,1 51,28.5 V24.5 A1.5,1.5 0 0,1 52.5,23 Z" />
+            <path android:fillColor="#F3EBD3" android:fillType="evenOdd" android:pathData="M52,30 H56 A4,4 0 0,1 60,34 V42 A4,4 0 0,1 56,46 H52 A4,4 0 0,1 48,42 V34 A4,4 0 0,1 52,30 Z M48,35.1 H60 V36.9 H48 Z M48,40.1 H60 V41.9 H48 Z" />
+            <path android:fillColor="#F3EBD3" android:pathData="M45.5,46 H62.5 A2.5,2.5 0 0,1 65,48.5 V52.5 A2.5,2.5 0 0,1 62.5,55 H45.5 A2.5,2.5 0 0,1 43,52.5 V48.5 A2.5,2.5 0 0,1 45.5,46 Z" />
+            <path android:fillColor="#F3EBD3" android:fillType="evenOdd" android:pathData="M49,55 H59 A2,2 0 0,1 61,57 V66 A2,2 0 0,1 59,68 H49 A2,2 0 0,1 47,66 V57 A2,2 0 0,1 49,55 Z M47,58.6 H61 V60.4 H47 Z M47,62.6 H61 V64.4 H47 Z" />
+            <path android:fillColor="#00000000" android:strokeColor="#F3EBD3" android:strokeWidth="4"
+                android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M54,68 V75 H61" />
+        </group>
+    </group>
 </vector>
