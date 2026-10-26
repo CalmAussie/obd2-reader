@@ -624,6 +624,62 @@ object ObdSession {
         }
     }
 
+    /**
+     * Enhanced readings: each of [readings] asked once (readings that share a request share one
+     * answer), giving its value, or null when the car didn't answer it.
+     */
+    suspend fun readEnhanced(readings: List<com.obdreader.app.obd.EnhancedReadings.Reading>): Map<com.obdreader.app.obd.EnhancedReadings.Reading, Double?> {
+        val c = client ?: throw IOException("Not connected")
+        if (!c.isCan) return readings.associateWith { null }
+        val defaultHeader = CarCoverage.defaultHeader(_state.value.protocolCode)
+        val out = linkedMapOf<com.obdreader.app.obd.EnhancedReadings.Reading, Double?>()
+        for ((key, group) in readings.groupBy { it.header to it.request }) {
+            val (header, request) = key
+            val first = group.first()
+            val point = if (header == null) emptyList() else listOfNotNull("ATSH $header", first.reply?.let { "ATCRA $it" }, "ATFCSH $header", "ATFCSD 300000", "ATFCSM 1")
+            val back = if (header == null) emptyList() else ModuleScan.pointBack(defaultHeader)
+            val lines = c.sequence(point.map { it to 1500L } + (request to 2000L), back).last()
+            val data = if (ElmParser.errorIn(lines) != null) null else ElmParser.extractData(lines, first.replyHeader)
+            group.forEach { r -> out[r] = data?.let { d -> try { r.decode(d)?.takeIf { !it.isNaN() && !it.isInfinite() } } catch (e: Exception) { null } } }
+        }
+        return out
+    }
+
+    /**
+     * Module information for each of [modules]: the standard identifiers it answers (system, part
+     * number, supplier, hardware, software, serial, VIN). A module that doesn't answer the first two
+     * is skipped, so this stays quick. The engine computer's OBD2 name (service 09) is added too.
+     */
+    suspend fun readModuleInfo(modules: List<ModuleScan.Module>, progress: (Int, Int) -> Unit): List<Pair<ModuleScan.Module, List<Pair<String, String>>>> {
+        val c = client ?: throw IOException("Not connected")
+        if (!c.isCan) return emptyList()
+        val ids = com.obdreader.app.obd.EnhancedReadings.IDENTIFIERS
+        val out = mutableListOf<Pair<ModuleScan.Module, List<Pair<String, String>>>>()
+        modules.forEachIndexed { i, m ->
+            val switch = if (m.is29Bit && !carIs29Bit()) ModuleScan.protocolSwitch(_state.value.protocolCode) else null
+            if (!(m.is29Bit && !carIs29Bit() && switch == null)) {
+                val point = (listOfNotNull(switch?.first) + ModuleScan.pointAt(m)).map { it to 1500L }
+                val back = ModuleScan.pointBack(CarCoverage.defaultHeader(_state.value.protocolCode)) + listOfNotNull(switch?.second)
+                fun answered(lines: List<String>) = lines.isNotEmpty() && ElmParser.errorIn(lines) == null
+                val probe = c.sequence(point + ids.take(2).map { "22${it.did}" to 1500L }, back).drop(point.size)
+                if (probe.any { answered(it) }) {
+                    val rest = c.sequence(point + ids.drop(2).map { "22${it.did}" to 1500L }, back).drop(point.size)
+                    val fields = (probe + rest).mapIndexedNotNull { k, lines ->
+                        val id = ids[k]
+                        com.obdreader.app.obd.EnhancedReadings.identifierText(ElmParser.extractData(lines, "62${id.did}"))?.let { id.name to it }
+                    }.toMutableList()
+                    if (m.request == "7E0" || m.request == "18DA10F1") {
+                        ElmParser.parseEcuNames(c.command("090A")).firstOrNull()?.let { fields.add(0, "OBD2 name" to it) }
+                    }
+                    appendLog("= ${m.name}: " + fields.joinToString("; ") { "${it.first} ${it.second}" }.ifEmpty { "answered, no identifiers" })
+                    out += m to fields
+                }
+            }
+            progress(i + 1, modules.size)
+        }
+        return out
+    }
+
     /** One custom reading's value now, or null when the car didn't give one. */
     suspend fun readCustom(r: com.obdreader.app.obd.CustomReading): Double? {
         val c = client ?: throw IOException("Not connected")
