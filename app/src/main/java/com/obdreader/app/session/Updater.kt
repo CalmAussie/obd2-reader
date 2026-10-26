@@ -178,7 +178,7 @@ object Updater {
         waitingProblem = why
         channel(context)
         val open = PendingIntent.getActivity(context, NOTE_INSTALL,
-            Intent(context, com.obdreader.app.MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            Intent(context, com.obdreader.app.HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         notify(context, NOTE_INSTALL, androidx.core.app.NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(com.obdreader.app.R.drawable.ic_speed)
@@ -235,7 +235,7 @@ object Updater {
         prefs.edit().remove(UPDATING_TO).apply()
         channel(context)
         val open = PendingIntent.getActivity(context, NOTE_UPDATED,
-            Intent(context, com.obdreader.app.MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            Intent(context, com.obdreader.app.HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val version = try { context.packageManager.getPackageInfo(context.packageName, 0).versionName } catch (e: Exception) { null }
         notify(context, NOTE_UPDATED, androidx.core.app.NotificationCompat.Builder(context, CHANNEL)

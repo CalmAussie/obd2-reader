@@ -90,6 +90,7 @@ import com.obdreader.app.session.OverlayExporter
 import com.obdreader.app.obd.VinDecoder
 import com.obdreader.app.obd.WifiTransport
 import com.google.android.material.card.MaterialCardView
+import com.obdreader.app.ui.AppIcons
 import com.obdreader.app.ui.AppThemes
 import com.obdreader.app.ui.Channels
 import com.obdreader.app.ui.CockpitRingView
@@ -139,7 +140,7 @@ import java.io.IOException
 import java.util.Locale
 import kotlin.math.roundToInt
 
-class MainActivity : AppCompatActivity() {
+open class MainActivity : AppCompatActivity() {
 
     private enum class Status { IDLE, CONNECTING, CONNECTED, ERROR }
 
@@ -418,6 +419,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.unitsRow).apply {
             background = panelBackground()
             setOnClickListener { showUnitsPicker() }
+        }
+        findViewById<TextView>(R.id.appIconSetting).text = AppIcons.current(this).name
+        findViewById<View>(R.id.appIconRow).apply {
+            background = panelBackground()
+            setOnClickListener { showIconPicker() }
         }
         findViewById<View>(R.id.scanRow).apply {
             background = panelBackground()
@@ -1238,6 +1244,52 @@ class MainActivity : AppCompatActivity() {
             saveCustom(customReadings() + r)
             d.dismiss(); showCustomReadings()
         }
+    }
+
+    /** Diagnostics → App icon: the Spark colourways, each shown as it looks on the home screen. */
+    private fun showIconPicker() {
+        val sheet = BottomSheetDialog(this)
+        val pad = dp(20f).toInt()
+        val body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, dp(8f).toInt(), pad, dp(24f).toInt()) }
+        body.addView(TextView(this).apply { setText(R.string.app_icon); setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary)) })
+        body.addView(TextView(this).apply { setText(R.string.app_icon_help); setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdTextSecondary)); setPadding(0, dp(4f).toInt(), 0, dp(8f).toInt()) })
+        val current = AppIcons.current(this)
+        AppIcons.ALL.forEach { icon ->
+            body.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                background = panelBackground(); val p = dp(12f).toInt(); setPadding(p, p, p, p)
+                isClickable = true; isFocusable = true
+                contentDescription = icon.name + if (icon == current) ", chosen" else ""
+                addView(android.widget.ImageView(this@MainActivity).apply {
+                    setImageDrawable(androidx.core.content.ContextCompat.getDrawable(this@MainActivity, icon.icon))
+                    // The launcher's own shape: a rounded square here, as most phones show it.
+                    clipToOutline = true
+                    outlineProvider = object : android.view.ViewOutlineProvider() {
+                        override fun getOutline(v: View, o: android.graphics.Outline) { o.setRoundRect(0, 0, v.width, v.height, v.width * 0.28f) }
+                    }
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                }, LinearLayout.LayoutParams(dp(48f).toInt(), dp(48f).toInt()))
+                addView(LinearLayout(this@MainActivity).apply {
+                    orientation = LinearLayout.VERTICAL; setPadding(dp(14f).toInt(), 0, 0, 0)
+                    addView(TextView(this@MainActivity).apply { text = icon.name; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary)) })
+                    addView(TextView(this@MainActivity).apply { text = icon.note; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                if (icon == current) addView(android.widget.ImageView(this@MainActivity).apply {
+                    setImageResource(R.drawable.ic_check); imageTintList = ColorStateList.valueOf(themeColor(R.attr.obdAccent))
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                }, LinearLayout.LayoutParams(dp(24f).toInt(), dp(24f).toInt()))
+                setOnClickListener {
+                    sheet.dismiss()
+                    if (icon == current) return@setOnClickListener
+                    AppIcons.choose(this@MainActivity, icon)
+                    android.util.Log.i("OBD2Icon", "app icon: ${icon.id}")
+                    findViewById<TextView>(R.id.appIconSetting).text = icon.name
+                    toast("App icon changed to ${icon.name}. Your home screen can take a few seconds to show it.")
+                }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8f).toInt() })
+        }
+        sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+        sheet.show()
     }
 
     private fun runCarScan() {
