@@ -78,6 +78,9 @@ import com.obdreader.app.obd.ObdProtocols
 import com.obdreader.app.obd.VehicleCatalog
 import com.obdreader.app.obd.TripSummary
 import com.obdreader.app.obd.Units
+import com.obdreader.app.obd.CustomReading
+import com.obdreader.app.obd.ModuleScan
+import com.obdreader.app.obd.Readiness
 import com.obdreader.app.obd.CarCoverage
 import com.obdreader.app.obd.ChargingStatus
 import com.obdreader.app.obd.PerformanceTimer
@@ -419,6 +422,7 @@ class MainActivity : AppCompatActivity() {
             background = panelBackground()
             setOnClickListener { runCarScan() }
         }
+        setupDeeperChecks()
         findViewById<View>(R.id.slotsRow).apply {
             background = panelBackground()
             setOnClickListener { showSlotPicker(slots.toMutableList()) }
@@ -856,6 +860,236 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ---------- Car scan ----------
+
+    // ---------- Deeper checks: readiness, self-tests, other modules, custom readings (all read-only) ----------
+
+    /** Adds the deeper-check rows to Diagnostics, under Scan what your car reports. */
+    private fun setupDeeperChecks() {
+        val scanRow = findViewById<View>(R.id.scanRow)
+        val parent = scanRow.parent as ViewGroup
+        var at = parent.indexOfChild(scanRow) + 1
+        fun row(id: Int, title: String, help: String, onClick: () -> Unit) {
+            val r = LinearLayout(this).apply {
+                this.id = id
+                orientation = LinearLayout.VERTICAL
+                background = panelBackground()
+                isClickable = true; isFocusable = true
+                val p = dp(16f).toInt(); setPadding(p, p, p, p)
+                addView(LinearLayout(this@MainActivity).apply {
+                    orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                    addView(TextView(this@MainActivity).apply {
+                        text = title; typeface = uiTypeface(500); setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                        setTextColor(themeColor(R.attr.obdTextPrimary))
+                    }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    addView(android.widget.ImageView(this@MainActivity).apply {
+                        setImageResource(R.drawable.ic_chevron_right); importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                        imageTintList = ColorStateList.valueOf(themeColor(R.attr.obdTextSecondary))
+                    }, LinearLayout.LayoutParams(dp(20f).toInt(), dp(20f).toInt()))
+                })
+                addView(TextView(this@MainActivity).apply {
+                    text = help; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                    setPadding(0, dp(6f).toInt(), 0, 0)
+                })
+                setOnClickListener { onClick() }
+            }
+            parent.addView(r, at++, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4f).toInt() })
+        }
+        row(R.id.readinessRow, getString(R.string.readiness_title), getString(R.string.readiness_help)) { runCheck(getString(R.string.readiness_title)) { showReadiness() } }
+        row(R.id.testsRow, getString(R.string.tests_title), getString(R.string.tests_help)) { runCheck(getString(R.string.tests_title)) { showTestResults() } }
+        row(R.id.modulesRow, getString(R.string.modules_title), getString(R.string.modules_help)) { runCheck(getString(R.string.modules_title), "Asking each module in turn. This can take half a minute.") { showModules() } }
+        row(R.id.customRow, getString(R.string.custom_title), getString(R.string.custom_help)) { showCustomReadings() }
+    }
+
+    /** Shows a "please wait" while [work] asks the car, then its sheet; says so if the car stops answering. */
+    private fun runCheck(title: String, message: String = "Asking your car. This takes a few seconds.", work: suspend () -> Unit) {
+        if (!ObdSession.state.value.isConnected) { toast("Connect to your car first."); return }
+        val wait = MaterialAlertDialogBuilder(this).setTitle(title)
+            .setView(com.google.android.material.progressindicator.LinearProgressIndicator(this).apply {
+                isIndeterminate = true; setPadding(dp(24f).toInt(), dp(16f).toInt(), dp(24f).toInt(), dp(8f).toInt())
+            })
+            .setMessage(message).setCancelable(false).show()
+        lifecycleScope.launch {
+            try { work() } catch (e: CancellationException) { throw e } catch (e: Exception) { toast("The car stopped answering. Try again.") }
+            finally { wait.dismiss() }
+        }
+    }
+
+    /** A bottom sheet with a title; [fill] adds the lines. */
+    private fun infoSheet(title: String, fill: (heading: (String) -> Unit, line: (String, Boolean) -> Unit, body: LinearLayout) -> Unit) {
+        val sheet = BottomSheetDialog(this)
+        val pad = dp(20f).toInt()
+        val body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, dp(8f).toInt(), pad, dp(24f).toInt()) }
+        body.addView(TextView(this).apply {
+            text = title; setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
+        })
+        val heading = { t: String -> body.addView(TextView(this).apply {
+            text = t; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
+            setPadding(0, dp(16f).toInt(), 0, dp(4f).toInt())
+        }) }
+        val line = { t: String, secondary: Boolean -> body.addView(TextView(this).apply {
+            text = t; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setLineSpacing(0f, 1.15f); setTextIsSelectable(true)
+            setTextColor(themeColor(if (secondary) R.attr.obdTextSecondary else R.attr.obdTextPrimary)); setPadding(0, dp(4f).toInt(), 0, 0)
+        }) }
+        fill(heading, line, body)
+        sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+        sheet.show()
+    }
+
+    private suspend fun showReadiness() {
+        val r = ObdSession.readReadiness()
+        val cal = ObdSession.readCalibrationIds()
+        if (r == null) { toast("The car didn't report its readiness monitors."); return }
+        android.util.Log.i("OBD2Deep", "readiness: ${r.summary()}")
+        infoSheet(getString(R.string.readiness_title)) { heading, line, _ ->
+            line(r.summary() + ". Check-engine light " + (if (r.milOn) "on" else "off") + ", ${r.codeCount} stored ${if (r.codeCount == 1) "code" else "codes"}.", false)
+            heading("Monitors")
+            r.monitors.forEach { m ->
+                line((if (m.state == Readiness.State.COMPLETE) "✓  " else "…  ") + "${m.name}: ${m.state.label}", m.state == Readiness.State.COMPLETE)
+                line("     ${m.about}", true)
+            }
+            heading("What this means")
+            line("The engine computer runs these checks by itself as you drive. They reset whenever the codes are cleared or the battery is disconnected, and finish again after a few days of normal driving, town and highway. An emissions inspection usually wants them complete.", true)
+            if (cal.isNotEmpty()) { heading("Engine computer software (calibration ID)"); cal.forEach { line(it, false) } }
+        }
+    }
+
+    private suspend fun showTestResults() {
+        val results = ObdSession.readTestResults()
+        android.util.Log.i("OBD2Deep", "self-tests: ${results?.size ?: "not CAN"}")
+        infoSheet(getString(R.string.tests_title)) { heading, line, _ ->
+            when {
+                results == null -> line("Self-test results are read on CAN cars (most from 2008, many earlier). This car uses an older protocol, where each maker sets out these results its own way.", true)
+                results.isEmpty() -> line("The car didn't report any self-test results.", true)
+                else -> {
+                    val fails = results.count { !it.passed }
+                    line(if (fails == 0) "All ${results.size} tests within their limits." else "$fails of ${results.size} tests outside their limits.", false)
+                    results.groupBy { it.mid }.forEach { (_, list) ->
+                        heading(list.first().monitor)
+                        list.forEach { t -> line("${if (t.passed) "✓" else "✗"}  Test ${String.format(Locale.US, "%02X", t.tid)}: ${t.text()}", t.passed) }
+                    }
+                    heading("What this means")
+                    line("These are the engine computer's own measurements from the last time it ran each check, with the limits they must stay between. A result close to a limit can show a part wearing out before it sets a trouble code. The test numbers are the maker's own, so what each one measures isn't always published.", true)
+                }
+            }
+        }
+    }
+
+    private suspend fun showModules() {
+        val results = ObdSession.scanModules(this)
+        val make = ObdSession.carMake(this); val year = ObdSession.carYear(this)
+        android.util.Log.i("OBD2Deep", "modules: " + (results?.joinToString("; ") { (m, a) -> "${m.name}=" + when (a) {
+            is ModuleScan.Answer.Codes -> a.codes.joinToString(",") { it.label }.ifEmpty { "none" }
+            ModuleScan.Answer.Refused -> "refused"; ModuleScan.Answer.Silent -> "silent" } } ?: "not CAN"))
+        infoSheet(getString(R.string.modules_title)) { heading, line, _ ->
+            if (results == null) {
+                line("Other modules are read on CAN cars. This car uses an older protocol, where only the engine computer can be reached with a standard adapter.", true)
+                return@infoSheet
+            }
+            val total = results.sumOf { (it.second as? ModuleScan.Answer.Codes)?.codes?.size ?: 0 }
+            line(if (total == 0) "No codes in the modules that answered." else "$total ${if (total == 1) "code" else "codes"} found.", false)
+            results.forEach { (m, a) ->
+                heading(m.name)
+                when (a) {
+                    is ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) line("No codes", true) else a.codes.forEach { c ->
+                        val info = DtcLibrary.lookup(c.code, make, year)
+                        line("${c.label}  ${info.title}" + if (c.pending && !c.confirmed) " (pending)" else " (stored)", false)
+                    }
+                    ModuleScan.Answer.Refused -> line("Answered, but doesn't share its codes this way.", true)
+                    ModuleScan.Answer.Silent -> line("Didn't answer: not fitted, or on a part of the car's network the adapter can't reach.", true)
+                }
+            }
+            heading("About this")
+            line("Read-only: the app asks each module for its codes and never clears them. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true)
+        }
+    }
+
+    // ---- Custom readings ----
+
+    private fun customReadings(): MutableList<CustomReading> = CustomReading.decodeAll(prefs.getString(PREF_CUSTOM, null)).toMutableList()
+    private fun saveCustom(list: List<CustomReading>) = prefs.edit().putString(PREF_CUSTOM, CustomReading.encodeAll(list)).apply()
+
+    private fun showCustomReadings() {
+        val list = customReadings()
+        val sheet = BottomSheetDialog(this)
+        val pad = dp(20f).toInt()
+        val body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, dp(8f).toInt(), pad, dp(24f).toInt()) }
+        body.addView(TextView(this).apply { setText(R.string.custom_title); setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary)) })
+        val values = mutableMapOf<CustomReading, TextView>()
+        if (list.isEmpty()) body.addView(TextView(this).apply {
+            setText(R.string.custom_empty); setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setPadding(0, dp(8f).toInt(), 0, 0)
+        })
+        list.forEach { r ->
+            body.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                background = panelBackground(); val p = dp(14f).toInt(); setPadding(p, p, p, p)
+                addView(LinearLayout(this@MainActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    addView(TextView(this@MainActivity).apply { text = r.name; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary)) })
+                    addView(TextView(this@MainActivity).apply { text = (r.header?.let { "$it · " } ?: "") + r.request + " · " + r.formula; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                addView(TextView(this@MainActivity).apply {
+                    text = "–"; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f); setTextColor(themeColor(R.attr.obdAccent))
+                    values[r] = this
+                })
+                setOnLongClickListener {
+                    MaterialAlertDialogBuilder(this@MainActivity).setTitle("Delete ${r.name}?")
+                        .setPositiveButton(R.string.history_delete) { _, _ -> saveCustom(customReadings().filter { it != r }); sheet.dismiss(); showCustomReadings() }
+                        .setNegativeButton(android.R.string.cancel, null).show(); true
+                }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8f).toInt() })
+        }
+        body.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            addView(MaterialButton(this@MainActivity).apply { setText(R.string.custom_add); setOnClickListener { sheet.dismiss(); addCustomReading() } })
+            if (list.isNotEmpty()) addView(MaterialButton(this@MainActivity, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
+                setText(R.string.custom_refresh); setTextColor(themeColor(R.attr.obdAccent)); setOnClickListener { readCustomInto(values) }
+            })
+            setPadding(0, dp(12f).toInt(), 0, 0)
+        })
+        body.addView(TextView(this).apply {
+            setText(R.string.custom_note); setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setPadding(0, dp(12f).toInt(), 0, 0)
+        })
+        sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+        sheet.show()
+        readCustomInto(values)
+    }
+
+    private fun readCustomInto(values: Map<CustomReading, TextView>) {
+        if (!ObdSession.state.value.isConnected) { values.values.forEach { it.text = "–" }; return }
+        lifecycleScope.launch {
+            for ((r, tv) in values) {
+                val v = try { ObdSession.readCustom(r) } catch (e: CancellationException) { throw e } catch (e: Exception) { null }
+                tv.text = v?.let { String.format(Locale.US, if (kotlin.math.abs(it) >= 100) "%.0f" else "%.2f", it) + if (r.unit.isEmpty()) "" else " ${r.unit}" } ?: "N/A"
+                android.util.Log.i("OBD2Deep", "custom ${r.name}: ${tv.text}")
+            }
+        }
+    }
+
+    private fun addCustomReading() {
+        val form = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20f).toInt(), dp(8f).toInt(), dp(20f).toInt(), 0) }
+        fun field(hint: String, caps: Boolean): com.google.android.material.textfield.TextInputEditText {
+            val box = com.google.android.material.textfield.TextInputLayout(this).apply { this.hint = hint }
+            val e = com.google.android.material.textfield.TextInputEditText(box.context).apply {
+                inputType = android.text.InputType.TYPE_CLASS_TEXT or (if (caps) android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS else 0) or android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            }
+            box.addView(e); form.addView(box); return e
+        }
+        val name = field("Name (e.g. Transmission temp)", false)
+        val req = field("Request, hex (e.g. 221E1C)", true)
+        val hdr = field("Module address, optional (e.g. 7E0)", true)
+        val f = field("Formula (e.g. (A*256+B)/16)", true)
+        val unit = field("Unit (e.g. °C)", false)
+        val d = MaterialAlertDialogBuilder(this).setTitle(R.string.custom_add).setView(form)
+            .setPositiveButton(R.string.save, null).setNegativeButton(android.R.string.cancel, null).show()
+        d.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val t = { e: com.google.android.material.textfield.TextInputEditText -> e.text?.toString().orEmpty() }
+            val problem = CustomReading.problem(t(name), t(req), t(hdr), t(f))
+            if (problem != null) { toast(problem); return@setOnClickListener }
+            val r = CustomReading.validate(t(name), t(req), t(hdr), t(f), t(unit)) ?: return@setOnClickListener
+            saveCustom(customReadings() + r)
+            d.dismiss(); showCustomReadings()
+        }
+    }
 
     private fun runCarScan() {
         if (!ObdSession.state.value.isConnected) { toast("Connect to your car first."); return }
@@ -3588,6 +3822,7 @@ class MainActivity : AppCompatActivity() {
         private const val PREF_CAR_ASKED = "car_asked"
         private const val PREF_SCORE_STYLE = "score_style"
         private const val PREF_LAST_TRIP = "last_trip"
+        private const val PREF_CUSTOM = "custom_readings"
         private const val PREF_SLOTS = "dash_slots"
         private const val PREF_PERF_HISTORY = "perf_history"
         private const val PREF_PERF_MODE = "perf_mode"

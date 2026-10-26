@@ -2,6 +2,13 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.16.0 (26 October 2026)
+Four deeper checks under **Diagnostics**. Like everything else in the app they only read: nothing is cleared or changed in the car, and the app blocks any command that isn't a read.
+- **Readiness monitors.** The engine computer's own emission checks (catalyst, oxygen sensors, evaporative system, misfire and more) and whether each has finished since the codes were last cleared or the battery was disconnected. Emissions inspections usually want them complete. It also shows the check-engine light, the number of stored codes and the engine computer's software version (calibration ID).
+- **Self-test results.** The measurements the engine computer took the last time it ran each check, such as oxygen sensor switching and catalyst efficiency, with the limits each must stay within, marked ✓ or ✗. A result near its limit can show a part wearing before it sets a code. On CAN cars.
+- **Codes from other modules.** Asks the modules beyond the engine for their codes: on Ford and Mazda the ABS, airbags, body, instrument cluster, power steering, parking aid, all-wheel drive and climate control; on every make the engine and transmission computers. Each module shows its codes (stored or pending, with titles where known), "No codes", or that it didn't answer. On CAN cars.
+- **Custom readings.** Add a reading the app doesn't list by its request (service 01, 21 or 22), an optional module address, a formula using the reply bytes A, B, C… (for example `(A*256+B)/4`) and a unit. Readings are kept on your phone; touch and hold one to delete it.
+
 ## 1.15.0 (26 October 2026)
 - **Battery readings with the ignition off.** When the car is switched off but the adapter is still connected, the app now shows the battery's voltage and roughly how charged it is (for example "12.5 V, about 80% charged"), on the Dashboard and in the battery reading. It comes from the adapter's own reading at the OBD2 port, so it doesn't need to wake the car.
 - **Overnight battery watch.** Turn on **Diagnostics → Battery check → Watch the battery while the car is off**, leave the phone connected overnight (on charge, in range of the adapter), and the app notes the battery's voltage every 5 minutes. In the morning it says whether the battery held its charge or dropped faster than it should, which points to something draining it while the car is off. With it on, the app waits up to 24 hours for the car instead of 30 minutes.

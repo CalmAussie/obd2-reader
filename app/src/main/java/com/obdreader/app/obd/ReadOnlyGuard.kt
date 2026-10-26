@@ -16,9 +16,12 @@ object ReadOnlyGuard {
     /**
      * Services that only read: OBD2's live data, freeze frame, stored codes, test results, pending
      * codes, vehicle info and permanent codes, plus the two manufacturer "read data" services
-     * (21, ReadDataByLocalIdentifier, and 22, ReadDataByIdentifier) used for enhanced readings.
+     * (21, ReadDataByLocalIdentifier, and 22, ReadDataByIdentifier) used for enhanced readings, and
+     * the three that read other modules' trouble codes: 13 (readDiagnosticTroubleCodes), 18
+     * (readDTCByStatus) and 19 (UDS ReadDTCInformation, whose every sub-function only reads).
+     * Clearing them (14 and 04) stays blocked.
      */
-    private val READ_SERVICES = setOf("01", "02", "03", "06", "07", "09", "0A", "21", "22")
+    private val READ_SERVICES = setOf("01", "02", "03", "06", "07", "09", "0A", "21", "22", "13", "18", "19")
 
     fun isAllowed(command: String): Boolean {
         val cmd = command.replace(" ", "").uppercase(Locale.US)

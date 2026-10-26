@@ -507,6 +507,81 @@ object ObdSession {
         return Scan(supported, answers, battery)
     }
 
+    // ---------- Deeper checks (all read-only) ----------
+
+    /** The readiness monitors (service 01 PID 01), or null if the car didn't answer. */
+    suspend fun readReadiness(): com.obdreader.app.obd.Readiness? {
+        val c = client ?: throw IOException("Not connected")
+        return com.obdreader.app.obd.Readiness.decode(ElmParser.extractData(c.command("0101", 3000), "4101"))
+    }
+
+    /** The engine computer's calibration IDs (its software versions), or an empty list. */
+    suspend fun readCalibrationIds(): List<String> {
+        val c = client ?: throw IOException("Not connected")
+        return try { ElmParser.parseCalibrationIds(c.command("0904", 5000)) } catch (e: AdapterTimeoutException) { emptyList() }
+    }
+
+    /**
+     * Self-test results (service 06). Null when the car isn't on CAN (older cars use a
+     * maker-specific layout for these), empty when it reports none.
+     */
+    suspend fun readTestResults(): List<com.obdreader.app.obd.TestResults.Result>? {
+        val c = client ?: throw IOException("Not connected")
+        if (!c.isCan) return null
+        val mids = mutableListOf<Int>()
+        var base = 0x00
+        while (base <= 0xE0) {
+            val req = String.format(Locale.US, "06%02X", base)
+            val bitmap = try { ElmParser.extractData(c.command(req, 3000), "46" + req.substring(2)) } catch (e: AdapterTimeoutException) { null }
+            val found = com.obdreader.app.obd.TestResults.supported(base, bitmap)
+            mids += found.filter { it % 0x20 != 0 }
+            if ((base + 0x20) !in found) break
+            base += 0x20
+        }
+        val results = mutableListOf<com.obdreader.app.obd.TestResults.Result>()
+        for (mid in mids) {
+            val req = String.format(Locale.US, "06%02X", mid)
+            val bytes = try { ElmParser.extractData(c.command(req, 3000), "46") } catch (e: AdapterTimeoutException) { null } ?: continue
+            results += com.obdreader.app.obd.TestResults.parse(bytes).filter { it.mid == mid }
+        }
+        return results
+    }
+
+    /**
+     * Trouble codes from the car's other modules. Each module is asked on its own address with a
+     * read-only request (UDS 19, or KWP2000 18 if it says no to that), and the adapter is pointed
+     * back at the engine computer after each one. Null on non-CAN cars.
+     */
+    suspend fun scanModules(context: Context): List<Pair<com.obdreader.app.obd.ModuleScan.Module, com.obdreader.app.obd.ModuleScan.Answer>>? {
+        val c = client ?: throw IOException("Not connected")
+        if (!c.isCan) return null
+        val modules = com.obdreader.app.obd.ModuleScan.modulesFor(carMake(context), AppPrefs.savedCar(AppPrefs.of(context))?.model)
+        val back = com.obdreader.app.obd.ModuleScan.pointBack(CarCoverage.defaultHeader(_state.value.protocolCode))
+        return modules.map { m ->
+            val point = com.obdreader.app.obd.ModuleScan.pointAt(m).map { it to 1500L }
+            var answer = com.obdreader.app.obd.ModuleScan.parseUds(c.sequence(point + (com.obdreader.app.obd.ModuleScan.UDS_REQUEST to 3000L), back).last())
+            if (answer is com.obdreader.app.obd.ModuleScan.Answer.Refused) {
+                answer = com.obdreader.app.obd.ModuleScan.parseKwp(c.sequence(point + (com.obdreader.app.obd.ModuleScan.KWP_REQUEST to 3000L), back).last())
+            }
+            appendLog("= ${m.name}: " + when (val a = answer) {
+                is com.obdreader.app.obd.ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) "no codes" else a.codes.joinToString(", ") { it.label }
+                com.obdreader.app.obd.ModuleScan.Answer.Refused -> "doesn't offer its codes this way"
+                com.obdreader.app.obd.ModuleScan.Answer.Silent -> "didn't answer"
+            })
+            m to answer
+        }
+    }
+
+    /** One custom reading's value now, or null when the car didn't give one. */
+    suspend fun readCustom(r: com.obdreader.app.obd.CustomReading): Double? {
+        val c = client ?: throw IOException("Not connected")
+        val back = if (r.header == null) emptyList() else listOfNotNull(CarCoverage.defaultHeader(_state.value.protocolCode)?.let { "ATSH $it" })
+        val cmds = listOfNotNull(r.header?.let { "ATSH $it" to 1500L }, r.request to 3000L)
+        val lines = c.sequence(cmds, back).last()
+        if (ElmParser.errorIn(lines) != null) return null
+        return ElmParser.extractData(lines, r.replyHeader)?.let { r.value(it) }
+    }
+
     suspend fun readVin(): String? {
         val c = client ?: throw IOException("Not connected")
         val vin = c.readVin()
