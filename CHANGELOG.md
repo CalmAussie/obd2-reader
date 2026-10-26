@@ -3,7 +3,7 @@
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
 ## 1.18.3 (27 October 2026)
-- On the Dashboard, under the driving score, **Performance timers**, **Last drive summary** and **Drive history** are now three buttons side by side instead of a list of links. The last two show once you've had a drive, and the row shares its width between the ones showing.
+- On the Dashboard, under the driving score, **Performance timers**, **Last drive summary** and **Drive history** are now three buttons side by side instead of a list of links, shaped like the Connect and Demo car buttons in each style (angled on the liveries, square on Race telemetry, rounded on Digital cockpit, raked on Cyberpunk). The last two show once you've had a drive, and the row shares its width between the ones showing.
 
 ## 1.18.2 (27 October 2026)
 - While connected to your car (or connecting), the **Demo car** button is hidden and **Disconnect** stretches across the whole row, in every style and sideways. It comes back when you disconnect.

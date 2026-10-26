@@ -418,7 +418,22 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
             canvas.drawPath(path, paint)
         }
         val fm = textPaint.fontMetrics
-        canvas.drawText(text, w / 2f, h / 2f - (fm.ascent + fm.descent) / 2f, textPaint)
+        val lines = lines(w - skewOffset(skew, h) - dp(16f))
+        val lineH = fm.descent - fm.ascent
+        val first = h / 2f - (lines.size - 1) * lineH / 2f - (fm.ascent + fm.descent) / 2f
+        lines.forEachIndexed { i, t -> canvas.drawText(t, w / 2f, first + i * lineH, textPaint) }
+    }
+
+    /**
+     * The label as it fits in [avail] pixels: one line if it can, otherwise split into two at the
+     * space that balances them best (for narrow buttons side by side), shortened only if even that
+     * won't fit.
+     */
+    private fun lines(avail: Float): List<String> {
+        if (textPaint.measureText(text) <= avail || !text.contains(' ')) return listOf(fitText(textPaint, text, avail))
+        val spaces = text.indices.filter { text[it] == ' ' }
+        val cut = spaces.minByOrNull { i -> maxOf(textPaint.measureText(text, 0, i), textPaint.measureText(text, i + 1, text.length)) }!!
+        return listOf(text.substring(0, cut), text.substring(cut + 1)).map { fitText(textPaint, it, avail) }
     }
 }
 

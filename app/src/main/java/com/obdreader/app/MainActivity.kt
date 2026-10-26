@@ -528,19 +528,14 @@ class MainActivity : AppCompatActivity() {
             // and Drive history. The last two show once there's been a drive; the row shares its
             // width between the ones showing.
             val content = scoreCard.parent as ViewGroup
-            fun quickButton(label: Int, onClick: () -> Unit) =
-                MaterialButton(this@MainActivity, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-                    text = getString(label)
-                    setTextColor(themeColor(R.attr.obdAccent))
-                    strokeColor = ColorStateList.valueOf(themeColor(R.attr.obdOutline))
-                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-                    maxLines = 2
-                    insetTop = 0; insetBottom = 0
-                    minHeight = dp(52f).toInt()
-                    setPaddingRelative(dp(6f).toInt(), dp(6f).toInt(), dp(6f).toInt(), dp(6f).toInt())
-                    gravity = Gravity.CENTER
-                    setOnClickListener { onClick() }
-                }
+            // The same buttons as Connect, so they take each style's own shape: angled on the
+            // liveries, square tiles on telemetry, pills on the cockpit, cut corners on cyberpunk.
+            fun quickButton(label: Int, onClick: () -> Unit) = SkewButton(this@MainActivity).apply {
+                text = getString(label)
+                kind = SkewButton.Kind.OUTLINE
+                setTextSizeSp(13f)
+                setOnClickListener { onClick() }
+            }
             val perfButton = quickButton(R.string.perf_title) { showPerformance() }.apply { id = R.id.perfButton }
             val lastButton = quickButton(R.string.last_trip) { savedTrip()?.let { showTripSummary(it, justEnded = false) } }.apply {
                 visibility = if (savedTrip() != null) View.VISIBLE else View.GONE
@@ -554,7 +549,7 @@ class MainActivity : AppCompatActivity() {
             val quickRow = LinearLayout(this@MainActivity).apply {
                 orientation = LinearLayout.HORIZONTAL
                 listOf(perfButton, lastButton, histButton).forEachIndexed { i, btn ->
-                    addView(btn, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { if (i > 0) marginStart = dp(8f).toInt() })
+                    addView(btn, LinearLayout.LayoutParams(0, dp(52f).toInt(), 1f).apply { if (i > 0) marginStart = dp(8f).toInt() })
                 }
             }
             content.addView(quickRow, content.indexOfChild(scoreCard) + 1, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10f).toInt() })
@@ -642,11 +637,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private var lastTripButton: MaterialButton? = null
+    private var lastTripButton: SkewButton? = null
 
     private fun savedTrip(): TripSummary? = TripSummary.decode(prefs.getString(PREF_LAST_TRIP, null))
 
-    private var historyButton: MaterialButton? = null
+    private var historyButton: SkewButton? = null
 
     /** Every drive kept on the phone, newest first. Before drive history, only the last drive was kept. */
     private fun tripHistory(): List<TripSummary> {
