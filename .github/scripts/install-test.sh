@@ -682,6 +682,29 @@ for attempt in 1 2; do
   fi
 done
 case "$SCAN" in shown) log "car scan: shown" ;; missing) log "car scan: FAILED (row missing)"; FAIL=1 ;; *) log "car scan: FAILED (not shown)"; FAIL=1 ;; esac
+# Deeper checks (read-only): readiness monitors, self-test results and other modules' codes,
+# each read from the demo car. The app logs what it read under OBD2Deep.
+deep_check() {   # $1 row title, $2 name for the log, $3 pattern the OBD2Deep log must match
+  local ok=0
+  for attempt in 1 2; do
+    tap_tab Diagnostics; sleep 2
+    for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
+    adb logcat -c
+    if tap_scrolled "$1"; then
+      for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+        adb logcat -d -s OBD2Deep:I > "$OUT/deep-$2.txt" 2>/dev/null
+        grep -Eq "$3" "$OUT/deep-$2.txt" && { ok=1; break; }; sleep 2
+      done
+      sleep 2; shot "13-$2"
+      adb shell input keyevent KEYCODE_BACK; sleep 2
+      [ $ok = 1 ] && break
+    fi
+  done
+  if [ $ok = 1 ]; then log "$2: $(grep -Eo "$3.*" "$OUT/deep-$2.txt" | head -1 | cut -c1-120)"; else log "$2: FAILED ($(tail -1 "$OUT/deep-$2.txt" 2>/dev/null | cut -c1-120))"; FAIL=1; fi
+}
+deep_check "Readiness monitors" readiness "readiness: .*(complete|not complete)"
+deep_check "Self-test results" self-tests "self-tests: [1-9]"
+deep_check "Codes from other modules" modules "modules: .*ABS and stability control=C1145-1C"
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
 tap_tab Diagnostics; sleep 2
 for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1

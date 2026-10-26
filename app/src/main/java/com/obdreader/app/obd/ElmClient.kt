@@ -20,12 +20,28 @@ class ElmClient(
     var isCan: Boolean = false
         private set
 
-    suspend fun command(cmd: String, timeoutMs: Long = 3000): List<String> = mutex.withLock {
+    suspend fun command(cmd: String, timeoutMs: Long = 3000): List<String> = mutex.withLock { send(cmd, timeoutMs) }
+
+    /**
+     * Sends [commands] in turn with nothing else in between, so live polling from another
+     * coroutine can't slip a request in while the adapter is pointed at another module. Each
+     * reply comes back in order; a command that doesn't answer gives an empty list. [after]
+     * always runs (to point the adapter back at the engine computer), even when one fails.
+     */
+    suspend fun sequence(commands: List<Pair<String, Long>>, after: List<String> = emptyList()): List<List<String>> = mutex.withLock {
+        try {
+            commands.map { (cmd, timeout) -> try { send(cmd, timeout) } catch (e: AdapterTimeoutException) { emptyList() } }
+        } finally {
+            for (cmd in after) try { send(cmd, 2000) } catch (ignored: Exception) {}
+        }
+    }
+
+    private suspend fun send(cmd: String, timeoutMs: Long): List<String> {
         if (!ReadOnlyGuard.isAllowed(cmd)) {
             logger("= Blocked '$cmd': OBD2 Reader only reads from the car")
             throw ReadOnlyException(cmd)
         }
-        withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             val raw = try {
                 transport.exchange(cmd, timeoutMs)
             } catch (e: AdapterTimeoutException) {

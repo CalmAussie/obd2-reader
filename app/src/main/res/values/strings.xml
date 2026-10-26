@@ -87,7 +87,7 @@
     <string name="help_auto_title">Android Auto</string>
     <string name="help_auto_body">Android Auto only shows apps from the Play Store until you allow others. To turn that on:\n1. Open Android Auto\'s settings on your phone (search \"Android Auto\" in Settings).\n2. Scroll to the bottom and tap Version about 10 times, then confirm to turn on developer mode.\n3. Tap the three-dot menu at the top right, then Developer settings, and turn on Unknown sources.\n4. Reconnect to your car. OBD2 Reader appears in Android Auto\'s app list.\n\nConnect to your adapter from the phone first, or tap Connect on the car screen to reconnect to the last one.</string>
     <string name="help_codes_title">What codes it reads</string>
-    <string name="help_codes_body">OBD2 Reader reads the trouble codes the engine computer, and on many cars the automatic transmission, report through the OBD2 port. It doesn\'t read other systems such as ABS, airbags or body electrics; those need the maker\'s tool or a scanner made for your make.\n\nNearly all generic codes (P0, P2, P34, U0 and U3) are explained, with causes and what to check. The few that aren\'t are named by the system they belong to. Manufacturer-specific codes (such as P1 codes) are marked as such, with where to look them up for your make, because their meaning differs between brands. A few Ford and Lincoln codes use Ford\'s own definitions, for the model years Ford\'s documents cover.</string>
+    <string name="help_codes_body">OBD2 Reader reads the trouble codes the engine computer, and on many cars the automatic transmission, report through the OBD2 port. On CAN cars, Diagnostics → Codes from other modules also reads codes from modules such as ABS and airbags (the most modules on Ford and Mazda). The app never clears codes; that needs the maker\'s tool or a scanner made for your make.\n\nNearly all generic codes (P0, P2, P34, U0 and U3) are explained, with causes and what to check. The few that aren\'t are named by the system they belong to. Manufacturer-specific codes (such as P1 codes) are marked as such, with where to look them up for your make, because their meaning differs between brands. A few Ford and Lincoln codes use Ford\'s own definitions, for the model years Ford\'s documents cover.</string>
     <string name="help_battery_title">Battery status</string>
     <string name="help_battery_body">Beside the battery voltage, the app shows whether the battery looks like it\'s charging. Standard OBD2 has no battery-current (amps) reading, so this is an estimate from the voltage and engine speed, marked (est.).\n\nEngine running: 13.2 V or more is charging; 12.8 to 13.2 V is charging weakly (normal on cars with smart charging, which lower the voltage while cruising); under 12.8 V is not charging; over 15.2 V is overcharging. Engine off: under 12.2 V means the battery is low.\n\nScan what your car reports, on this tab, shows whether your car offers any battery readings of its own.</string>
     <string name="help_location_title">Your location</string>
@@ -162,6 +162,18 @@
     <string name="slots_help">Choose what the Dashboard\'s main readouts show, for example intake air instead of fuel.</string>
     <string name="scan">Scan what your car reports</string>
     <string name="scan_help">Lists every reading your car offers, including ones the app doesn\'t show yet, and tries known manufacturer readings. Share the result to help add support for your car.</string>
+    <string name="readiness_title">Readiness monitors</string>
+    <string name="readiness_help">The engine computer\'s own emission checks: which have finished since the codes were last cleared. Also shows its software version.</string>
+    <string name="tests_title">Self-test results</string>
+    <string name="tests_help">The measurements behind those checks (oxygen sensors, catalyst, misfires and more), with the limits each must stay within.</string>
+    <string name="modules_title">Codes from other modules</string>
+    <string name="modules_help">Reads codes from modules beyond the engine, like ABS, airbags and transmission. Read-only: nothing is cleared.</string>
+    <string name="custom_title">Custom readings</string>
+    <string name="custom_help">Add a reading by its request and formula, for ones the app doesn\'t list yet.</string>
+    <string name="custom_empty">No custom readings yet. Add one with its request (service 01, 21 or 22), an optional module address and a formula using A, B, C… for the reply bytes.</string>
+    <string name="custom_add">Add reading</string>
+    <string name="custom_refresh">Read again</string>
+    <string name="custom_note">Requests are read-only: only services 01, 21 and 22 are allowed. Touch and hold a reading to delete it.</string>
     <string name="perf_quarter_estimate">The ¼ mile is an estimate: distance is worked out from your car\'s speed readings, not measured by timing beams like a drag strip.</string>
     <string name="units">Units</string>
     <string name="share_preview_title">Preview</string>

@@ -147,6 +147,15 @@ object ElmParser {
             ?: candidates.maxByOrNull { it.length }
     }
 
+    /**
+     * Calibration IDs (service 09 PID 04): the engine computer's software versions, up to 16
+     * characters each, one or more per module. Empty when the car doesn't report them.
+     */
+    fun parseCalibrationIds(lines: List<String>): List<String> =
+        vinMessages(lines, "4904").flatMap { bytes ->
+            bytes.toList().chunked(16).map { chunk -> chunk.map { Char(it) }.filter { it.code in 0x21..0x7E }.joinToString("") }
+        }.filter { it.isNotEmpty() }.distinct()
+
     /** VIN characters only. I, O and Q are never used in a VIN, so they mark padding or noise. */
     private fun vinChars(bytes: IntArray): String {
         val s = bytes.map { Char(it) }.filter { (it in 'A'..'Z' || it in '0'..'9') && it !in "IOQ" }.joinToString("")
@@ -159,7 +168,7 @@ object ElmParser {
      * Older protocols send one line per part with a part number; the parts are put back in order
      * and a repeated part number means a second module.
      */
-    private fun vinMessages(lines: List<String>): List<IntArray> {
+    private fun vinMessages(lines: List<String>, header: String = "4902"): List<IntArray> {
         val compact = lines.map { it.replace(" ", "").uppercase(Locale.US) }
         if (compact.any { FRAME.containsMatchIn(it) }) {
             val messages = mutableListOf<StringBuilder>()
@@ -169,10 +178,10 @@ object ElmParser {
                 if (line[0] == '0' || messages.isEmpty()) messages.add(StringBuilder())
                 messages.last().append(hex)
             }
-            return messages.mapNotNull { m -> dataAfter(m.toString(), "4902")?.let { toBytes(it).drop(1).toIntArray() } }
+            return messages.mapNotNull { m -> dataAfter(m.toString(), header)?.let { toBytes(it).drop(1).toIntArray() } }
         }
         val parts = compact.mapNotNull { hexOnly(it) }.mapNotNull { p ->
-            val data = dataAfter(p, "4902") ?: return@mapNotNull null
+            val data = dataAfter(p, header) ?: return@mapNotNull null
             val b = toBytes(data)
             if (b.isEmpty()) null else b[0] to b.drop(1)
         }

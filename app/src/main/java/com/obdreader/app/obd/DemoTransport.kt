@@ -37,7 +37,19 @@ class DemoTransport(
             cmd == "ATDPN" -> "A6"
             cmd == "ATDP" -> "AUTO, ISO 15765-4 (CAN 11/500)"
             cmd == "ATRV" -> String.format(Locale.US, "%.1fV", demoVoltage())
+            cmd.startsWith("ATSH") -> { header = cmd.substring(4); "OK" }
             cmd.startsWith("AT") -> "OK"
+            // Readiness: check-engine light on with 2 codes; all monitors done except the evaporative system.
+            cmd == "0101" -> "410182076504"
+            cmd == "0904" -> "490401" + "1L8A-14C204-AAA".padEnd(16, '\u0000').map { String.format(Locale.US, "%02X", it.code) }.joinToString("")
+            cmd.length == 4 && cmd.startsWith("06") -> mode06(cmd.substring(2).toInt(16))?.let { "46$it" } ?: "NO DATA"
+            // Other modules: the ABS has a stored code, the airbag module has none, the rest don't answer.
+            cmd == "1902FF" -> when (header) {
+                "760" -> "5902FF51451C0A"
+                "737", "7E1" -> "5902FF"
+                "7E0", "7DF" -> "5902FF0133000801710004"
+                else -> "NO DATA"
+            }
             cmd == "03" -> "430201330420"
             cmd == "07" -> "47010171"
             cmd == "0902" -> vinFrames(vin)
@@ -102,6 +114,21 @@ class DemoTransport(
             0x5C -> one(min(102.0, 40 + t * 1.2) + 40)
             else -> null
         }
+    }
+
+    private var header = "7DF"
+
+    /** Self-test results: two oxygen sensor tests, the catalyst, and misfire counts for four cylinders. */
+    private fun mode06(mid: Int): String? = when (mid) {
+        0x00 -> "00C0000001"
+        0x20 -> "2080000001"
+        0x40, 0x60, 0x80 -> String.format(Locale.US, "%02X00000001", mid)
+        0xA0 -> "A078000000"
+        0x01 -> "01010B01C400C80384" + "01020B004B0000012C"
+        0x02 -> "02010B02260190044C"
+        0x21 -> "21012400600000012C"
+        in 0xA2..0xA5 -> String.format(Locale.US, "%02X0B24%04X000000C8", mid, if (mid == 0xA3) 3 else 0)
+        else -> null
     }
 
     private fun freeze(pid: String): String? = when (pid) {
