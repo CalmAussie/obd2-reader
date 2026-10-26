@@ -2931,7 +2931,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.18.0", "date": "26 October 2026", "text": "• British racing, a new style. Cream and gold on British racing green, like a classic sports racer: cream and gold livery stripes, a cream race-number roundel and a gold rev ring. It's under the palette icon on the Dashboard, and carries into Android Auto in gold.\n• A new app icon: Spark. A spark plug at an angle, cream on British racing green. On Android 13 and newer with themed icons turned on, it takes your home screen's colours like other apps."};
+const CHANGES = {"version": "1.18.1", "date": "27 October 2026", "text": "• Fixed: the spark plug on the app icon sat a little up and to the right of the middle. It's now centred on the green, across and down."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {

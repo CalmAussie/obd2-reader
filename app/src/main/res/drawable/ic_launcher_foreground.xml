@@ -5,8 +5,10 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- The same size as the design: every part stays within 33 units of the centre, the adaptive-icon safe zone. -->
-    <group>
+    <!-- The same size as the design. The tilted plug's outline spans 38.8–72.5 across and 27.1–76.8
+         down, so it's moved by (-1.65, +2.05) to put the middle of that box on the icon's centre
+         (54, 54); every part stays inside the adaptive-icon safe zone. -->
+    <group android:translateX="-1.65" android:translateY="2.05">
         <group android:pivotX="54" android:pivotY="52" android:rotation="35">
             <path android:fillColor="#F3EBD3" android:pathData="M52.5,23 H55.5 A1.5,1.5 0 0,1 57,24.5 V28.5 A1.5,1.5 0 0,1 55.5,30 H52.5 A1.5,1.5 0 0,1 51,28.5 V24.5 A1.5,1.5 0 0,1 52.5,23 Z" />
             <path android:fillColor="#F3EBD3" android:fillType="evenOdd" android:pathData="M52,30 H56 A4,4 0 0,1 60,34 V42 A4,4 0 0,1 56,46 H52 A4,4 0 0,1 48,42 V34 A4,4 0 0,1 52,30 Z M48,35.1 H60 V36.9 H48 Z M48,40.1 H60 V41.9 H48 Z" />
