@@ -437,11 +437,17 @@ shot 4d-battery-check
 scroll_top
 # Code report: saved straight to Downloads › OBD2 Reader (the other choice is Share).
 SAVED=0
-for i in 1 2 3 4 5 6 7 8; do tap_text "Save or share code report" > /dev/null && break; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
-if tap_text "Save to phone (Downloads)" > /dev/null; then
+# Screen dumps sometimes fail on a busy emulator, so the whole step gets a second go.
+for attempt in 1 2; do
+  for i in 1 2 3 4 5 6 7 8; do tap_text "Save or share code report" > /dev/null && break; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
+  sleep 1
+  for k in 1 2 3; do tap_text "Save to phone (Downloads)" > /dev/null && break; sleep 1; done
   sleep 2; adb logcat -d -s OBD2Save:I 2>/dev/null | grep -q "saved .* to Downloads" && SAVED=1
   adb shell ls "/sdcard/Download/OBD2 Reader/" 2>/dev/null | grep -q "." && SAVED=1
-fi
+  [ $SAVED = 1 ] && break
+  # A choice left open would hide everything after it: close it, start from the top.
+  adb shell input keyevent KEYCODE_BACK; sleep 1; scroll_top
+done
 [ $SAVED = 1 ] && log "code report: saved to Downloads" || { log "code report: FAILED (not saved)"; FAIL=1; }
 # VIN from the plate: typed in, it's shown instead of the car's, with what the car reports.
 if tap_scrolled "Not your VIN? Enter it"; then
