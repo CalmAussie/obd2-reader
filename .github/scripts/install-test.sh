@@ -446,8 +446,9 @@ for attempt in 1 2; do
   adb shell ls "/sdcard/Download/OBD2 Reader/" 2>/dev/null | grep -q "." && SAVED=1
   [ $SAVED = 1 ] && break
   # A choice left open would hide everything after it: close it, start from the top.
-  adb shell input keyevent KEYCODE_BACK; sleep 1; scroll_top
+  adb shell input keyevent KEYCODE_BACK; sleep 1; tap_tab Diagnostics > /dev/null; sleep 1; scroll_top
 done
+tap_tab Diagnostics > /dev/null; sleep 1
 [ $SAVED = 1 ] && log "code report: saved to Downloads" || { log "code report: FAILED (not saved)"; FAIL=1; }
 # VIN from the plate: typed in, it's shown instead of the car's, with what the car reports.
 if tap_scrolled "Not your VIN? Enter it"; then
