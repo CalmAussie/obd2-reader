@@ -401,7 +401,40 @@ WINS=$(adb shell dumpsys window windows 2>/dev/null | grep -c "Window #.*$PKG")
 if grep -q "Performance timers" "$OUT/ui-perf.xml" || grep -q "Performance timers" "$OUT/views-perf.txt" || [ "${WINS:-0}" -ge 2 ]; then log "performance timers: shown"; else log "performance timers: FAILED (not shown)"; FAIL=1; fi
 adb shell input keyevent KEYCODE_BACK; sleep 2
 # Codes are now also read on their own shortly after connecting, so they may already be listed.
+# Drive history: the drive summed up earlier is listed (Dashboard, under the score).
+tap_tab Dashboard > /dev/null; sleep 2; scroll_top
+XY=$(view_center_bottom historyButton pageDashboard); HIST=0
+if [ -n "$XY" ]; then
+  adb shell input tap $XY; sleep 2
+  for i in 1 2 3; do
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-history.xml"
+    grep -q 'text="Drive history"' "$OUT/ui-history.xml" && grep -q " km · " "$OUT/ui-history.xml" && { HIST=1; break; }; sleep 1
+  done
+  shot 4a-drive-history
+  adb shell input keyevent KEYCODE_BACK; sleep 1
+fi
+[ $HIST = 1 ] && log "drive history: listed" || { log "drive history: FAILED (not shown)"; FAIL=1; }
+scroll_top
 tap_tab Diagnostics && { tap_text "Read codes" || grep -q "P0133" "$OUT/ui.xml"; } && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
+# Freeze frame: the demo car stored one with P0133; it's shown on that code's card.
+FF=0
+for i in 1 2 3 4 5; do
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-freeze.xml"
+  grep -q "freeze frame" "$OUT/ui-freeze.xml" && grep -q "Long-term fuel trim" "$OUT/ui-freeze.xml" && { FF=1; break; }
+  adb shell input swipe 540 1600 540 900 300; sleep 1
+done
+shot 4c-freeze-frame
+[ $FF = 1 ] && log "freeze frame: shown with P0133" || { log "freeze frame: FAILED (not shown)"; FAIL=1; }
+# Battery check: the demo car starts with the engine off and cranks, so a check is measured.
+BC=0
+for i in 1 2 3 4 5 6; do
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-battery.xml"
+  grep -q "Lowest while starting" "$OUT/ui-battery.xml" && { BC=1; break; }
+  adb shell input swipe 540 1600 540 900 300; sleep 1
+done
+shot 4d-battery-check
+[ $BC = 1 ] && log "battery check: $(grep -o 'Lowest while starting [0-9.]* V' "$OUT/ui-battery.xml" | head -1)" || { log "battery check: FAILED (not measured)"; FAIL=1; }
+scroll_top
 # Code report: saved straight to Downloads › OBD2 Reader (the other choice is Share).
 SAVED=0
 for i in 1 2 3 4; do tap_text "Save or share code report" > /dev/null && break; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
@@ -575,6 +608,40 @@ if tap_contains " KB" && tap_text "Make a video overlay" && tap_contains "720p" 
     # Android 8 and 9 release builds keep the video private until it's shared; "Video ready" is the check there.
     [ "$SZ" = 0 ] && [ "$API" -lt 29 ] && ! adb shell run-as $PKG true 2>/dev/null && SZ=99999
     command -v ffmpeg > /dev/null && ffmpeg -loglevel error -y -ss 12 -i "$OUT/overlay.mp4" -frames:v 1 "$OUT/8-video-frame.png"
+    # The route's mini-map sits above the trace panel, on the right: there, the frame isn't green.
+    if [ -s "$OUT/8-video-frame.png" ]; then
+      MAP=$(python3 - "$OUT/8-video-frame.png" <<'PY'
+import sys, zlib, struct
+d = open(sys.argv[1], 'rb').read(); i = 8; idat = b''; w = h = ctype = 0
+while i < len(d):
+    n = struct.unpack('>I', d[i:i+4])[0]; t = d[i+4:i+8]; body = d[i+8:i+8+n]
+    if t == b'IHDR': w, h, _, ctype = struct.unpack('>IIBB', body[:10])
+    if t == b'IDAT': idat += body
+    i += 12 + n
+bpp = {2: 3, 6: 4}.get(ctype, 3); raw = zlib.decompress(idat); stride = w * bpp; prev = bytearray(stride); rows = []
+p = 0
+for y in range(h):
+    f = raw[p]; line = bytearray(raw[p+1:p+1+stride]); p += 1 + stride
+    for x in range(stride):
+        a = line[x-bpp] if x >= bpp else 0; b = prev[x]; c = prev[x-bpp] if x >= bpp else 0
+        if f == 1: line[x] = (line[x] + a) & 255
+        elif f == 2: line[x] = (line[x] + b) & 255
+        elif f == 3: line[x] = (line[x] + (a + b) // 2) & 255
+        elif f == 4:
+            pa, pb, pc = abs(b - c), abs(a - c), abs(a + b - 2 * c)
+            line[x] = (line[x] + (a if pa <= pb and pa <= pc else b if pb <= pc else c)) & 255
+    rows.append(line); prev = line
+k = w / 1920.0; x0, x1, y0, y1 = int(1580 * k), int(1840 * k), int(520 * k), int(780 * k)
+n = green = 0
+for y in range(y0, y1, 4):
+    for x in range(x0, x1, 4):
+        r, g, b = rows[y][x*bpp], rows[y][x*bpp+1], rows[y][x*bpp+2]; n += 1
+        if g > 180 and r < 90 and b < 90: green += 1
+print(int(100 * (n - green) / max(n, 1)))
+PY
+)
+      [ "${MAP:-0}" -ge 60 ] && log "video overlay: route mini-map shown" || { log "video overlay: FAILED (no mini-map, ${MAP:-0}% covered)"; FAIL=1; }
+    fi
     DUR=$(command -v ffprobe > /dev/null && ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT/overlay.mp4")
     [ "$SZ" -gt 10000 ] && log "video overlay: made ($SZ bytes, ${DUR:-?} s)" || { log "video overlay: FAILED (file $SZ bytes)"; FAIL=1; }
     # The video stays in the reports, so a frame can be checked.

@@ -799,6 +799,51 @@
                         android:text="@string/vin_enter"
                         android:textColor="?attr/obdAccent" />
 
+                    <!-- Battery check: measured each time the engine starts while connected. -->
+                    <TextView
+                        style="@style/ObdHeading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="28dp"
+                        android:layout_marginBottom="10dp"
+                        android:text="@string/battery_check" />
+
+                    <LinearLayout
+                        android:id="@+id/batteryCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/batteryRating"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="?attr/obdTitleFont"
+                            android:tag="@string/tag_title_font"
+                            android:text="@string/battery_none"
+                            android:textColor="?attr/obdTextPrimary"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/batteryText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/battery_how"
+                            android:textColor="?attr/obdTextSecondary"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/batteryHistory"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:textColor="?attr/obdTextSecondary"
+                            android:textSize="13sp"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
                     <TextView
                         style="@style/ObdHeading"
                         android:layout_width="wrap_content"

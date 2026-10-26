@@ -36,11 +36,13 @@ class DemoTransport(
             cmd == "ATI" -> "ELM327 v1.5"
             cmd == "ATDPN" -> "A6"
             cmd == "ATDP" -> "AUTO, ISO 15765-4 (CAN 11/500)"
-            cmd == "ATRV" -> String.format(Locale.US, "%.1fV", 14.1 + 0.2 * sin(seconds()))
+            cmd == "ATRV" -> String.format(Locale.US, "%.1fV", demoVoltage())
             cmd.startsWith("AT") -> "OK"
             cmd == "03" -> "430201330420"
             cmd == "07" -> "47010171"
             cmd == "0902" -> vinFrames(vin)
+            // Freeze frame: stored with P0133 on a warm engine at a steady 64 km/h, a little lean.
+            cmd.length == 6 && cmd.startsWith("02") && cmd.endsWith("00") -> freeze(cmd.substring(2, 4))?.let { "42${cmd.substring(2, 4)}00$it" } ?: "NO DATA"
             cmd.length == 4 && cmd.startsWith("01") -> pid(cmd.substring(2).toInt(16))?.let { "41${cmd.substring(2)}$it" } ?: "NO DATA"
             // Several PIDs in one request, as CAN cars allow.
             cmd.length > 4 && cmd.startsWith("01") && cmd.length % 2 == 0 -> {
@@ -54,8 +56,33 @@ class DemoTransport(
 
     private fun seconds() = (System.currentTimeMillis() - start) / 1000.0
 
+    /**
+     * The demo car starts like a real one: ignition on with the engine off for a few seconds
+     * (battery resting at 12.6 V), a second of cranking (dipping to about 10.4 V), then running
+     * and charging at about 14.1 V. That gives the battery check something to measure.
+     */
+    private fun phase(): Int = seconds().let { if (it < ENGINE_OFF_S) 0 else if (it < ENGINE_OFF_S + CRANK_S) 1 else 2 }
+
+    private fun demoVoltage(): Double = when (phase()) {
+        0 -> 12.6
+        1 -> 10.4 + 0.3 * sin(seconds() * 9)
+        else -> 14.1 + 0.2 * sin(seconds())
+    }
+
     private fun pid(number: Int): String? {
-        val t = seconds()
+        val ph = phase()
+        // Engine off or cranking: every reading still answers (as a real car's does), at rest.
+        if (ph < 2) return when (number) {
+            0x0C -> two(if (ph == 0) 0 else 220 * 4)
+            0x0D, 0x11, 0x04, 0x10, 0x0E -> if (number == 0x10) two(0) else if (number == 0x0E) one(64.0 * 2) else one(0.0)
+            0x0B -> one(100.0)
+            else -> pidRunning(number, 0.0)
+        }
+        return pidRunning(number, seconds() - ENGINE_OFF_S - CRANK_S)
+    }
+
+    private fun pidRunning(number: Int, tRun: Double): String? {
+        val t = tRun.coerceAtLeast(0.0)
         val drive = (0.5 + 0.5 * sin(t / 2.5)).pow(2)   // 0..1 "accelerator"
         val rpm = 850 + 2400 * drive
         return when (number) {
@@ -77,6 +104,22 @@ class DemoTransport(
         }
     }
 
+    private fun freeze(pid: String): String? = when (pid) {
+        "02" -> "0133"
+        "03" -> "0200"
+        "0C" -> two(2140 * 4)
+        "0D" -> one(64.0)
+        "05" -> one(88.0 + 40)
+        "04" -> one(pct(41.0))
+        "06" -> one(128 + 9.4 * 128 / 100)
+        "07" -> one(128 + 12.5 * 128 / 100)
+        "0B" -> one(46.0)
+        "0F" -> one(29.0 + 40)
+        "11" -> one(pct(18.0))
+        "10" -> two(1210)
+        else -> null
+    }
+
     private fun pct(p: Double) = p * 255 / 100
     private fun one(v: Double) = String.format(Locale.US, "%02X", v.toInt().coerceIn(0, 255))
     private fun two(v: Int) = String.format(Locale.US, "%04X", v.coerceIn(0, 0xFFFF))
@@ -95,3 +138,6 @@ class DemoTransport(
         return lines.joinToString("\r")
     }
 }
+
+private const val ENGINE_OFF_S = 4.0
+private const val CRANK_S = 1.2

@@ -246,6 +246,9 @@ object Exports {
             if (carLabel != null) appendLine("Car chosen in the app: $carLabel")
             vinLines(context, s.vin).forEach { appendLine(it) }
             s.summary?.let { appendLine("Adapter and protocol: $it") }
+            com.obdreader.app.obd.BatteryCheck.parseHistory(AppPrefs.of(context).getString(AppPrefs.BATTERY_CHECKS, null)).firstOrNull()?.let {
+                appendLine("Battery check: ${it.rating.label}. ${it.summary()}, ${SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date(it.atMs))}")
+            }
             appendLine()
             if (codes == null || codes.total == 0) {
                 appendLine("No trouble codes stored or pending.")
@@ -263,6 +266,10 @@ object Exports {
                 if (d.symptoms.isNotEmpty()) { appendLine("You might notice:"); d.symptoms.forEach { appendLine("  - $it") } }
                 if (d.causes.isNotEmpty()) { appendLine("Common causes:"); d.causes.forEach { appendLine("  - $it") } }
                 if (d.checks.isNotEmpty()) { appendLine("What to check:"); d.checks.forEachIndexed { i, c -> appendLine("  ${i + 1}. $c") } }
+                codes.freezeFrame?.takeIf { stored && it.code == code }?.let { f ->
+                    appendLine("Freeze frame (the engine when this code was stored):")
+                    f.lines().forEach { appendLine("  - $it") }
+                }
             }
             codes.stored.forEach { section(it, true) }
             codes.pending.forEach { section(it, false) }
@@ -324,7 +331,11 @@ object DriveScorer {
         val all = com.obdreader.app.obd.DrivingScore.Style.values().associateWith { score.result(it) }
         val trip = com.obdreader.app.obd.TripSummary.from(all.values.first(), all, tripStart, maxOf(endedAt, tripStart))
         if (!trip.isDrive) return
-        appContext?.let { AppPrefs.of(it).edit().putString(PREF_LAST_TRIP, trip.encode()).apply() }
+        appContext?.let {
+            val prefs = AppPrefs.of(it)
+            prefs.edit().putString(PREF_LAST_TRIP, trip.encode())
+                .putString(PREF_TRIP_HISTORY, com.obdreader.app.obd.TripHistory.add(prefs.getString(PREF_TRIP_HISTORY, null), trip)).apply()
+        }
         _lastTrip.value = trip
     }
 
@@ -337,6 +348,8 @@ object DriveScorer {
 
     /** Where the last drive is kept, so its summary can still be shown after the app was closed. */
     const val PREF_LAST_TRIP = "last_trip"
+    /** Every drive's summary (no location), newest first: see [com.obdreader.app.obd.TripHistory]. */
+    const val PREF_TRIP_HISTORY = "trip_history"
 
     fun start(context: Context? = null) {
         context?.let { appContext = it.applicationContext }

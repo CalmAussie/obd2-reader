@@ -716,6 +716,8 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
       <div class="veh-sub" id="vinNote" hidden style="margin-top:8px"></div>
       <div id="vinEdit" hidden style="margin-top:8px"><input id="vinInput" maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="17 characters from your VIN plate" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--line,#444);background:transparent;color:inherit;font:inherit;text-transform:uppercase"><div class="veh-sub" id="vinErr" hidden>A VIN is 17 letters and numbers, without I, O or Q.</div><div style="display:flex;gap:16px;margin-top:6px"><button class="link-btn" id="vinSave">Save</button><button class="link-btn" id="vinUseCar" hidden>Use the car's VIN</button><button class="link-btn" id="vinCancel">Cancel</button></div></div>
       <button class="link-btn" id="vinEnter" style="margin-top:6px">Not your VIN? Enter it</button>
+      <div class="h2 xb" style="margin-top:28px">Battery check</div>
+      <div id="batteryCard" style="background:var(--panel);border-radius:14px;padding:16px;margin-top:10px"><div class="xb" id="batteryRating" style="font-size:20px">Not checked yet</div><div class="veh-sub" id="batteryText" style="margin-top:4px">Checked each time the engine starts while the app is connected: connect with the ignition on and the engine off, then start the engine. A healthy battery stays above about 10 V while starting.</div></div>
       <div class="h2 xb">Connection</div>
       <div class="list">
         <button class="setting" id="carRow">
@@ -1851,6 +1853,9 @@ $("tabDiag").onclick = () => showTab("Diag");
 })();
 
 /* Detailed code cards (DtcLibrary output exported from the app) */
+/* The demo car's freeze frame (mirrors DemoTransport.freeze and FreezeFrame.lines). */
+const FREEZE = [["Fuel system", "Closed loop, using the oxygen sensors (normal)"], ["Engine RPM", "2,140 rpm"], ["Speed", "64 km/h"], ["Coolant", "88 °C"],
+  ["Engine load", "41%"], ["Short-term fuel trim (bank 1)", "+9.4%"], ["Long-term fuel trim (bank 1)", "+12.5%"], ["Manifold pressure", "46 kPa"], ["Intake air", "29 °C"], ["Throttle", "18%"], ["MAF airflow", "12.1 g/s"]];
 showCodes = function (codes) {
   setBadge(codes.length); updateTells();
   $("shareReport").hidden = !codes.length;
@@ -1867,6 +1872,7 @@ showCodes = function (codes) {
         ${d.symptoms.length ? `<h4>You might notice</h4><ul>${li(d.symptoms)}</ul>` : ""}
         <h4>Common causes</h4><ul>${li(d.causes)}</ul>
         <h4>What to check</h4><ol>${li(d.checks)}</ol>
+        ${c === "P0133" && !p ? `<h4>When it was set (freeze frame)</h4><p>${FREEZE.map(([k, v]) => `${k}: ${v}`).join("<br>")}</p><p class="msg">The car's own snapshot of the engine when this code was stored. Show it to your mechanic: it says what the engine was doing when the fault happened.</p>` : ""}
         <div class="sys">${d.system}</div></div></div>`;
   }).join("");
   $("dtcList").querySelectorAll(".code .head").forEach(h => h.onclick = () => { const c = h.parentElement; c.classList.toggle("open"); h.setAttribute("aria-expanded", c.classList.contains("open")); });
@@ -2332,13 +2338,34 @@ function showTripSummary(t, justEnded) {
 }
 $("scoreCard").insertAdjacentHTML("afterend", `<button class="link-btn" id="lastTripBtn" hidden>Last drive summary</button>`);
 $("lastTripBtn").onclick = () => lastTrip && showTripSummary(lastTrip, false);
+/* Drive history (mirrors MainActivity.showHistory and obd/TripHistory.kt). */
+const tripHistory = [];
+$("lastTripBtn").insertAdjacentHTML("afterend", `<button class="link-btn" id="historyBtn" hidden style="display:block;margin-top:2px;text-align:left">Drive history</button>`);
+$("historyBtn").onclick = () => {
+  const driveScore = t => { const k = ["EVERYDAY", "EFFICIENCY"].map(x => t.scores[x]).filter(v => v != null); return k.length ? Math.round(k.reduce((a, b) => a + b, 0) / k.length) : null; };
+  const trend = tripHistory.slice(0, 20).reverse().map(driveScore).filter(v => v != null);
+  const km = tripHistory.reduce((a, t) => a + t.km, 0), secs = tripHistory.reduce((a, t) => a + t.drive, 0);
+  const rows = tripHistory.map((t, i) => { const d = new Date(t.start), sc = driveScore(t);
+    return `<button class="hist-row" data-i="${i}" style="display:flex;width:100%;align-items:center;text-align:left;background:var(--panel);border:0;border-radius:12px;padding:12px 16px;margin:0 0 8px;color:inherit"><span style="flex:1"><b style="font-weight:500">${d.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}, ${d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</b><br><span style="color:var(--fg-2);font-size:13px">${tripKm(t.km)} · ${tripDur(t.drive)}${t.top != null ? " · top " + uSpeedText(t.top) : ""}</span></span><b class="xb" style="font-size:24px;color:var(--accent)">${sc ?? "–"}</b></button>`; }).join("");
+  const s = overlay(`<div class="handle"></div><h2>Drive history</h2><p>${tripHistory.length} ${tripHistory.length === 1 ? "drive" : "drives"} · ${tripKm(km)} · ${tripDur(secs)} driving</p>
+    ${trend.length >= 2 ? `<p class="msg">Drive score, last ${trend.length} drives</p><canvas id="trendCv" width="640" height="190" style="width:100%;height:96px"></canvas>` : ""}
+    ${rows}<p class="msg">Tap a drive for its summary and to share its card. Tap and hold to delete it from the history.</p>`, { sheet: true });
+  s.querySelectorAll(".hist-row").forEach(b => b.onclick = () => { closeOverlay(); setTimeout(() => showTripSummary(tripHistory[+b.dataset.i], false), 60); });
+  const cv = document.getElementById("trendCv");
+  if (cv) { const g = cv.getContext("2d"), W = cv.width - 56, H = cv.height - 20, col = getComputedStyle($("phone")).getPropertyValue("--accent").trim() || "#ff5a1f";
+    const X = i => 8 + W * i / (trend.length - 1), Y = v => 10 + H * (1 - v / 100);
+    g.strokeStyle = "rgba(128,128,128,.4)"; g.lineWidth = 2; g.beginPath(); g.moveTo(8, Y(50)); g.lineTo(8 + W, Y(50)); g.stroke();
+    g.strokeStyle = col; g.lineWidth = 5; g.lineJoin = "round"; g.beginPath(); trend.forEach((v, i) => i ? g.lineTo(X(i), Y(v)) : g.moveTo(X(i), Y(v))); g.stroke();
+    g.fillStyle = col; trend.forEach((v, i) => { g.beginPath(); g.arc(X(i), Y(v), i === trend.length - 1 ? 10 : 5, 0, 7); g.fill(); });
+    g.font = "600 22px Archivo"; g.fillText(trend[trend.length - 1], 16 + W, Y(trend[trend.length - 1]) + 8); }
+};
 {
   const base = disconnect;
   disconnect = function () {
     const wasOn = state === "connected" || state === "waiting";
     const t = wasOn ? tripNow() : null;
     base.apply(this, arguments);
-    if (t && (t.drive >= 30 || t.km >= 0.2)) { lastTrip = t; $("lastTripBtn").hidden = false; setTimeout(() => showTripSummary(t, true), 50); }
+    if (t && (t.drive >= 30 || t.km >= 0.2)) { lastTrip = t; tripHistory.unshift(t); $("lastTripBtn").hidden = false; $("historyBtn").hidden = false; setTimeout(() => showTripSummary(t, true), 50); }
   };
 }
 
@@ -2422,6 +2449,18 @@ function drawOverlay(ctx, sm, t, bg) {
   const trace = (k, m, col) => { ctx.strokeStyle = col; ctx.lineWidth = 5; ctx.beginPath(); let st = false; for (let i = 0; i <= 60; i++) { const tt = t - 30 + i / 2; if (tt < 0) continue; const val = overlayAt(sm, tt)[k]; if (val == null) continue; const x = L + (Rr - L) * i / 60, y = B - (B - T) * Math.min(1, val / m); st ? ctx.lineTo(x, y) : ctx.moveTo(x, y); st = true; } ctx.stroke(); };
   trace("rpm", max, "#FF3B30"); trace("speed", 200, "#3D9BFF");
   ctx.font = "500 22px Archivo"; ctx.textAlign = "center"; ctx.fillStyle = fg2; const c = Math.floor(t); ctx.fillText(`${Math.floor(c / 60)}:${String(c % 60).padStart(2, "0")}`, 1520, 844);
+  { // Route mini-map with a dot where the car is (mirrors OverlayRenderer.drawMiniMap).
+    ctx.fillStyle = panel; rr(1560, 500, 300, 300, 24);
+    const pts = DEMO_ROUTE, k = Math.cos(pts.reduce((a, p) => a + p[0], 0) / pts.length * Math.PI / 180), xs = pts.map(p => p[1] * k), ys = pts.map(p => p[0]);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys), pad = 26, w = 300 - 2 * pad;
+    const scl = Math.min(w / (maxX - minX), w / (maxY - minY)), ox = 1560 + pad + (w - (maxX - minX) * scl) / 2, oy = 500 + pad + (w - (maxY - minY) * scl) / 2;
+    const P = xs.map((x, i) => [ox + (x - minX) * scl, 500 + 300 - (oy - 500 + (ys[i] - minY) * scl)]);
+    const sp = pts.map(p => p[2]), lo = Math.min(...sp), hi = Math.max(...sp);
+    ctx.lineWidth = 6; ctx.lineCap = "round"; for (let i = 1; i < P.length; i++) { ctx.strokeStyle = speedShade(accent, ((sp[i - 1] + sp[i]) / 2 - lo) / (hi - lo)); ctx.beginPath(); ctx.moveTo(...P[i - 1]); ctx.lineTo(...P[i]); ctx.stroke(); }
+    const dur = sm[sm.length - 1][0] || 1, at = P[Math.min(P.length - 1, Math.floor(t / dur * (P.length - 1)))];
+    ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(at[0], at[1], 13, 0, 7); ctx.fill(); ctx.fillStyle = accent; ctx.beginPath(); ctx.arc(at[0], at[1], 8, 0, 7); ctx.fill();
+  }
+  ctx.fillStyle = fg2; ctx.font = "500 22px Archivo";
   ctx.textAlign = "right"; ctx.fillText("Last 30 s", Rr, 844); ctx.textAlign = "left"; ctx.fillStyle = "#FF3B30"; ctx.fillText("■ rpm", L, 844); ctx.fillStyle = "#3D9BFF"; ctx.fillText("■ km/h", L + 90, 844);
   ctx.restore();
 }
@@ -2873,7 +2912,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.13.9", "date": "26 October 2026", "text": "• Put the graphs in your order. On Graphs, tap and hold a graph and drag it up or down, or use Change graph order to move each one with ▲ and ▼. The order is kept, and a reading you turn on goes to the bottom.\n• Speed on the route outline. The outline on drive cards is now shaded by how fast you drove each part: brighter where you were faster, dimmer where you were slower, all in the card's own colour and never fading to black."};
+const CHANGES = {"version": "1.14.0", "date": "26 October 2026", "text": "• Drive history. Every drive is now kept, not just the last one. Drive history (on the Dashboard, under the driving score) lists each drive with its date, distance, time and drive score, shows how your drive score has gone over your last 20 drives, and adds up the distance and time. Tap a drive for its summary and to share its card; tap and hold to delete it. Only the summary is kept (times, distances and scores), never your location.\n• Freeze frame. When a trouble code is stored, the car keeps a snapshot of the engine at that moment. The app now reads it and shows it on that code's card, under When it was set (freeze frame): engine speed, road speed, coolant, load, fuel trims, manifold pressure, intake air, throttle, airflow and how the fuel system was running, as far as your car records them. It's in the code report too, for your mechanic.\n• Battery check at start-up. Connect with the ignition on and the engine off, then start the engine: the app measures the battery's resting voltage and how far it dips while the starter turns the engine, and rates it (a healthy battery stays above about 10 V). Diagnostics → Battery check shows the latest result and the ones before, so a battery that's getting weaker shows up before it lets you down. The demo car now starts the same way: a few seconds with the engine off, then a start.\n• Route mini-map on the video overlay. Overlay videos of drives recorded with their route now show the route's outline above the 30-second trace, shaded by speed like the drive card, with a dot that moves along it as the video plays."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -2914,6 +2953,22 @@ const CHANGES = {"version": "1.13.9", "date": "26 October 2026", "text": "• Pu
     if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(v)) { $("vinErr").hidden = false; return; }
     userVin = v === carVin ? null : v; close(); if (!userVin) vinEl.textContent = carVin; paint();
   };
+})();
+
+/* Battery check (mirrors obd/BatteryCheck.kt): the demo car starts with the engine off, then cranks,
+   so a few seconds after connecting the check comes in. */
+(() => {
+  let was = null, timer = null;
+  setInterval(() => {
+    if (state === "connected" && was !== "connected") { clearTimeout(timer); timer = setTimeout(() => {
+      if (state !== "connected") return;
+      const when = new Date().toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+      $("batteryRating").textContent = "Healthy";
+      $("batteryText").textContent = `Lowest while starting 10.4 V (resting 12.6 V), ${when}. The battery held its voltage well while starting.`;
+      toast("Battery check: healthy, 10.4 V while starting");
+    }, 5500); }
+    was = state;
+  }, 500);
 })();
 
 window.carReady = true;
