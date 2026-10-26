@@ -2923,7 +2923,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.15.0", "date": "26 October 2026", "text": "• Battery readings with the ignition off. When the car is switched off but the adapter is still connected, the app now shows the battery's voltage and roughly how charged it is (for example \"12.5 V, about 80% charged\"), on the Dashboard and in the battery reading. It comes from the adapter's own reading at the OBD2 port, so it doesn't need to wake the car.\n• Overnight battery watch. Turn on Diagnostics → Battery check → Watch the battery while the car is off, leave the phone connected overnight (on charge, in range of the adapter), and the app notes the battery's voltage every 5 minutes. In the morning it says whether the battery held its charge or dropped faster than it should, which points to something draining it while the car is off. With it on, the app waits up to 24 hours for the car instead of 30 minutes.\n• Lets the car sleep. While the ignition is off, the app now asks the car whether it's awake every 5 seconds instead of every 1.5, so it doesn't keep the car's computers from going to sleep. It still notices straight away when you turn the key, because the battery voltage changes as the car switches on."};
+const CHANGES = {"version": "1.16.0", "date": "26 October 2026", "text": "Four deeper checks under Diagnostics. Like everything else in the app they only read: nothing is cleared or changed in the car, and the app blocks any command that isn't a read.\n• Readiness monitors. The engine computer's own emission checks (catalyst, oxygen sensors, evaporative system, misfire and more) and whether each has finished since the codes were last cleared or the battery was disconnected. Emissions inspections usually want them complete. It also shows the check-engine light, the number of stored codes and the engine computer's software version (calibration ID).\n• Self-test results. The measurements the engine computer took the last time it ran each check, such as oxygen sensor switching and catalyst efficiency, with the limits each must stay within, marked ✓ or ✗. A result near its limit can show a part wearing before it sets a code. On CAN cars.\n• Codes from other modules. Asks the modules beyond the engine for their codes: on Ford and Mazda the ABS, airbags, body, instrument cluster, power steering, parking aid, all-wheel drive and climate control; on every make the engine and transmission computers. Each module shows its codes (stored or pending, with titles where known), \"No codes\", or that it didn't answer. On CAN cars.\n• Custom readings. Add a reading the app doesn't list by its request (service 01, 21 or 22), an optional module address, a formula using the reply bytes A, B, C… (for example (A*256+B)/4) and a unit. Readings are kept on your phone; touch and hold one to delete it."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -2983,6 +2983,78 @@ const CHANGES = {"version": "1.15.0", "date": "26 October 2026", "text": "• Ba
 })();
 
 $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked; toast(e.target.checked ? "In the app, it now keeps watching the battery while the car is off (up to 24 hours)." : "Battery watch is off."); };
+
+
+/* ===== Deeper checks, read-only (mirrors MainActivity.setupDeeperChecks and obd/Readiness, TestResults, ModuleScan, CustomReading) ===== */
+(() => {
+  const chev = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg>`;
+  const rowHtml = (id, t, h) => `<button class="setting" id="${id}"><div class="r"><span style="flex:1">${t}</span>${chev}</div><div class="h">${h}</div></button>`;
+  $("scanRow").insertAdjacentHTML("afterend",
+    rowHtml("readinessRow", "Readiness monitors", "The engine computer's own emission checks: which have finished since the codes were last cleared. Also shows its software version.") +
+    rowHtml("testsRow", "Self-test results", "The measurements behind those checks (oxygen sensors, catalyst, misfires and more), with the limits each must stay within.") +
+    rowHtml("modulesRow", "Codes from other modules", "Reads codes from modules beyond the engine, like ABS, airbags and transmission. Read-only: nothing is cleared.") +
+    rowHtml("customRow", "Custom readings", "Add a reading by its request and formula, for ones the app doesn't list yet."));
+  const line = (t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${t}</div>`;
+  const head = t => `<div class="trip-h">${t}</div>`;
+  const sheet = (title, html) => overlay(`<div class="handle"></div><h2>${title}</h2>${html}`, { sheet: true });
+  const needCar = () => { if (state !== "connected") { toast("Connect to your car first."); return false; } return true; };
+  $("readinessRow").onclick = () => {
+    if (!needCar()) return;
+    const mons = [["Misfire", "Checks every cylinder fires properly", 1], ["Fuel system", "Checks the fuel mixture control", 1], ["Components", "Checks sensors and parts the engine computer uses", 1],
+      ["Catalytic converter", "Checks the catalytic converter cleans the exhaust", 1], ["Evaporative system", "Checks the fuel vapour system for leaks", 0],
+      ["Oxygen sensors", "Checks the oxygen sensors respond properly", 1], ["Oxygen sensor heaters", "Checks the oxygen sensor heaters", 1]];
+    sheet("Readiness monitors", `<p>1 of 7 not complete yet. Check-engine light on, 2 stored codes.</p>${head("Monitors")}` +
+      mons.map(([n, a, ok]) => line(`${ok ? "✓" : "…"}  ${n}: ${ok ? "Complete" : "Not complete yet"}`, ok) + line(`&nbsp;&nbsp;&nbsp;&nbsp; ${a}`, true)).join("") +
+      head("What this means") + line("The engine computer runs these checks by itself as you drive. They reset whenever the codes are cleared or the battery is disconnected, and finish again after a few days of normal driving, town and highway. An emissions inspection usually wants them complete.", true) +
+      head("Engine computer software (calibration ID)") + line("1L8A-14C204-AAA"));
+  };
+  $("testsRow").onclick = () => {
+    if (!needCar()) return;
+    const groups = [["Oxygen sensor, bank 1 sensor 1", [["01", "0.452 V (limits 0.200 to 0.900 V)"], ["02", "0.075 V (limits 0.000 to 0.300 V)"]]],
+      ["Oxygen sensor, bank 1 sensor 2", [["01", "0.550 V (limits 0.400 to 1.100 V)"]]], ["Catalytic converter, bank 1", [["01", "96 counts (limits 0 to 300 counts)"]]],
+      ...[1, 2, 3, 4].map(c => [`Misfire, cylinder ${c}`, [["0B", `${c === 2 ? 3 : 0} counts (limits 0 to 200 counts)`]]])];
+    sheet("Self-test results", `<p>All 8 tests within their limits.</p>` + groups.map(([g, ts]) => head(g) + ts.map(([t, v]) => line(`✓  Test ${t}: ${v}`, true)).join("")).join("") +
+      head("What this means") + line("These are the engine computer's own measurements from the last time it ran each check, with the limits they must stay between. A result close to a limit can show a part wearing out before it sets a trouble code. The test numbers are the maker's own, so what each one measures isn't always published.", true));
+  };
+  $("modulesRow").onclick = () => {
+    if (!needCar()) return;
+    const ford = myCar && ["Ford", "Lincoln", "Mercury", "Mazda"].includes(myCar.make);
+    const brand = myCar && myCar.make ? `${myCar.make}-specific code` : "Manufacturer-specific code";
+    const mods = [["Engine computer (PCM)", ["P0133  Oxygen sensor slow response (bank 1, sensor 1) (stored)", "P0171  Fuel mixture too lean (bank 1) (pending)"]], ["Transmission (TCM)", []]]
+      .concat(ford ? [["ABS and stability control", [`C1145-1C  ${brand} (stored)`]], ["Airbags (restraints)", []], ...["Body / general electronics", "Instrument cluster", "Power steering", "Parking sensors", "All-wheel drive", "Climate control"].map(n => [n, null])] : []);
+    const total = mods.reduce((s, [, c]) => s + (c ? c.length : 0), 0);
+    sheet("Codes from other modules", `<p>${total} ${total === 1 ? "code" : "codes"} found.</p>` + mods.map(([n, c]) => head(n) + (c == null ? line("Didn't answer: not fitted, or on a part of the car's network the adapter can't reach.", true) : c.length ? c.map(x => line(x)).join("") : line("No codes", true))).join("") +
+      head("About this") + line("Read-only: the app asks each module for its codes and never clears them. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true));
+  };
+  let custom = [];
+  const evalFormula = (f, b) => { try { const e = f.replace(/[A-H]/g, ch => `(${b["ABCDEFGH".indexOf(ch)] ?? NaN})`); if (!/^[\d\s+\-*/().NaN]*$/.test(e)) return null; const v = Function(`return (${e})`)(); return Number.isFinite(v) ? v : null; } catch (e) { return null; } };
+  /* The demo car answers standard readings it has; anything else is "no answer", so N/A */
+  const demoReply = req => ({ "010C": () => { const r = Math.round((live["0C"] || 0) * 4); return [r >> 8, r & 255]; }, "0105": () => live["05"] == null ? null : [Math.round(live["05"] + 40)], "010D": () => live["0D"] == null ? null : [Math.round(live["0D"])] }[req.toUpperCase()] || (() => null))();
+  const showCustom = () => {
+    const s = sheet("Custom readings", (custom.length ? custom.map((r, i) => {
+      const b = state === "connected" ? demoReply(r.request) : null; const v = b ? evalFormula(r.formula, b) : null;
+      return `<div class="setting" data-i="${i}" style="display:flex;align-items:center;gap:8px;margin-top:8px"><div style="flex:1"><div>${r.name}</div><div class="h">${r.header ? r.header + " · " : ""}${r.request} · ${r.formula}</div></div><b style="color:var(--accent)">${state !== "connected" ? "–" : v == null ? "N/A" : (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(2)) + (r.unit ? " " + r.unit : "")}</b></div>`;
+    }).join("") : `<p>No custom readings yet. Add one with its request (service 01, 21 or 22), an optional module address and a formula using A, B, C… for the reply bytes.</p>`) +
+      `<button class="primary trip-done" id="customAdd">Add reading</button><p class="msg" style="margin-top:10px">Requests are read-only: only services 01, 21 and 22 are allowed. Touch and hold a reading to delete it.</p>`);
+    s.querySelectorAll("[data-i]").forEach(el => { let t; el.onpointerdown = () => t = setTimeout(() => { custom.splice(+el.dataset.i, 1); closeOverlay(); showCustom(); }, 600); el.onpointerup = el.onpointerleave = () => clearTimeout(t); });
+    $("customAdd").onclick = () => { closeOverlay(); addCustom(); };
+  };
+  const addCustom = () => {
+    const f = (id, ph) => `<input id="${id}" placeholder="${ph}" style="width:100%;margin:6px 0;padding:10px;border-radius:8px;border:1px solid var(--line, #444);background:transparent;color:inherit">`;
+    overlay(`<h3>Add reading</h3>${f("cN", "Name (e.g. Transmission temp)")}${f("cR", "Request, hex (e.g. 221E1C)")}${f("cH", "Module address, optional (e.g. 7E0)")}${f("cF", "Formula (e.g. (A*256+B)/16)")}${f("cU", "Unit (e.g. °C)")}<div class="btns"><button id="cCancel">Cancel</button><button id="cSave">Save</button></div>`);
+    $("cCancel").onclick = () => { closeOverlay(); showCustom(); };
+    $("cSave").onclick = () => {
+      const v = id => $(id).value.trim(), req = v("cR").toUpperCase().replace(/\s/g, ""), hdr = v("cH").toUpperCase();
+      if (!v("cN")) return toast("Give the reading a name.");
+      if (!/^(01|21|22)([0-9A-F]{2})+$/.test(req)) return toast("Requests must be service 01, 21 or 22 in hex, like 010C or 221E1C.");
+      if (hdr && !/^([0-9A-F]{3}|[0-9A-F]{6}|[0-9A-F]{8})$/.test(hdr)) return toast("The module address is 3, 6 or 8 hex characters, like 7E0.");
+      if (!/^[A-H\d\s+\-*/().]+$/i.test(v("cF")) || evalFormula(v("cF").toUpperCase(), [1, 1, 1, 1, 1, 1, 1, 1]) == null) return toast("The formula can use A to H, numbers, + - * / and brackets.");
+      custom.push({ name: v("cN"), request: req, header: hdr || null, formula: v("cF").toUpperCase(), unit: v("cU") });
+      closeOverlay(); showCustom();
+    };
+  };
+  $("customRow").onclick = showCustom;
+})();
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);
