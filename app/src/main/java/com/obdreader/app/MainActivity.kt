@@ -2345,6 +2345,7 @@ class MainActivity : AppCompatActivity() {
         val text = findViewById<TextView>(R.id.batteryText)
         val past = findViewById<TextView>(R.id.batteryHistory)
         findViewById<View>(R.id.batteryCard).background = panelBackground()
+        showBatteryNight()
         if (latest == null) {
             rating.setText(R.string.battery_none); rating.setTextColor(themeColor(R.attr.obdTextPrimary))
             text.setText(R.string.battery_how); past.visibility = View.GONE
@@ -2364,6 +2365,25 @@ class MainActivity : AppCompatActivity() {
             toast("Battery check: ${fresh.rating.label.lowercase(Locale.getDefault())}, ${String.format(Locale.US, "%.1f V", fresh.crankingV)} while starting")
         }
         shownBatteryCheck = fresh ?: shownBatteryCheck
+    }
+
+    /** The switch for the overnight check, and what the last night showed. */
+    private fun showBatteryNight() {
+        val sw = findViewById<MaterialSwitch>(R.id.batteryWatchSwitch)
+        sw.setOnCheckedChangeListener(null)
+        sw.isChecked = AppPrefs.batteryWatch(prefs)
+        sw.setOnCheckedChangeListener { _, on -> prefs.edit().putBoolean(AppPrefs.BATTERY_WATCH, on).apply(); showBatteryNight() }
+        val night = findViewById<TextView>(R.id.batteryNight)
+        val samples = com.obdreader.app.obd.BatteryRest.decode(prefs.getString(AppPrefs.BATTERY_NIGHT, null))
+        val off = prefs.getLong(AppPrefs.BATTERY_NIGHT_OFF, 0L)
+        val drain = com.obdreader.app.obd.BatteryRest.drain(samples, off)
+        night.text = when {
+            drain != null -> "Last time the car was off: " + drain.summary()
+            samples.isNotEmpty() -> "Watching: ${samples.size} readings so far, latest ${com.obdreader.app.obd.BatteryRest.describe(samples.last().volts)}. A result needs about 5 hours with the car off."
+            else -> ""
+        }
+        night.setTextColor(themeColor(if (drain?.draining == true) R.attr.obdWarn else R.attr.obdTextPrimary))
+        night.visibility = if (night.text.isNullOrEmpty()) View.GONE else View.VISIBLE
     }
 
     private fun showVin(carVin: String?) {
@@ -2537,6 +2557,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        showBatteryNight() // the overnight readings may have moved on while the app was away
         Updater.showPrompt = { confirm -> showInstallPrompt(confirm) }
         Updater.waitingPrompt?.let { Updater.waitingPrompt = null; showInstallPrompt(it) }
         Updater.showProblem = { why -> updateProblem(why) }

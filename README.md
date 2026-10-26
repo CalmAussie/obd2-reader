@@ -55,6 +55,7 @@ Help, including Android Auto setup, is also inside the app under **Diagnostics �
 - **Top speed:** the highest speed of the current drive shows beside the speed, on the phone and in Android Auto.
 - **Swipe between tabs:** swipe sideways across the screen to move between the Dashboard, Graphs and Diagnostics.
 - **Drive history:** every drive's summary (no location), with your drive score's trend over the last 20 drives; open any drive to share its card.
+- **Battery with the ignition off:** the battery's voltage and rough charge while the car is off (from the adapter, without waking the car), and an optional overnight check for something draining the battery.
 - **Battery check at start-up:** connect before starting the engine and the app measures how far the battery dips while starting, and keeps a history so a weakening battery shows up early.
 - **Trip summary:** distance, driving and idle time, average and top speed, best 0–100 and scores when each drive ends (when you disconnect, or the ignition has been off for 3 minutes).
 - **Driving alerts:** sound, vibration and a notification (on Android Auto too) for a hot engine or oil, a battery not charging, overcharging or low, and new trouble codes. Switch off under **Diagnostics → Alerts**.
