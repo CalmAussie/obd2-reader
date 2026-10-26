@@ -591,9 +591,8 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .trip-note { font-size: 13px; color: var(--fg-2); margin: 6px 0 0; }
 .trip-done { width: 100%; margin-top: 18px; height: 48px; border-radius: var(--r); background: var(--accent); color: var(--on-accent); font-weight: 600; }
 .quick-row { display: flex; gap: 8px; margin-top: 10px; }
-.quick-btn { flex: 1 1 0; min-width: 0; min-height: 52px; padding: 6px; border: 1px solid var(--line); border-radius: var(--r); background: transparent; color: var(--accent); font: 500 13px/1.2 var(--ui); text-align: center; }
+.quick-btn.demo { flex: 1 1 0; min-width: 0; height: 52px; padding: 0 8px; font-size: 13px; line-height: 1.15; color: var(--fg); }
 .quick-btn[hidden] { display: none; }
-.phone[data-layout="cockpit"] .quick-btn { border-radius: 999px; }
 
 /* Heads-up alert (mirrors the app's high-priority notification and Android Auto's heads-up card) */
 .hun { position: absolute; left: 12px; right: 12px; top: 40px; z-index: 20; background: #2A2C31; color: #F2F2F0; border-radius: 16px; padding: 12px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.45); animation: slide .25s both; border-left: 4px solid #FF3B30; }
@@ -2741,7 +2740,8 @@ $("lastTripBtn").insertAdjacentHTML("afterend", `<button class="link-btn" id="pe
 {
   const qr = document.createElement("div"); qr.className = "quick-row";
   $("scoreCard").after(qr);
-  ["perfBtn", "lastTripBtn", "historyBtn"].forEach(id => { const b = $(id); b.className = "quick-btn"; b.removeAttribute("style"); qr.appendChild(b); });
+  /* Styled like the Demo car button, so each style gives them its own shape (mirrors SkewButton) */
+  ["perfBtn", "lastTripBtn", "historyBtn"].forEach(id => { const b = $(id); b.className = "demo quick-btn"; b.removeAttribute("style"); b.innerHTML = `<span>${b.textContent}</span>`; qr.appendChild(b); });
 }
 $("perfBtn").onclick = () => {
   const p = perfTimer(); let mode = Object.keys(PERF)[0], readyAt = 0;
@@ -2944,7 +2944,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.18.3", "date": "27 October 2026", "text": "• On the Dashboard, under the driving score, Performance timers, Last drive summary and Drive history are now three buttons side by side instead of a list of links. The last two show once you've had a drive, and the row shares its width between the ones showing."};
+const CHANGES = {"version": "1.18.3", "date": "27 October 2026", "text": "• On the Dashboard, under the driving score, Performance timers, Last drive summary and Drive history are now three buttons side by side instead of a list of links, shaped like the Connect and Demo car buttons in each style (angled on the liveries, square on Race telemetry, rounded on Digital cockpit, raked on Cyberpunk). The last two show once you've had a drive, and the row shares its width between the ones showing."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
