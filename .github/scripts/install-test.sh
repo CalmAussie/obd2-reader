@@ -445,6 +445,7 @@ for attempt in 1 2; do
   sleep 2; adb logcat -d -s OBD2Save:I 2>/dev/null | grep -q "saved .* to Downloads" && SAVED=1
   adb shell ls "/sdcard/Download/OBD2 Reader/" 2>/dev/null | grep -q "." && SAVED=1
   [ $SAVED = 1 ] && break
+  shot "4e-code-report-try$attempt"; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-report-$attempt.xml"
   # A choice left open would hide everything after it: close it, start from the top.
   adb shell input keyevent KEYCODE_BACK; sleep 1; tap_tab Diagnostics > /dev/null; sleep 1; scroll_top
 done
