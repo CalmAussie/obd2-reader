@@ -317,20 +317,62 @@ object ObdSession {
             try {
                 pollLoop(c, pids)
             } catch (e: IgnitionOffException) {
-                // The adapter is still there; the car has gone to sleep. Ask it every second and a
-                // half whether it's awake, and carry straight on when it is.
+                // The adapter is still there; the car has gone to sleep. Read the battery from the
+                // adapter every second (that doesn't involve the car), ask the car every few seconds
+                // whether it's awake (at once if the voltage moves, as it does when the key turns),
+                // and carry straight on when it is.
                 if (isDemo || !AppPrefs.autoReconnect(prefs)) throw IOException("The car stopped answering. Is the ignition off?")
-                val since = SystemClock.elapsedRealtime()
-                _state.update {
-                    it.copy(phase = Phase.WAITING, title = "Ignition off", detail = "Waiting for the car. Live data comes back as soon as the ignition is on.", readings = emptyMap(), charging = null, rate = 0.0)
-                }
-                while (true) {
-                    delay(ReconnectPolicy.WAKE_PROBE_MS)
-                    val awake = try { c.probe() } catch (e: AdapterTimeoutException) { false }
-                    if (awake) break
-                    if (ReconnectPolicy.shouldGiveUp(since, SystemClock.elapsedRealtime())) throw IOException("The car didn't answer for 30 minutes.")
-                }
+                waitIgnitionOff(c, prefs)
                 _state.update(connected)
+            }
+        }
+    }
+
+    /**
+     * The ignition is off but the adapter is still connected: show the battery's voltage and charge
+     * from the adapter's own reading, keep an overnight record of it if the user switched that on,
+     * and return as soon as the car answers again.
+     */
+    private suspend fun waitIgnitionOff(c: ElmClient, prefs: android.content.SharedPreferences) {
+        val since = SystemClock.elapsedRealtime()
+        val offAt = System.currentTimeMillis()
+        val watching = AppPrefs.batteryWatch(prefs)
+        val limit = if (watching) ReconnectPolicy.WATCH_GIVE_UP_AFTER_MS else ReconnectPolicy.GIVE_UP_AFTER_MS
+        if (watching) prefs.edit().putLong(AppPrefs.BATTERY_NIGHT_OFF, offAt).putString(AppPrefs.BATTERY_NIGHT, "").apply()
+        val night = mutableListOf<com.obdreader.app.obd.BatteryRest.Sample>()
+        var lastSample = 0L
+        var lastProbe = SystemClock.elapsedRealtime()
+        var resting: Double? = null
+        _state.update {
+            it.copy(phase = Phase.WAITING, title = "Ignition off", detail = "Waiting for the car. Live data comes back as soon as the ignition is on.", readings = emptyMap(), charging = null, rate = 0.0)
+        }
+        while (true) {
+            delay(ReconnectPolicy.VOLT_READ_MS)
+            val v = try { c.readVoltage() } catch (e: AdapterTimeoutException) { null }
+            val now = SystemClock.elapsedRealtime()
+            if (v != null) {
+                batteryWatch.update(now, v, 0.0) // the engine is off: these are resting readings
+                val settling = System.currentTimeMillis() - offAt < com.obdreader.app.obd.BatteryRest.SETTLE_MS
+                val text = "Battery " + com.obdreader.app.obd.BatteryRest.describe(v) +
+                    (if (settling) " (it reads a little high for a couple of hours after a drive)" else "") +
+                    ". Live data comes back as soon as the ignition is on."
+                _state.update { it.copy(readings = mapOf(VOLTAGE_KEY to v), detail = text) }
+                _samples.tryEmit(Sample(VOLTAGE_KEY, v, now))
+                if (resting == null) resting = v
+                if (watching && System.currentTimeMillis() - lastSample >= com.obdreader.app.obd.BatteryRest.SAMPLE_EVERY_MS) {
+                    lastSample = System.currentTimeMillis()
+                    night += com.obdreader.app.obd.BatteryRest.Sample(lastSample, v)
+                    prefs.edit().putString(AppPrefs.BATTERY_NIGHT, com.obdreader.app.obd.BatteryRest.encode(night.takeLast(400))).apply()
+                }
+            }
+            if (ReconnectPolicy.shouldProbe(now - lastProbe, v, resting)) {
+                lastProbe = now
+                val awake = try { c.probe() } catch (e: AdapterTimeoutException) { false }
+                if (awake) return
+                resting = v ?: resting
+            }
+            if (ReconnectPolicy.shouldGiveUp(since, now, limit)) {
+                throw IOException(if (watching) "The car didn't answer for 24 hours." else "The car didn't answer for 30 minutes.")
             }
         }
     }

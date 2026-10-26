@@ -717,7 +717,10 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
       <div id="vinEdit" hidden style="margin-top:8px"><input id="vinInput" maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="17 characters from your VIN plate" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--line,#444);background:transparent;color:inherit;font:inherit;text-transform:uppercase"><div class="veh-sub" id="vinErr" hidden>A VIN is 17 letters and numbers, without I, O or Q.</div><div style="display:flex;gap:16px;margin-top:6px"><button class="link-btn" id="vinSave">Save</button><button class="link-btn" id="vinUseCar" hidden>Use the car's VIN</button><button class="link-btn" id="vinCancel">Cancel</button></div></div>
       <button class="link-btn" id="vinEnter" style="margin-top:6px">Not your VIN? Enter it</button>
       <div class="h2 xb" style="margin-top:28px">Battery check</div>
-      <div id="batteryCard" style="background:var(--panel);border-radius:14px;padding:16px;margin-top:10px"><div class="xb" id="batteryRating" style="font-size:20px">Not checked yet</div><div class="veh-sub" id="batteryText" style="margin-top:4px">Checked each time the engine starts while the app is connected: connect with the ignition on and the engine off, then start the engine. A healthy battery stays above about 10 V while starting.</div></div>
+      <div id="batteryCard" style="background:var(--panel);border-radius:14px;padding:16px;margin-top:10px"><div class="xb" id="batteryRating" style="font-size:20px">Not checked yet</div><div class="veh-sub" id="batteryText" style="margin-top:4px">Checked each time the engine starts while the app is connected: connect with the ignition on and the engine off, then start the engine. A healthy battery stays above about 10 V while starting.</div>
+        <label style="display:flex;align-items:center;gap:12px;margin-top:16px;cursor:pointer"><span style="flex:1;font-size:15px">Watch the battery while the car is off</span><input type="checkbox" id="batteryWatch" style="width:22px;height:22px;accent-color:var(--accent)"></label>
+        <div class="veh-sub" style="margin-top:4px">Leave the phone connected to the adapter overnight (on charge, in range) and the app notes the battery's voltage every 5 minutes, then says whether it held its charge or something may be draining it. The adapter uses a little power itself, so don't leave it plugged in for weeks. Without this, the app stops waiting for the car after 30 minutes.</div>
+        <div id="batteryNight" hidden style="margin-top:8px;font-size:14px">Last time the car was off: 12.58 V to 12.52 V over 7 h: holding its charge as it should.</div></div>
       <div class="h2 xb">Connection</div>
       <div class="list">
         <button class="setting" id="carRow">
@@ -1903,8 +1906,16 @@ $("ignBtn").onclick = async () => {
     state = "waiting"; updateButtons();
     for (const k in live) delete live[k];
     Object.values(tiles).forEach(f => f(null)); rpmGauge.set(null); speedGauge.set(null);
-    setStatus("waiting", "Ignition off", "Waiting for the car. Live data comes back as soon as the ignition is on.");
-    wakeTimer = setInterval(() => { if (state === "waiting") { log("> 0100"); log("< NO DATA"); } }, 1500);
+    // Mirrors ObdSession.waitIgnitionOff: the adapter's own battery reading every second, the car asked every 5 s.
+    let ticks = 0; const offAt = Date.now();
+    const restText = v => { const t = [[11.3,0],[11.51,10],[11.66,20],[11.81,30],[11.96,40],[12.1,50],[12.24,60],[12.37,70],[12.5,80],[12.62,90],[12.73,100]];
+      let c = v >= 12.73 ? 100 : v <= 11.3 ? 0 : null; if (c == null) { const i = t.findIndex(x => x[0] >= v); c = Math.round(t[i-1][1] + (t[i][1] - t[i-1][1]) * (v - t[i-1][0]) / (t[i][0] - t[i-1][0])); }
+      return `${v.toFixed(1)} V, about ${c}% charged`; };
+    const tick = () => { if (state !== "waiting") return; const v = 12.72 - Math.min(0.12, (Date.now() - offAt) / 60000 * 0.05);
+      log("> ATRV  < " + v.toFixed(1) + "V"); if (ticks++ % 5 === 0) { log("> 0100"); log("< NO DATA"); }
+      if (tiles["VOLT"]) tiles["VOLT"](v);
+      setStatus("waiting", "Ignition off", `Battery ${restText(v)} (it reads a little high for a couple of hours after a drive). Live data comes back as soon as the ignition is on.`); };
+    tick(); wakeTimer = setInterval(tick, 1000);
   } else {
     clearInterval(wakeTimer);
     state = "connecting"; updateButtons();
@@ -2912,7 +2923,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.14.0", "date": "26 October 2026", "text": "• Drive history. Every drive is now kept, not just the last one. Drive history (on the Dashboard, under the driving score) lists each drive with its date, distance, time and drive score, shows how your drive score has gone over your last 20 drives, and adds up the distance and time. Tap a drive for its summary and to share its card; tap and hold to delete it. Only the summary is kept (times, distances and scores), never your location.\n• Freeze frame. When a trouble code is stored, the car keeps a snapshot of the engine at that moment. The app now reads it and shows it on that code's card, under When it was set (freeze frame): engine speed, road speed, coolant, load, fuel trims, manifold pressure, intake air, throttle, airflow and how the fuel system was running, as far as your car records them. It's in the code report too, for your mechanic.\n• Battery check at start-up. Connect with the ignition on and the engine off, then start the engine: the app measures the battery's resting voltage and how far it dips while the starter turns the engine, and rates it (a healthy battery stays above about 10 V). Diagnostics → Battery check shows the latest result and the ones before, so a battery that's getting weaker shows up before it lets you down. The demo car now starts the same way: a few seconds with the engine off, then a start.\n• Route mini-map on the video overlay. Overlay videos of drives recorded with their route now show the route's outline above the 30-second trace, shaded by speed like the drive card, with a dot that moves along it as the video plays."};
+const CHANGES = {"version": "1.15.0", "date": "26 October 2026", "text": "• Battery readings with the ignition off. When the car is switched off but the adapter is still connected, the app now shows the battery's voltage and roughly how charged it is (for example \"12.5 V, about 80% charged\"), on the Dashboard and in the battery reading. It comes from the adapter's own reading at the OBD2 port, so it doesn't need to wake the car.\n• Overnight battery watch. Turn on Diagnostics → Battery check → Watch the battery while the car is off, leave the phone connected overnight (on charge, in range of the adapter), and the app notes the battery's voltage every 5 minutes. In the morning it says whether the battery held its charge or dropped faster than it should, which points to something draining it while the car is off. With it on, the app waits up to 24 hours for the car instead of 30 minutes.\n• Lets the car sleep. While the ignition is off, the app now asks the car whether it's awake every 5 seconds instead of every 1.5, so it doesn't keep the car's computers from going to sleep. It still notices straight away when you turn the key, because the battery voltage changes as the car switches on."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -2970,6 +2981,8 @@ const CHANGES = {"version": "1.14.0", "date": "26 October 2026", "text": "• Dr
     was = state;
   }, 500);
 })();
+
+$("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked; toast(e.target.checked ? "In the app, it now keeps watching the battery while the car is off (up to 24 hours)." : "Battery watch is off."); };
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

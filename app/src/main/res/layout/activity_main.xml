@@ -842,6 +842,47 @@
                             android:textColor="?attr/obdTextSecondary"
                             android:textSize="13sp"
                             android:visibility="gone" />
+
+                        <!-- Overnight: the battery's voltage while the car is off, from the adapter. -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:labelFor="@id/batteryWatchSwitch"
+                                android:text="@string/battery_watch"
+                                android:textColor="?attr/obdTextPrimary"
+                                android:textSize="15sp" />
+
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/batteryWatchSwitch"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:contentDescription="@string/battery_watch" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/battery_watch_how"
+                            android:textColor="?attr/obdTextSecondary"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/batteryNight"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:textColor="?attr/obdTextPrimary"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
                     </LinearLayout>
 
                     <TextView

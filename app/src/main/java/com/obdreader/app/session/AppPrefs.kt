@@ -27,6 +27,11 @@ object AppPrefs {
     const val USER_VIN = "user_vin"
     /** Battery checks at engine start (time, resting and cranking voltage): no location. */
     const val BATTERY_CHECKS = "battery_checks"
+    /** "Watch the battery while the car is off": off unless the user turns it on. */
+    const val BATTERY_WATCH = "battery_watch"
+    /** The last night's battery readings (time and voltage only) and when the car was switched off. */
+    const val BATTERY_NIGHT = "battery_night"
+    const val BATTERY_NIGHT_OFF = "battery_night_off"
     const val USER_VIN_CAR = "user_vin_car"
 
     const val TYPE_CLASSIC = "classic"
@@ -42,6 +47,8 @@ object AppPrefs {
     fun autoReconnect(prefs: SharedPreferences): Boolean = prefs.getBoolean(AUTO_RECONNECT, true)
 
     fun alerts(prefs: SharedPreferences): Boolean = prefs.getBoolean(ALERTS, true)
+
+    fun batteryWatch(prefs: SharedPreferences): Boolean = prefs.getBoolean(BATTERY_WATCH, false)
 
     /** Loads the chosen units (km/h or mph, °C or °F) for display. */
     fun applyUnits(prefs: SharedPreferences) {
