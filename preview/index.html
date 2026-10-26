@@ -113,6 +113,13 @@ body {
   --roundel: #D7FF1F; --roundel-ink: #0E0F11; --ring: #D7FF1F; --track: #24272C;
   --accent: #D7FF1F; --on-accent: #0D1100; --r: 0px; --skew: -18deg;
 }
+[data-theme="british"] {
+  --base: #0C2A20; --panel: #113526; --panel-2: #18402F; --line: #21503C;
+  --fg: #F3EBD3; --fg-2: #A3B4A3; --ink: #0A1F17;
+  --s1: #F3EBD3; --s2: #D9AE45; --s3: #0C2A20;
+  --roundel: #F3EBD3; --roundel-ink: #0C2A20; --ring: #D9AE45; --track: #1B4434;
+  --accent: #F3EBD3; --on-accent: #0C2A20; --green: #5BE38F;
+}
 [data-theme="cyberpunk"] {
   --base: #07060D; --panel: #120F1F; --panel-2: #1B1730; --line: #2C2546;
   --fg: #EDEBFF; --fg-2: #8E88B3; --ink: #07060D;
@@ -1342,6 +1349,7 @@ const THEMES = [
   ["pitlane", "Pit lane", "A light livery in black and race red. Easiest to read in sunlight."],
   ["drift", "Drift", "Hot pink and teal, from the drift and street scene."],
   ["apex", "Apex", "Volt yellow on carbon black with sharp, raked edges."],
+  ["british", "British racing", "Cream and gold on British racing green, like a classic sports racer."],
   ["telemetry", "Race telemetry", "A data-logger screen: shift lights, big numbers and a live 30-second trace for every reading."],
   ["cockpit", "Digital cockpit", "Calm and premium, like a modern EV: one big speed in a glowing ring, on layered glass."],
   ["cyberpunk", "Cyberpunk", "A neon heads-up display: a climbing rev bar, glitch-split speed digits and glowing readouts on night-city black."],
@@ -1589,8 +1597,8 @@ function carHead(title, { back = false, actions = [] } = {}) {
   return `<div class="car-head">${back ? `<button class="hi" data-act="back" aria-label="Back">${svgI(CAR_ICONS.back)}</button>` : `<span class="hi">${svgI(CAR_ICONS.speed)}</span>`}<h4>${title}</h4>${actions.map(([id, label]) => `<button class="car-act" data-act="${id}">${label}</button>`).join("")}</div>`;
 }
 /* Livery accents for the car: the same colours, brightened where needed to pass Android Auto's 4.5:1 contrast rule on black */
-const CAR_ACCENT = { asphalt: ["#FF5A1F", "#120500"], endurance: ["#FFD000", "#0A1424"], kerb: ["#FF4A4F", "#1A0002"], pitlane: ["#FF5A52", "#1A0201"], drift: ["#FF2E88", "#1A0010"], apex: ["#D7FF1F", "#0D1100"], telemetry: ["#FF453A", "#FFFFFF"], cockpit: ["#7FA6FF", "#050B1E"] };
-const CAR_ROUNDEL = { asphalt: "#F4F4F1", endurance: "#FFD000", kerb: "#F5F5F3", pitlane: "#F1F2F4", drift: "#F6F4F7", apex: "#D7FF1F", telemetry: "#E9EBEE", cockpit: "#EEF2FA" };
+const CAR_ACCENT = { british: ["#E3B84D", "#0C2A20"], asphalt: ["#FF5A1F", "#120500"], endurance: ["#FFD000", "#0A1424"], kerb: ["#FF4A4F", "#1A0002"], pitlane: ["#FF5A52", "#1A0201"], drift: ["#FF2E88", "#1A0010"], apex: ["#D7FF1F", "#0D1100"], telemetry: ["#FF453A", "#FFFFFF"], cockpit: ["#7FA6FF", "#050B1E"] };
+const CAR_ROUNDEL = { british: "#F3EBD3", asphalt: "#F4F4F1", endurance: "#FFD000", kerb: "#F5F5F3", pitlane: "#F1F2F4", drift: "#F6F4F7", apex: "#D7FF1F", telemetry: "#E9EBEE", cockpit: "#EEF2FA" };
 function carRoundel(frac, size = 64) {
   const [acc] = CAR_ACCENT[themeId] || CAR_ACCENT.asphalt, n = 12, step = 270 / n; let s = "";
   for (let i = 0; i < n; i++) { const lit = (i + 1) / n <= frac + 1e-4; s += `<path d="${arcPath(32, 32, 28, 135 + i * step + 1.5, 135 + (i + 1) * step - 1.5)}" stroke="${!lit ? "#3C4043" : i >= 10 ? "#F28B82" : acc}" stroke-width="7" fill="none"/>`; }
@@ -2923,7 +2931,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.17.1", "date": "26 October 2026", "text": "• A new app icon: Spark. A spark plug at an angle, cream on British racing green. On Android 13 and newer with themed icons turned on, it takes your home screen's colours like other apps."};
+const CHANGES = {"version": "1.18.0", "date": "26 October 2026", "text": "• British racing, a new style. Cream and gold on British racing green, like a classic sports racer: cream and gold livery stripes, a cream race-number roundel and a gold rev ring. It's under the palette icon on the Dashboard, and carries into Android Auto in gold.\n• A new app icon: Spark. A spark plug at an angle, cream on British racing green. On Android 13 and newer with themed icons turned on, it takes your home screen's colours like other apps."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {

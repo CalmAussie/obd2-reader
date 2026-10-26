@@ -31,6 +31,7 @@ object CarLivery {
         "pitlane" to Colours(Color.parseColor("#FF5A52"), Color.parseColor("#F1F2F4")),
         "drift" to Colours(Color.parseColor("#FF2E88"), Color.parseColor("#F6F4F7")),
         "apex" to Colours(Color.parseColor("#D7FF1F"), Color.parseColor("#D7FF1F")),
+        "british" to Colours(Color.parseColor("#E3B84D"), Color.parseColor("#F3EBD3")),
         "cyberpunk" to Colours(Color.parseColor("#FF2BD6"), Color.parseColor("#00F0FF")),
         "telemetry" to Colours(Color.parseColor("#FF453A"), Color.parseColor("#E9EBEE")),
         "cockpit" to Colours(Color.parseColor("#7FA6FF"), Color.parseColor("#EEF2FA")),

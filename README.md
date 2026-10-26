@@ -142,7 +142,7 @@ Turn a recorded drive into a video of your gauges (shift lights, rev arc, rpm, s
 The overlay is 30 frames a second, 16:9, with the gauges along the bottom, so it fits over landscape footage. It uses the colours of the style you've chosen, and your units (km/h or mph).
 
 ## Styles
-Tap the palette icon on the Dashboard to choose a style. Your choice is saved. Every style also works in landscape: turn your phone sideways and the Dashboard puts the main dial on the left and the other readouts, Connect and status on the right. The first six are colourways of the livery dashboard; the last three each have a dashboard layout of their own.
+Tap the palette icon on the Dashboard to choose a style. Your choice is saved. Every style also works in landscape: turn your phone sideways and the Dashboard puts the main dial on the left and the other readouts, Connect and status on the right. The first seven are colourways of the livery dashboard; the last three each have a dashboard layout of their own.
 
 | Style | Look |
 |---|---|
@@ -152,6 +152,7 @@ Tap the palette icon on the Dashboard to choose a style. Your choice is saved. E
 | Pit lane | A light style in black and red, for sunlight |
 | Drift | Hot pink and teal |
 | Apex | Volt yellow on carbon black, sharply raked |
+| British racing | Cream and gold on British racing green |
 | Race telemetry | A data-logger screen: shift lights, big numbers and a live 30-second trace of engine speed, road speed and throttle |
 | Digital cockpit | One big speed in a glowing ring, on layered glass |
 | Cyberpunk | A neon heads-up display: a climbing rev bar, split-colour speed digits and glowing readouts |

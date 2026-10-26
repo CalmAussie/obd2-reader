@@ -3,7 +3,7 @@ package com.obdreader.app.ui
 import androidx.annotation.StyleRes
 import com.obdreader.app.R
 
-/** The styles a user can pick: six livery colourways, plus three layouts of their own. */
+/** The styles a user can pick: seven livery colourways, plus three layouts of their own. */
 object AppThemes {
 
     data class AppTheme(
@@ -22,6 +22,7 @@ object AppThemes {
         AppTheme("pitlane", "Pit lane", "A light livery in black and race red. Easiest to read in sunlight.", R.style.Theme_ObdReader_Pitlane),
         AppTheme("drift", "Drift", "Hot pink and teal, from the drift and street scene.", R.style.Theme_ObdReader_Drift),
         AppTheme("apex", "Apex", "Volt yellow on carbon black with sharp, raked edges.", R.style.Theme_ObdReader_Apex),
+        AppTheme("british", "British racing", "Cream and gold on British racing green, like a classic sports racer.", R.style.Theme_ObdReader_British),
         AppTheme(
             "telemetry", "Race telemetry",
             "A data-logger screen: shift lights, big numbers and a live 30-second trace for every reading.",
