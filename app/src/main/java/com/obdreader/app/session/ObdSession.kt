@@ -67,7 +67,7 @@ object ObdSession {
 
     enum class Phase { IDLE, CONNECTING, CONNECTED, WAITING, ERROR }
 
-    data class Codes(val stored: List<String>, val pending: List<String>) {
+    data class Codes(val stored: List<String>, val pending: List<String>, val freezeFrame: com.obdreader.app.obd.FreezeFrame? = null) {
         val total: Int get() = stored.size + pending.size
     }
 
@@ -88,6 +88,8 @@ object ObdSession {
         val summary: String? = null,
         val vin: String? = null,
         val vinChecked: Boolean = false,
+        /** The battery check from the engine starting during this connection, if it was caught. */
+        val batteryCheck: com.obdreader.app.obd.BatteryCheck.Result? = null,
         val codes: Codes? = null,
         /** Readings per second over the last few seconds, for the Graphs tab. */
         val rate: Double = 0.0,
@@ -305,6 +307,7 @@ object ObdSession {
         standInFor = standIns.associate { it.pid.hex to it.forHex }
         misses.clear()
         chargingWatch.reset()
+        batteryWatch.reset()
         _state.update { it.copy(standIns = standIns.associate { s -> s.forHex to s.pid.label }) }
         val pids = base + standIns.map { it.pid }
         val covered = base.map { it.hex }.toSet() + standIns.map { it.forHex }
@@ -403,9 +406,12 @@ object ObdSession {
         val storedLines = logCodes(stored, pending = false)
         val pending = c.readDtcs(pending = true)
         val pendingLines = logCodes(pending, pending = true)
+        // The freeze frame only exists once a code has been stored.
+        val frame = if (stored.isEmpty()) null else try { c.readFreezeFrame() } catch (e: AdapterTimeoutException) { null }
         val time = SimpleDateFormat("h:mm:ss a", Locale.getDefault()).format(Date())
-        _codeLog.value = listOf("Trouble codes read at $time") + storedLines + pendingLines
-        val codes = Codes(stored, pending)
+        _codeLog.value = listOf("Trouble codes read at $time") + storedLines + pendingLines +
+            listOfNotNull(frame?.let { "Freeze frame stored with ${it.code}: ${it.lines().joinToString("; ")}" })
+        val codes = Codes(stored, pending, frame)
         _state.update { it.copy(codes = codes) }
         return codes
     }
@@ -414,6 +420,7 @@ object ObdSession {
     private var standInFor: Map<String, String> = emptyMap()
     private val misses = mutableMapOf<String, Int>()
     private val chargingWatch = ChargingStatus.Watch()
+    private val batteryWatch = com.obdreader.app.obd.BatteryCheck.Watch()
 
     /** What the car scan found: the standard readings the car lists, and which manufacturer readings answered. */
     data class Scan(
@@ -567,10 +574,29 @@ object ObdSession {
                 if (charging != st.charging) _state.update { it.copy(charging = charging) }
             }
 
+            // Battery check: with the ignition on and the engine off, read the battery every turn,
+            // so the dip while the engine starts is caught.
+            val engineOff = (_state.value.readings["0C"] ?: 9999.0) < 300.0
+            var voltNow: Double? = null
+            if (engineOff && !slowTurn) {
+                voltNow = try { c.readVoltage() } catch (ignored: AdapterTimeoutException) { null }
+                voltNow?.let { v -> _state.update { it.copy(readings = it.readings + (VOLTAGE_KEY to v)) } }
+            }
+            batteryWatch.update(now(), voltNow, _state.value.readings["0C"])?.copy(atMs = System.currentTimeMillis())?.let { result ->
+                appendLog("= Battery check: ${result.summary()}, ${result.rating.label.lowercase(Locale.US)}")
+                appContext?.let { ctx ->
+                    val prefs = AppPrefs.of(ctx)
+                    prefs.edit().putString(AppPrefs.BATTERY_CHECKS, com.obdreader.app.obd.BatteryCheck.addToHistory(prefs.getString(AppPrefs.BATTERY_CHECKS, null), result)).apply()
+                }
+                _state.update { it.copy(batteryCheck = result) }
+            }
+
             if (SystemClock.elapsedRealtime() >= nextCodeCheck) {
                 nextCodeCheck = SystemClock.elapsedRealtime() + CODE_CHECK_MS
                 try {
-                    val codes = Codes(c.readDtcs(pending = false), c.readDtcs(pending = true))
+                    val stored = c.readDtcs(pending = false)
+                    // Keep the freeze frame read earlier while its code is still stored.
+                    val codes = Codes(stored, c.readDtcs(pending = true), _state.value.codes?.freezeFrame?.takeIf { it.code in stored })
                     _state.update { it.copy(codes = codes) }
                 } catch (ignored: AdapterTimeoutException) {
                 }
@@ -580,6 +606,7 @@ object ObdSession {
                     c.readVoltage()?.let { v ->
                         _state.update { it.copy(readings = it.readings + (VOLTAGE_KEY to v)) }
                         _samples.tryEmit(Sample(VOLTAGE_KEY, v, now()))
+                        batteryWatch.update(now(), v, null)
                     }
                 } catch (ignored: AdapterTimeoutException) {
                 }

@@ -187,6 +187,28 @@ class ElmClient(
 
     suspend fun readVin(): String? = ElmParser.parseVin(command("0902", 6000))
 
+    /**
+     * Reads the freeze frame (service 02, frame 0): the code that stored it, then each reading in
+     * [FreezeFrame.ITEMS]. Null when the car keeps none (no code stored one, or it doesn't support it).
+     * Gives up after three readings in a row that don't answer, so older cars aren't kept waiting.
+     */
+    suspend fun readFreezeFrame(): FreezeFrame? {
+        val codeBytes = try { ElmParser.extractData(command("020200", 3000), "420200") } catch (e: AdapterTimeoutException) { null }
+        val code = FreezeFrame.code(codeBytes)
+        if (codeBytes == null || code == null) return null
+        val fuel = try { FreezeFrame.fuelSystem(ElmParser.extractData(command("020300", 2000), "420300")) } catch (e: AdapterTimeoutException) { null }
+        val readings = mutableListOf<Pair<FreezeFrame.Item, Double>>()
+        var misses = 0
+        for (item in FreezeFrame.ITEMS) {
+            if (misses >= 3) break
+            val bytes = try { ElmParser.extractData(command("02${item.pid}00", 2000), "42${item.pid}00") } catch (e: AdapterTimeoutException) { null }
+            if (bytes == null || bytes.size < item.bytes) { misses++; continue }
+            misses = 0
+            readings += item to item.decode(bytes)
+        }
+        return FreezeFrame(code, readings, fuel)
+    }
+
     /** Asks the car whether it's awake (used while waiting for the ignition). */
     suspend fun probe(): Boolean = ElmParser.extractData(command("0100", 2000), "4100") != null
 

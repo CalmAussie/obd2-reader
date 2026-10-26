@@ -9,6 +9,7 @@ import android.graphics.RectF
 import androidx.core.graphics.ColorUtils
 import com.obdreader.app.R
 import com.obdreader.app.obd.DriveTrack
+import com.obdreader.app.obd.Route
 import com.obdreader.app.obd.Units
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -141,10 +142,42 @@ class OverlayRenderer(context: Context, private val background: Int, private val
         small.color = Channels.RPM; canvas.drawText("■ rpm", left, 844f, small)
         small.color = Channels.SPEED; canvas.drawText("■ ${Units.speedUnit}", left + 90f, 844f, small)
 
+        // ---- Right, above the trace: a mini-map of the route with a dot where the car is now ----
+        drive.route?.let { route -> drawMiniMap(canvas, drive, route, seconds, u) }
+
         // Drive clock, top centre of the trace panel.
         val clock = seconds.toInt()
         small.textAlign = Paint.Align.CENTER; small.textSize = 22f; small.color = muted
         canvas.drawText(String.format(Locale.US, "%d:%02d", clock / 60, clock % 60), (left + right) / 2f, 844f, small)
         canvas.restore()
+    }
+
+    /** The map's box, in 1920 × 1080 units: above the trace panel, on the right. */
+    private val mapBox = RectF(1560f, 500f, 1860f, 800f)
+    private val mapPad = 26f
+    private var mapCache: android.graphics.Bitmap? = null
+    private var mapCacheFor: Pair<Route, Int>? = null
+
+    private fun drawMiniMap(canvas: Canvas, drive: DriveTrack, route: Route, seconds: Double, u: Float) {
+        fill.color = panel
+        canvas.drawRoundRect(mapBox, radius, radius, fill)
+        // The outline is the same every frame, so it's drawn once and reused.
+        val px = (mapBox.width() * u).roundToInt().coerceAtLeast(1)
+        if (mapCacheFor != route to px) {
+            mapCache?.recycle()
+            mapCache = android.graphics.Bitmap.createBitmap(px, px, android.graphics.Bitmap.Config.ARGB_8888).also { bmp ->
+                val c = Canvas(bmp); c.scale(u, u)
+                drawShadedRoute(c, route, 0f, 0f, mapBox.width(), mapBox.height(), mapPad, accent, 6f, Paint(Paint.ANTI_ALIAS_FLAG))
+            }
+            mapCacheFor = route to px
+        }
+        mapCache?.let { canvas.drawBitmap(it, null, mapBox, null) }
+        val here = drive.position(seconds) ?: return
+        val project = route.projector(mapBox.width(), mapBox.height(), mapPad) ?: return
+        val (x, y) = project(here.first, here.second)
+        fill.color = text
+        canvas.drawCircle(mapBox.left + x, mapBox.top + y, 13f, fill)
+        fill.color = accent
+        canvas.drawCircle(mapBox.left + x, mapBox.top + y, 8f, fill)
     }
 }

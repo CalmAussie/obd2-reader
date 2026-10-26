@@ -25,6 +25,8 @@ object AppPrefs {
     const val UNITS_MPH = "units_mph"
     const val UNITS_FAHRENHEIT = "units_fahrenheit"
     const val USER_VIN = "user_vin"
+    /** Battery checks at engine start (time, resting and cranking voltage): no location. */
+    const val BATTERY_CHECKS = "battery_checks"
     const val USER_VIN_CAR = "user_vin_car"
 
     const val TYPE_CLASSIC = "classic"

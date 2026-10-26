@@ -2,6 +2,12 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.14.0 (26 October 2026)
+- **Drive history.** Every drive is now kept, not just the last one. **Drive history** (on the Dashboard, under the driving score) lists each drive with its date, distance, time and drive score, shows how your drive score has gone over your last 20 drives, and adds up the distance and time. Tap a drive for its summary and to share its card; tap and hold to delete it. Only the summary is kept (times, distances and scores), never your location.
+- **Freeze frame.** When a trouble code is stored, the car keeps a snapshot of the engine at that moment. The app now reads it and shows it on that code's card, under **When it was set (freeze frame)**: engine speed, road speed, coolant, load, fuel trims, manifold pressure, intake air, throttle, airflow and how the fuel system was running, as far as your car records them. It's in the code report too, for your mechanic.
+- **Battery check at start-up.** Connect with the ignition on and the engine off, then start the engine: the app measures the battery's resting voltage and how far it dips while the starter turns the engine, and rates it (a healthy battery stays above about 10 V). **Diagnostics → Battery check** shows the latest result and the ones before, so a battery that's getting weaker shows up before it lets you down. The demo car now starts the same way: a few seconds with the engine off, then a start.
+- **Route mini-map on the video overlay.** Overlay videos of drives recorded with their route now show the route's outline above the 30-second trace, shaded by speed like the drive card, with a dot that moves along it as the video plays.
+
 ## 1.13.9 (26 October 2026)
 - **Put the graphs in your order.** On **Graphs**, tap and hold a graph and drag it up or down, or use **Change graph order** to move each one with ▲ and ▼. The order is kept, and a reading you turn on goes to the bottom.
 - **Speed on the route outline.** The outline on drive cards is now shaded by how fast you drove each part: brighter where you were faster, dimmer where you were slower, all in the card's own colour and never fading to black.

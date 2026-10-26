@@ -471,6 +471,7 @@ class MainActivity : AppCompatActivity() {
                         if (trip == null || trip.endedAt <= prefs.getLong(PREF_LAST_TRIP_SHOWN, 0L)) return@collect
                         prefs.edit().putString(PREF_LAST_TRIP, trip.encode()).putLong(PREF_LAST_TRIP_SHOWN, trip.endedAt).apply()
                         lastTripButton?.visibility = View.VISIBLE
+                        historyButton?.visibility = View.VISIBLE
                         showTripSummary(trip, justEnded = true)
                     }
                 }
@@ -499,6 +500,7 @@ class MainActivity : AppCompatActivity() {
         scoreCard = findViewById(R.id.scoreCard)
         scoreCard.background = panelBackground()
         DriveScorer.start(this)
+        showBatteryCheck()
         scoreStyle = DrivingScore.Style.values().firstOrNull { it.name == prefs.getString(PREF_SCORE_STYLE, null) } ?: DrivingScore.Style.EVERYDAY
         val ids = mapOf(DrivingScore.Style.EFFICIENCY to R.id.styleEfficiency, DrivingScore.Style.EVERYDAY to R.id.styleEveryday, DrivingScore.Style.RACING to R.id.styleRacing)
         // Narrow padding and one line each, so "Efficiency" isn't cut short on small phones or with large text.
@@ -528,6 +530,16 @@ class MainActivity : AppCompatActivity() {
                 setOnClickListener { savedTrip()?.let { showTripSummary(it, justEnded = false) } }
             }
             content.addView(lastTripButton, content.indexOfChild(scoreCard) + 1, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            historyButton = MaterialButton(this@MainActivity, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
+                id = R.id.historyButton
+                text = getString(R.string.history_title)
+                setTextColor(themeColor(R.attr.obdAccent))
+                setPaddingRelative(0, paddingTop, dp(8f).toInt(), paddingBottom)
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                visibility = if (tripHistory().isNotEmpty()) View.VISIBLE else View.GONE
+                setOnClickListener { showHistory() }
+            }
+            content.addView(historyButton, content.indexOfChild(lastTripButton) + 1, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             content.addView(MaterialButton(this@MainActivity, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
                 id = R.id.perfButton
                 text = getString(R.string.perf_title)
@@ -535,7 +547,7 @@ class MainActivity : AppCompatActivity() {
                 setPaddingRelative(0, paddingTop, dp(8f).toInt(), paddingBottom)
                 gravity = Gravity.START or Gravity.CENTER_VERTICAL
                 setOnClickListener { showPerformance() }
-            }, content.indexOfChild(lastTripButton) + 1, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            }, content.indexOfChild(historyButton) + 1, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             addOnButtonCheckedListener { _, id, checked ->
                 if (!checked) return@addOnButtonCheckedListener
                 scoreStyle = ids.entries.first { it.value == id }.key
@@ -623,6 +635,91 @@ class MainActivity : AppCompatActivity() {
     private var lastTripButton: MaterialButton? = null
 
     private fun savedTrip(): TripSummary? = TripSummary.decode(prefs.getString(PREF_LAST_TRIP, null))
+
+    private var historyButton: MaterialButton? = null
+
+    /** Every drive kept on the phone, newest first. Before drive history, only the last drive was kept. */
+    private fun tripHistory(): List<TripSummary> {
+        val stored = prefs.getString(DriveScorer.PREF_TRIP_HISTORY, null)
+        if (stored == null) savedTrip()?.let { last ->
+            prefs.edit().putString(DriveScorer.PREF_TRIP_HISTORY, com.obdreader.app.obd.TripHistory.add(null, last)).apply()
+        }
+        return com.obdreader.app.obd.TripHistory.parse(prefs.getString(DriveScorer.PREF_TRIP_HISTORY, null))
+    }
+
+    /** Drive history: the drive score's trend, then every drive; tap one for its summary and card. */
+    private fun showHistory() {
+        val trips = tripHistory()
+        val sheet = BottomSheetDialog(this)
+        val pad = dp(20f).toInt()
+        val body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, dp(8f).toInt(), pad, dp(24f).toInt()) }
+        body.addView(TextView(this).apply {
+            setText(R.string.history_title)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
+        })
+        val (km, secs) = com.obdreader.app.obd.TripHistory.totals(trips)
+        body.addView(TextView(this).apply {
+            text = "${trips.size} ${if (trips.size == 1) "drive" else "drives"} · ${TripSummary.distance(km)} · ${TripSummary.duration(secs)} driving"
+            setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setPadding(0, dp(4f).toInt(), 0, dp(12f).toInt())
+        })
+        val trend = com.obdreader.app.obd.TripHistory.scoreTrend(trips)
+        if (trend.size >= 2) {
+            body.addView(TextView(this).apply {
+                text = getString(R.string.history_trend, trend.size)
+                setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            })
+            body.addView(com.obdreader.app.ui.TrendView(this, trend, themeColor(R.attr.obdAccent), themeColor(R.attr.obdOutline), themeColor(R.attr.obdTextSecondary)).apply {
+                contentDescription = "Drive score over your last ${trend.size} drives: from ${trend.first()} to ${trend.last()}"
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(96f).toInt()).apply { bottomMargin = dp(12f).toInt() })
+        }
+        val time = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT)
+        val day = java.text.SimpleDateFormat("EEE d MMM", Locale.getDefault())
+        trips.forEach { trip ->
+            val score = com.obdreader.app.obd.ShareScore.of(trip.scores, raceTelemetry = false).score
+            body.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                background = panelBackground()
+                setPadding(dp(16f).toInt(), dp(12f).toInt(), dp(16f).toInt(), dp(12f).toInt())
+                addView(LinearLayout(this@MainActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    addView(TextView(this@MainActivity).apply {
+                        text = "${day.format(java.util.Date(trip.startedAt))}, ${time.format(java.util.Date(trip.startedAt))}"
+                        setTextColor(themeColor(R.attr.obdTextPrimary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                    })
+                    addView(TextView(this@MainActivity).apply {
+                        text = "${TripSummary.distance(trip.distanceKm)} · ${TripSummary.duration(trip.drivingSeconds)}" + (trip.topSpeed?.let { " · top ${Units.speedText(it)}" } ?: "")
+                        setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                    })
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                addView(TextView(this@MainActivity).apply {
+                    text = score?.toString() ?: "–"
+                    typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
+                    setTextColor(themeColor(R.attr.obdAccent))
+                    contentDescription = score?.let { "Drive score $it" } ?: "No score"
+                })
+                setOnClickListener { sheet.dismiss(); showTripSummary(trip, justEnded = false) }
+                setOnLongClickListener {
+                    MaterialAlertDialogBuilder(this@MainActivity)
+                        .setTitle(R.string.history_delete_title)
+                        .setMessage(R.string.history_delete_text)
+                        .setPositiveButton(R.string.history_delete) { _, _ ->
+                            prefs.edit().putString(DriveScorer.PREF_TRIP_HISTORY, com.obdreader.app.obd.TripHistory.remove(prefs.getString(DriveScorer.PREF_TRIP_HISTORY, null), trip.startedAt)).apply()
+                            sheet.dismiss(); if (tripHistory().isNotEmpty()) showHistory() else historyButton?.visibility = View.GONE
+                        }
+                        .setNegativeButton(android.R.string.cancel, null).show()
+                    true
+                }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8f).toInt() })
+        }
+        body.addView(TextView(this).apply {
+            setText(R.string.history_hint)
+            setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setPadding(0, dp(8f).toInt(), 0, 0)
+        })
+        sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+        sheet.show()
+    }
 
     /** The trip summary: what the drive added up to, as a sheet of tiles. */
     private fun showTripSummary(trip: TripSummary, justEnded: Boolean) {
@@ -2170,6 +2267,7 @@ class MainActivity : AppCompatActivity() {
             lastProtocolConnected = s.isConnected; lastProtocolCode = s.protocolCode
             updateProtocolSetting()
         }
+        if (s.batteryCheck != null && s.batteryCheck != shownBatteryCheck) showBatteryCheck(s.batteryCheck)
         if (s.vinChecked && !lastVinChecked) {
             showVin(s.vin)
             lastVinChecked = true
@@ -2198,6 +2296,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderCodes(codes: ObdSession.Codes) {
+        lastCodes = codes // the code cards read the freeze frame from here
         dtcContainer.removeAllViews()
         setCodeBadge(codes.total)
         roundel.checkEngine = codes.stored.isNotEmpty()
@@ -2234,6 +2333,37 @@ class MainActivity : AppCompatActivity() {
      * that isn't the car's (a typo when it was programmed, or a computer from another car), so when
      * the two differ both are shown.
      */
+    private var shownBatteryCheck: com.obdreader.app.obd.BatteryCheck.Result? = null
+
+    /** The latest battery check and the ones before it, from the phone. [fresh]: it was just measured. */
+    private fun showBatteryCheck(fresh: com.obdreader.app.obd.BatteryCheck.Result? = null) {
+        val history = com.obdreader.app.obd.BatteryCheck.parseHistory(prefs.getString(AppPrefs.BATTERY_CHECKS, null))
+        val latest = history.firstOrNull()
+        val rating = findViewById<TextView>(R.id.batteryRating)
+        val text = findViewById<TextView>(R.id.batteryText)
+        val past = findViewById<TextView>(R.id.batteryHistory)
+        findViewById<View>(R.id.batteryCard).background = panelBackground()
+        if (latest == null) {
+            rating.setText(R.string.battery_none); rating.setTextColor(themeColor(R.attr.obdTextPrimary))
+            text.setText(R.string.battery_how); past.visibility = View.GONE
+            return
+        }
+        val when_ = java.text.SimpleDateFormat("EEE d MMM, h:mm a", Locale.getDefault()).format(java.util.Date(latest.atMs))
+        rating.text = latest.rating.label
+        rating.setTextColor(themeColor(when (latest.rating) {
+            com.obdreader.app.obd.BatteryCheck.Rating.GOOD -> R.attr.obdTextPrimary
+            else -> R.attr.obdWarn
+        }))
+        text.text = "${latest.summary()}, $when_. ${latest.rating.advice}"
+        val older = history.drop(1).take(5)
+        past.text = if (older.isEmpty()) "" else "Before: " + older.joinToString(" · ") { String.format(Locale.US, "%.1f V", it.crankingV) }
+        past.visibility = if (older.isEmpty()) View.GONE else View.VISIBLE
+        if (fresh != null && fresh != shownBatteryCheck) {
+            toast("Battery check: ${fresh.rating.label.lowercase(Locale.getDefault())}, ${String.format(Locale.US, "%.1f V", fresh.crankingV)} while starting")
+        }
+        shownBatteryCheck = fresh ?: shownBatteryCheck
+    }
+
     private fun showVin(carVin: String?) {
         val userVin = AppPrefs.userVin(prefs)
         val vin = userVin ?: carVin
@@ -3135,6 +3265,12 @@ class MainActivity : AppCompatActivity() {
         if (info.symptoms.isNotEmpty()) { heading("You might notice"); para(info.symptoms.joinToString("\n") { "•  $it" }) }
         if (info.causes.isNotEmpty()) { heading("Common causes"); para(info.causes.joinToString("\n") { "•  $it" }) }
         if (info.checks.isNotEmpty()) { heading("What to check"); para(info.checks.mapIndexed { i, c -> "${i + 1}.  $c" }.joinToString("\n")) }
+        // The engine's snapshot from the moment this code was set, if the car kept one for it.
+        lastCodes?.freezeFrame?.takeIf { it.code == code && !pending }?.let { frame ->
+            heading("When it was set (freeze frame)")
+            para(frame.lines().joinToString("\n"), secondary = false)
+            para("The car's own snapshot of the engine when this code was stored. Show it to your mechanic: it says what the engine was doing when the fault happened.")
+        }
         if (info.system.isNotEmpty()) para("$code: ${info.system}.")
         card.addView(details)
 

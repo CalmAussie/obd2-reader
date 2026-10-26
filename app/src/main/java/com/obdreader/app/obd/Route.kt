@@ -23,6 +23,16 @@ class Route private constructor(
      */
     fun fit(width: Float, height: Float, pad: Float): List<Pair<Float, Float>> {
         if (isEmpty) return emptyList()
+        val p = projector(width, height, pad) ?: return emptyList()
+        return points.map { p(it.first, it.second) }
+    }
+
+    /**
+     * The same placing as [fit], for any position (the moving dot on the video overlay's map):
+     * (latitude, longitude) to x/y in the box. Null for an empty route.
+     */
+    fun projector(width: Float, height: Float, pad: Float): ((Double, Double) -> Pair<Float, Float>)? {
+        if (isEmpty) return null
         val midLat = points.map { it.first }.average()
         val k = cos(midLat * PI / 180)
         val xs = points.map { it.second * k }
@@ -33,8 +43,8 @@ class Route private constructor(
         // Centre it in the box.
         val offX = pad + ((width - 2 * pad) - spanX * scale) / 2
         val offY = pad + ((height - 2 * pad) - spanY * scale) / 2
-        return xs.indices.map { i ->
-            (offX + (xs[i] - minX) * scale).toFloat() to (height - (offY + (ys[i] - minY) * scale)).toFloat()
+        return { lat, lon ->
+            (offX + (lon * k - minX) * scale).toFloat() to (height - (offY + (lat - minY) * scale)).toFloat()
         }
     }
 
