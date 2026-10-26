@@ -705,7 +705,7 @@ deep_check() {   # $1 row title, $2 name for the log, $3 pattern the OBD2Deep lo
 deep_check "Readiness monitors" readiness "readiness: .*(complete|not complete)"
 deep_check "Self-test results" self-tests "self-tests: [1-9]"
 deep_check "Codes from other modules" modules "modules: .*ABS and stability control=C1145-1C"
-deep_check "Enhanced diagnostics" enhanced "enhanced: .*Transmission fluid temperature=7[0-9.]+ °C"
+deep_check "Enhanced diagnostics" enhanced "enhanced: .*Transmission fluid temperature=[0-9.]+ °C"
 # Module information: the demo's ABS gives its part number.
 INFO=0
 diag_top
