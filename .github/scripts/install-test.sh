@@ -250,8 +250,10 @@ PY
 }
 # Scrolls down from where the page is, a little at a time, until a button with this label is on
 # screen, then taps it (labels come from the view's text or its spoken description).
+# Diagnostics, scrolled to the very top, so tap_scrolled can work down to any row.
+diag_top() { tap_tab Diagnostics; sleep 2; for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 700 540 2000 120; done; sleep 1; }
 tap_scrolled() {
-  for i in 1 2 3 4 5 6 7 8; do tap_text "$1" > /dev/null && return 0; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
+  for i in $(seq 1 16); do tap_text "$1" > /dev/null && return 0; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
   return 1
 }
 # Record drive sits just below the bottom of the screen on the Dashboard, and the Dashboard
@@ -667,9 +669,8 @@ adb shell input keyevent KEYCODE_BACK; sleep 1
 SCAN=missing
 for attempt in 1 2; do
   tap_tab Dashboard; sleep 2; scroll_top; tap_text "Demo car" > /dev/null 2>&1; sleep 8
-  tap_tab Diagnostics; sleep 2
-  for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
-  if tap_text "Scan what your car reports"; then
+  diag_top
+  if tap_scrolled "Scan what your car reports"; then
     sleep 8
     SEEN=0
     for i in 1 2 3 4 5; do
@@ -687,8 +688,7 @@ case "$SCAN" in shown) log "car scan: shown" ;; missing) log "car scan: FAILED (
 deep_check() {   # $1 row title, $2 name for the log, $3 pattern the OBD2Deep log must match
   local ok=0
   for attempt in 1 2; do
-    tap_tab Diagnostics; sleep 2
-    for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
+    diag_top
     adb logcat -c
     if tap_scrolled "$1"; then
       for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
@@ -707,8 +707,7 @@ deep_check "Self-test results" self-tests "self-tests: [1-9]"
 deep_check "Codes from other modules" modules "modules: .*ABS and stability control=C1145-1C"
 # Search every address: the demo car has one module its make isn't known for, at 7A0.
 SEARCH=0
-tap_tab Diagnostics; sleep 2
-for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
+diag_top
 adb logcat -c
 if tap_scrolled "Codes from other modules"; then
   sleep 8
