@@ -3885,6 +3885,8 @@ class MainActivity : AppCompatActivity() {
         connectBtn.text = getString(if (active) R.string.disconnect else R.string.connect)
         connectBtn.kind = if (active) SkewButton.Kind.OUTLINE else SkewButton.Kind.PRIMARY
         demoBtn.isEnabled = !active
+        // While connected (or connecting), Demo car is hidden and Disconnect takes the whole row.
+        demoBtn.visibility = if (active) View.GONE else View.VISIBLE
         readDtcBtn.isEnabled = connected
         vinBtn.isEnabled = connected
     }
