@@ -18,6 +18,7 @@ import com.obdreader.app.obd.BleTransport
 import com.obdreader.app.obd.BluetoothTransport
 import com.obdreader.app.obd.DemoTransport
 import com.obdreader.app.obd.ElmClient
+import com.obdreader.app.obd.ModuleScan
 import com.obdreader.app.obd.IgnitionOffException
 import com.obdreader.app.obd.IgnitionWatch
 import com.obdreader.app.obd.ObdException
@@ -547,28 +548,79 @@ object ObdSession {
         return results
     }
 
+    /** True when the car talks OBD2 on 29-bit CAN addresses (protocols 7 and 9). */
+    private fun carIs29Bit(): Boolean = _state.value.protocolCode?.trim()?.uppercase(java.util.Locale.US)?.removePrefix("A") in setOf("7", "9")
+
     /**
-     * Trouble codes from the car's other modules. Each module is asked on its own address with a
-     * read-only request (UDS 19, or KWP2000 18 if it says no to that), and the adapter is pointed
-     * back at the engine computer after each one. Null on non-CAN cars.
+     * Trouble codes from the car's other modules: the ones the car's make is known to have. Each
+     * module is asked on its own address with a read-only request (UDS 19, or KWP2000 18 if it says
+     * no to that), and the adapter is pointed back at the engine computer after each one. Null on
+     * non-CAN cars.
      */
-    suspend fun scanModules(context: Context): List<Pair<com.obdreader.app.obd.ModuleScan.Module, com.obdreader.app.obd.ModuleScan.Answer>>? {
+    suspend fun scanModules(context: Context): List<Pair<ModuleScan.Module, ModuleScan.Answer>>? {
         val c = client ?: throw IOException("Not connected")
         if (!c.isCan) return null
-        val modules = com.obdreader.app.obd.ModuleScan.modulesFor(carMake(context), AppPrefs.savedCar(AppPrefs.of(context))?.model)
-        val back = com.obdreader.app.obd.ModuleScan.pointBack(CarCoverage.defaultHeader(_state.value.protocolCode))
-        return modules.map { m ->
-            val point = com.obdreader.app.obd.ModuleScan.pointAt(m).map { it to 1500L }
-            var answer = com.obdreader.app.obd.ModuleScan.parseUds(c.sequence(point + (com.obdreader.app.obd.ModuleScan.UDS_REQUEST to 3000L), back).last())
-            if (answer is com.obdreader.app.obd.ModuleScan.Answer.Refused) {
-                answer = com.obdreader.app.obd.ModuleScan.parseKwp(c.sequence(point + (com.obdreader.app.obd.ModuleScan.KWP_REQUEST to 3000L), back).last())
+        val modules = ModuleScan.modulesFor(carMake(context), AppPrefs.savedCar(AppPrefs.of(context))?.model, carIs29Bit())
+        return modules.map { m -> m to readModule(c, m) }
+    }
+
+    /** One module's codes. A 29-bit module on an 11-bit car is asked with the adapter briefly on the 29-bit form of the car's protocol. */
+    private suspend fun readModule(c: ElmClient, m: ModuleScan.Module): ModuleScan.Answer {
+        val switch = if (m.is29Bit && !carIs29Bit()) ModuleScan.protocolSwitch(_state.value.protocolCode) else null
+        if (m.is29Bit && !carIs29Bit() && switch == null) return ModuleScan.Answer.Silent
+        val point = (listOfNotNull(switch?.first) + ModuleScan.pointAt(m)).map { it to 1500L }
+        val back = ModuleScan.pointBack(CarCoverage.defaultHeader(_state.value.protocolCode)) + listOfNotNull(switch?.second)
+        var answer = ModuleScan.parseUds(c.sequence(point + (ModuleScan.UDS_REQUEST to 3000L), back).last())
+        if (answer is ModuleScan.Answer.Refused) {
+            answer = ModuleScan.parseKwp(c.sequence(point + (ModuleScan.KWP_REQUEST to 3000L), back).last())
+        }
+        appendLog("= ${m.name}: " + when (val a = answer) {
+            is ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) "no codes" else a.codes.joinToString(", ") { it.label }
+            ModuleScan.Answer.Refused -> "doesn't offer its codes this way"
+            ModuleScan.Answer.Silent -> "didn't answer"
+        })
+        return answer
+    }
+
+    /**
+     * "Search every address": asks every module address the car's make could use, a block at a
+     * time, with a read-only request, and reads the codes of each module that answers and isn't in
+     * [already]. [progress] gets (asked so far, total). Null on non-CAN cars.
+     */
+    suspend fun searchModules(
+        context: Context,
+        already: Set<String>,
+        progress: (Int, Int) -> Unit,
+    ): List<Pair<ModuleScan.Module, ModuleScan.Answer>>? {
+        val c = client ?: throw IOException("Not connected")
+        if (!c.isCan) return null
+        val make = carMake(context)
+        val bit29 = carIs29Bit()
+        val sweeps = ModuleScan.sweepsFor(make, bit29).filter { !it.is29Bit || bit29 || ModuleScan.protocolSwitch(_state.value.protocolCode) != null }
+        val total = sweeps.sumOf { it.requests.size }
+        var done = 0
+        appendLog("= Searching every module address ($total) with a read-only request")
+        val found = linkedMapOf<String, String>()   // request address -> answer address
+        for (sweep in sweeps) {
+            val switch = if (sweep.is29Bit && !bit29) ModuleScan.protocolSwitch(_state.value.protocolCode) else null
+            val setup = listOfNotNull(switch?.first) + ModuleScan.sweepSetup(sweep)
+            val teardown = ModuleScan.sweepTeardown(CarCoverage.defaultHeader(_state.value.protocolCode)) + listOfNotNull(switch?.second)
+            // A block of 16 at a time, so other readings get a turn in between.
+            for (block in sweep.requests.chunked(16)) {
+                val cmds = setup.map { it to 1500L } + block.flatMap { listOf(ModuleScan.sweepProbe(it) to 1000L, ModuleScan.UDS_REQUEST to 1000L) }
+                val replies = c.sequence(cmds, teardown)
+                block.forEachIndexed { i, req ->
+                    val answers = ModuleScan.answeringAddresses(replies[setup.size + i * 2 + 1], sweep.is29Bit)
+                    answers.firstOrNull()?.let { if (req !in found) found[req] = it }
+                }
+                done += block.size
+                progress(done, total)
             }
-            appendLog("= ${m.name}: " + when (val a = answer) {
-                is com.obdreader.app.obd.ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) "no codes" else a.codes.joinToString(", ") { it.label }
-                com.obdreader.app.obd.ModuleScan.Answer.Refused -> "doesn't offer its codes this way"
-                com.obdreader.app.obd.ModuleScan.Answer.Silent -> "didn't answer"
-            })
-            m to answer
+        }
+        appendLog("= Found ${found.size} answering: " + found.entries.joinToString(", ") { "${it.key}→${it.value}" }.ifEmpty { "none" })
+        return found.filterKeys { it !in already }.map { (req, reply) ->
+            val m = ModuleScan.Module(ModuleScan.nameFor(make, req, bit29), req, reply)
+            m to readModule(c, m)
         }
     }
 

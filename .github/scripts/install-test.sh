@@ -705,6 +705,23 @@ deep_check() {   # $1 row title, $2 name for the log, $3 pattern the OBD2Deep lo
 deep_check "Readiness monitors" readiness "readiness: .*(complete|not complete)"
 deep_check "Self-test results" self-tests "self-tests: [1-9]"
 deep_check "Codes from other modules" modules "modules: .*ABS and stability control=C1145-1C"
+# Search every address: the demo car has one module its make isn't known for, at 7A0.
+SEARCH=0
+tap_tab Diagnostics; sleep 2
+for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
+adb logcat -c
+if tap_scrolled "Codes from other modules"; then
+  sleep 8
+  if tap_scrolled "Search every address"; then
+    for i in $(seq 1 45); do
+      adb logcat -d -s OBD2Deep:I > "$OUT/deep-search.txt" 2>/dev/null
+      grep -q "search: .*Module at 7A0=none" "$OUT/deep-search.txt" && { SEARCH=1; break; }; sleep 3
+    done
+    sleep 2; shot 13-module-search
+  fi
+  adb shell input keyevent KEYCODE_BACK; sleep 2
+fi
+[ $SEARCH = 1 ] && log "module search: found Module at 7A0" || { log "module search: FAILED ($(tail -1 "$OUT/deep-search.txt" 2>/dev/null | cut -c1-120))"; FAIL=1; }
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
 tap_tab Diagnostics; sleep 2
 for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
