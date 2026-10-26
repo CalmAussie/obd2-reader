@@ -2923,7 +2923,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.16.0", "date": "26 October 2026", "text": "Four deeper checks under Diagnostics. Like everything else in the app they only read: nothing is cleared or changed in the car, and the app blocks any command that isn't a read.\n• Readiness monitors. The engine computer's own emission checks (catalyst, oxygen sensors, evaporative system, misfire and more) and whether each has finished since the codes were last cleared or the battery was disconnected. Emissions inspections usually want them complete. It also shows the check-engine light, the number of stored codes and the engine computer's software version (calibration ID).\n• Self-test results. The measurements the engine computer took the last time it ran each check, such as oxygen sensor switching and catalyst efficiency, with the limits each must stay within, marked ✓ or ✗. A result near its limit can show a part wearing before it sets a code. On CAN cars.\n• Codes from other modules. Asks the modules beyond the engine for their codes, at the addresses each maker uses: the ABS or stability control, airbags, power steering, instrument cluster, climate control, cruise radar and lane-keeping camera, as far as that make has them (for example Ford and Mazda's body, parking sensor and all-wheel-drive modules too; Honda's modules on their own 29-bit addresses; GM's transmission on its own address). Every make gets the engine and transmission computers. Each module shows its codes (stored or pending, with titles where known), \"No codes\", or that it didn't answer. Search every address then asks every address a module could use, about a minute, for modules the app doesn't know your make has; they're listed by their address. On CAN cars.\n• Custom readings. Add a reading the app doesn't list by its request (service 01, 21 or 22), an optional module address, a formula using the reply bytes A, B, C… (for example (A*256+B)/4) and a unit. Readings are kept on your phone; touch and hold one to delete it."};
+const CHANGES = {"version": "1.17.0", "date": "26 October 2026", "text": "• Enhanced diagnostics. A new row under Diagnostics for readings your car's maker added beyond standard OBD2, read live while it's open. For Ford (and the Ford-built Mazda Tribute and later BT-50): transmission fluid temperature, gear, oil life, fuel pump and turbo wastegate duty, and the odometer, 12 V battery charge and battery temperature from the body module. For Toyota and Lexus: odometer, engine oil temperature and litres of fuel in the tank. For Subaru: transmission fluid temperature and airflow. For the Nissan Leaf (2011–2017): battery charge, capacity, voltage and temperature, and the 12 V battery. For the Renault Zoe (2013–2019): battery charge, health and temperature, range and odometer. For Opel and Vauxhall: oil life. Only the readings your car answers are shown. They come from owners testing them on their own cars rather than from the makers, and the app says so.\n• Module information, for every make: each module's part number, supplier, hardware and software versions, serial number and the VIN it holds, from the standard identifiers modules use. A module holding a different VIN from the car's is pointed out, which can show a module that came from another car or wasn't programmed when it was fitted.\n• Like the other checks, all of this only reads."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -2993,6 +2993,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     rowHtml("readinessRow", "Readiness monitors", "The engine computer's own emission checks: which have finished since the codes were last cleared. Also shows its software version.") +
     rowHtml("testsRow", "Self-test results", "The measurements behind those checks (oxygen sensors, catalyst, misfires and more), with the limits each must stay within.") +
     rowHtml("modulesRow", "Codes from other modules", "Reads codes from modules beyond the engine, like ABS, airbags and transmission. Read-only: nothing is cleared.") +
+    rowHtml("enhancedRow", "Enhanced diagnostics", "Readings your car's maker added beyond standard OBD2, like transmission temperature and oil life, live, plus each module's part numbers and software versions.") +
     rowHtml("customRow", "Custom readings", "Add a reading by its request and formula, for ones the app doesn't list yet."));
   const line = (t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${t}</div>`;
   const head = t => `<div class="trip-h">${t}</div>`;
@@ -3052,6 +3053,33 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     };
   };
   $("modulesRow").onclick = () => { if (needCar()) modulesSheet(null); };
+  /* Enhanced diagnostics (mirrors EnhancedReadings.forCar and MainActivity.showEnhanced): the demo car answers as a Ford */
+  $("enhancedRow").onclick = () => {
+    if (!needCar()) return;
+    const make = myCar && myCar.make, model = myCar && myCar.model;
+    const ford = ["Ford", "Lincoln", "Mercury"].includes(make) || (make === "Mazda" && (model === "Tribute" || (model === "BT-50" && myCar.year >= 2011)));
+    const known = ford ? 8 : ["Toyota", "Lexus", "Scion"].includes(make) ? 3 : make === "Subaru" ? 2 : (make === "Nissan" && model === "Leaf") ? 5 : (make === "Renault" && model === "Zoe") ? 5 : make === "Opel / Vauxhall" ? 1 : 0;
+    const t0 = performance.now();
+    const rows = ford ? [["Transmission fluid temperature", "Engine computer", () => (70 + Math.min(12, (performance.now() - t0) / 20000)).toFixed(1) + " °C"], ["Oil life remaining", "Engine computer", () => "65%"], ["Odometer", "Body module", () => "123,456 km"], ["12 V battery charge", "Body module", () => "85%"], ["12 V battery temperature", "Body module", () => "25 °C"]] : [];
+    const s = sheet("Enhanced diagnostics", head("Manufacturer readings") +
+      (known === 0 ? line(`No manufacturer readings are known for ${make || "this make"} yet. Module information, below, works on every make.`, true)
+        : rows.length === 0 ? line(`Your car didn't answer any of the ${known} readings known for ${make}. Not every model has them.`, true)
+        : rows.map(([n, m, v], i) => `<div style="display:flex;align-items:center;margin-top:6px"><div style="flex:1"><div>${n}</div><div style="font-size:12px;opacity:.6">${m}</div></div><b class="enh-v" data-i="${i}" style="color:var(--accent);font-size:18px">${v()}</b></div>`).join("") +
+          line(`${known - rows.length} more known for your make weren't answered by your car.`, true)) +
+      (known ? line("These readings come from owners testing them on their own cars, not from the maker, so check one against your car before relying on it.", true) : "") +
+      head("Module information") + line("Part numbers, software versions and the VIN each module holds, read with the standard identifiers every make's modules use.", true) +
+      `<button class="btn btn-out" id="modInfo" style="margin-top:8px">Read module information</button>` +
+      head("About this") + line("Read-only: these only read from the car, with the makers' own read services. Nothing is changed or cleared.", true));
+    const t = setInterval(() => { if (!document.body.contains(s)) return clearInterval(t); s.querySelectorAll(".enh-v").forEach(el => el.textContent = state === "connected" ? rows[+el.dataset.i][2]() : "N/A"); }, 2000);
+    $("modInfo").onclick = () => {
+      closeOverlay();
+      const vin = typeof demoVin === "function" ? demoVin() : "";
+      const mods = ford ? [["Engine computer (PCM)", [["OBD2 name", "ECM-EngineControl"], ["System", "PCM"], ["Part number", "1L8A-12A650-AAB"], ["Software version", "1L8A-14C204-AAA"]].concat(vin ? [["VIN stored in the module", vin]] : [])],
+        ["ABS and stability control", [["System", "ABS"], ["Part number", "1L8T-2C219-AB"], ["Supplier", "TRW"]].concat(vin ? [["VIN stored in the module", vin]] : [])]] : [];
+      sheet("Read module information", (mods.length ? mods.map(([n, f]) => head(n) + f.map(([k, v]) => line(`${k}: ${v}`)).join("")).join("") : line("No module answered with its identifiers. Older modules don't have them.", true)) +
+        head("About this") + line("A module's VIN that doesn't match the car's can mean it came from another car, or wasn't programmed with this car's VIN when it was fitted.", true));
+    };
+  };
   let custom = [];
   const evalFormula = (f, b) => { try { const e = f.replace(/[A-H]/g, ch => `(${b["ABCDEFGH".indexOf(ch)] ?? NaN})`); if (!/^[\d\s+\-*/().NaN]*$/.test(e)) return null; const v = Function(`return (${e})`)(); return Number.isFinite(v) ? v : null; } catch (e) { return null; } };
   /* The demo car answers standard readings it has; anything else is "no answer", so N/A */

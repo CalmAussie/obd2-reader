@@ -79,6 +79,7 @@ import com.obdreader.app.obd.VehicleCatalog
 import com.obdreader.app.obd.TripSummary
 import com.obdreader.app.obd.Units
 import com.obdreader.app.obd.CustomReading
+import com.obdreader.app.obd.EnhancedReadings
 import com.obdreader.app.obd.ModuleScan
 import com.obdreader.app.obd.Readiness
 import com.obdreader.app.obd.CarCoverage
@@ -897,6 +898,7 @@ class MainActivity : AppCompatActivity() {
         row(R.id.readinessRow, getString(R.string.readiness_title), getString(R.string.readiness_help)) { runCheck(getString(R.string.readiness_title)) { showReadiness() } }
         row(R.id.testsRow, getString(R.string.tests_title), getString(R.string.tests_help)) { runCheck(getString(R.string.tests_title)) { showTestResults() } }
         row(R.id.modulesRow, getString(R.string.modules_title), getString(R.string.modules_help)) { runCheck(getString(R.string.modules_title), "Asking each module in turn. This can take half a minute.") { showModules() } }
+        row(R.id.enhancedRow, getString(R.string.enhanced_title), getString(R.string.enhanced_help)) { runCheck(getString(R.string.enhanced_title)) { showEnhanced() } }
         row(R.id.customRow, getString(R.string.custom_title), getString(R.string.custom_help)) { showCustomReadings() }
     }
 
@@ -1047,12 +1049,105 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread { bar.setProgressCompat(if (total == 0) 100 else done * 100 / total, true) }
                 }
                 logModules(found, "search")
+                foundModules = found.orEmpty().filter { it.second !is ModuleScan.Answer.Silent }.map { it.first }
                 wait.dismiss()
                 // A known module that was silent before but answered the search moves to the found list.
                 val foundReq = found.orEmpty().map { it.first.request }.toSet()
                 moduleSheet(results.filter { it.first.request !in foundReq }, found.orEmpty())
             } catch (e: CancellationException) { throw e } catch (e: Exception) {
                 wait.dismiss(); toast("The car stopped answering. Try again.")
+            }
+        }
+    }
+
+    // ---- Enhanced diagnostics ----
+
+    /** Modules the last "Search every address" found, so module information can include them. */
+    private var foundModules: List<ModuleScan.Module> = emptyList()
+
+    private suspend fun showEnhanced() {
+        val car = AppPrefs.savedCar(AppPrefs.of(this))
+        val make = ObdSession.carMake(this)
+        val tried = EnhancedReadings.forCar(make, car?.model, ObdSession.carYear(this))
+        val first = ObdSession.readEnhanced(tried)
+        val answered = tried.filter { first[it] != null }
+        android.util.Log.i("OBD2Deep", "enhanced: tried ${tried.size}, answered " + answered.joinToString(", ") { "${it.name}=${first[it]?.let(it::format)}" }.ifEmpty { "none" })
+        val values = mutableMapOf<EnhancedReadings.Reading, TextView>()
+        infoSheet(getString(R.string.enhanced_title)) { heading, line, body ->
+            heading("Manufacturer readings")
+            when {
+                tried.isEmpty() -> line("No manufacturer readings are known for ${make ?: "this make"} yet. Module information, below, works on every make.", true)
+                answered.isEmpty() -> line("Your car didn't answer any of the ${tried.size} readings known for ${make ?: "its make"}. Not every model has them.", true)
+                else -> answered.forEach { r ->
+                    body.addView(LinearLayout(this).apply {
+                        orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(6f).toInt(), 0, 0)
+                        addView(LinearLayout(this@MainActivity).apply {
+                            orientation = LinearLayout.VERTICAL
+                            addView(TextView(this@MainActivity).apply { text = r.name; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdTextPrimary)) })
+                            addView(TextView(this@MainActivity).apply { text = r.module; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+                        }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                        addView(TextView(this@MainActivity).apply {
+                            text = first[r]?.let(r::format) ?: "N/A"; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f); setTextColor(themeColor(R.attr.obdAccent))
+                            values[r] = this
+                        })
+                    })
+                }
+            }
+            if (answered.isNotEmpty() && answered.size < tried.size) line("${tried.size - answered.size} more known for your make weren't answered by your car.", true)
+            if (tried.isNotEmpty()) line(getString(R.string.enhanced_source), true)
+            heading("Module information")
+            line("Part numbers, software versions and the VIN each module holds, read with the standard identifiers every make's modules use.", true)
+            body.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                text = getString(R.string.enhanced_module_info); setTextColor(themeColor(R.attr.obdAccent))
+                setOnClickListener { readModuleInfo() }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8f).toInt() })
+            heading("About this")
+            line("Read-only: these only read from the car, with the makers' own read services. Nothing is changed or cleared.", true)
+        }
+        // Live while the sheet is open: the readings that answered, every 2 seconds.
+        val sheet = currentSheet ?: return
+        if (answered.isEmpty()) return
+        val job = lifecycleScope.launch {
+            while (true) {
+                kotlinx.coroutines.delay(2000)
+                if (!ObdSession.state.value.isConnected) { values.values.forEach { it.text = "N/A" }; continue }
+                val now = try { ObdSession.readEnhanced(answered) } catch (e: CancellationException) { throw e } catch (e: Exception) { emptyMap() }
+                values.forEach { (r, tv) -> tv.text = now[r]?.let(r::format) ?: "N/A" }
+            }
+        }
+        sheet.setOnDismissListener { job.cancel() }
+    }
+
+    private fun readModuleInfo() {
+        if (!ObdSession.state.value.isConnected) { toast("Connect to your car first."); return }
+        currentSheet?.dismiss()
+        val car = AppPrefs.savedCar(AppPrefs.of(this))
+        val modules = (ModuleScan.modulesFor(ObdSession.carMake(this), car?.model, ObdSession.state.value.protocolCode?.removePrefix("A") in setOf("7", "9")) + foundModules).distinctBy { it.request }
+        val bar = com.google.android.material.progressindicator.LinearProgressIndicator(this).apply {
+            isIndeterminate = false; max = 100; setPadding(dp(24f).toInt(), dp(16f).toInt(), dp(24f).toInt(), dp(8f).toInt())
+        }
+        val wait = MaterialAlertDialogBuilder(this).setTitle(R.string.enhanced_module_info).setView(bar)
+            .setMessage("Asking each module for its part numbers and versions.").setCancelable(false).show()
+        lifecycleScope.launch {
+            val info = try {
+                ObdSession.readModuleInfo(modules) { done, total -> runOnUiThread { bar.setProgressCompat(done * 100 / total.coerceAtLeast(1), true) } }
+            } catch (e: CancellationException) { throw e } catch (e: Exception) { null }
+            wait.dismiss()
+            if (info == null) { toast("The car stopped answering. Try again."); return@launch }
+            android.util.Log.i("OBD2Deep", "module info: " + info.joinToString("; ") { (m, f) -> "${m.name}: " + f.joinToString(", ") { "${it.first}=${it.second}" } }.ifEmpty { "none" })
+            infoSheet(getString(R.string.enhanced_module_info)) { heading, line, _ ->
+                if (info.isEmpty()) { line("No module answered with its identifiers. Older modules don't have them.", true); return@infoSheet }
+                val carVin = ObdSession.state.value.vin
+                info.forEach { (m, fields) ->
+                    heading(m.name)
+                    if (fields.isEmpty()) line("Answered, but gave none of the standard identifiers.", true)
+                    fields.forEach { (k, v) ->
+                        val vinNote = if (k.startsWith("VIN") && carVin != null && v != carVin) "  (not the VIN the engine computer reports)" else ""
+                        line("$k: $v$vinNote", false)
+                    }
+                }
+                heading("About this")
+                line("A module's VIN that doesn't match the car's can mean it came from another car, or wasn't programmed with this car's VIN when it was fitted.", true)
             }
         }
     }

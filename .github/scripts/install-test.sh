@@ -705,6 +705,23 @@ deep_check() {   # $1 row title, $2 name for the log, $3 pattern the OBD2Deep lo
 deep_check "Readiness monitors" readiness "readiness: .*(complete|not complete)"
 deep_check "Self-test results" self-tests "self-tests: [1-9]"
 deep_check "Codes from other modules" modules "modules: .*ABS and stability control=C1145-1C"
+deep_check "Enhanced diagnostics" enhanced "enhanced: .*Transmission fluid temperature=7[0-9.]+ °C"
+# Module information: the demo's ABS gives its part number.
+INFO=0
+diag_top
+adb logcat -c
+if tap_scrolled "Enhanced diagnostics"; then
+  sleep 6
+  if tap_scrolled "Read module information"; then
+    for i in $(seq 1 30); do
+      adb logcat -d -s OBD2Deep:I > "$OUT/deep-info.txt" 2>/dev/null
+      grep -q "module info: .*Part number=1L8T-2C219-AB" "$OUT/deep-info.txt" && { INFO=1; break; }; sleep 3
+    done
+    sleep 2; shot 13-module-info
+  fi
+  adb shell input keyevent KEYCODE_BACK; sleep 2
+fi
+[ $INFO = 1 ] && log "module information: ABS part number read" || { log "module information: FAILED ($(tail -1 "$OUT/deep-info.txt" 2>/dev/null | cut -c1-120))"; FAIL=1; }
 # Search every address: the demo car has one module its make isn't known for, at 7A0.
 SEARCH=0
 diag_top

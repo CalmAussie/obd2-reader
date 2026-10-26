@@ -47,6 +47,9 @@ class DemoTransport(
             // Other modules: the ABS has a stored code, the airbag module has none, the rest don't answer.
             // With headers on (the module search), each answer comes as CAN frames from its address.
             cmd == "1902FF" -> moduleCodes(header)?.let { if (headers) frames(header, it) else it } ?: "NO DATA"
+            // Enhanced readings and module information, as a Ford's modules answer them.
+            cmd.startsWith("22") && cmd.length == 6 -> enhanced(header, cmd.substring(2))?.let { "62${cmd.substring(2)}$it" } ?: "NO DATA"
+            cmd == "090A" -> "490A01" + "ECM-EngineControl".padEnd(20, '\u0000').map { String.format(Locale.US, "%02X", it.code) }.joinToString("")
             cmd == "03" -> "430201330420"
             cmd == "07" -> "47010171"
             cmd == "0902" -> vinFrames(vin)
@@ -125,6 +128,28 @@ class DemoTransport(
         "737", "7E1", "7A0" -> "5902FF"
         "7E0", "7DF" -> "5902FF0133000801710004"
         else -> null
+    }
+
+    private fun text(t: String) = t.map { String.format(Locale.US, "%02X", it.code) }.joinToString("")
+
+    /** The demo's enhanced readings (a warm transmission, 65% oil life, a charged battery) and module identifiers. */
+    private fun enhanced(h: String, did: String): String? {
+        val engine = h == "7E0" || h == "7DF"
+        return when {
+            engine && did == "1E1C" -> two(((70 + min(12.0, seconds() / 20)) * 16).toInt())
+            engine && did == "054B" -> "41"
+            h == "726" && did == "DD01" -> "01E240"
+            h == "726" && did == "4028" -> "55"
+            h == "726" && did == "4029" -> "41"
+            did == "F190" && (engine || h == "760" || h == "726") -> text(vin)
+            engine && did == "F197" -> text("PCM")
+            engine && did == "F187" -> text("1L8A-12A650-AAB")
+            engine && did == "F189" -> text("1L8A-14C204-AAA")
+            h == "760" && did == "F197" -> text("ABS")
+            h == "760" && did == "F187" -> text("1L8T-2C219-AB")
+            h == "760" && did == "F18A" -> text("TRW")
+            else -> null
+        }
     }
 
     /** [payload] as the CAN frames an 11-bit module at [request] sends back, headers on and no spaces. */

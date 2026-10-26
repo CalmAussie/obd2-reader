@@ -19,9 +19,10 @@ object ReadOnlyGuard {
      * (21, ReadDataByLocalIdentifier, and 22, ReadDataByIdentifier) used for enhanced readings, and
      * the three that read other modules' trouble codes: 13 (readDiagnosticTroubleCodes), 18
      * (readDTCByStatus) and 19 (UDS ReadDTCInformation, whose every sub-function only reads).
-     * Clearing them (14 and 04) stays blocked.
+     * Clearing them (14 and 04) stays blocked. 1A reads too: GM's ReadDataByIdentifier, and
+     * KWP2000's readEcuIdentification.
      */
-    private val READ_SERVICES = setOf("01", "02", "03", "06", "07", "09", "0A", "21", "22", "13", "18", "19")
+    private val READ_SERVICES = setOf("01", "02", "03", "06", "07", "09", "0A", "21", "22", "13", "18", "19", "1A")
 
     fun isAllowed(command: String): Boolean {
         val cmd = command.replace(" ", "").uppercase(Locale.US)

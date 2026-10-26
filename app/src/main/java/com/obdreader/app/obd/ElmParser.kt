@@ -156,6 +156,11 @@ object ElmParser {
             bytes.toList().chunked(16).map { chunk -> chunk.map { Char(it) }.filter { it.code in 0x21..0x7E }.joinToString("") }
         }.filter { it.isNotEmpty() }.distinct()
 
+    /** ECU names (service 09 PID 0A), such as "ECM-EngineControl": one per module that answers. */
+    fun parseEcuNames(lines: List<String>): List<String> =
+        vinMessages(lines, "490A").map { bytes -> bytes.map { Char(it) }.filter { it.code in 0x20..0x7E }.joinToString("").trim() }
+            .filter { it.isNotEmpty() }.distinct()
+
     /** VIN characters only. I, O and Q are never used in a VIN, so they mark padding or noise. */
     private fun vinChars(bytes: IntArray): String {
         val s = bytes.map { Char(it) }.filter { (it in 'A'..'Z' || it in '0'..'9') && it !in "IOQ" }.joinToString("")
