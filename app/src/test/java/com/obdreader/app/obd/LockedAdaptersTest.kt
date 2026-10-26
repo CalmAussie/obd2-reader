@@ -27,4 +27,12 @@ class LockedAdaptersTest {
         val m = LockedAdapters.message(LockedAdapters.match("ThinkDiag")!!)
         assertTrue(m.contains("ThinkCar") && m.contains("ELM327-compatible"))
     }
+
+    @Test
+    fun recognisesLaunchAndExplainsASilentAdapter() {
+        assertEquals("Launch", LockedAdapters.match("X431 ProS Mini")?.brand)
+        assertEquals("Launch", LockedAdapters.match("EasyDiag-2")?.brand)
+        val m = LockedAdapters.noReplyMessage("985590012345")
+        assertTrue(m.startsWith("\"985590012345\" connected") && m.contains("ThinkDiag") && m.contains("unplug it for 10 seconds"))
+    }
 }

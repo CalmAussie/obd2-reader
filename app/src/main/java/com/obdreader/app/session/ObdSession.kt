@@ -280,6 +280,10 @@ object ObdSession {
             if (e is kotlinx.coroutines.CancellationException) throw e
             // A maker-locked adapter (ThinkDiag, BlueDriver) that doesn't speak ELM327: say why, and don't keep retrying.
             if (!c.identified) LockedAdapters.match(t.name)?.let { throw NotAnAdapter(LockedAdapters.message(it)) }
+            // Connected, but not a word back to the very first command: most likely not an ELM327 at all.
+            if (!c.identified && e is AdapterTimeoutException && e.message?.contains("'ATZ'") == true) {
+                throw IOException(LockedAdapters.noReplyMessage(t.name))
+            }
             throw e
         }
 
