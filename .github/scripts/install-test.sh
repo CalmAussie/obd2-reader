@@ -141,6 +141,18 @@ for line in open(sys.argv[2], encoding='utf-8', errors='ignore'):
 print(0)
 PY
 }
+# A view's visibility by its id, from the view hierarchy: V (visible), I (invisible) or G (gone).
+view_flag() {
+  adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
+  python3 - "$1" "$OUT/views.txt" <<'PY'
+import re, sys
+for line in open(sys.argv[2], encoding='utf-8', errors='ignore'):
+    if ('app:id/' + sys.argv[1]) in line:
+        m = re.search(r'\{[0-9a-f]+ ([VIG])', line)
+        if m: print(m.group(1)); sys.exit(0)
+print('?')
+PY
+}
 # Where the bottom tabs are, read once while the screen is still: tapping them later works
 # even while live data is animating.
 remember_tabs() {
@@ -219,6 +231,9 @@ tap_text "Allow" > /dev/null || true
 shot 2-demo-dashboard
 W=$(view_width connectButton)
 [ "${W:-0}" -ge 200 ] && log "button 'Disconnect': visible (${W}px)" || { log "button 'Disconnect': FAILED (${W:-0}px wide)"; FAIL=1; }
+# While connected, Demo car is hidden and Disconnect spans the row (most of the screen's width).
+DV=$(view_flag demoButton); SW=$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | cut -dx -f1)
+if [ "$DV" = "G" ] && [ "${W:-0}" -ge $(( ${SW:-1080} * 80 / 100 )) ]; then log "connected: Demo car hidden, Disconnect full width (${W}px of ${SW}px)"; else log "connected: FAILED (Demo car '${DV:-?}', Disconnect ${W:-0}px of ${SW}px)"; FAIL=1; fi
 # Turn the phone sideways: the Dashboard switches to two columns, then back to portrait.
 adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 1

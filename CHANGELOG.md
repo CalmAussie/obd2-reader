@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.18.2 (27 October 2026)
+- While connected to your car (or connecting), the **Demo car** button is hidden and **Disconnect** stretches across the whole row, in every style and sideways. It comes back when you disconnect.
+
 ## 1.18.1 (27 October 2026)
 - Fixed: the spark plug on the app icon sat a little up and to the right of the middle. It's now centred on the green, across and down.
 

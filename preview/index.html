@@ -181,6 +181,8 @@ button:disabled { opacity: .38; cursor: default; }
 
 /* ---------- Start ---------- */
 .startrow { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 18px; }
+.startrow:has(.demo[hidden]) { grid-template-columns: 1fr; }
+.demo[hidden] { display: none; }
 .go-btn { height: 58px; background: var(--accent); color: var(--on-accent); transform: skewX(var(--skew)); border-radius: var(--r); font-size: 20px; display: grid; place-items: center; }
 .go-btn span { transform: skewX(calc(var(--skew) * -1)); }
 .go-btn.stop { background: transparent; color: var(--fg); box-shadow: inset 0 0 0 2px var(--line); }
@@ -1116,6 +1118,7 @@ function updateButtons() {
   $("connectLabel").textContent = active ? "Disconnect" : "Connect";
   $("connectBtn").classList.toggle("stop", active);
   $("demoBtn").disabled = active;
+  $("demoBtn").hidden = active;   /* while connected, Disconnect takes the whole row */
   ["readBtn", "vinBtn"].forEach(id => $(id).disabled = state !== "connected");
 }
 /* The check-engine banner on the Diagnostics tab: kind "on" turns it amber, "ok" marks it green */
@@ -2931,7 +2934,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.18.1", "date": "27 October 2026", "text": "• Fixed: the spark plug on the app icon sat a little up and to the right of the middle. It's now centred on the green, across and down."};
+const CHANGES = {"version": "1.18.2", "date": "27 October 2026", "text": "• While connected to your car (or connecting), the Demo car button is hidden and Disconnect stretches across the whole row, in every style and sideways. It comes back when you disconnect."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
