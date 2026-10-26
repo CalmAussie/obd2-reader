@@ -570,7 +570,8 @@ if tap_contains " KB" && tap_text "Make a video overlay" && tap_contains "720p" 
   done
   shot 8-video-ready
   if [ $READY = 1 ]; then
-    SZ=$(pull_made overlay.mp4 Movies "$OUT/overlay.mp4"); SZ=${SZ:-0}
+    # Android can take a moment to finish writing it to Movies: try a few times.
+    for k in 1 2 3 4 5; do SZ=$(pull_made overlay.mp4 Movies "$OUT/overlay.mp4"); [ -n "$SZ" ] && [ "$SZ" -gt 10000 ] && break; sleep 2; done; SZ=${SZ:-0}
     # Android 8 and 9 release builds keep the video private until it's shared; "Video ready" is the check there.
     [ "$SZ" = 0 ] && [ "$API" -lt 29 ] && ! adb shell run-as $PKG true 2>/dev/null && SZ=99999
     command -v ffmpeg > /dev/null && ffmpeg -loglevel error -y -ss 12 -i "$OUT/overlay.mp4" -frames:v 1 "$OUT/8-video-frame.png"
@@ -587,22 +588,25 @@ fi
 adb shell input keyevent KEYCODE_BACK; sleep 1
 
 # Car scan: lists what the car reports (it needs a connection, so make sure the demo car is on).
-tap_tab Dashboard; sleep 2; scroll_top; tap_text "Demo car" > /dev/null 2>&1; sleep 8
-tap_tab Diagnostics; sleep 2
-for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
-if tap_text "Scan what your car reports"; then
-  sleep 8
-  SEEN=0
-  for i in 1 2 3 4 5; do
-    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-scan.xml"
-    grep -q "What your car reports" "$OUT/ui-scan.xml" && { SEEN=1; break; }; sleep 2
-  done
-  shot 12-car-scan
-  [ $SEEN = 1 ] && log "car scan: shown" || { log "car scan: FAILED (not shown)"; FAIL=1; }
-  adb shell input keyevent KEYCODE_BACK; sleep 2
-else
-  log "car scan: FAILED (row missing)"; FAIL=1
-fi
+# Tried twice: on a busy emulator the demo car is sometimes still connecting the first time.
+SCAN=missing
+for attempt in 1 2; do
+  tap_tab Dashboard; sleep 2; scroll_top; tap_text "Demo car" > /dev/null 2>&1; sleep 8
+  tap_tab Diagnostics; sleep 2
+  for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
+  if tap_text "Scan what your car reports"; then
+    sleep 8
+    SEEN=0
+    for i in 1 2 3 4 5; do
+      adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-scan.xml"
+      grep -q "What your car reports" "$OUT/ui-scan.xml" && { SEEN=1; break; }; sleep 2
+    done
+    shot 12-car-scan
+    adb shell input keyevent KEYCODE_BACK; sleep 2
+    [ $SEEN = 1 ] && { SCAN=shown; break; } || SCAN="not shown"
+  fi
+done
+case "$SCAN" in shown) log "car scan: shown" ;; missing) log "car scan: FAILED (row missing)"; FAIL=1 ;; *) log "car scan: FAILED (not shown)"; FAIL=1 ;; esac
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
 tap_tab Diagnostics; sleep 2
 for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
