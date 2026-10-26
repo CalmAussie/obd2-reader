@@ -584,7 +584,8 @@ object ObdSession {
             }
             batteryWatch.update(now(), voltNow, _state.value.readings["0C"])?.copy(atMs = System.currentTimeMillis())?.let { result ->
                 appendLog("= Battery check: ${result.summary()}, ${result.rating.label.lowercase(Locale.US)}")
-                appContext?.let { ctx ->
+                // The demo car's starts are shown but not kept, so they don't fill the real history.
+                if (!_state.value.isDemo) appContext?.let { ctx ->
                     val prefs = AppPrefs.of(ctx)
                     prefs.edit().putString(AppPrefs.BATTERY_CHECKS, com.obdreader.app.obd.BatteryCheck.addToHistory(prefs.getString(AppPrefs.BATTERY_CHECKS, null), result)).apply()
                 }

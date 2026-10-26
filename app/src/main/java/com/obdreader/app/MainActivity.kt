@@ -2337,7 +2337,9 @@ class MainActivity : AppCompatActivity() {
 
     /** The latest battery check and the ones before it, from the phone. [fresh]: it was just measured. */
     private fun showBatteryCheck(fresh: com.obdreader.app.obd.BatteryCheck.Result? = null) {
-        val history = com.obdreader.app.obd.BatteryCheck.parseHistory(prefs.getString(AppPrefs.BATTERY_CHECKS, null))
+        val kept = com.obdreader.app.obd.BatteryCheck.parseHistory(prefs.getString(AppPrefs.BATTERY_CHECKS, null))
+        // A demo car's check isn't kept, but it's still shown while that demo runs.
+        val history = (listOfNotNull(fresh ?: shownBatteryCheck) + kept).distinctBy { it.atMs }.sortedByDescending { it.atMs }
         val latest = history.firstOrNull()
         val rating = findViewById<TextView>(R.id.batteryRating)
         val text = findViewById<TextView>(R.id.batteryText)
