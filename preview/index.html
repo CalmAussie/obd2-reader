@@ -590,7 +590,10 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .trip-scores span { font-size: 12px; color: var(--fg-2); }
 .trip-note { font-size: 13px; color: var(--fg-2); margin: 6px 0 0; }
 .trip-done { width: 100%; margin-top: 18px; height: 48px; border-radius: var(--r); background: var(--accent); color: var(--on-accent); font-weight: 600; }
-#lastTripBtn { margin: 6px 0 0; text-align: left; }
+.quick-row { display: flex; gap: 8px; margin-top: 10px; }
+.quick-btn { flex: 1 1 0; min-width: 0; min-height: 52px; padding: 6px; border: 1px solid var(--line); border-radius: var(--r); background: transparent; color: var(--accent); font: 500 13px/1.2 var(--ui); text-align: center; }
+.quick-btn[hidden] { display: none; }
+.phone[data-layout="cockpit"] .quick-btn { border-radius: 999px; }
 
 /* Heads-up alert (mirrors the app's high-priority notification and Android Auto's heads-up card) */
 .hun { position: absolute; left: 12px; right: 12px; top: 40px; z-index: 20; background: #2A2C31; color: #F2F2F0; border-radius: 16px; padding: 12px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.45); animation: slide .25s both; border-left: 4px solid #FF3B30; }
@@ -2733,6 +2736,13 @@ let simLaunch = null;
   };
 }
 $("lastTripBtn").insertAdjacentHTML("afterend", `<button class="link-btn" id="perfBtn" style="display:block;margin-top:2px;text-align:left">Performance timers</button>`);
+/* Under the score card, the three as buttons across (mirrors MainActivity's quick row):
+   Performance timers, Last drive summary, Drive history. The last two show once there's been a drive. */
+{
+  const qr = document.createElement("div"); qr.className = "quick-row";
+  $("scoreCard").after(qr);
+  ["perfBtn", "lastTripBtn", "historyBtn"].forEach(id => { const b = $(id); b.className = "quick-btn"; b.removeAttribute("style"); qr.appendChild(b); });
+}
 $("perfBtn").onclick = () => {
   const p = perfTimer(); let mode = Object.keys(PERF)[0], readyAt = 0;
   const s = overlay(`<div class="handle"></div><h2>Performance timers</h2><p>For closed roads and track days only. Timed from your car's speed readings, so older cars that report speed less often are less precise.</p>
@@ -2934,7 +2944,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.18.2", "date": "27 October 2026", "text": "• While connected to your car (or connecting), the Demo car button is hidden and Disconnect stretches across the whole row, in every style and sideways. It comes back when you disconnect."};
+const CHANGES = {"version": "1.18.3", "date": "27 October 2026", "text": "• On the Dashboard, under the driving score, Performance timers, Last drive summary and Drive history are now three buttons side by side instead of a list of links. The last two show once you've had a drive, and the row shares its width between the ones showing."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
