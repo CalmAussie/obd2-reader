@@ -10,7 +10,7 @@ import android.os.SystemClock
 import androidx.car.app.notification.CarAppExtender
 import androidx.car.app.notification.CarNotificationManager
 import androidx.core.app.NotificationCompat
-import com.obdreader.app.MainActivity
+import com.obdreader.app.HomeActivity
 import com.obdreader.app.R
 import com.obdreader.app.obd.AlertRules
 import com.obdreader.app.obd.DtcLibrary
@@ -70,7 +70,7 @@ object Alerts {
             androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED
         ) return
         val open = PendingIntent.getActivity(
-            context, 10 + alert.kind.ordinal, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            context, 10 + alert.kind.ordinal, Intent(context, HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)

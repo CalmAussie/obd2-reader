@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.19.0 (27 October 2026)
+- **Choose the app icon's colour.** **Diagnostics → App icon** offers the Spark icon in eight colourways: Racing green (the default), App orange, Racing red, Hi-vis yellow, Cobalt, Graphite, Electric and Clean white. Each is shown as it looks on the home screen; tap one and your home screen and app list switch to it, usually within a few seconds. On Android 13 and newer with themed icons on, the icon still takes your home screen's colours.
+
 ## 1.18.3 (27 October 2026)
 - On the Dashboard, under the driving score, **Performance timers**, **Last drive summary** and **Drive history** are now three buttons side by side instead of a list of links, shaped like the Connect and Demo car buttons in each style (angled on the liveries, square on Race telemetry, rounded on Digital cockpit, raked on Cyberpunk). The last two show once you've had a drive, and the row shares its width between the ones showing.
 

@@ -2878,6 +2878,31 @@ if (unitsF) {
   coolGauge.set = v => { cv.firstChild.textContent = v == null ? "—" : Math.round(v); if (cm) cm.style.width = v == null ? "0%" : Math.max(0, Math.min(100, (v - 104) / (248 - 104) * 100)) + "%"; cd.classList.toggle("hot", v != null && v >= 226); };
 }
 $("slotsRow").insertAdjacentHTML("beforebegin", `<button class="setting" id="unitsRow"><div class="r"><span>Units</span><span id="unitsSetting">${window.SPEED_UNIT}, ${unitsF ? "°F" : "°C"}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div></button>`);
+/* Diagnostics → App icon (mirrors ui/AppIcons.kt and MainActivity.showIconPicker) */
+const APP_ICONS = [
+  ["racing_green", "Racing green", "Cream on British racing green", "#0F3D2E", "#F3EBD3"],
+  ["app_orange", "App orange", "Orange on near-black, the app's own colours", "#131417", "#FF5A1F"],
+  ["racing_red", "Racing red", "White on red, like a race-team badge", "#D7261E", "#FFFFFF"],
+  ["hivis_yellow", "Hi-vis yellow", "Near-black on safety yellow", "#FFC400", "#17181B"],
+  ["cobalt", "Cobalt", "White on bright blue", "#2F5BEA", "#FFFFFF"],
+  ["graphite", "Graphite", "Silver on dark grey, like a metal plug", "#2A2D33", "#D9DDE3"],
+  ["electric", "Electric", "Cyan on deep navy, like a spark", "#0D1B2E", "#3FD0FF"],
+  ["clean_white", "Clean white", "Black on white, simplest of all", "#FFFFFF", "#17181B"],
+];
+let appIcon = "racing_green";
+/* The launcher icon: the 72-unit middle of the 108-unit adaptive icon, plug centred as in ic_launcher_foreground.xml */
+const sparkIcon = (bg, fg, size) => `<svg width="${size}" height="${size}" viewBox="18 18 72 72" aria-hidden="true" style="border-radius:28%;flex:none"><rect x="18" y="18" width="72" height="72" fill="${bg}"/><g transform="translate(-1.65 2.05) rotate(35 54 52)"><rect x="51" y="23" width="6" height="7" rx="1.5" fill="${fg}"/><rect x="48" y="30" width="12" height="16" rx="4" fill="${fg}"/><rect x="43" y="46" width="22" height="9" rx="2.5" fill="${fg}"/><rect x="47" y="55" width="14" height="13" rx="2" fill="${fg}"/><g stroke="${bg}" stroke-width="1.8"><line x1="48" y1="36" x2="60" y2="36"/><line x1="48" y1="41" x2="60" y2="41"/><line x1="47" y1="59.5" x2="61" y2="59.5"/><line x1="47" y1="63.5" x2="61" y2="63.5"/></g><path d="M54,68 V75 H61" fill="none" stroke="${fg}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`;
+$("unitsRow").insertAdjacentHTML("afterend", `<button class="setting" id="appIconRow"><div class="r"><span>App icon</span><span id="appIconSetting">Racing green</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div></button>`);
+$("appIconRow").onclick = () => {
+  const s = overlay(`<div class="handle"></div><h2>App icon</h2><p>The colour of the app's icon on your home screen and in the app list.</p>` +
+    APP_ICONS.map(([id, n, note, bg, fg]) => `<button class="setting" data-icon="${id}" style="display:flex;align-items:center;gap:14px;margin-top:8px;text-align:left;width:100%">${sparkIcon(bg, fg, 48)}<span style="flex:1"><span style="display:block">${n}</span><span style="display:block;font-size:13px;color:var(--fg-2)">${note}</span></span>${id === appIcon ? `<span style="color:var(--accent);font-size:20px">✓</span>` : ""}</button>`).join(""), { sheet: true });
+  s.querySelectorAll("[data-icon]").forEach(b => b.onclick = () => {
+    const ic = APP_ICONS.find(x => x[0] === b.dataset.icon); closeOverlay();
+    if (ic[0] === appIcon) return;
+    appIcon = ic[0]; $("appIconSetting").textContent = ic[1];
+    toast(`App icon changed to ${ic[1]}. Your home screen can take a few seconds to show it.`);
+  });
+};
 $("unitsRow").onclick = () => {
   let m = unitsMph, f = unitsF;
   const radio = (name, on, val) => `<button class="radio" role="radio" aria-checked="${on}" data-g="${name}" data-v="${val}"><span class="c"></span><span class="n">${val}</span></button>`;
@@ -2944,7 +2969,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.18.3", "date": "27 October 2026", "text": "• On the Dashboard, under the driving score, Performance timers, Last drive summary and Drive history are now three buttons side by side instead of a list of links, shaped like the Connect and Demo car buttons in each style (angled on the liveries, square on Race telemetry, rounded on Digital cockpit, raked on Cyberpunk). The last two show once you've had a drive, and the row shares its width between the ones showing."};
+const CHANGES = {"version": "1.19.0", "date": "27 October 2026", "text": "• Choose the app icon's colour. Diagnostics → App icon offers the Spark icon in eight colourways: Racing green (the default), App orange, Racing red, Hi-vis yellow, Cobalt, Graphite, Electric and Clean white. Each is shown as it looks on the home screen; tap one and your home screen and app list switch to it, usually within a few seconds. On Android 13 and newer with themed icons on, the icon still takes your home screen's colours."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {

@@ -754,6 +754,19 @@ if tap_scrolled "Codes from other modules"; then
   adb shell input keyevent KEYCODE_BACK; sleep 2
 fi
 [ $SEARCH = 1 ] && log "module search: found Module at 7A0" || { log "module search: FAILED ($(tail -1 "$OUT/deep-search.txt" 2>/dev/null | cut -c1-120))"; FAIL=1; }
+# App icon: choosing Cobalt switches the home-screen entry to its icon; then back to Racing green.
+icon_entry() { adb shell dumpsys package $PKG 2>/dev/null | sed -n '/enabledComponents:/,/disabledComponents:/p' | grep -oE "$PKG\.(Icon[A-Za-z]+|MainActivity)" | head -1; }
+ICON=fail
+diag_top
+if tap_scrolled "App icon" && sleep 2 && tap_text "Cobalt"; then
+  sleep 3; E1=$(icon_entry)
+  shot 13-app-icon
+  if tap_scrolled "App icon" && sleep 2 && tap_text "Racing green"; then sleep 3; E2=$(icon_entry)
+    D2=$(adb shell dumpsys package $PKG 2>/dev/null | sed -n '/disabledComponents:/,/^ *[a-z]*Components:\|^$/p' | grep -c "$PKG.MainActivity")
+    [ "$E1" = "$PKG.IconCobalt" ] && [ "${D2:-1}" = 0 ] && ICON=ok
+  fi
+fi
+[ $ICON = ok ] && log "app icon: switched to Cobalt and back" || { log "app icon: FAILED (after Cobalt: ${E1:-none}; back: ${E2:-none}, MainActivity disabled ${D2:-?})"; FAIL=1; }
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
 tap_tab Diagnostics; sleep 2
 for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
@@ -817,7 +830,7 @@ SW=$(adb logcat -d -s OBD2Swipe:I 2>/dev/null | grep -o "swiped to tab [0-9]" | 
 case "$SW" in *"tab 1"*"tab 0"*) log "swipe between tabs: OK" ;; *) log "swipe between tabs: FAILED (${SW:-no swipe seen})"; FAIL=1 ;; esac
 # Open on screen, the phone doesn't lock, connected or not.
 adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
-if adb shell dumpsys window windows 2>/dev/null | grep -A12 "Window{.*$PKG/$PKG.MainActivity" | grep -q "KEEP_SCREEN_ON"; then log "screen stays on while open: OK"; else log "screen stays on while open: FAILED"; FAIL=1; fi
+if adb shell dumpsys window windows 2>/dev/null | grep -A12 "Window{.*$PKG/$PKG\.\(MainActivity\|HomeActivity\)" | grep -q "KEEP_SCREEN_ON"; then log "screen stays on while open: OK"; else log "screen stays on while open: FAILED"; FAIL=1; fi
 # Minimised (Home), the app keeps running in the background.
 tap_text "Demo car" > /dev/null || true; sleep 6
 adb shell input keyevent KEYCODE_HOME; sleep 15

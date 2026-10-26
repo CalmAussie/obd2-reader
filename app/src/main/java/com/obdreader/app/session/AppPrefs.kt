@@ -9,6 +9,7 @@ object AppPrefs {
     const val FILE = "obd_reader"
 
     const val THEME = "theme"
+    const val APP_ICON = "app_icon"
     const val PROTOCOL = "protocol"
     const val LAST_PROTOCOL = "last_protocol"
     const val CAR_MAKE = "car_make"

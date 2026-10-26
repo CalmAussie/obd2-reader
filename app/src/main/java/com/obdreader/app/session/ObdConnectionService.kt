@@ -14,7 +14,7 @@ import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import com.obdreader.app.MainActivity
+import com.obdreader.app.HomeActivity
 import com.obdreader.app.R
 import com.obdreader.app.obd.Pids
 import kotlinx.coroutines.CoroutineScope
@@ -112,7 +112,7 @@ class ObdConnectionService : Service() {
 
     private fun build(s: ObdSession.State): Notification {
         val open = PendingIntent.getActivity(
-            this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            this, 0, Intent(this, HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val stop = PendingIntent.getService(
