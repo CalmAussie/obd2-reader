@@ -778,11 +778,21 @@ if adb shell dumpsys appwidget 2>/dev/null | grep -q "$PKG/.widget.ObdWidget\|$P
 # Widget readings: choose RPM as the first one and save.
 WR=fail
 diag_top; adb logcat -c
-if tap_scrolled "Widget readings" && sleep 2 && tap_contains "Reading 1" && sleep 2 && tap_text "RPM" && sleep 2 && tap_text "Save"; then
-  sleep 2; adb logcat -d -s OBD2Widget:I > "$OUT/widget-readings.txt" 2>/dev/null
-  grep -q "widget readings: 0C," "$OUT/widget-readings.txt" && WR=ok
+WSTEP="row"
+if tap_scrolled "Widget readings"; then
+  sleep 2; shot 13-widget-readings; WSTEP="Reading 1"
+  if tap_contains "Reading 1"; then
+    sleep 2; shot 13b-widget-reading-1; WSTEP="RPM"
+    if tap_text "RPM"; then
+      sleep 2; WSTEP="Save"
+      if tap_text "Save"; then
+        sleep 2; adb logcat -d -s OBD2Widget:I > "$OUT/widget-readings.txt" 2>/dev/null; WSTEP="log"
+        grep -q "widget readings: 0C," "$OUT/widget-readings.txt" && WR=ok
+      fi
+    fi
+  fi
 fi
-[ $WR = ok ] && log "widget readings: RPM chosen first" || { log "widget readings: FAILED ($(tail -1 "$OUT/widget-readings.txt" 2>/dev/null | cut -c1-100))"; FAIL=1; }
+[ $WR = ok ] && log "widget readings: RPM chosen first" || { log "widget readings: FAILED (at $WSTEP: $(tail -1 "$OUT/widget-readings.txt" 2>/dev/null | cut -c1-100))"; FAIL=1; }
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
 tap_tab Diagnostics; sleep 2
 for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
