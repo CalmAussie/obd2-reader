@@ -665,6 +665,8 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .wdg-one b.na { color: var(--fg-2); }
 .wdg-one span { font-size: 11px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wdg-one span.on { color: var(--accent); }
+/* A light style's widget is dark while the phone is in dark mode (the preview's home screen is), with the style's accent */
+.wdg[data-theme="pitlane"] { --panel: #1C1D21; --fg: #F4F4F1; --fg-2: #92949B; --line: #303137; }
 </style>
 
 <p class="note"><b>Live preview of the Android app, its Android Auto screen and its home-screen widget.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -3022,7 +3024,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.21.0", "date": "27 October 2026", "text": "• The widget comes in four sizes. Resize it on your home screen to 4 × 2 (all three readings with their notes, and the button), 4 × 1 (the three readings in a row with the button), 2 × 2 (the three readings one per line, with the button) or 2 × 1 (the main reading, which is speed while connected and the battery otherwise, with the status). It changes layout to suit as you resize it.\n• The rev dial fits your engine. The dial now ends just above your engine's redline, rounded up to the next thousand, instead of at 8,000 for almost every car: 7,000 for a 6,500 rpm engine like the Mazda Tribute's 2.3, 10,000 for an S2000 or RX-8, 4,000 for a big diesel. An engine typed by hand is matched by its size (\"2.3\" is the 2.3 I4), and with no engine chosen the dial uses the highest redline of that model's engines that year. The same scale is used on every style, in Android Auto, on drive cards and on video overlays. Diagnostics → Your car says which redline is being used.\n• Fixed: the widget's background was white on some phones (including Samsung's One UI), so its light text was hard to read. It now takes your style's colours as intended, dark for the dark styles.\n• Fixed: the small icon in the status bar and on notifications was still the old gauge. It's now the Spark plug from the app icon, on every notification: the connection, driving alerts and app updates."};
+const CHANGES = {"version": "1.21.1", "date": "27 October 2026", "text": "• Fixed: at 4 × 1 the widget could squeeze its 4 × 2 layout into one row, so the readings were cut off. On Android 12 and newer your launcher now picks the layout for the widget's actual size, so 4 × 1 shows the three readings in a row with the button at the end.\n• The widget follows your phone's light and dark mode: with a light style (Pit lane) it's dark while the phone is in dark mode, keeping the style's accent, and it switches as the phone does."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {

@@ -66,33 +66,78 @@ class ObdWidget : AppWidgetProvider() {
             val manager = AppWidgetManager.getInstance(app)
             val content = content(app)
             for (id in ids) {
-                val size = Size.of(manager.getAppWidgetOptions(id))
-                manager.updateAppWidget(id, views(app, content, size))
+                if (android.os.Build.VERSION.SDK_INT >= 31) {
+                    // Android 12 and newer: the launcher picks the layout for the widget's actual size
+                    // (the biggest that fits), including after it's resized.
+                    manager.updateAppWidget(id, RemoteViews(Size.values().associate { android.util.SizeF(it.minWidth, it.minHeight) to views(app, content, it) }))
+                } else {
+                    manager.updateAppWidget(id, views(app, content, Size.of(manager.getAppWidgetOptions(id))))
+                }
             }
             android.util.Log.i("OBD2Widget", "widget: ${content.status}; " + content.cells.joinToString("; ") { "${it.label}=${it.value} ${it.sub}".trim() } + "; button ${content.button}")
         }
 
         /** The widget's size on the home screen, in cells: 2 × 1, 4 × 1, 2 × 2 or 4 × 2 (and anything bigger). */
-        enum class Size(val layout: Int) {
-            SMALL(R.layout.widget_obd_small), WIDE(R.layout.widget_obd_wide), SQUARE(R.layout.widget_obd_square), LARGE(R.layout.widget_obd);
+        /**
+         * The widget's layouts, with the smallest size (in dp) each needs. A one-row widget is under
+         * 120 dp tall on every launcher (about 80 dp on Samsung's), so the two-row layouts start there.
+         */
+        enum class Size(val layout: Int, val minWidth: Float, val minHeight: Float) {
+            SMALL(R.layout.widget_obd_small, 100f, 40f), WIDE(R.layout.widget_obd_wide, 230f, 40f),
+            SQUARE(R.layout.widget_obd_square, 100f, 120f), LARGE(R.layout.widget_obd, 230f, 120f);
 
             companion object {
+                /** Before Android 12, from the size the launcher reports. */
                 fun of(options: android.os.Bundle?): Size {
-                    // In portrait the widget is its minimum width wide and its maximum height tall.
                     val w = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0) ?: 0
-                    val h = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) ?: 0
+                    val h = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0) ?: 0
                     if (w == 0 || h == 0) return LARGE
-                    val wide = w >= 200
-                    val tall = h >= 100
+                    val wide = w >= LARGE.minWidth
+                    val tall = h >= LARGE.minHeight
                     return when { wide && tall -> LARGE; wide -> WIDE; tall -> SQUARE; else -> SMALL }
                 }
             }
         }
 
-        /** Tints one of the widget's white shapes. On Android 12 and newer through the image tint, which every launcher honours. */
-        private fun RemoteViews.tint(id: Int, color: Int) {
-            if (android.os.Build.VERSION.SDK_INT >= 31) setColorStateList(id, "setImageTintList", android.content.res.ColorStateList.valueOf(color))
-            else setInt(id, "setColorFilter", color)
+        /**
+         * The widget's colours, for the phone's light and dark mode. They're the chosen style's;
+         * a light style (Pit lane) is shown dark while the phone is in dark mode, with the style's
+         * own accent, so the widget never glares on a dark home screen.
+         */
+        private class Palette(val surface: Int, val text: Int, val muted: Int, val accent: Int, val onAccent: Int, val outline: Int)
+
+        private fun palettes(context: Context): Pair<Palette, Palette> {
+            val themed = ContextThemeWrapper(context, AppThemes.byId(AppPrefs.of(context).getString(AppPrefs.THEME, null)).style)
+            val light = android.util.TypedValue().let { themed.theme.resolveAttribute(R.attr.obdIsLight, it, true) && it.data != 0 }
+            val style = Palette(
+                themed.themeColor(R.attr.obdSurface), themed.themeColor(R.attr.obdTextPrimary), themed.themeColor(R.attr.obdTextSecondary),
+                themed.themeColor(R.attr.obdAccent), themed.themeColor(R.attr.obdOnAccent), themed.themeColor(R.attr.obdOutline),
+            )
+            val dark = if (!light) style else {
+                val base = ContextThemeWrapper(context, R.style.Theme_ObdReader)
+                Palette(base.themeColor(R.attr.obdSurface), base.themeColor(R.attr.obdTextPrimary), base.themeColor(R.attr.obdTextSecondary),
+                    style.accent, style.onAccent, base.themeColor(R.attr.obdOutline))
+            }
+            return style to dark
+        }
+
+        private fun nightNow(context: Context) =
+            (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+        /**
+         * Sets a colour on one of the widget's views, for both light and dark mode on Android 12 and
+         * newer (the launcher switches as the phone does), otherwise for the mode the phone is in now.
+         * Shapes are tinted through their image tint; text through its text colour.
+         */
+        private class Painter(val views: RemoteViews, val night: Boolean) {
+            fun tint(id: Int, day: Int, dark: Int) {
+                if (android.os.Build.VERSION.SDK_INT >= 31) views.setColorStateList(id, "setImageTintList", android.content.res.ColorStateList.valueOf(day), android.content.res.ColorStateList.valueOf(dark))
+                else views.setInt(id, "setColorFilter", if (night) dark else day)
+            }
+            fun text(id: Int, day: Int, dark: Int) {
+                if (android.os.Build.VERSION.SDK_INT >= 31) views.setColorInt(id, "setTextColor", day, dark)
+                else views.setTextColor(id, if (night) dark else day)
+            }
         }
 
         fun content(context: Context): WidgetContent.Content {
@@ -121,21 +166,16 @@ class ObdWidget : AppWidgetProvider() {
         }
 
         private fun views(context: Context, c: WidgetContent.Content, size: Size): RemoteViews {
-            val themed = ContextThemeWrapper(context, AppThemes.byId(AppPrefs.of(context).getString(AppPrefs.THEME, null)).style)
-            val surface = themed.themeColor(R.attr.obdSurface)
-            val text = themed.themeColor(R.attr.obdTextPrimary)
-            val muted = themed.themeColor(R.attr.obdTextSecondary)
-            val accent = themed.themeColor(R.attr.obdAccent)
-            val onAccent = themed.themeColor(R.attr.obdOnAccent)
-            val outline = themed.themeColor(R.attr.obdOutline)
+            val (d, n) = palettes(context)
             return RemoteViews(context.packageName, size.layout).apply {
-                tint(R.id.widgetBg, surface)
+                val p = Painter(this, nightNow(context))
+                p.tint(R.id.widgetBg, d.surface, n.surface)
                 setImageViewResource(R.id.widgetIcon, AppIcons.current(context).icon)
-                if (size == Size.LARGE) setTextColor(R.id.widgetTitle, text)
+                if (size == Size.LARGE) p.text(R.id.widgetTitle, d.text, n.text)
                 if (size != Size.WIDE) {
                     // 2 × 1 has one reading, so its status line says which: "Speed · Connected".
                     setTextViewText(R.id.widgetStatus, if (size == Size.SMALL) "${c.cells[0].label} · ${c.status}" else c.status)
-                    setTextColor(R.id.widgetStatus, if (c.connected) accent else muted)
+                    if (c.connected) p.text(R.id.widgetStatus, d.accent, n.accent) else p.text(R.id.widgetStatus, d.muted, n.muted)
                 }
                 // Smaller sizes put the unit with the value; 4 × 2 has a line of its own for it.
                 fun valueText(cell: WidgetContent.Cell) = if (size == Size.LARGE) cell.value else cell.withUnit
@@ -144,10 +184,10 @@ class ObdWidget : AppWidgetProvider() {
                 val subs = listOf(R.id.widgetSub1, R.id.widgetSub2, R.id.widgetSub3)
                 val shown = if (size == Size.SMALL) 1 else 3
                 c.cells.take(shown).forEachIndexed { i, cell ->
-                    if (size != Size.SMALL) { setTextViewText(labels[i], cell.label); setTextColor(labels[i], muted) }
+                    if (size != Size.SMALL) { setTextViewText(labels[i], cell.label); p.text(labels[i], d.muted, n.muted) }
                     setTextViewText(values[i], valueText(cell))
-                    setTextColor(values[i], if (cell.value == WidgetContent.NA) muted else text)
-                    if (size == Size.LARGE) { setTextViewText(subs[i], cell.sub); setTextColor(subs[i], muted) }
+                    if (cell.value == WidgetContent.NA) p.text(values[i], d.muted, n.muted) else p.text(values[i], d.text, n.text)
+                    if (size == Size.LARGE) { setTextViewText(subs[i], cell.sub); p.text(subs[i], d.muted, n.muted) }
                 }
 
                 val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -155,9 +195,9 @@ class ObdWidget : AppWidgetProvider() {
                 setOnClickPendingIntent(R.id.widgetRoot, open)
                 if (size != Size.SMALL) {
                     // Connect is the style's accent; Disconnect an outline-coloured button, as in the app.
-                    tint(R.id.widgetButtonBg, if (c.button == "Connect") accent else outline)
+                    if (c.button == "Connect") p.tint(R.id.widgetButtonBg, d.accent, n.accent) else p.tint(R.id.widgetButtonBg, d.outline, n.outline)
                     setTextViewText(R.id.widgetButtonText, c.button)
-                    setTextColor(R.id.widgetButtonText, if (c.button == "Connect") onAccent else text)
+                    if (c.button == "Connect") p.text(R.id.widgetButtonText, d.onAccent, n.onAccent) else p.text(R.id.widgetButtonText, d.text, n.text)
                     setContentDescription(R.id.widgetButton, c.button)
                     val button = if (c.button == "Connect") {
                         PendingIntent.getActivity(context, 1, Intent(context, HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(EXTRA_CONNECT, true), flags)
