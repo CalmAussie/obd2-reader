@@ -2986,7 +2986,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.20.1", "date": "27 October 2026", "text": "• The widget's three readings are now centred in their columns, label, value and note alike."};
+const CHANGES = {"version": "1.20.2", "date": "27 October 2026", "text": "• Fixed: the small icon in the status bar and on notifications was still the old gauge. It's now the Spark plug from the app icon, on every notification: the connection, driving alerts and app updates."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {

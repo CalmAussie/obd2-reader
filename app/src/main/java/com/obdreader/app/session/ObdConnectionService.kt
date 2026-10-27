@@ -120,7 +120,7 @@ class ObdConnectionService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_speed)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(s.title)
             .setContentText(if (s.isConnected) liveSummary(s) else s.detail)
             .setContentIntent(open)

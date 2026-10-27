@@ -74,7 +74,7 @@ object Alerts {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_speed)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(alert.title)
             .setContentText(alert.text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(alert.text))
