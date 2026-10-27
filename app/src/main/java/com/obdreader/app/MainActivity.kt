@@ -420,6 +420,11 @@ open class MainActivity : AppCompatActivity() {
             background = panelBackground()
             setOnClickListener { showUnitsPicker() }
         }
+        findViewById<TextView>(R.id.widgetSetting).text = widgetReadingsLabel()
+        findViewById<View>(R.id.widgetRow).apply {
+            background = panelBackground()
+            setOnClickListener { showWidgetReadings(com.obdreader.app.obd.WidgetContent.decodeReadings(prefs.getString(com.obdreader.app.widget.ObdWidget.PREF_READINGS, null)).toMutableList()) }
+        }
         findViewById<TextView>(R.id.appIconSetting).text = AppIcons.current(this).name
         findViewById<View>(R.id.appIconRow).apply {
             background = panelBackground()
@@ -1247,6 +1252,53 @@ open class MainActivity : AppCompatActivity() {
             saveCustom(customReadings() + r)
             d.dismiss(); showCustomReadings()
         }
+    }
+
+    private fun widgetReadingsLabel(): String =
+        com.obdreader.app.obd.WidgetContent.decodeReadings(prefs.getString(com.obdreader.app.widget.ObdWidget.PREF_READINGS, null))
+            .mapNotNull { k -> com.obdreader.app.obd.WidgetContent.READINGS.firstOrNull { it.key == k }?.label }.joinToString(", ")
+
+    /**
+     * Diagnostics → Widget readings: up to three live readings for the home-screen widget, in
+     * order. The first is the one the 2 × 1 widget shows. RPM is shown in thousands (3.2k).
+     */
+    private fun showWidgetReadings(chosen: MutableList<String>) {
+        val all = com.obdreader.app.obd.WidgetContent.READINGS
+        fun name(k: String?) = k?.let { key -> all.firstOrNull { it.key == key }?.label } ?: "None"
+        val slots = listOf("Reading 1 (also the 2 × 1 widget)", "Reading 2", "Reading 3")
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.widget_readings)
+            .setItems(slots.mapIndexed { i, n -> "$n: ${name(chosen.getOrNull(i))}" }.toTypedArray()) { _, slot ->
+                // Reading 1 is always set; the others can be left empty.
+                val keys: List<String?> = (if (slot == 0) emptyList<String?>() else listOf(null)) + all.map { it.key }
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(slots[slot])
+                    .setSingleChoiceItems(keys.map { name(it) }.toTypedArray(), keys.indexOf(chosen.getOrNull(slot))) { d, i ->
+                        val pick = keys[i]
+                        val list = (0 until 3).map { chosen.getOrNull(it) }.toMutableList()
+                        val other = list.indexOf(pick)
+                        if (pick != null && other >= 0 && other != slot) list[other] = list[slot] // swap rather than show one twice
+                        list[slot] = pick
+                        chosen.clear(); chosen.addAll(list.filterNotNull())
+                        d.dismiss()
+                        showWidgetReadings(chosen)
+                    }
+                    .setNegativeButton("Back") { _, _ -> showWidgetReadings(chosen) }
+                    .show()
+            }
+            .setPositiveButton("Save") { _, _ ->
+                prefs.edit().putString(com.obdreader.app.widget.ObdWidget.PREF_READINGS, com.obdreader.app.obd.WidgetContent.encodeReadings(chosen)).apply()
+                android.util.Log.i("OBD2Widget", "widget readings: " + chosen.joinToString(","))
+                findViewById<TextView>(R.id.widgetSetting).text = widgetReadingsLabel()
+                com.obdreader.app.widget.ObdWidget.refresh(this)
+            }
+            .setNeutralButton("Reset") { _, _ ->
+                prefs.edit().remove(com.obdreader.app.widget.ObdWidget.PREF_READINGS).apply()
+                findViewById<TextView>(R.id.widgetSetting).text = widgetReadingsLabel()
+                com.obdreader.app.widget.ObdWidget.refresh(this)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     /** Diagnostics → App icon: the Spark colourways, each shown as it looks on the home screen. */

@@ -61,19 +61,19 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center_horizontal" android:orientation="vertical">
+            <LinearLayout android:id="@+id/widgetCell1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center_horizontal" android:orientation="vertical">
                 <TextView android:id="@+id/widgetLabel1" android:layout_width="match_parent" android:gravity="center" android:layout_height="wrap_content" android:maxLines="1" android:textSize="11sp" />
                 <TextView android:id="@+id/widgetValue1" android:layout_width="match_parent" android:gravity="center" android:layout_height="wrap_content" android:fontFamily="@font/archivo_medium" android:maxLines="1" android:text="—" android:textSize="20sp" />
                 <TextView android:id="@+id/widgetSub1" android:layout_width="match_parent" android:gravity="center" android:layout_height="wrap_content" android:maxLines="1" android:textSize="11sp" />
             </LinearLayout>
 
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center_horizontal" android:orientation="vertical">
+            <LinearLayout android:id="@+id/widgetCell2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center_horizontal" android:orientation="vertical">
                 <TextView android:id="@+id/widgetLabel2" android:layout_width="match_parent" android:gravity="center" android:layout_height="wrap_content" android:maxLines="1" android:textSize="11sp" />
                 <TextView android:id="@+id/widgetValue2" android:layout_width="match_parent" android:gravity="center" android:layout_height="wrap_content" android:fontFamily="@font/archivo_medium" android:maxLines="1" android:text="—" android:textSize="20sp" />
                 <TextView android:id="@+id/widgetSub2" android:layout_width="match_parent" android:gravity="center" android:layout_height="wrap_content" android:maxLines="1" android:textSize="11sp" />
             </LinearLayout>
 
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center_horizontal" android:orientation="vertical">
+            <LinearLayout android:id="@+id/widgetCell3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center_horizontal" android:orientation="vertical">
                 <TextView android:id="@+id/widgetLabel3" android:layout_width="match_parent" android:gravity="center" android:layout_height="wrap_content" android:maxLines="1" android:textSize="11sp" />
                 <TextView android:id="@+id/widgetValue3" android:layout_width="match_parent" android:gravity="center" android:layout_height="wrap_content" android:fontFamily="@font/archivo_medium" android:maxLines="1" android:text="—" android:textSize="20sp" />
                 <TextView android:id="@+id/widgetSub3" android:layout_width="match_parent" android:gravity="center" android:layout_height="wrap_content" android:maxLines="1" android:textSize="11sp" />

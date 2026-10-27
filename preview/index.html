@@ -3024,7 +3024,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.21.1", "date": "27 October 2026", "text": "• Fixed: at 4 × 1 the widget could squeeze its 4 × 2 layout into one row, so the readings were cut off. On Android 12 and newer your launcher now picks the layout for the widget's actual size, so 4 × 1 shows the three readings in a row with the button at the end.\n• The widget follows your phone's light and dark mode: with a light style (Pit lane) it's dark while the phone is in dark mode, keeping the style's accent, and it switches as the phone does."};
+const CHANGES = {"version": "1.22.0", "date": "27 October 2026", "text": "• Choose the widget's readings. Diagnostics → Widget readings picks up to three live readings for the home-screen widget, in order, from RPM, speed, the Dashboard's readings and the battery. The first is the one the 2 × 1 widget shows; with fewer than three, the others close up. RPM is shown in thousands with one decimal (700 rpm is 0.7k, 3,200 rpm is 3.2k). While the car isn't connected the widget still shows the last battery reading, code check and drive."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3218,10 +3218,36 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
   document.getElementById("car").insertAdjacentHTML("beforebegin", `<div class="home" id="home" hidden aria-label="Home screen with the OBD2 Reader widget"><div class="home-time" id="homeTime">12:00</div><div class="wdg-sizes" role="radiogroup" aria-label="Widget size">${["4 × 2", "4 × 1", "2 × 2", "2 × 1"].map((t, i) => `<button role="radio" aria-checked="${i === 0}" data-size="${["large", "wide", "square", "small"][i]}">${t}</button>`).join("")}</div><div class="wdg-slot"><div class="wdg" id="wdg"></div></div><p class="home-note">Add it from your home screen: touch and hold an empty spot, tap Widgets, then OBD2 Reader. It's 4 × 2 to start, and resizes to 4 × 1, 2 × 2 or 2 × 1. Demo car readings aren't kept, so after a demo the battery and codes show N/A.</p></div>`);
   const ago = t => { const m = Math.max(0, Math.floor((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.floor(m / 60)} h ago` : `${Math.floor(m / 1440)} days ago`; };
   const icon = () => { const ic = (typeof APP_ICONS !== "undefined" ? APP_ICONS : []).find(x => x[0] === (typeof appIcon !== "undefined" ? appIcon : "racing_green")) || ["", "", "", "#0F3D2E", "#F3EBD3"]; return typeof sparkIcon === "function" ? sparkIcon(ic[3], ic[4], 22) : ""; };
+  /* Diagnostics → Widget readings (mirrors WidgetContent.READINGS): RPM in thousands, one decimal */
+  const W_READINGS = [["0C", "RPM", "rpm", 0], ["0D", "Speed", "km/h", 0], ["11", "Throttle", "%", 0], ["04", "Engine load", "%", 0], ["05", "Coolant", "°C", 0], ["0F", "Intake air", "°C", 0], ["0B", "Manifold pressure", "kPa", 0], ["10", "MAF airflow", "g/s", 1], ["0E", "Timing advance", "°", 1], ["2F", "Fuel level", "%", 0], ["46", "Ambient air", "°C", 0], ["5C", "Oil temp", "°C", 0], ["VOLT", "Battery", "V", 1]];
+  let wKeys = ["0D", "05", "VOLT"];
+  const wName = k => (W_READINGS.find(r => r[0] === k) || [0, "None"])[1];
+  document.getElementById("appIconRow").insertAdjacentHTML("afterend", `<button class="setting" id="widgetRow"><div class="r"><span>Widget readings</span><span id="widgetSetting"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div></button>`);
+  const wLabel = () => document.getElementById("widgetSetting").textContent = wKeys.map(wName).join(", ");
+  wLabel();
+  function pickReadings(chosen) {
+    const slots = ["Reading 1 (also the 2 × 1 widget)", "Reading 2", "Reading 3"];
+    const s = overlay(`<h3>Widget readings</h3>${slots.map((n, i) => `<button class="setting" data-slot="${i}" style="display:block;width:100%;text-align:left;margin-top:6px">${n}: <b>${wName(chosen[i])}</b></button>`).join("")}<div class="btns"><button id="wReset">Reset</button><button id="wCancel">Cancel</button><button id="wSave">Save</button></div>`);
+    s.querySelectorAll("[data-slot]").forEach(b => b.onclick = () => {
+      const slot = +b.dataset.slot, keys = (slot ? [null] : []).concat(W_READINGS.map(r => r[0]));
+      closeOverlay();
+      const s2 = overlay(`<h3>${slots[slot]}</h3>${keys.map(k => `<button class="radio" role="radio" aria-checked="${chosen[slot] === k || (k == null && chosen[slot] == null)}" data-k="${k ?? ""}"><span class="c"></span><span class="n">${wName(k)}</span></button>`).join("")}`);
+      s2.querySelectorAll("[data-k]").forEach(r => r.onclick = () => {
+        const pick = r.dataset.k || null, list = [0, 1, 2].map(i => chosen[i] ?? null), other = list.indexOf(pick);
+        if (pick && other >= 0 && other !== slot) list[other] = list[slot];
+        list[slot] = pick; closeOverlay(); pickReadings(list.filter(Boolean));
+      });
+    });
+    $("wCancel").onclick = closeOverlay;
+    $("wReset").onclick = () => { wKeys = ["0D", "05", "VOLT"]; wLabel(); closeOverlay(); };
+    $("wSave").onclick = () => { wKeys = chosen.slice(0, 3); wLabel(); closeOverlay(); toast("The widget shows these while you're connected."); };
+  }
+  document.getElementById("widgetRow").onclick = () => pickReadings(wKeys.slice());
   function cells() {
-    const live3 = (k, label, unit, d, f = v => v) => { const v = live[k]; return v == null ? [label, state === "connected" ? "—" : "N/A", ""] : [label, f(v).toFixed(d), unit]; };
+    const live3 = (k, label, unit, d, f = v => v) => { const v = live[k]; return v == null ? [label, state === "connected" ? "—" : "N/A", ""] : [label, k === "0C" ? (v / 1000).toFixed(1) + "k" : f(v).toFixed(d), k === "0C" ? "rpm" : unit]; };
     const drive = typeof lastTrip !== "undefined" && lastTrip ? (() => { const k = ["EVERYDAY", "EFFICIENCY"].map(x => lastTrip.scores[x]).filter(v => v != null); const sc = k.length ? Math.round(k.reduce((a, b) => a + b, 0) / k.length) : null; const d = unitsMph ? lastTrip.km * 0.621371 : lastTrip.km; return ["Last drive", d.toFixed(1) + (unitsMph ? " mi" : " km"), (sc != null ? `Score ${sc} · ` : "") + ago(lastTrip.end || Date.now())]; })() : ["Last drive", "N/A", "No drives yet"];
-    if (state === "connected" && !ignOff) return [live3("0D", "Speed", unitsMph ? "mph" : "km/h", 0, v => unitsMph ? v * 0.621371 : v), live3("05", "Coolant", unitsF ? "°F" : "°C", 0, v => unitsF ? v * 9 / 5 + 32 : v), live3("VOLT", "Battery", "V", 1)];
+    if (state === "connected" && !ignOff) return wKeys.map(k => { const r = W_READINGS.find(x => x[0] === k); const temp = ["05", "0F", "46", "5C"].includes(k);
+      return k === "0D" ? live3(k, r[1], unitsMph ? "mph" : "km/h", 0, v => unitsMph ? v * 0.621371 : v) : temp ? live3(k, r[1], unitsF ? "°F" : "°C", 0, v => unitsF ? v * 9 / 5 + 32 : v) : live3(k, r[1], r[2], r[3]); });
     if (state === "connected" && ignOff) return [live.VOLT != null ? ["Battery", live.VOLT.toFixed(1), "V"] : ["Battery", "N/A", "Not read yet"], ["Trouble codes", "N/A", "Not checked yet"], drive];
     return [["Battery", "N/A", "Not read yet"], ["Trouble codes", "N/A", "Not checked yet"], drive];
   }
@@ -3230,12 +3256,12 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     w.dataset.theme = document.getElementById("phone").dataset.theme || "asphalt";
     const active = state !== "idle";
     const status = state === "connected" ? (ignOff ? "Ignition off" : "Demo car") : state === "idle" ? "Not connected" : "Connecting…";
-    const size = w.dataset.size || "large", cs = cells(), unit = (v, u) => v === "N/A" || v === "—" || !u ? v : u.startsWith("°") ? v + u : `${v} ${u}`;
+    const size = w.dataset.size || "large", cs = cells(), unit = (v, u) => v === "N/A" || v === "—" || !u || v.endsWith("k") ? v : u.startsWith("°") ? v + u : `${v} ${u}`;
     const live = state === "connected" && !ignOff;
     const top = `<div class="wdg-top">${icon()}${size === "large" ? "<b>OBD2 Reader</b>" : ""}<span class="${live ? "on" : ""}">${status}</span></div>`;
     const btn = `<button class="wdg-btn ${active ? "out" : ""}" id="wdgBtn">${active ? "Disconnect" : "Connect"}</button>`;
-    w.innerHTML = size === "large" ? top + `<div class="wdg-cells">${cs.map(([l, v, s]) => `<div><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${v}</b><small>${s}</small></div>`).join("")}</div>` + btn
-      : size === "wide" ? `${icon()}<div class="wdg-cells">${cs.map(([l, v, s]) => `<div><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${unit(v, live ? s : "")}</b></div>`).join("")}</div>` + btn
+    w.innerHTML = size === "large" ? top + `<div class="wdg-cells" style="grid-template-columns:repeat(${cs.length},1fr)">${cs.map(([l, v, s]) => `<div><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${v}</b><small>${s}</small></div>`).join("")}</div>` + btn
+      : size === "wide" ? `${icon()}<div class="wdg-cells" style="grid-template-columns:repeat(${cs.length},1fr)">${cs.map(([l, v, s]) => `<div><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${unit(v, live ? s : "")}</b></div>`).join("")}</div>` + btn
       : size === "square" ? top + `<div class="wdg-rows">${cs.map(([l, v, s]) => `<div><span>${l}</span><b class="${v === "N/A" ? "na" : ""}">${unit(v, live ? s : "")}</b></div>`).join("")}</div>` + btn
       : `${icon()}<div class="wdg-one"><b class="${cs[0][1] === "N/A" ? "na" : ""}">${unit(cs[0][1], live ? cs[0][2] : "")}</b><span class="${live ? "on" : ""}">${cs[0][0]} · ${status}</span></div>`;
     const b = document.getElementById("wdgBtn"); if (!b) { document.getElementById("homeTime").textContent = document.getElementById("clock").textContent; return; }

@@ -54,6 +54,8 @@ class ObdWidget : AppWidgetProvider() {
         const val EXTRA_CONNECT = "widget_connect"
         private const val PREF_BATTERY = "widget_battery"
         private const val PREF_CODES = "widget_codes"
+        /** The readings chosen under Diagnostics → Widget readings, in order. */
+        const val PREF_READINGS = "widget_readings"
 
         private fun ids(context: Context): IntArray =
             AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, ObdWidget::class.java))
@@ -162,6 +164,7 @@ class ObdWidget : AppWidgetProvider() {
                 codes = WidgetContent.decodeCodes(prefs.getString(PREF_CODES, null)),
                 lastDrive = trip?.let { WidgetContent.LastDrive(it.distanceKm, ShareScore.of(it.scores, raceTelemetry = false).score, it.endedAt) },
                 nowMs = System.currentTimeMillis(),
+                live = WidgetContent.decodeReadings(prefs.getString(PREF_READINGS, null)),
             )
         }
 
@@ -183,6 +186,10 @@ class ObdWidget : AppWidgetProvider() {
                 val values = listOf(R.id.widgetValue1, R.id.widgetValue2, R.id.widgetValue3)
                 val subs = listOf(R.id.widgetSub1, R.id.widgetSub2, R.id.widgetSub3)
                 val shown = if (size == Size.SMALL) 1 else 3
+                // Fewer than three readings chosen: the rest of the row closes up.
+                if (size != Size.SMALL) listOf(R.id.widgetCell1, R.id.widgetCell2, R.id.widgetCell3).forEachIndexed { i, id ->
+                    setViewVisibility(id, if (i < c.cells.size) android.view.View.VISIBLE else android.view.View.GONE)
+                }
                 c.cells.take(shown).forEachIndexed { i, cell ->
                     if (size != Size.SMALL) { setTextViewText(labels[i], cell.label); p.text(labels[i], d.muted, n.muted) }
                     setTextViewText(values[i], valueText(cell))
