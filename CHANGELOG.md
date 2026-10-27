@@ -2,7 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
-## 1.20.2 (27 October 2026)
+## 1.21.0 (27 October 2026)
+- **The widget comes in four sizes.** Resize it on your home screen to 4 × 2 (all three readings with their notes, and the button), 4 × 1 (the three readings in a row with the button), 2 × 2 (the three readings one per line, with the button) or 2 × 1 (the main reading, which is speed while connected and the battery otherwise, with the status). It changes layout to suit as you resize it.
+- Fixed: the widget's background was white on some phones (including Samsung's One UI), so its light text was hard to read. It now takes your style's colours as intended, dark for the dark styles.
 - Fixed: the small icon in the status bar and on notifications was still the old gauge. It's now the Spark plug from the app icon, on every notification: the connection, driving alerts and app updates.
 
 ## 1.20.1 (27 October 2026)

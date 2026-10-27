@@ -58,15 +58,41 @@ class ObdWidget : AppWidgetProvider() {
         private fun ids(context: Context): IntArray =
             AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, ObdWidget::class.java))
 
-        /** Redraws every widget on the home screen (cheap when there are none). */
+        /** Redraws every widget on the home screen (cheap when there are none), each in the layout for its size. */
         fun refresh(context: Context) {
             val app = context.applicationContext
             val ids = ids(app)
             if (ids.isEmpty()) return
+            val manager = AppWidgetManager.getInstance(app)
             val content = content(app)
-            val views = views(app, content)
-            AppWidgetManager.getInstance(app).updateAppWidget(ids, views)
+            for (id in ids) {
+                val size = Size.of(manager.getAppWidgetOptions(id))
+                manager.updateAppWidget(id, views(app, content, size))
+            }
             android.util.Log.i("OBD2Widget", "widget: ${content.status}; " + content.cells.joinToString("; ") { "${it.label}=${it.value} ${it.sub}".trim() } + "; button ${content.button}")
+        }
+
+        /** The widget's size on the home screen, in cells: 2 × 1, 4 × 1, 2 × 2 or 4 × 2 (and anything bigger). */
+        enum class Size(val layout: Int) {
+            SMALL(R.layout.widget_obd_small), WIDE(R.layout.widget_obd_wide), SQUARE(R.layout.widget_obd_square), LARGE(R.layout.widget_obd);
+
+            companion object {
+                fun of(options: android.os.Bundle?): Size {
+                    // In portrait the widget is its minimum width wide and its maximum height tall.
+                    val w = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0) ?: 0
+                    val h = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) ?: 0
+                    if (w == 0 || h == 0) return LARGE
+                    val wide = w >= 200
+                    val tall = h >= 100
+                    return when { wide && tall -> LARGE; wide -> WIDE; tall -> SQUARE; else -> SMALL }
+                }
+            }
+        }
+
+        /** Tints one of the widget's white shapes. On Android 12 and newer through the image tint, which every launcher honours. */
+        private fun RemoteViews.tint(id: Int, color: Int) {
+            if (android.os.Build.VERSION.SDK_INT >= 31) setColorStateList(id, "setImageTintList", android.content.res.ColorStateList.valueOf(color))
+            else setInt(id, "setColorFilter", color)
         }
 
         fun content(context: Context): WidgetContent.Content {
@@ -94,7 +120,7 @@ class ObdWidget : AppWidgetProvider() {
             )
         }
 
-        private fun views(context: Context, c: WidgetContent.Content): RemoteViews {
+        private fun views(context: Context, c: WidgetContent.Content, size: Size): RemoteViews {
             val themed = ContextThemeWrapper(context, AppThemes.byId(AppPrefs.of(context).getString(AppPrefs.THEME, null)).style)
             val surface = themed.themeColor(R.attr.obdSurface)
             val text = themed.themeColor(R.attr.obdTextPrimary)
@@ -102,35 +128,44 @@ class ObdWidget : AppWidgetProvider() {
             val accent = themed.themeColor(R.attr.obdAccent)
             val onAccent = themed.themeColor(R.attr.obdOnAccent)
             val outline = themed.themeColor(R.attr.obdOutline)
-            return RemoteViews(context.packageName, R.layout.widget_obd).apply {
-                setInt(R.id.widgetBg, "setColorFilter", surface)
+            return RemoteViews(context.packageName, size.layout).apply {
+                tint(R.id.widgetBg, surface)
                 setImageViewResource(R.id.widgetIcon, AppIcons.current(context).icon)
-                setTextColor(R.id.widgetTitle, text)
-                setTextViewText(R.id.widgetStatus, c.status)
-                setTextColor(R.id.widgetStatus, if (c.connected) accent else muted)
+                if (size == Size.LARGE) setTextColor(R.id.widgetTitle, text)
+                if (size != Size.WIDE) {
+                    // 2 × 1 has one reading, so its status line says which: "Speed · Connected".
+                    setTextViewText(R.id.widgetStatus, if (size == Size.SMALL) "${c.cells[0].label} · ${c.status}" else c.status)
+                    setTextColor(R.id.widgetStatus, if (c.connected) accent else muted)
+                }
+                // Smaller sizes put the unit with the value; 4 × 2 has a line of its own for it.
+                fun valueText(cell: WidgetContent.Cell) = if (size == Size.LARGE) cell.value else cell.withUnit
                 val labels = listOf(R.id.widgetLabel1, R.id.widgetLabel2, R.id.widgetLabel3)
                 val values = listOf(R.id.widgetValue1, R.id.widgetValue2, R.id.widgetValue3)
                 val subs = listOf(R.id.widgetSub1, R.id.widgetSub2, R.id.widgetSub3)
-                c.cells.forEachIndexed { i, cell ->
-                    setTextViewText(labels[i], cell.label); setTextColor(labels[i], muted)
-                    setTextViewText(values[i], cell.value); setTextColor(values[i], if (cell.value == WidgetContent.NA) muted else text)
-                    setTextViewText(subs[i], cell.sub); setTextColor(subs[i], muted)
+                val shown = if (size == Size.SMALL) 1 else 3
+                c.cells.take(shown).forEachIndexed { i, cell ->
+                    if (size != Size.SMALL) { setTextViewText(labels[i], cell.label); setTextColor(labels[i], muted) }
+                    setTextViewText(values[i], valueText(cell))
+                    setTextColor(values[i], if (cell.value == WidgetContent.NA) muted else text)
+                    if (size == Size.LARGE) { setTextViewText(subs[i], cell.sub); setTextColor(subs[i], muted) }
                 }
-                // Connect is the style's accent; Disconnect an outline-coloured button, as in the app.
-                setInt(R.id.widgetButtonBg, "setColorFilter", if (c.button == "Connect") accent else outline)
-                setTextViewText(R.id.widgetButtonText, c.button)
-                setTextColor(R.id.widgetButtonText, if (c.button == "Connect") onAccent else text)
-                setContentDescription(R.id.widgetButton, c.button)
 
                 val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 val open = PendingIntent.getActivity(context, 0, Intent(context, HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), flags)
                 setOnClickPendingIntent(R.id.widgetRoot, open)
-                val button = if (c.button == "Connect") {
-                    PendingIntent.getActivity(context, 1, Intent(context, HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(EXTRA_CONNECT, true), flags)
-                } else {
-                    PendingIntent.getBroadcast(context, 2, Intent(context, ObdWidget::class.java).setAction(ACTION_DISCONNECT), flags)
+                if (size != Size.SMALL) {
+                    // Connect is the style's accent; Disconnect an outline-coloured button, as in the app.
+                    tint(R.id.widgetButtonBg, if (c.button == "Connect") accent else outline)
+                    setTextViewText(R.id.widgetButtonText, c.button)
+                    setTextColor(R.id.widgetButtonText, if (c.button == "Connect") onAccent else text)
+                    setContentDescription(R.id.widgetButton, c.button)
+                    val button = if (c.button == "Connect") {
+                        PendingIntent.getActivity(context, 1, Intent(context, HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(EXTRA_CONNECT, true), flags)
+                    } else {
+                        PendingIntent.getBroadcast(context, 2, Intent(context, ObdWidget::class.java).setAction(ACTION_DISCONNECT), flags)
+                    }
+                    setOnClickPendingIntent(R.id.widgetButton, button)
                 }
-                setOnClickPendingIntent(R.id.widgetButton, button)
             }
         }
 

@@ -642,6 +642,29 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .wdg-cells b.na { color: var(--fg-2); }
 .wdg-btn { height: 40px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-weight: 500; font-size: 14px; }
 .wdg-btn.out { background: var(--line); color: var(--fg); }
+
+.wdg-sizes { display: flex; gap: 6px; justify-content: center; }
+.wdg-sizes button { font-size: 12px; padding: 5px 10px; border-radius: 14px; background: rgba(255,255,255,.08); color: #D7DCE5; }
+.wdg-sizes button[aria-checked="true"] { background: #F2F4F8; color: #111; }
+.wdg-slot { display: flex; justify-content: flex-start; }
+.wdg-slot .wdg:not([data-size]), .wdg[data-size="large"] { width: 100%; }
+.wdg[data-size="wide"] { flex-direction: row; align-items: center; min-height: 0; height: 72px; padding: 0 8px 0 12px; width: 100%; }
+.wdg[data-size="wide"] .wdg-cells { flex: 1; }
+.wdg[data-size="wide"] .wdg-cells b { font-size: 16px; }
+.wdg[data-size="wide"] .wdg-btn { width: 84px; height: 36px; font-size: 12px; flex: none; }
+.wdg[data-size="square"] { width: 168px; height: 168px; min-height: 0; padding: 12px; gap: 6px; }
+.wdg[data-size="square"] .wdg-top span { margin-left: 4px; }
+.wdg-rows { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+.wdg-rows div { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 12px; color: var(--fg-2); }
+.wdg-rows b { font-size: 15px; font-weight: 500; color: var(--fg); white-space: nowrap; }
+.wdg-rows b.na { color: var(--fg-2); }
+.wdg[data-size="square"] .wdg-btn { height: 34px; font-size: 13px; }
+.wdg[data-size="small"] { flex-direction: row; align-items: center; width: 168px; height: 72px; min-height: 0; padding: 0 12px; gap: 10px; }
+.wdg-one { display: flex; flex-direction: column; min-width: 0; }
+.wdg-one b { font-size: 17px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wdg-one b.na { color: var(--fg-2); }
+.wdg-one span { font-size: 11px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wdg-one span.on { color: var(--accent); }
 </style>
 
 <p class="note"><b>Live preview of the Android app, its Android Auto screen and its home-screen widget.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -2986,7 +3009,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.20.2", "date": "27 October 2026", "text": "• Fixed: the small icon in the status bar and on notifications was still the old gauge. It's now the Spark plug from the app icon, on every notification: the connection, driving alerts and app updates."};
+const CHANGES = {"version": "1.21.0", "date": "27 October 2026", "text": "• The widget comes in four sizes. Resize it on your home screen to 4 × 2 (all three readings with their notes, and the button), 4 × 1 (the three readings in a row with the button), 2 × 2 (the three readings one per line, with the button) or 2 × 1 (the main reading, which is speed while connected and the battery otherwise, with the status). It changes layout to suit as you resize it.\n• Fixed: the widget's background was white on some phones (including Samsung's One UI), so its light text was hard to read. It now takes your style's colours as intended, dark for the dark styles.\n• Fixed: the small icon in the status bar and on notifications was still the old gauge. It's now the Spark plug from the app icon, on every notification: the connection, driving alerts and app updates."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3177,7 +3200,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
 /* ===== Home-screen widget (mirrors widget/ObdWidget.kt and obd/WidgetContent.kt) ===== */
 (() => {
   document.getElementById("viewCar").insertAdjacentHTML("afterend", `<button role="tab" id="viewWidget" aria-selected="false">Widget</button>`);
-  document.getElementById("car").insertAdjacentHTML("beforebegin", `<div class="home" id="home" hidden aria-label="Home screen with the OBD2 Reader widget"><div class="home-time" id="homeTime">12:00</div><div class="wdg" id="wdg"></div><p class="home-note">Add it from your home screen: touch and hold an empty spot, tap Widgets, then OBD2 Reader. It's 4 × 2 and can be resized. Demo car readings aren't kept, so after a demo the battery and codes show N/A.</p></div>`);
+  document.getElementById("car").insertAdjacentHTML("beforebegin", `<div class="home" id="home" hidden aria-label="Home screen with the OBD2 Reader widget"><div class="home-time" id="homeTime">12:00</div><div class="wdg-sizes" role="radiogroup" aria-label="Widget size">${["4 × 2", "4 × 1", "2 × 2", "2 × 1"].map((t, i) => `<button role="radio" aria-checked="${i === 0}" data-size="${["large", "wide", "square", "small"][i]}">${t}</button>`).join("")}</div><div class="wdg-slot"><div class="wdg" id="wdg"></div></div><p class="home-note">Add it from your home screen: touch and hold an empty spot, tap Widgets, then OBD2 Reader. It's 4 × 2 to start, and resizes to 4 × 1, 2 × 2 or 2 × 1. Demo car readings aren't kept, so after a demo the battery and codes show N/A.</p></div>`);
   const ago = t => { const m = Math.max(0, Math.floor((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.floor(m / 60)} h ago` : `${Math.floor(m / 1440)} days ago`; };
   const icon = () => { const ic = (typeof APP_ICONS !== "undefined" ? APP_ICONS : []).find(x => x[0] === (typeof appIcon !== "undefined" ? appIcon : "racing_green")) || ["", "", "", "#0F3D2E", "#F3EBD3"]; return typeof sparkIcon === "function" ? sparkIcon(ic[3], ic[4], 22) : ""; };
   function cells() {
@@ -3192,9 +3215,15 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     w.dataset.theme = document.getElementById("phone").dataset.theme || "asphalt";
     const active = state !== "idle";
     const status = state === "connected" ? (ignOff ? "Ignition off" : "Demo car") : state === "idle" ? "Not connected" : "Connecting…";
-    w.innerHTML = `<div class="wdg-top">${icon()}<b>OBD2 Reader</b><span class="${state === "connected" && !ignOff ? "on" : ""}">${status}</span></div>
-      <div class="wdg-cells">${cells().map(([l, v, s]) => `<div><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${v}</b><small>${s}</small></div>`).join("")}</div>
-      <button class="wdg-btn ${active ? "out" : ""}" id="wdgBtn">${active ? "Disconnect" : "Connect"}</button>`;
+    const size = w.dataset.size || "large", cs = cells(), unit = (v, u) => v === "N/A" || v === "—" || !u ? v : u.startsWith("°") ? v + u : `${v} ${u}`;
+    const live = state === "connected" && !ignOff;
+    const top = `<div class="wdg-top">${icon()}${size === "large" ? "<b>OBD2 Reader</b>" : ""}<span class="${live ? "on" : ""}">${status}</span></div>`;
+    const btn = `<button class="wdg-btn ${active ? "out" : ""}" id="wdgBtn">${active ? "Disconnect" : "Connect"}</button>`;
+    w.innerHTML = size === "large" ? top + `<div class="wdg-cells">${cs.map(([l, v, s]) => `<div><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${v}</b><small>${s}</small></div>`).join("")}</div>` + btn
+      : size === "wide" ? `${icon()}<div class="wdg-cells">${cs.map(([l, v, s]) => `<div><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${unit(v, live ? s : "")}</b></div>`).join("")}</div>` + btn
+      : size === "square" ? top + `<div class="wdg-rows">${cs.map(([l, v, s]) => `<div><span>${l}</span><b class="${v === "N/A" ? "na" : ""}">${unit(v, live ? s : "")}</b></div>`).join("")}</div>` + btn
+      : `${icon()}<div class="wdg-one"><b class="${cs[0][1] === "N/A" ? "na" : ""}">${unit(cs[0][1], live ? cs[0][2] : "")}</b><span class="${live ? "on" : ""}">${cs[0][0]} · ${status}</span></div>`;
+    const b = document.getElementById("wdgBtn"); if (!b) { document.getElementById("homeTime").textContent = document.getElementById("clock").textContent; return; }
     document.getElementById("wdgBtn").onclick = () => { if (active) document.getElementById("connectBtn").click(); else { showWidget(false); document.getElementById("demoBtn").click(); } };
     document.getElementById("homeTime").textContent = document.getElementById("clock").textContent;
   }
@@ -3205,6 +3234,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     else document.getElementById("phone").hidden = false;
   }
   document.getElementById("viewWidget").onclick = () => showWidget(true);
+  document.querySelectorAll("[data-size]").forEach(b => b.onclick = () => { document.querySelectorAll("[data-size]").forEach(x => x.setAttribute("aria-checked", x === b)); document.getElementById("wdg").dataset.size = b.dataset.size; draw(); });
   const pv = document.getElementById("viewPhone").onclick, cv = document.getElementById("viewCar").onclick;
   document.getElementById("viewPhone").onclick = () => { document.getElementById("home").hidden = true; document.getElementById("viewWidget").setAttribute("aria-selected", false); pv(); };
   document.getElementById("viewCar").onclick = () => { document.getElementById("home").hidden = true; document.getElementById("viewWidget").setAttribute("aria-selected", false); cv(); };
