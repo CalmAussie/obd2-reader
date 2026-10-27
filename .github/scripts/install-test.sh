@@ -783,6 +783,8 @@ if tap_scrolled "Widget readings"; then
   sleep 2; shot 13-widget-readings; WSTEP="Reading 1"
   if tap_contains "Reading 1"; then
     sleep 2; shot 13b-widget-reading-1; WSTEP="RPM"
+    # The list opens scrolled to the chosen reading (Speed), just below RPM: scroll it back up first.
+    adb shell input swipe 540 900 540 1600 300; sleep 1
     if tap_text "RPM"; then
       sleep 2; WSTEP="Save"
       if tap_text "Save"; then
