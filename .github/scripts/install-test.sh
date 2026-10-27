@@ -775,6 +775,14 @@ adb shell am start -W -n $PKG/.HomeActivity > /dev/null 2>&1; sleep 3
 [ $ICON = ok ] && log "app icon: switched to Cobalt and back, app reopened each time" || { log "app icon: FAILED (after Cobalt: ${E1:-none}, app on top ${TOP1:-?}; back: ${E2:-none}, on top ${TOP2:-?}, MainActivity disabled ${D2:-?})"; FAIL=1; }
 # Home-screen widget: offered to the launcher (adding one needs a person, so this checks it's listed).
 if adb shell dumpsys appwidget 2>/dev/null | grep -q "$PKG/.widget.ObdWidget\|$PKG/$PKG.widget.ObdWidget"; then log "widget: offered to the home screen"; else log "widget: FAILED (not listed)"; FAIL=1; fi
+# Widget readings: choose RPM as the first one and save.
+WR=fail
+diag_top; adb logcat -c
+if tap_scrolled "Widget readings" && sleep 2 && tap_contains "Reading 1" && sleep 2 && tap_text "RPM" && sleep 2 && tap_text "Save"; then
+  sleep 2; adb logcat -d -s OBD2Widget:I > "$OUT/widget-readings.txt" 2>/dev/null
+  grep -q "widget readings: 0C," "$OUT/widget-readings.txt" && WR=ok
+fi
+[ $WR = ok ] && log "widget readings: RPM chosen first" || { log "widget readings: FAILED ($(tail -1 "$OUT/widget-readings.txt" 2>/dev/null | cut -c1-100))"; FAIL=1; }
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
 tap_tab Diagnostics; sleep 2
 for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1

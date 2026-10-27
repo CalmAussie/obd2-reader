@@ -1111,6 +1111,33 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/widgetRow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/archivo_medium" android:text="@string/widget_readings" android:textColor="?attr/obdTextPrimary" android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/widgetSetting"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:gravity="end"
+                            android:maxLines="1"
+                            android:textColor="?attr/obdAccent"
+                            android:textSize="14sp" />
+
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="4dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
+                    </LinearLayout>
+
+                    <LinearLayout
                         android:id="@+id/slotsRow"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

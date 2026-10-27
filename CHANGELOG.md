@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.22.0 (27 October 2026)
+- **Choose the widget's readings.** **Diagnostics → Widget readings** picks up to three live readings for the home-screen widget, in order, from RPM, speed, the Dashboard's readings and the battery. The first is the one the 2 × 1 widget shows; with fewer than three, the others close up. RPM is shown in thousands with one decimal (700 rpm is 0.7k, 3,200 rpm is 3.2k). While the car isn't connected the widget still shows the last battery reading, code check and drive.
+
 ## 1.21.1 (27 October 2026)
 - Fixed: at 4 × 1 the widget could squeeze its 4 × 2 layout into one row, so the readings were cut off. On Android 12 and newer your launcher now picks the layout for the widget's actual size, so 4 × 1 shows the three readings in a row with the button at the end.
 - The widget follows your phone's light and dark mode: with a light style (Pit lane) it's dark while the phone is in dark mode, keeping the style's accent, and it switches as the phone does.

@@ -43,6 +43,25 @@ class WidgetContentTest {
     }
 
     @Test
+    fun chosenReadings() {
+        fun live(keys: List<String>, r: Map<String, Double?>) =
+            WidgetContent.build(WidgetContent.Phase.CONNECTED, null, false, r, emptySet(), false, false, null, null, null, now, keys).cells
+        // RPM in thousands, one decimal.
+        assertEquals("0.7k", WidgetContent.rpmText(700.0))
+        assertEquals("3.2k", WidgetContent.rpmText(3200.0))
+        val c = live(listOf("0C", "5C"), mapOf("0C" to 3216.0, "5C" to 96.0))
+        assertEquals(listOf("RPM", "Oil temp"), c.map { it.label })
+        assertEquals(listOf("3.2k", "96"), c.map { it.value })
+        assertEquals(listOf("3.2k", "96°C"), c.map { it.withUnit })
+        // One to three, no repeats, unknown ones dropped; nothing valid means the defaults.
+        assertEquals(listOf("0C"), WidgetContent.decodeReadings("0C"))
+        assertEquals(listOf("0C", "0D", "05"), WidgetContent.decodeReadings("0C,0C,XX,0D,05,VOLT"))
+        assertEquals(WidgetContent.DEFAULT_READINGS, WidgetContent.decodeReadings(null))
+        assertEquals("0C,VOLT", WidgetContent.encodeReadings(listOf("0C", "VOLT", "0C")))
+        assertEquals(1, live(listOf("0C"), emptyMap()).size)
+    }
+
+    @Test
     fun storage() {
         val s = WidgetContent.Seen(12.4, 123L)
         assertEquals(s, WidgetContent.decodeSeen(WidgetContent.encodeSeen(s)))
