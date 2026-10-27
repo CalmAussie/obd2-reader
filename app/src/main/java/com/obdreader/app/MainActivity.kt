@@ -3397,7 +3397,7 @@ open class MainActivity : AppCompatActivity() {
     /** Scales the RPM dial to the chosen engine's redline, or the default 8,000 / 6,500 rpm. */
     private fun applyRedline() {
         val redline = savedCar()?.let { VehicleCatalog.recommend(it).redline }
-        val max = if (redline == null) 8000f else ((redline / 1000 + 2) * 1000).toFloat()
+        val max = VehicleCatalog.dialMax(redline).toFloat()
         this.redline = (redline ?: 6500).toFloat()
         DriveScorer.setRedline(this.redline)
         roundel.max = max
@@ -3484,7 +3484,12 @@ open class MainActivity : AppCompatActivity() {
             protocolView.text = rec.likely?.name ?: "Automatic search"
             noteView.text = rec.note.orEmpty()
             noteView.visibility = if (rec.note == null) View.GONE else View.VISIBLE
-            redlineView.text = rec.redline?.let { "RPM dial redline set to ${String.format(Locale.US, "%,d", it)} rpm for this engine." }.orEmpty()
+            redlineView.text = rec.redline?.let {
+                val r = String.format(Locale.US, "%,d", it)
+                val dial = "${rec.dialMax / 1000}k"
+                if (rec.redlineExact) "RPM dial redline set to $r rpm for this engine (dial to $dial)."
+                else "RPM dial redline set to $r rpm, the highest for this model (dial to $dial). Choose your engine for its own redline."
+            }.orEmpty()
             redlineView.visibility = if (rec.redline == null) View.GONE else View.VISIBLE
         }
 
