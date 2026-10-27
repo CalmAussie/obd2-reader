@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.21.1 (27 October 2026)
+- Fixed: at 4 × 1 the widget could squeeze its 4 × 2 layout into one row, so the readings were cut off. On Android 12 and newer your launcher now picks the layout for the widget's actual size, so 4 × 1 shows the three readings in a row with the button at the end.
+- The widget follows your phone's light and dark mode: with a light style (Pit lane) it's dark while the phone is in dark mode, keeping the style's accent, and it switches as the phone does.
+
 ## 1.21.0 (27 October 2026)
 - **The widget comes in four sizes.** Resize it on your home screen to 4 × 2 (all three readings with their notes, and the button), 4 × 1 (the three readings in a row with the button), 2 × 2 (the three readings one per line, with the button) or 2 × 1 (the main reading, which is speed while connected and the battery otherwise, with the status). It changes layout to suit as you resize it.
 - **The rev dial fits your engine.** The dial now ends just above your engine's redline, rounded up to the next thousand, instead of at 8,000 for almost every car: 7,000 for a 6,500 rpm engine like the Mazda Tribute's 2.3, 10,000 for an S2000 or RX-8, 4,000 for a big diesel. An engine typed by hand is matched by its size ("2.3" is the 2.3 I4), and with no engine chosen the dial uses the highest redline of that model's engines that year. The same scale is used on every style, in Android Auto, on drive cards and on video overlays. Diagnostics → Your car says which redline is being used.
