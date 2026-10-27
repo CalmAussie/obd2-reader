@@ -771,7 +771,7 @@ if tap_scrolled "App icon" && sleep 2 && tap_text "Cobalt"; then
 fi
 # Whatever happened, carry on from the default icon with the app open.
 [ "${E2:-}" = "" ] && { adb shell pm enable $PKG/$PKG.MainActivity > /dev/null 2>&1; adb shell pm disable $PKG/$PKG.IconCobalt > /dev/null 2>&1; }
-adb shell am start -W -n $PKG/.MainActivity > /dev/null 2>&1; sleep 3
+adb shell am start -W -n $PKG/.HomeActivity > /dev/null 2>&1; sleep 3
 [ $ICON = ok ] && log "app icon: switched to Cobalt and back, app reopened each time" || { log "app icon: FAILED (after Cobalt: ${E1:-none}, app on top ${TOP1:-?}; back: ${E2:-none}, on top ${TOP2:-?}, MainActivity disabled ${D2:-?})"; FAIL=1; }
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
 tap_tab Diagnostics; sleep 2
