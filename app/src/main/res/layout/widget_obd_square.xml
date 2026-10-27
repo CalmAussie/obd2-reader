@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget at 2 × 2: the status, the three readings one per line, and the button. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widgetRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView android:id="@+id/widgetBg" android:layout_width="match_parent" android:layout_height="match_parent" android:importantForAccessibility="no" android:scaleType="fitXY" android:src="@drawable/widget_round" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+            <ImageView android:id="@+id/widgetIcon" android:layout_width="20dp" android:layout_height="20dp" android:importantForAccessibility="no" android:src="@mipmap/ic_launcher" />
+            <TextView android:id="@+id/widgetStatus" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:layout_weight="1" android:ellipsize="end" android:maxLines="1" android:text="@string/not_connected" android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="vertical">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                <TextView android:id="@+id/widgetLabel1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:ellipsize="end" android:maxLines="1" android:textSize="12sp" />
+                <TextView android:id="@+id/widgetValue1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/archivo_medium" android:maxLines="1" android:text="—" android:textSize="15sp" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:gravity="center_vertical" android:orientation="horizontal">
+                <TextView android:id="@+id/widgetLabel2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:ellipsize="end" android:maxLines="1" android:textSize="12sp" />
+                <TextView android:id="@+id/widgetValue2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/archivo_medium" android:maxLines="1" android:text="—" android:textSize="15sp" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:gravity="center_vertical" android:orientation="horizontal">
+                <TextView android:id="@+id/widgetLabel3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:ellipsize="end" android:maxLines="1" android:textSize="12sp" />
+                <TextView android:id="@+id/widgetValue3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/archivo_medium" android:maxLines="1" android:text="—" android:textSize="15sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <FrameLayout android:id="@+id/widgetButton" android:layout_width="match_parent" android:layout_height="34dp">
+            <ImageView android:id="@+id/widgetButtonBg" android:layout_width="match_parent" android:layout_height="match_parent" android:importantForAccessibility="no" android:scaleType="fitXY" android:src="@drawable/widget_button" />
+            <TextView android:id="@+id/widgetButtonText" android:layout_width="match_parent" android:layout_height="match_parent" android:fontFamily="@font/archivo_medium" android:gravity="center" android:text="@string/connect" android:textSize="13sp" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

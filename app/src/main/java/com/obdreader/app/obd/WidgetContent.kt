@@ -13,7 +13,11 @@ object WidgetContent {
 
     enum class Phase { IDLE, CONNECTING, CONNECTED, IGNITION_OFF }
 
-    data class Cell(val label: String, val value: String, val sub: String)
+    /** One reading: its label, value and the line under it; [unit] is set for live readings, whose line is just the unit. */
+    data class Cell(val label: String, val value: String, val sub: String, val unit: String = "") {
+        /** The value with its unit, for sizes with no line under it: "62 km/h", "88°C", "14.3 V". */
+        val withUnit: String get() = if (unit.isEmpty()) value else if (unit.startsWith("°")) value + unit else "$value $unit"
+    }
     data class Content(val status: String, val cells: List<Cell>, val button: String, val connected: Boolean)
 
     /** A reading the app saw on a real car, with when. */
@@ -52,7 +56,8 @@ object WidgetContent {
                 key in unsupported || key in readings -> NA
                 else -> LOADING
             }
-            return Cell(label, text, if (text == NA || text == LOADING) "" else unit)
+            val known = text != NA && text != LOADING
+            return Cell(label, text, if (known) unit else "", if (known) unit else "")
         }
         val speed = live("0D", "Speed", if (mph) "mph" else "km/h", 0) { if (mph) it * 0.621371 else it }
         val coolant = live("05", "Coolant", if (fahrenheit) "°F" else "°C", 0) { if (fahrenheit) it * 9 / 5 + 32 else it }

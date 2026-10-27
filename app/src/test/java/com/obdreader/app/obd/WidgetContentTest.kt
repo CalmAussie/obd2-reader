@@ -20,6 +20,9 @@ class WidgetContentTest {
         assertEquals("62", build(WidgetContent.Phase.CONNECTED, mapOf("0D" to 100.0), mph = true).cells[0].value)
         assertEquals("—", build(WidgetContent.Phase.CONNECTED).cells[0].value)   // not read yet
         assertEquals("Demo car", build(WidgetContent.Phase.CONNECTED, demo = true).status)
+        // Smaller widget sizes show the unit with the value.
+        assertEquals(listOf("100 km/h", "88°C", "N/A"), c.cells.map { it.withUnit })
+        assertEquals("12.5 V", build(WidgetContent.Phase.IDLE, battery = WidgetContent.Seen(12.46, now)).cells[0].withUnit)
     }
 
     @Test
