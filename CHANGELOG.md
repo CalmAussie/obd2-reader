@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.20.2 (27 October 2026)
+- Fixed: the small icon in the status bar and on notifications was still the old gauge. It's now the Spark plug from the app icon, on every notification: the connection, driving alerts and app updates.
+
 ## 1.20.1 (27 October 2026)
 - The widget's three readings are now centred in their columns, label, value and note alike.
 

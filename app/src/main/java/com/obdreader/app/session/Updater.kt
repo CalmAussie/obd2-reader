@@ -181,7 +181,7 @@ object Updater {
             Intent(context, com.obdreader.app.HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         notify(context, NOTE_INSTALL, androidx.core.app.NotificationCompat.Builder(context, CHANNEL)
-            .setSmallIcon(com.obdreader.app.R.drawable.ic_speed)
+            .setSmallIcon(com.obdreader.app.R.drawable.ic_notification)
             .setContentTitle("The update didn't install")
             .setContentText(why)
             .setStyle(androidx.core.app.NotificationCompat.BigTextStyle().bigText(why))
@@ -220,7 +220,7 @@ object Updater {
         val tap = PendingIntent.getActivity(context, NOTE_INSTALL, confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         notify(context, NOTE_INSTALL, androidx.core.app.NotificationCompat.Builder(context, CHANNEL)
-            .setSmallIcon(com.obdreader.app.R.drawable.ic_speed)
+            .setSmallIcon(com.obdreader.app.R.drawable.ic_notification)
             .setContentTitle("Update ready to install")
             .setContentText("Tap to install the new version of OBD2 Reader.")
             .setContentIntent(tap).setAutoCancel(true)
@@ -239,7 +239,7 @@ object Updater {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val version = try { context.packageManager.getPackageInfo(context.packageName, 0).versionName } catch (e: Exception) { null }
         notify(context, NOTE_UPDATED, androidx.core.app.NotificationCompat.Builder(context, CHANNEL)
-            .setSmallIcon(com.obdreader.app.R.drawable.ic_speed)
+            .setSmallIcon(com.obdreader.app.R.drawable.ic_notification)
             .setContentTitle("OBD2 Reader updated" + (version?.let { " to $it" } ?: ""))
             .setContentText("Tap to open it again.")
             .setContentIntent(open).setAutoCancel(true).build())
