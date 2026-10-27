@@ -14,7 +14,7 @@ object WidgetContent {
     enum class Phase { IDLE, CONNECTING, CONNECTED, IGNITION_OFF }
 
     /** One reading: its label, value and the line under it; [unit] is set for live readings, whose line is just the unit. */
-    data class Cell(val label: String, val value: String, val sub: String, val unit: String = "") {
+    data class Cell(val label: String, val value: String, val sub: String, val unit: String = "", val highlight: Boolean = false) {
         /** The value with its unit, for sizes with no line under it: "62 km/h", "88°C", "14.3 V". */
         val withUnit: String get() = if (unit.isEmpty() || value.endsWith("k")) value else if (unit.startsWith("°")) value + unit else "$value $unit"
     }
@@ -64,6 +64,9 @@ object WidgetContent {
         nowMs: Long,
         /** The readings to show while connected (see [READINGS]); 1 to 3. */
         live: List<String> = DEFAULT_READINGS,
+        /** The engine's redline and the car's top speed (km/h), for the "near the maximum" highlight; null if not known. */
+        redline: Int? = null,
+        topSpeedKmh: Int? = null,
     ): Content {
         val active = phase != Phase.IDLE
         val status = when (phase) {
@@ -83,13 +86,17 @@ object WidgetContent {
             val known = text != NA && text != LOADING
             return Cell(label, text, if (known) unit else "", if (known) unit else "")
         }
-        fun liveFor(key: String): Cell {
+        fun liveCell(key: String): Cell {
             val r = READINGS.firstOrNull { it.key == key } ?: READINGS.first()
             return when {
                 Units.isSpeed(key) -> live(key, r.label, if (mph) "mph" else "km/h", r.decimals) { if (mph) it * 0.621371 else it }
                 Units.isTemperature(key) -> live(key, r.label, if (fahrenheit) "°F" else "°C", r.decimals) { if (fahrenheit) it * 9 / 5 + 32 else it }
                 else -> live(key, r.label, r.unit, r.decimals)
             }
+        }
+        fun liveFor(key: String): Cell = liveCell(key).let { c ->
+            val v = readings[key]
+            c.copy(highlight = v != null && nearMax(key, v, redline, topSpeedKmh))
         }
         val liveBattery = live("VOLT", "Battery", "V", 1)
         val lastBattery = battery?.let { Cell("Battery", format(it.value, 1) + " V", ago(it.atMs, nowMs)) } ?: Cell("Battery", NA, "Not read yet")
@@ -112,6 +119,16 @@ object WidgetContent {
             else -> listOf(lastBattery, codesCell, driveCell)
         }
         return Content(status, cells, if (active) "Disconnect" else "Connect", phase == Phase.CONNECTED)
+    }
+
+    /** How close to the maximum counts as near it: the last 10%. */
+    const val NEAR_MAX = 0.9
+
+    /** True when engine speed is in the last 10% before the redline, or road speed within 10% of the car's top speed (km/h). */
+    fun nearMax(key: String, value: Double, redline: Int?, topSpeedKmh: Int?): Boolean = when (key) {
+        "0C" -> redline != null && value >= redline * NEAR_MAX
+        "0D" -> topSpeedKmh != null && value >= topSpeedKmh * NEAR_MAX
+        else -> false
     }
 
     fun format(v: Double, decimals: Int): String = String.format(Locale.US, "%.${decimals}f", v)

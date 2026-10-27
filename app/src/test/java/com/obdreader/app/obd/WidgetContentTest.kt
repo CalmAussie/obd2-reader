@@ -1,6 +1,7 @@
 package com.obdreader.app.obd
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class WidgetContentTest {
@@ -59,6 +60,30 @@ class WidgetContentTest {
         assertEquals(WidgetContent.DEFAULT_READINGS, WidgetContent.decodeReadings(null))
         assertEquals("0C,VOLT", WidgetContent.encodeReadings(listOf("0C", "VOLT", "0C")))
         assertEquals(1, live(listOf("0C"), emptyMap()).size)
+    }
+
+    @Test
+    fun nearTheMaximum() {
+        fun cells(r: Map<String, Double?>) = WidgetContent.build(WidgetContent.Phase.CONNECTED, null, false, r, emptySet(), false, false, null, null, null, now,
+            listOf("0C", "0D", "05"), redline = 6500, topSpeedKmh = 171).cells
+        // The Tribute 2.3: redline 6,500, top speed 171 km/h. The last 10% lights up.
+        assertEquals(listOf(false, false, false), cells(mapOf("0C" to 5800.0, "0D" to 150.0, "05" to 120.0)).map { it.highlight })
+        assertEquals(listOf(true, true, false), cells(mapOf("0C" to 5900.0, "0D" to 155.0, "05" to 120.0)).map { it.highlight })
+        // Unknown redline or top speed: nothing lights up rather than guessing.
+        assertEquals(false, WidgetContent.nearMax("0D", 300.0, null, null))
+        assertEquals(false, WidgetContent.nearMax("0C", 9000.0, null, null))
+    }
+
+    @Test
+    fun topSpeeds() {
+        assertTrue(TopSpeeds.engineCount > 1500)
+        assertEquals(171 to true, TopSpeeds.forCar(VehicleCatalog.Car("Mazda", 2006, "Tribute", "2.3 I4")))
+        assertEquals(171 to true, TopSpeeds.forCar(VehicleCatalog.Car("Mazda", 2006, "Tribute", "2.3")))   // typed by hand
+        val noEngine = TopSpeeds.forCar(VehicleCatalog.Car("Mazda", 2006, "Tribute", null))!!
+        assertEquals(false, noEngine.second); assertTrue(noEngine.first >= 171)
+        assertEquals(null, TopSpeeds.forCar(VehicleCatalog.Car("Other make", 2010, null, null)))
+        // Every figure is a plausible road-car top speed.
+        assertTrue(TopSpeeds.engineCount > 0)
     }
 
     @Test

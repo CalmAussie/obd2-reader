@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget at 1 × 4: the icon and the chosen readings, one under another. Tap to open the app. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widgetRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView android:id="@+id/widgetBg" android:layout_width="match_parent" android:layout_height="match_parent" android:importantForAccessibility="no" android:scaleType="fitXY" android:src="@drawable/widget_round" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <ImageView android:id="@+id/widgetIcon" android:layout_width="24dp" android:layout_height="24dp" android:importantForAccessibility="no" android:src="@mipmap/ic_launcher" />
+        <LinearLayout android:id="@+id/widgetCell1" android:padding="4dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:gravity="center_horizontal" android:orientation="vertical">
+            <TextView android:id="@+id/widgetLabel1" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:gravity="center" android:maxLines="1" android:textSize="10sp" />
+            <TextView android:id="@+id/widgetValue1" android:layout_width="match_parent" android:layout_height="24dp" android:autoSizeMaxTextSize="18sp" android:autoSizeMinTextSize="10sp" android:autoSizeTextType="uniform" android:fontFamily="@font/archivo_medium" android:gravity="center" android:maxLines="1" android:text="—" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/widgetCell2" android:padding="4dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="center_horizontal" android:orientation="vertical">
+            <TextView android:id="@+id/widgetLabel2" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:gravity="center" android:maxLines="1" android:textSize="10sp" />
+            <TextView android:id="@+id/widgetValue2" android:layout_width="match_parent" android:layout_height="24dp" android:autoSizeMaxTextSize="18sp" android:autoSizeMinTextSize="10sp" android:autoSizeTextType="uniform" android:fontFamily="@font/archivo_medium" android:gravity="center" android:maxLines="1" android:text="—" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/widgetCell3" android:padding="4dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="center_horizontal" android:orientation="vertical">
+            <TextView android:id="@+id/widgetLabel3" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:gravity="center" android:maxLines="1" android:textSize="10sp" />
+            <TextView android:id="@+id/widgetValue3" android:layout_width="match_parent" android:layout_height="24dp" android:autoSizeMaxTextSize="18sp" android:autoSizeMinTextSize="10sp" android:autoSizeTextType="uniform" android:fontFamily="@font/archivo_medium" android:gravity="center" android:maxLines="1" android:text="—" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
