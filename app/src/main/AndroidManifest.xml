@@ -109,6 +109,13 @@
             android:exported="true"
             android:launchMode="singleTop" />
 
+        <!-- Opened by the home-screen icon; hands over to HomeActivity straight away. -->
+        <activity
+            android:name=".LauncherActivity"
+            android:exported="false"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay" />
+
         <!-- The home-screen icon, in the colour chosen under Diagnostics → App icon: one of these is
              enabled at a time. The racing green one keeps the name ".MainActivity", so home-screen
              icons from before the choice existed keep working. -->
@@ -118,7 +125,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
             android:roundIcon="@mipmap/ic_launcher"
-            android:targetActivity=".HomeActivity">
+            android:targetActivity=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -130,7 +137,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_app_orange"
             android:roundIcon="@mipmap/ic_launcher_app_orange"
-            android:targetActivity=".HomeActivity">
+            android:targetActivity=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -142,7 +149,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_racing_red"
             android:roundIcon="@mipmap/ic_launcher_racing_red"
-            android:targetActivity=".HomeActivity">
+            android:targetActivity=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -154,7 +161,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_hivis_yellow"
             android:roundIcon="@mipmap/ic_launcher_hivis_yellow"
-            android:targetActivity=".HomeActivity">
+            android:targetActivity=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -166,7 +173,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_cobalt"
             android:roundIcon="@mipmap/ic_launcher_cobalt"
-            android:targetActivity=".HomeActivity">
+            android:targetActivity=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -178,7 +185,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_graphite"
             android:roundIcon="@mipmap/ic_launcher_graphite"
-            android:targetActivity=".HomeActivity">
+            android:targetActivity=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -190,7 +197,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_electric"
             android:roundIcon="@mipmap/ic_launcher_electric"
-            android:targetActivity=".HomeActivity">
+            android:targetActivity=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -202,7 +209,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_clean_white"
             android:roundIcon="@mipmap/ic_launcher_clean_white"
-            android:targetActivity=".HomeActivity">
+            android:targetActivity=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

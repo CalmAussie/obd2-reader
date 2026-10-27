@@ -495,8 +495,6 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
-        // Reopened by an app icon change: back on Diagnostics, where the setting is.
-        if (savedInstanceState == null && intent?.getBooleanExtra(AppIcons.EXTRA_OPEN_DIAGNOSTICS, false) == true) bottomNav.selectedItemId = R.id.nav_diagnostics
         // The bottom bar restores its selected tab by itself after the screen is recreated; show its page.
         showPage(bottomNav.selectedItemId)
         // The car comes first: it decides how fault codes are explained, the redline and the protocol.
