@@ -49,5 +49,6 @@ object AppIcons {
                 PackageManager.DONT_KILL_APP,
             )
         }
+        com.obdreader.app.widget.ObdWidget.refresh(context)
     }
 }

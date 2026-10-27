@@ -625,9 +625,26 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 
 .record-group { margin-top: 14px; }
 .record-group .rec-status { margin-top: 8px; }
+
+/* ---------- Home-screen widget (mirrors res/layout/widget_obd.xml) ---------- */
+.home { width: 100%; max-width: 400px; min-height: 520px; border-radius: 36px; padding: 28px 16px; background: linear-gradient(160deg, #2B3A55, #121722 60%, #0B0E14); display: flex; flex-direction: column; gap: 18px; }
+.home-time { font-size: 54px; font-weight: 300; color: #F2F4F8; text-align: center; }
+.home-note { font-size: 12px; color: #AEB5C2; text-align: center; line-height: 1.5; margin: 0; }
+.wdg { background: var(--panel); color: var(--fg); border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 160px; font-family: var(--ui); }
+.wdg-top { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.wdg-top b { font-weight: 500; }
+.wdg-top span { margin-left: auto; font-size: 12px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wdg-top span.on { color: var(--accent); }
+.wdg-cells { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; align-items: center; }
+.wdg-cells div { display: flex; flex-direction: column; min-width: 0; }
+.wdg-cells small { font-size: 11px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 14px; }
+.wdg-cells b { font-size: 20px; font-weight: 500; }
+.wdg-cells b.na { color: var(--fg-2); }
+.wdg-btn { height: 40px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-weight: 500; font-size: 14px; }
+.wdg-btn.out { background: var(--line); color: var(--fg); }
 </style>
 
-<p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
+<p class="note"><b>Live preview of the Android app, its Android Auto screen and its home-screen widget.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
 
 <div class="view-switch" role="tablist" aria-label="Screen to show">
   <button role="tab" id="viewPhone" aria-selected="true">Phone</button>
@@ -2969,7 +2986,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.19.0", "date": "27 October 2026", "text": "• Choose the app icon's colour. Diagnostics → App icon offers the Spark icon in eight colourways: Racing green (the default), App orange, Racing red, Hi-vis yellow, Cobalt, Graphite, Electric and Clean white. Each is shown as it looks on the home screen; tap one and your home screen and app list switch to it, usually within a few seconds. On Android 13 and newer with themed icons on, the icon still takes your home screen's colours."};
+const CHANGES = {"version": "1.20.0", "date": "27 October 2026", "text": "• A home-screen widget. Touch and hold an empty spot on your home screen, tap Widgets, then OBD2 Reader. While connected it shows your speed, coolant temperature and battery voltage live. With the ignition off or the app not connected, it shows the last battery reading, the last trouble-code check and your last drive (distance and drive score), each with how long ago. Its button connects to your last adapter or disconnects; tapping anywhere else opens the app. It's drawn in your chosen style's colours with your app icon, it's 4 × 2 and can be resized, and anything not known yet says N/A. Demo car readings aren't kept for it."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3154,6 +3171,44 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     };
   };
   $("customRow").onclick = showCustom;
+})();
+
+
+/* ===== Home-screen widget (mirrors widget/ObdWidget.kt and obd/WidgetContent.kt) ===== */
+(() => {
+  document.getElementById("viewCar").insertAdjacentHTML("afterend", `<button role="tab" id="viewWidget" aria-selected="false">Widget</button>`);
+  document.getElementById("car").insertAdjacentHTML("beforebegin", `<div class="home" id="home" hidden aria-label="Home screen with the OBD2 Reader widget"><div class="home-time" id="homeTime">12:00</div><div class="wdg" id="wdg"></div><p class="home-note">Add it from your home screen: touch and hold an empty spot, tap Widgets, then OBD2 Reader. It's 4 × 2 and can be resized. Demo car readings aren't kept, so after a demo the battery and codes show N/A.</p></div>`);
+  const ago = t => { const m = Math.max(0, Math.floor((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.floor(m / 60)} h ago` : `${Math.floor(m / 1440)} days ago`; };
+  const icon = () => { const ic = (typeof APP_ICONS !== "undefined" ? APP_ICONS : []).find(x => x[0] === (typeof appIcon !== "undefined" ? appIcon : "racing_green")) || ["", "", "", "#0F3D2E", "#F3EBD3"]; return typeof sparkIcon === "function" ? sparkIcon(ic[3], ic[4], 22) : ""; };
+  function cells() {
+    const live3 = (k, label, unit, d, f = v => v) => { const v = live[k]; return v == null ? [label, state === "connected" ? "—" : "N/A", ""] : [label, f(v).toFixed(d), unit]; };
+    const drive = typeof lastTrip !== "undefined" && lastTrip ? (() => { const k = ["EVERYDAY", "EFFICIENCY"].map(x => lastTrip.scores[x]).filter(v => v != null); const sc = k.length ? Math.round(k.reduce((a, b) => a + b, 0) / k.length) : null; const d = unitsMph ? lastTrip.km * 0.621371 : lastTrip.km; return ["Last drive", d.toFixed(1) + (unitsMph ? " mi" : " km"), (sc != null ? `Score ${sc} · ` : "") + ago(lastTrip.end || Date.now())]; })() : ["Last drive", "N/A", "No drives yet"];
+    if (state === "connected" && !ignOff) return [live3("0D", "Speed", unitsMph ? "mph" : "km/h", 0, v => unitsMph ? v * 0.621371 : v), live3("05", "Coolant", unitsF ? "°F" : "°C", 0, v => unitsF ? v * 9 / 5 + 32 : v), live3("VOLT", "Battery", "V", 1)];
+    if (state === "connected" && ignOff) return [live.VOLT != null ? ["Battery", live.VOLT.toFixed(1), "V"] : ["Battery", "N/A", "Not read yet"], ["Trouble codes", "N/A", "Not checked yet"], drive];
+    return [["Battery", "N/A", "Not read yet"], ["Trouble codes", "N/A", "Not checked yet"], drive];
+  }
+  function draw() {
+    const w = document.getElementById("wdg"); if (!w || document.getElementById("home").hidden) return;
+    w.dataset.theme = document.getElementById("phone").dataset.theme || "asphalt";
+    const active = state !== "idle";
+    const status = state === "connected" ? (ignOff ? "Ignition off" : "Demo car") : state === "idle" ? "Not connected" : "Connecting…";
+    w.innerHTML = `<div class="wdg-top">${icon()}<b>OBD2 Reader</b><span class="${state === "connected" && !ignOff ? "on" : ""}">${status}</span></div>
+      <div class="wdg-cells">${cells().map(([l, v, s]) => `<div><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${v}</b><small>${s}</small></div>`).join("")}</div>
+      <button class="wdg-btn ${active ? "out" : ""}" id="wdgBtn">${active ? "Disconnect" : "Connect"}</button>`;
+    document.getElementById("wdgBtn").onclick = () => { if (active) document.getElementById("connectBtn").click(); else { showWidget(false); document.getElementById("demoBtn").click(); } };
+    document.getElementById("homeTime").textContent = document.getElementById("clock").textContent;
+  }
+  function showWidget(on) {
+    document.getElementById("home").hidden = !on;
+    document.getElementById("viewWidget").setAttribute("aria-selected", on);
+    if (on) { showView(false); document.getElementById("phone").hidden = true; document.getElementById("viewPhone").setAttribute("aria-selected", false); draw(); }
+    else document.getElementById("phone").hidden = false;
+  }
+  document.getElementById("viewWidget").onclick = () => showWidget(true);
+  const pv = document.getElementById("viewPhone").onclick, cv = document.getElementById("viewCar").onclick;
+  document.getElementById("viewPhone").onclick = () => { document.getElementById("home").hidden = true; document.getElementById("viewWidget").setAttribute("aria-selected", false); pv(); };
+  document.getElementById("viewCar").onclick = () => { document.getElementById("home").hidden = true; document.getElementById("viewWidget").setAttribute("aria-selected", false); cv(); };
+  setInterval(draw, 1000);
 })();
 
 window.carReady = true;
