@@ -17,6 +17,7 @@ object AppClose {
 
     fun closed(context: Context) {
         if (carScreenOpen) { android.util.Log.i("OBD2Close", "closed, but Android Auto is open: keeping the connection"); return }
+        if (System.currentTimeMillis() < com.obdreader.app.ui.AppIcons.switchingUntil) { android.util.Log.i("OBD2Close", "screen reopened for the new app icon: keeping the connection"); return }
         android.util.Log.i("OBD2Close", "closed: stopping recording, connection and service")
         LogRecorder.stop()
         ObdSession.disconnect()
