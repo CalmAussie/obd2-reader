@@ -171,6 +171,7 @@ object ObdSession {
             isDemo = isDemo,
         )
         if (!isDemo) ObdConnectionService.start(app)
+        com.obdreader.app.widget.ObdWidget.Feed.start(app)
         val gen = ++generation
         fun isCurrent() = gen == generation
 

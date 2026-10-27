@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.20.0 (27 October 2026)
+- **A home-screen widget.** Touch and hold an empty spot on your home screen, tap **Widgets**, then **OBD2 Reader**. While connected it shows your speed, coolant temperature and battery voltage live. With the ignition off or the app not connected, it shows the last battery reading, the last trouble-code check and your last drive (distance and drive score), each with how long ago. Its button connects to your last adapter or disconnects; tapping anywhere else opens the app. It's drawn in your chosen style's colours with your app icon, it's 4 × 2 and can be resized, and anything not known yet says N/A. Demo car readings aren't kept for it.
+
 ## 1.19.0 (27 October 2026)
 - **Choose the app icon's colour.** **Diagnostics → App icon** offers the Spark icon in eight colourways: Racing green (the default), App orange, Racing red, Hi-vis yellow, Cobalt, Graphite, Electric and Clean white. Each is shown as it looks on the home screen; tap one and your home screen and app list switch to it, usually within a few seconds. On Android 13 and newer with themed icons on, the icon still takes your home screen's colours.
 

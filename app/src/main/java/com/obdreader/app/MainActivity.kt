@@ -497,6 +497,9 @@ open class MainActivity : AppCompatActivity() {
         super.onPostCreate(savedInstanceState)
         // The bottom bar restores its selected tab by itself after the screen is recreated; show its page.
         showPage(bottomNav.selectedItemId)
+        if (savedInstanceState == null) handleWidgetConnect(intent)
+        com.obdreader.app.widget.ObdWidget.Feed.start(this)
+        com.obdreader.app.widget.ObdWidget.refresh(this)
         // The car comes first: it decides how fault codes are explained, the redline and the protocol.
         // Checked here rather than only on a fresh start, so it comes back if the screen is recreated.
         if (needsCar() && !carPickerShowing) showCarPicker(firstRun = true)
@@ -2594,6 +2597,27 @@ open class MainActivity : AppCompatActivity() {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         ObdSession.connect(this, t, onConnected)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleWidgetConnect(intent)
+    }
+
+    /** The widget's Connect button: connects to the last adapter, or offers the adapters if there isn't one. */
+    private fun handleWidgetConnect(intent: Intent?) {
+        if (intent?.getBooleanExtra(com.obdreader.app.widget.ObdWidget.EXTRA_CONNECT, false) != true) return
+        intent.removeExtra(com.obdreader.app.widget.ObdWidget.EXTRA_CONNECT)
+        android.util.Log.i("OBD2Widget", "connect from the widget")
+        bottomNav.selectedItemId = R.id.nav_dashboard
+        if (ObdSession.isActive) return
+        val last = ObdSession.lastAdapter(this)
+        when {
+            needsCar() -> showCarPicker(firstRun = true) { showConnectSheet() }
+            last != null -> startSession(last)
+            else -> showConnectSheet()
+        }
     }
 
     private fun disconnect() = ObdSession.disconnect()
