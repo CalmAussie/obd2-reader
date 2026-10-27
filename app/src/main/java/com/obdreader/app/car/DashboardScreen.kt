@@ -47,13 +47,15 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
     private val tiles: List<Tile> by lazy {
         fun pid(n: Int) = Pids.dashboard.first { it.number == n }
         // In the chosen units (mph, °F), like the phone.
-        fun tile(n: Int, title: String, max: Float? = null) = pid(n).let {
+        fun tile(n: Int, title: String, max: Float? = null, warn: Float? = null) = pid(n).let {
             val k = it.hex
             fun u(v: Double) = Units.value(k, v).toFloat()
-            Tile(k, title, Units.unit(k, it.unit), it.decimals, u(it.min), max?.let { m -> u(m.toDouble()) } ?: u(it.max), it.warnAbove?.let { w -> u(w) })
+            Tile(k, title, Units.unit(k, it.unit), it.decimals, u(it.min), max?.let { m -> u(m.toDouble()) } ?: u(it.max), warn ?: it.warnAbove?.let { w -> u(w) })
         }
+        // The rev roundel follows the car's engine, as the phone's dial does.
+        val rec = com.obdreader.app.session.AppPrefs.savedCar(com.obdreader.app.session.AppPrefs.of(carContext))?.let { com.obdreader.app.obd.VehicleCatalog.recommend(it) }
         listOf(
-            tile(Pids.RPM, "Engine speed"),
+            tile(Pids.RPM, "Engine speed", max = com.obdreader.app.obd.VehicleCatalog.dialMax(rec?.redline).toFloat(), warn = (rec?.redline ?: 6500).toFloat()),
             tile(Pids.SPEED, "Speed", 240f),
             tile(0x05, "Coolant"),
             tile(0x11, "Throttle"),

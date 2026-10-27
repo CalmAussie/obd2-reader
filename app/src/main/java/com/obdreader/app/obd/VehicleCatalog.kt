@@ -33,7 +33,11 @@ object VehicleCatalog {
         val note: String?,
         /** The engine's approximate redline in rpm, used to scale the RPM dial; null if unknown. */
         val redline: Int? = null,
+        /** True when [redline] is for the chosen engine; false when it's the model's (no engine chosen, or one not in the list). */
+        val redlineExact: Boolean = true,
     ) {
+        /** Where the rev dial ends for this car: see [dialMax]. */
+        val dialMax: Int get() = dialMax(redline)
         val likely: ObdProtocols.Protocol? get() = ObdProtocols.byCode(order.first())
     }
 
@@ -800,6 +804,47 @@ object VehicleCatalog {
     fun engineFor(car: Car): Engine? =
         engines(car.make, car.year, car.model).firstOrNull { it.name.equals(car.engine?.trim(), ignoreCase = true) }
 
+    /**
+     * The engine the user meant when what they typed isn't exactly one of the list's names: the
+     * only engine that year with the same size ("2.3" for "2.3 I4"), and the same layout or
+     * fuel where they typed one ("V6", "turbo", "diesel"). Null if that doesn't narrow it to one.
+     */
+    fun engineLike(car: Car): Engine? {
+        val typed = car.engine?.trim()?.lowercase(Locale.US)?.takeIf { it.isNotEmpty() } ?: return null
+        val size = Regex("""\d\.\d""").find(typed)?.value ?: return null
+        val list = engines(car.make, car.year, car.model).filter { Regex("""(^|\D)${Regex.escape(size)}(\D|$)""").containsMatchIn(it.name) }
+        if (list.size == 1) return list.single()
+        val words = typed.split(Regex("""[^a-z0-9.]+""")).filter { it.isNotEmpty() && it != size }
+        val narrowed = list.filter { e -> words.all { w -> e.name.lowercase(Locale.US).contains(w) } }
+        return narrowed.singleOrNull()
+    }
+
+    /**
+     * The redline for [car] and whether it's exact: the chosen engine's; otherwise the engine it's
+     * clearly meant to be; otherwise, for a model with engines listed that year, the highest of
+     * them (so the dial never runs out before the engine does); otherwise 4,500 rpm for a diesel.
+     * Null when nothing is known, and the dial uses its default.
+     */
+    fun redlineFor(car: Car): Pair<Int, Boolean>? {
+        engineFor(car)?.let { return it.redline to true }
+        engineLike(car)?.let { return it.redline to true }
+        val all = engines(car.make, car.year, car.model)
+        if (all.isNotEmpty()) {
+            val typedDiesel = car.engine?.contains("diesel", ignoreCase = true) == true
+            val pool = if (typedDiesel) all.filter { it.fuel == Fuel.DIESEL }.ifEmpty { all } else all
+            return pool.maxOf { it.redline } to false
+        }
+        if (car.engine?.contains("diesel", ignoreCase = true) == true) return 4500 to false
+        return null
+    }
+
+    /**
+     * Where the rev dial ends: the redline plus at least 500 rpm, rounded up to the next thousand,
+     * so the red zone sits near the end like a real tachometer (6,500 → 7k, 7,200 → 8k, 9,000 → 10k).
+     * 8,000 when the redline isn't known.
+     */
+    fun dialMax(redline: Int?): Int = if (redline == null) 8000 else ((redline + 500 + 999) / 1000) * 1000
+
     fun recommend(car: Car): Recommendation {
         val model = car.model?.lowercase(Locale.US).orEmpty()
         val y = car.year
@@ -1044,13 +1089,14 @@ object VehicleCatalog {
         if (note == null && y < 2006 && car.make !in NORTH_AMERICA_ONLY) {
             note = "Cars sold new in Australia before 2006 weren't required to have full OBD2."
         }
-        val engine = engineFor(car)
+        val engine = engineFor(car) ?: engineLike(car)
         val isDiesel = engine?.fuel == Fuel.DIESEL || car.engine?.contains("diesel", ignoreCase = true) == true
         if (isDiesel) {
             val dieselNote = "Diesels usually report fewer live readings than petrol engines."
             note = if (note == null) dieselNote else "$note $dieselNote"
         }
         val order = (first + ObdProtocols.ALL.map { it.code }).distinct()
-        return Recommendation(order, note, engine?.redline ?: if (isDiesel) 4500 else null)
+        val redline = redlineFor(car)
+        return Recommendation(order, note, redline?.first, redline?.second ?: true)
     }
 }

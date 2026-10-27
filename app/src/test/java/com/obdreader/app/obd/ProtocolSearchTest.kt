@@ -118,8 +118,33 @@ class EngineTest {
         assertEquals(4500, diesel.redline)
         assertTrue(diesel.note!!.contains("Diesels"))
         assertEquals(9000, VehicleCatalog.recommend(VehicleCatalog.Car("Mazda", 2008, "RX-8", "1.3 rotary")).redline)
-        // An engine typed by hand that the catalogue doesn't know leaves the dial at its default.
-        assertEquals(null, VehicleCatalog.recommend(VehicleCatalog.Car("Honda", 2010, "Odyssey", "2.4")).redline)
+        // An engine typed by hand: matched by its size ("2.4" is the 2.4 I4).
+        assertEquals(6800, VehicleCatalog.recommend(VehicleCatalog.Car("Honda", 2010, "Odyssey", "2.4")).redline)
+    }
+
+    @Test
+    fun theRevDialFollowsTheCar() {
+        fun rec(make: String, year: Int, model: String?, engine: String?) = VehicleCatalog.recommend(VehicleCatalog.Car(make, year, model, engine))
+        // George's Tribute: the 2.3 I4 revs to 6,500, so the dial ends at 7k, not 8k.
+        val tribute = rec("Mazda", 2006, "Tribute", "2.3 I4")
+        assertEquals(6500, tribute.redline); assertTrue(tribute.redlineExact); assertEquals(7000, tribute.dialMax)
+        assertEquals(7000, rec("Mazda", 2006, "Tribute", "2.3").dialMax)            // typed by hand
+        // No engine chosen: the model's highest redline that year, marked as not exact.
+        val noEngine = rec("Mazda", 2006, "Tribute", null)
+        assertEquals(6500, noEngine.redline); assertEquals(false, noEngine.redlineExact)
+        // High-revving and low-revving engines get dials to match.
+        assertEquals(10000, rec("Mazda", 2008, "RX-8", "1.3 rotary").dialMax)
+        assertEquals(10000, rec("Honda", 2002, "S2000", "2.0").dialMax)
+        assertTrue(rec("Ram", 2015, "2500 / 3500", "6.7 diesel").dialMax <= 5000)
+        // Nothing known: the default dial.
+        assertEquals(8000, rec("Other", 2010, null, null).dialMax)
+        assertEquals(8000, VehicleCatalog.dialMax(null))
+        assertEquals(7000, VehicleCatalog.dialMax(6000)); assertEquals(8000, VehicleCatalog.dialMax(7200)); assertEquals(9000, VehicleCatalog.dialMax(8300))
+        // Across the catalogue, the dial always ends above the redline, with room to show it.
+        for (make in VehicleCatalog.MAKES) for (m in make.models) for (e in m.engines) {
+            val d = VehicleCatalog.dialMax(e.redline)
+            assertTrue("${make.name} ${m.name} ${e.name}", d >= e.redline + 500 && d <= e.redline + 1500)
+        }
     }
 
     @Test
