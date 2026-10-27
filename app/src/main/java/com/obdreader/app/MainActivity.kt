@@ -495,6 +495,8 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
+        // Reopened by an app icon change: back on Diagnostics, where the setting is.
+        if (savedInstanceState == null && intent?.getBooleanExtra(AppIcons.EXTRA_OPEN_DIAGNOSTICS, false) == true) bottomNav.selectedItemId = R.id.nav_diagnostics
         // The bottom bar restores its selected tab by itself after the screen is recreated; show its page.
         showPage(bottomNav.selectedItemId)
         // The car comes first: it decides how fault codes are explained, the redline and the protocol.
@@ -1281,10 +1283,9 @@ open class MainActivity : AppCompatActivity() {
                 setOnClickListener {
                     sheet.dismiss()
                     if (icon == current) return@setOnClickListener
-                    AppIcons.choose(this@MainActivity, icon)
                     android.util.Log.i("OBD2Icon", "app icon: ${icon.id}")
-                    findViewById<TextView>(R.id.appIconSetting).text = icon.name
                     toast("App icon changed to ${icon.name}. Your home screen can take a few seconds to show it.")
+                    AppIcons.choose(this@MainActivity, icon)
                 }
             }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8f).toInt() })
         }

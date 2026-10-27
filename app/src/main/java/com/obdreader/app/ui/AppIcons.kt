@@ -31,19 +31,42 @@ object AppIcons {
         ALL.firstOrNull { it.id == AppPrefs.of(context).getString(AppPrefs.APP_ICON, null) } ?: ALL.first()
 
     /**
-     * Switches the home-screen icon to [icon]: its entry on, every other one off. The app keeps
-     * running; the launcher can take a few seconds to show the change.
+     * Until this time, the app's screen closing is the icon switch at work (Android closes a
+     * screen opened from a launcher entry that's switched off), not the user closing the app, so
+     * the connection is kept.
+     */
+    @Volatile var switchingUntil = 0L
+
+    /** Asks the app's screen to open on the Diagnostics tab, where the App icon setting is. */
+    const val EXTRA_OPEN_DIAGNOSTICS = "open_diagnostics"
+
+    /**
+     * Switches the home-screen icon to [icon]. Android closes any screen opened from a launcher
+     * entry that's switched off, so the app reopens itself from the new entry first (on
+     * Diagnostics, where the user was) and only then switches the old ones off. The connection
+     * carries on throughout.
      */
     fun choose(context: Context, icon: Icon) {
         val pm = context.packageManager
-        // The new one first, so there's never a moment with no launcher entry at all.
-        ALL.sortedBy { if (it == icon) 0 else 1 }.forEach {
-            pm.setComponentEnabledSetting(
-                ComponentName(context.packageName, context.packageName + it.alias),
-                if (it == icon) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP,
-            )
-        }
+        switchingUntil = System.currentTimeMillis() + 10_000
         AppPrefs.of(context).edit().putString(AppPrefs.APP_ICON, icon.id).apply()
+        fun set(it: Icon, on: Boolean) = pm.setComponentEnabledSetting(
+            ComponentName(context.packageName, context.packageName + it.alias),
+            if (on) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP,
+        )
+        set(icon, true)
+        context.startActivity(
+            android.content.Intent(android.content.Intent.ACTION_MAIN)
+                .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+                .setComponent(ComponentName(context.packageName, context.packageName + icon.alias))
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .putExtra(EXTRA_OPEN_DIAGNOSTICS, true),
+        )
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            ALL.filter { it != icon }.forEach { set(it, false) }
+            switchingUntil = System.currentTimeMillis() + 3_000
+            android.util.Log.i("OBD2Icon", "app icon: ${icon.id} (others off)")
+        }, 1_500)
     }
 }

@@ -759,14 +759,20 @@ icon_entry() { adb shell dumpsys package $PKG 2>/dev/null | sed -n '/enabledComp
 ICON=fail
 diag_top
 if tap_scrolled "App icon" && sleep 2 && tap_text "Cobalt"; then
-  sleep 3; E1=$(icon_entry)
+  sleep 5; E1=$(icon_entry)
   shot 13-app-icon
-  if tap_scrolled "App icon" && sleep 2 && tap_text "Racing green"; then sleep 3; E2=$(icon_entry)
+  # The app reopens itself from the new icon, on Diagnostics, rather than closing.
+  TOP1=$(adb shell dumpsys activity activities 2>/dev/null | grep -m1 -E "topResumedActivity|mResumedActivity" | grep -c "$PKG")
+  if diag_top && tap_scrolled "App icon" && sleep 2 && tap_text "Racing green"; then sleep 5; E2=$(icon_entry)
+    TOP2=$(adb shell dumpsys activity activities 2>/dev/null | grep -m1 -E "topResumedActivity|mResumedActivity" | grep -c "$PKG")
     D2=$(adb shell dumpsys package $PKG 2>/dev/null | sed -n '/disabledComponents:/,/^ *[a-z]*Components:\|^$/p' | grep -c "$PKG.MainActivity")
-    [ "$E1" = "$PKG.IconCobalt" ] && [ "${D2:-1}" = 0 ] && ICON=ok
+    [ "$E1" = "$PKG.IconCobalt" ] && [ "${D2:-1}" = 0 ] && [ "${TOP1:-0}" = 1 ] && [ "${TOP2:-0}" = 1 ] && ICON=ok
   fi
 fi
-[ $ICON = ok ] && log "app icon: switched to Cobalt and back" || { log "app icon: FAILED (after Cobalt: ${E1:-none}; back: ${E2:-none}, MainActivity disabled ${D2:-?})"; FAIL=1; }
+# Whatever happened, carry on from the default icon with the app open.
+[ "${E2:-}" = "" ] && { adb shell pm enable $PKG/$PKG.MainActivity > /dev/null 2>&1; adb shell pm disable $PKG/$PKG.IconCobalt > /dev/null 2>&1; }
+adb shell am start -W -n $PKG/.MainActivity > /dev/null 2>&1; sleep 3
+[ $ICON = ok ] && log "app icon: switched to Cobalt and back, app reopened each time" || { log "app icon: FAILED (after Cobalt: ${E1:-none}, app on top ${TOP1:-?}; back: ${E2:-none}, on top ${TOP2:-?}, MainActivity disabled ${D2:-?})"; FAIL=1; }
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
 tap_tab Diagnostics; sleep 2
 for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
