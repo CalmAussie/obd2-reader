@@ -636,8 +636,8 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .wdg-top span { margin-left: auto; font-size: 12px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wdg-top span.on { color: var(--accent); }
 .wdg-cells { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; align-items: center; }
-.wdg-cells div { display: flex; flex-direction: column; min-width: 0; }
-.wdg-cells small { font-size: 11px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 14px; }
+.wdg-cells div { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
+.wdg-cells small { max-width: 100%; font-size: 11px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 14px; }
 .wdg-cells b { font-size: 20px; font-weight: 500; }
 .wdg-cells b.na { color: var(--fg-2); }
 .wdg-btn { height: 40px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-weight: 500; font-size: 14px; }
@@ -2986,7 +2986,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.20.0", "date": "27 October 2026", "text": "• A home-screen widget. Touch and hold an empty spot on your home screen, tap Widgets, then OBD2 Reader. While connected it shows your speed, coolant temperature and battery voltage live. With the ignition off or the app not connected, it shows the last battery reading, the last trouble-code check and your last drive (distance and drive score), each with how long ago. Its button connects to your last adapter or disconnects; tapping anywhere else opens the app. It's drawn in your chosen style's colours with your app icon, it's 4 × 2 and can be resized, and anything not known yet says N/A. Demo car readings aren't kept for it."};
+const CHANGES = {"version": "1.20.1", "date": "27 October 2026", "text": "• The widget's three readings are now centred in their columns, label, value and note alike."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {

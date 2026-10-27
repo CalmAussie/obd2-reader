@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.20.1 (27 October 2026)
+- The widget's three readings are now centred in their columns, label, value and note alike.
+
 ## 1.20.0 (27 October 2026)
 - **A home-screen widget.** Touch and hold an empty spot on your home screen, tap **Widgets**, then **OBD2 Reader**. While connected it shows your speed, coolant temperature and battery voltage live. With the ignition off or the app not connected, it shows the last battery reading, the last trouble-code check and your last drive (distance and drive score), each with how long ago. Its button connects to your last adapter or disconnects; tapping anywhere else opens the app. It's drawn in your chosen style's colours with your app icon, it's 4 × 2 and can be resized, and anything not known yet says N/A. Demo car readings aren't kept for it.
 
