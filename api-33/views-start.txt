@@ -1,0 +1,907 @@
+TASK null id=8 userId=0
+  ACTIVITY com.google.android.apps.nexuslauncher/.NexusLauncherActivity 32b2793 pid=1015
+    Local Activity 5c4929d State:
+      mResumed=false mStopped=true mFinished=false
+      mIsInMultiWindowMode=false mIsInPictureInPictureMode=false
+      mChangingConfigurations=false
+      mCurrentConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h842dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 128 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.5 fontWeightAdjustment=0}
+      mLoadersStarted=true
+      FragmentManager misc state:
+        mHost=android.app.Activity$HostCallbacks@e815132
+        mContainer=android.app.Activity$HostCallbacks@e815132
+        mCurState=3 mStateSaved=true mDestroyed=false
+    ViewRoot:
+      mAdded=true
+      mRemoved=false
+      mStopped=true
+      mPausedForTransition=false
+      mConsumeBatchedInputScheduled=false
+      mConsumeBatchedInputImmediatelyScheduled=false
+      mPendingInputEventCount=0
+      mProcessInputEventsScheduled=false
+      mTraversalScheduled=false
+      mReportNextDraw=false
+      mLastPerformTraversalsFailedReason=view_not_visible
+      mLastReportedMergedConfiguration={mGlobalConfig={0.0 ?mcc?mnc ?localeList ?layoutDir ?swdp ?wdp ?hdp ?density ?lsize ?long ?ldr ?wideColorGamut ?orien ?uimode ?night ?touch ?keyb/?/? ?nav/? winConfig={ mBounds=Rect(0, 0 - 0, 0) mAppBounds=null mMaxBounds=Rect(0, 0 - 0, 0) mDisplayRotation=undefined mWindowingMode=undefined mDisplayWindowingMode=undefined mActivityType=undefined mAlwaysOnTop=undefined mRotation=undefined} ?fontWeightAdjustment} mOverrideConfig={0.0 ?mcc?mnc ?localeList ?layoutDir ?swdp ?wdp ?hdp ?density ?lsize ?long ?ldr ?wideColorGamut ?orien ?uimode ?night ?touch ?keyb/?/? ?nav/? winConfig={ mBounds=Rect(0, 0 - 0, 0) mAppBounds=null mMaxBounds=Rect(0, 0 - 0, 0) mDisplayRotation=undefined mWindowingMode=undefined mDisplayWindowingMode=undefined mActivityType=undefined mAlwaysOnTop=undefined mRotation=undefined} ?fontWeightAdjustment}}
+      mLastConfigurationFromResources={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h842dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 128 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.5 fontWeightAdjustment=0}
+      mIsAmbientMode=false
+      mUnbufferedInputSource=0
+      mAttachInfo=       AttachInfo:
+        mHasWindowFocus=false
+        mWindowVisibility=8
+        mInTouchMode=true
+        mUnbufferedDispatchRequested=false
+      android.view.ViewRootImpl$NativePreImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$ImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$NativePostImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$WindowInputEventReceiver
+       mInputChannel: bce21ce com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity (client)
+       mSeqMap: {}
+       mReceiverPtr:
+        mInputConsumer:
+          mResampleTouch = true
+          mChannel = bce21ce com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity (client)
+          mMsgDeferred: false
+          Batches:
+              <empty>
+          mSeqChains:
+              <empty>
+          mConsumeTimes:
+              <empty>
+          
+        mBatchedInputEventPending: false
+        mOutboundQueue:
+          <empty>
+        
+    Choreographer:
+      mFrameScheduled=false
+      mLastFrameTime=92962 (11666 ms ago)
+    InsetsController:
+      InsetsState
+        mDisplayFrame=Rect(0, 0 - 1080, 2400)
+        mDisplayCutout=DisplayCutout{insets=Rect(0, 128 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(492, 0 - 610, 128), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.625} cutoutSpec={M 507,64 a 33,33 0 1 0 66,0 33,33 0 1 0 -66,0 Z @left} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}}}
+        mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=28, center=Point(28, 28)}, RoundedCorner{position=TopRight, radius=28, center=Point(1052, 28)}, RoundedCorner{position=BottomRight, radius=28, center=Point(1052, 2372)}, RoundedCorner{position=BottomLeft, radius=28, center=Point(28, 2372)}]}
+        mRoundedCornerFrame=Rect(0, 0 - 1080, 2400)
+        mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(827, 0 - 1043, 128) rotation=0}
+          InsetsSource type=ITYPE_STATUS_BAR frame=[0,0][1080,128] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_NAVIGATION_BAR frame=[0,2337][1080,2400] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_LEFT_GESTURES frame=[0,0][78,2400] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_RIGHT_GESTURES frame=[1002,0][1080,2400] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_TOP_MANDATORY_GESTURES frame=[0,0][1080,160] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_BOTTOM_MANDATORY_GESTURES frame=[0,2316][1080,2400] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_TOP_DISPLAY_CUTOUT frame=[0,0][1080,128] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_TOP_TAPPABLE_ELEMENT frame=[0,0][1080,128] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_BOTTOM_TAPPABLE_ELEMENT frame=[0,0][0,0] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_IME frame=[0,1517][1080,2400] visibleFrame=[0,1517][1080,2400] visible=false insetsRoundedCornerFrame=false
+    WindowOnBackDispatcher:
+        Top Callback: android.view.ViewRootImpl$$ExternalSyntheticLambda14@2826c04
+        Callbacks: 
+          Callback: android.view.ViewRootImpl$$ExternalSyntheticLambda14@2826c04 Priority=0
+    View Hierarchy:
+      DecorView@278fe83[NexusLauncherActivity]
+        android.widget.LinearLayout{7627800 V.E...... ......I. 0,0-0,0}
+          android.view.ViewStub{57d4839 G.E...... ......I. 0,0-0,0 #10201c5 android:id/action_mode_bar_stub}
+          android.widget.FrameLayout{76f4e7e V.E...... ......I. 0,0-0,0 #1020002 android:id/content}
+            com.android.launcher3.LauncherRootView{7c2ffdf V.E...... ......I. 0,0-0,0 #7f0a01d8 app:id/launcher}
+              com.android.launcher3.dragndrop.DragLayer{d77142c V.E...... ......I. 0,0-0,0 #7f0a0131 app:id/drag_layer}
+                com.android.launcher3.views.AccessibilityActionsView{9e12ef5 V.E...... ......I. 0,0-0,0}
+                com.android.launcher3.Workspace{7add48a V.ED..... ......I. 0,0-0,0 #7f0a03dc app:id/workspace}
+                  com.android.launcher3.CellLayout{881bafb V.ED..... ......I. 0,0-0,0}
+                    com.android.launcher3.ShortcutAndWidgetContainer{f574718 V.E...... ......I. 0,0-0,0}
+                      com.google.android.apps.nexuslauncher.qsb.SmartspaceViewContainer{c3665a5 V.E...... ......I. 0,0-0,0 #7f0a02b6 app:id/search_container_workspace}
+                        com.google.android.systemui.smartspace.BcSmartspaceView{308aae3 V.E...... ......I. 0,0-0,0 #7f0a00a0 app:id/bc_smartspace_view}
+                          com.google.android.systemui.smartspace.InterceptingViewPager{462c571 VFED...L. ......I. 0,0-0,0 #7f0a02ee app:id/smartspace_card_pager}
+                          com.google.android.systemui.smartspace.PageIndicator{c9caf56 G.E...... ......I. 0,0-0,0 #7f0a02f0 app:id/smartspace_page_indicator}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{ea70bd7 VFED..CL. ......ID 0,0-0,0 #4}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{205bcc4 VFED..CL. ......ID 0,0-0,0 #5}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{f8d47ad VFED..CL. ......ID 0,0-0,0 #6}
+                com.android.launcher3.Hotseat{7cc6ae2 V.ED..... ......I. 0,0-0,0 #7f0a01ae app:id/hotseat}
+                  com.android.launcher3.ShortcutAndWidgetContainer{7668e73 V.E...... ......I. 0,0-0,0}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{603e130 VFED..CL. ......ID 0,0-0,0 #1}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{963b1a9 VFED..CL. ......ID 0,0-0,0 #2}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{14a532e VFED..CL. ......ID 0,0-0,0 #3}
+                    com.android.launcher3.uioverrides.PredictedAppIcon{5919ecf VFED..CL. ......ID 0,0-0,0}
+                  com.google.android.apps.nexuslauncher.qsb.SearchDelegateView{db03188 VFE...CL. ......I. 0,0-0,0 #7f0a02b5 app:id/search_container_hotseat}
+                    android.widget.ImageView{7de05c VFED..C.. ......I. 0,0-0,0 #7f0a0179 app:id/g_icon}
+                    android.widget.LinearLayout{31cbf65 V.E...... ......I. 0,0-0,0 #7f0a014c app:id/end_part}
+                      com.google.android.apps.nexuslauncher.qsb.AssistantIconView{dade34 V.ED..C.. ......I. 0,0-0,0 #7f0a020f app:id/mic_icon}
+                      android.widget.ImageButton{2ac743a VFED..C.. ......I. 0,0-0,0 #7f0a01dd app:id/lens_icon}
+                com.android.launcher3.pageindicators.WorkspacePageIndicator{db358eb V.ED..... ......I. 0,0-0,0 #7f0a0264 app:id/page_indicator}
+                com.android.launcher3.DropTargetBar{b36a648 I.E...... ......ID 0,0-0,0 #7f0a0133 app:id/drop_target_bar}
+                  com.android.launcher3.DeleteDropTarget{9eece1 V.ED..... ......I. 0,0-0,0 #7f0a0112 app:id/delete_target_text}
+                  com.android.launcher3.SecondaryDropTarget{6dd9a06 V.ED..... ......I. 0,0-0,0 #7f0a0392 app:id/uninstall_target_text}
+                com.android.launcher3.views.ScrimView{7ec98c7 V.ED..... ......I. 0,0-0,0 #7f0a02a7 app:id/scrim_view}
+                com.google.android.apps.nexuslauncher.allapps.SearchContainerView{733def4 I.ED..... ......I. 0,0-0,0 #7f0a0090 app:id/apps_view}
+                  android.widget.FrameLayout{3bc761d G.E...... ......I. 0,0-0,0 #7f0a00a9 app:id/bottom_sheet_background}
+                    android.view.View{aa95092 V.ED..... ......I. 0,0-0,0 #7f0a00ab app:id/bottom_sheet_handle_area}
+                    android.view.View{38ffa63 V.ED..... ......I. 0,0-0,0 #7f0a00aa app:id/bottom_sheet_handle}
+                  com.android.launcher3.allapps.SearchRecyclerView{e29f660 GFED..... ......I. 0,0-0,0 #7f0a02be app:id/search_results_list_view}
+                  com.android.launcher3.allapps.AllAppsRecyclerView{f2f5719 VFED..... ......I. 0,0-0,0 #7f0a008e app:id/apps_list_view}
+                  com.android.launcher3.allapps.FloatingHeaderView{d1ca45d V.E...... ......I. 0,0-0,0 #7f0a0076 app:id/all_apps_header}
+                    com.android.launcher3.appprediction.PredictionRowView{a07e3de V.E...... ......I. 0,0-0,0 #7f0a0277 app:id/prediction_row}
+                      com.android.launcher3.BubbleTextView{87dd9bf VFED..CL. ......I. 0,0-0,0 #7f0a01b9 app:id/icon}
+                      com.android.launcher3.BubbleTextView{ea8188c VFED..CL. ......I. 0,0-0,0 #7f0a01b9 app:id/icon}
+                      com.android.launcher3.BubbleTextView{d554bd5 VFED..CL. ......I. 0,0-0,0 #7f0a01b9 app:id/icon}
+                      com.android.launcher3.BubbleTextView{62a5fea VFED..CL. ......I. 0,0-0,0 #7f0a01b9 app:id/icon}
+                    com.android.launcher3.appprediction.AppsDividerView{24052db V.ED..... ......I. 0,0-0,0 #7f0a008d app:id/apps_divider_view}
+                    com.android.launcher3.workprofile.PersonalWorkSlidingTabStrip{f043178 G.E...... ......I. 0,0-0,0 #7f0a032f app:id/tabs}
+                      android.widget.Button{6abd051 VFED..C.. ......I. 0,0-0,0 #7f0a032c app:id/tab_personal}
+                      android.widget.Button{4690b6 VFED..C.. ......I. 0,0-0,0 #7f0a032d app:id/tab_work}
+                  android.widget.TextView{e741b7 V.ED..... ......ID 0,0-0,0 #7f0a0158 app:id/fast_scroller_popup}
+                  com.android.launcher3.views.RecyclerViewFastScroller{306ed24 V.ED..... ......I. 0,0-0,0 #7f0a0157 app:id/fast_scroller}
+                  com.google.android.apps.nexuslauncher.allapps.UniversalSearchInputView{934e91e V.E...... ......I. 0,0-0,0 #7f0a02b4 app:id/search_container_all_apps}
+                    android.widget.RelativeLayout{40c208d V.E...... ......I. 0,0-0,0}
+                      android.widget.FrameLayout{5230242 V.E...... ......I. 0,0-0,0 #7f0a0040 app:id/action_btn_container}
+                        android.widget.ImageButton{ba44253 IFED..C.. ......I. 0,0-0,0 #7f0a00d3 app:id/clear_btn}
+                        android.widget.ImageButton{57b790 IFED..C.. ......I. 0,0-0,0 #7f0a0207 app:id/menu_btn}
+                      android.widget.ImageView{8a73889 VFED..C.. ......I. 0,0-0,0 #7f0a0179 app:id/g_icon}
+                      com.google.android.apps.nexuslauncher.search.TypeAheadSearchInputView{563008e V.E...... ......I. 0,0-0,0 #7f0a038f app:id/typeahead_input}
+                        android.widget.TextView{126b0af I.ED..... ......ID 0,0-0,0 #7f0a01a7 app:id/hint}
+                        com.google.android.apps.nexuslauncher.search.SearchEditText{da8bcbc VFED..CL. ......I. 0,0-0,0 #7f0a01cd app:id/input}
+                      android.widget.LinearLayout{fc1d445 V.E...... ......I. 0,0-0,0 #7f0a014a app:id/end_icons}
+                        com.google.android.apps.nexuslauncher.qsb.AssistantIconView{8450215 V.ED..C.. ......I. 0,0-0,0 #7f0a020f app:id/mic_icon}
+                        android.widget.ImageButton{692979a VFED..C.. ......I. 0,0-0,0 #7f0a01dd app:id/lens_icon}
+                    android.view.View{1b7a8cb V.ED..... ......ID 0,0-0,0 #7f0a0298 app:id/ripple}
+                com.android.quickstep.views.LauncherRecentsView{8a2e8a8 I.ED..... ......I. 0,0-0,0 #7f0a0262 app:id/overview_panel}
+                com.google.android.apps.nexuslauncher.overview.NexusOverviewActionsView{a306fc1 V.E...... ......I. 0,0-0,0 #7f0a0260 app:id/overview_actions_view}
+                  android.widget.LinearLayout{8f29366 I.E...... ......I. 0,0-0,0 #7f0a0043 app:id/action_buttons}
+                    android.widget.Space{f1606a7 I.ED..... ......I. 0,0-0,0}
+                    android.widget.Button{e91e754 VFED..C.. ......I. 0,0-0,0 #7f0a005e app:id/action_screenshot}
+                    android.widget.Space{79346fd I.ED..... ......I. 0,0-0,0}
+                    android.widget.Button{e047ff2 VFED..C.. ......I. 0,0-0,0 #7f0a005f app:id/action_select}
+                    android.widget.Space{e126643 G.ED..... ......I. 0,0-0,0 #7f0a0063 app:id/action_split_space}
+                    android.widget.Button{3d024c0 GFED..C.. ......I. 0,0-0,0 #7f0a0062 app:id/action_split}
+                    android.widget.Space{75255f9 I.ED..... ......I. 0,0-0,0}
+                    android.widget.Space{bd6a93e G.ED..... ......I. 0,0-0,0 #7f0a0257 app:id/oav_three_button_space}
+                  android.widget.FrameLayout{5eb239f G.E...... ......I. 0,0-0,0 #7f0a02cf app:id/select_mode_buttons}
+                    android.widget.ImageButton{5f2ccec VFED..C.. ......I. 0,0-0,0 #7f0a00da app:id/close}
+                  com.google.android.apps.nexuslauncher.overview.ShareTargetsView{d5958b5 I.E...... ......I. 0,0-0,0 #7f0a02da app:id/share_targets_view}
+    Looper (main, tid 2) {9101b4a}
+      (Total messages: 0, polling=false, quitting=false)
+    ResourcesManager:
+      total apks: 6
+      resources: 9
+      resource impls: 5
+    2 dumpables:
+    #0: AutofillManager
+        AutofillManager:
+          sessionId: 2147483647
+          state: UNKNOWN
+          context: com.google.android.apps.nexuslauncher.NexusLauncherActivity@5c4929d
+          service client: null
+          client: android.view.autofill.AutofillClientController@9685abb (android.os.BinderProxy@f408ad)
+          enabled: false
+          enabledAugmentedOnly: false
+          hasService: true
+          hasCallback: false
+          onInvisibleCalled false
+          last autofilled data: null
+          id of last fill UI shown: null
+          tracked views: null
+          fillable ids: null
+          entered ids: null
+          save trigger id: null
+          save on finish(): false
+          options: logLvl=2, compatMode=false, augmented=false, appDisabledExpiration=0
+          compat mode enabled:   fill dialog enabled: false
+          fill dialog enabled hints: []
+        false
+          debug: true verbose: false
+        Autofill Compat Mode: false
+    #1: ContentCaptureManager
+        ContentCaptureManager
+          isContentCaptureEnabled(): true
+          Debug: true Verbose: false
+          Context: com.google.android.apps.nexuslauncher.NexusLauncherActivity@5c4929d
+          User: 0
+          Service: android.view.contentcapture.IContentCaptureManager$Stub$Proxy@4b5cbd8
+          Flags: 0
+          Options: logLvl=1, bufferSize=500, idle=5000, textIdle=1000, logSize=20, disableFlushForViewTreeAppearing=false
+          Main session:
+            id: 551732482
+            destroyed: false
+            mContext: com.google.android.apps.nexuslauncher.NexusLauncherActivity@5c4929d
+            user: 0
+            mDirectServiceInterface: android.view.contentcapture.IContentCaptureDirectManager$Stub$Proxy@693cb31
+            mDisabled: false
+            isEnabled(): true
+            state: 2 (ACTIVE)
+            app token: android.os.BinderProxy@f408ad
+            sharable activity token: android.os.BinderProxy@dbca216
+            component name: com.google.android.apps.nexuslauncher/.NexusLauncherActivity
+            flush history:
+        2026-10-31T16:24:06.196158 - r=FULL s=1 m=500 i=5000
+        2026-10-31T16:24:06.168302 - r=CONNECTED s=1 m=500 i=5000
+        
+            id: 551732482
+            destroyed: false
+    Misc:
+    	deviceProfile isTransposed=false
+    	orientation=1
+    	mSystemUiController: mStates=[10, 0, 0, 0, 0]
+    	mActivityFlags: 
+    	mForceInvisible: 0
+    	mWorkspaceLoading=true
+    	mPendingRequestArgs=null mPendingActivityResult=null
+    	mRotationHelper: [mStateHandlerRequest=0, mCurrentStateRequest=0, mLastActivityFlags=5, mIgnoreAutoRotateSettings=false, mHomeRotationEnabled=false, mForceAllowRotationForTesting=false]
+    	mAppWidgetHolder.isListening: false
+    DragLayer:
+    	dragLayerAlpha : [1.0]
+    StateManager:
+    	mLastStableState:Normal
+    	mCurrentStableState:Normal
+    	mState:Normal
+    	mRestState:null
+    	isInTransition:false
+    PopupDataProvider:
+    	mPackageUserToDotInfos:{}
+    DeviceProfile:
+    	1 dp = 2.625 px
+    	isTablet:false
+    	isPhone:true
+    	transposeLayoutWithOrientation:true
+    	isGestureMode:true
+    	isLandscape:false
+    	isMultiWindowMode:false
+    	isTwoPanels:false
+    	windowX: 0.0px (0.0dp)
+    	windowY: 0.0px (0.0dp)
+    	widthPx: 1080.0px (411.42856dp)
+    	heightPx: 2400.0px (914.2857dp)
+    	availableWidthPx: 1080.0px (411.42856dp)
+    	availableHeightPx: 2209.0px (841.5238dp)
+    	mInsets.left: 0.0px (0.0dp)
+    	mInsets.top: 128.0px (48.761906dp)
+    	mInsets.right: 0.0px (0.0dp)
+    	mInsets.bottom: 63.0px (24.0dp)
+    	aspectRatio:2.2222223
+    	isScalableGrid:true
+    	inv.numRows: 5
+    	inv.numColumns: 4
+    	inv.numSearchContainerColumns: 4
+    	minCellSize: PointF(80.0, 104.0)dp
+    	cellWidthPx: 210.0px (80.0dp)
+    	cellHeightPx: 272.0px (103.61905dp)
+    	getCellSize().x: 210.0px (80.0dp)
+    	getCellSize().y: 272.0px (103.61905dp)
+    	cellLayoutBorderSpacePx Horizontal: 42.0px (16.0dp)
+    	cellLayoutBorderSpacePx Vertical: 42.0px (16.0dp)
+    	cellLayoutPaddingPx.left: 28.0px (10.666667dp)
+    	cellLayoutPaddingPx.top: 28.0px (10.666667dp)
+    	cellLayoutPaddingPx.right: 28.0px (10.666667dp)
+    	cellLayoutPaddingPx.bottom: 28.0px (10.666667dp)
+    	iconSizePx: 173.0px (65.90476dp)
+    	iconTextSizePx: 37.0px (14.095238dp)
+    	iconDrawablePaddingPx: 17.0px (6.4761906dp)
+    	inv.numFolderRows: 3
+    	inv.numFolderColumns: 3
+    	folderCellWidthPx: 210.0px (80.0dp)
+    	folderCellHeightPx: 247.0px (94.09524dp)
+    	folderChildIconSizePx: 173.0px (65.90476dp)
+    	folderChildTextSizePx: 37.0px (14.095238dp)
+    	folderChildDrawablePaddingPx: 8.0px (3.047619dp)
+    	folderCellLayoutBorderSpacePx: 42.0px (16.0dp)
+    	folderContentPaddingLeftRight: 42.0px (16.0dp)
+    	folderTopPadding: 63.0px (24.0dp)
+    	folderFooterHeight: 126.0px (48.0dp)
+    	bottomSheetTopPadding: 156.0px (59.42857dp)
+    	bottomSheetOpenDuration: 267
+    	bottomSheetCloseDuration: 267
+    	bottomSheetWorkspaceScale: 1.0
+    	bottomSheetDepth: 0.0
+    	allAppsShiftRange: 788.0px (300.1905dp)
+    	allAppsTopPadding: 0.0px (0.0dp)
+    	allAppsOpenDuration: 600
+    	allAppsCloseDuration: 300
+    	allAppsIconSizePx: 173.0px (65.90476dp)
+    	allAppsIconTextSizePx: 37.0px (14.095238dp)
+    	allAppsIconDrawablePaddingPx: 18.0px (6.857143dp)
+    	allAppsCellHeightPx: 315.0px (120.0dp)
+    	allAppsCellWidthPx: 210.0px (80.0dp)
+    	allAppsBorderSpacePxX: 42.0px (16.0dp)
+    	allAppsBorderSpacePxY: 42.0px (16.0dp)
+    	numShownAllAppsColumns: 4
+    	allAppsLeftRightPadding: 57.0px (21.714285dp)
+    	allAppsLeftRightMargin: 0.0px (0.0dp)
+    	hotseatBarSizePx: 527.0px (200.7619dp)
+    	inv.hotseatColumnSpan: 4
+    	hotseatCellHeightPx: 195.0px (74.28571dp)
+    	hotseatBarBottomSpacePx: 126.0px (48.0dp)
+    	hotseatBarSidePaddingStartPx: 0.0px (0.0dp)
+    	hotseatBarSidePaddingEndPx: 0.0px (0.0dp)
+    	hotseatBarEndOffset: 0.0px (0.0dp)
+    	hotseatQsbSpace: 95.0px (36.190475dp)
+    	hotseatQsbHeight: 165.0px (62.857143dp)
+    	springLoadedHotseatBarTopMarginPx: 200.0px (76.190475dp)
+    	getHotseatLayoutPadding(context).top: 0.0px (0.0dp)
+    	getHotseatLayoutPadding(context).bottom: 332.0px (126.47619dp)
+    	getHotseatLayoutPadding(context).left: 75.0px (28.571428dp)
+    	getHotseatLayoutPadding(context).right: 75.0px (28.571428dp)
+    	numShownHotseatIcons: 4
+    	hotseatBorderSpace: 79.0px (30.095238dp)
+    	isQsbInline: false
+    	hotseatQsbWidth: 929.0px (353.90475dp)
+    	isTaskbarPresent:false
+    	isTaskbarPresentInApps:false
+    	taskbarHeight: 158.0px (60.190475dp)
+    	stashedTaskbarHeight: 63.0px (24.0dp)
+    	taskbarBottomMargin: 0.0px (0.0dp)
+    	taskbarIconSize: 116.0px (44.190475dp)
+    	desiredWorkspaceHorizontalMarginPx: 57.0px (21.714285dp)
+    	workspacePadding.left: 29.0px (11.047619dp)
+    	workspacePadding.top: 67.0px (25.52381dp)
+    	workspacePadding.right: 29.0px (11.047619dp)
+    	workspacePadding.bottom: 558.0px (212.57143dp)
+    	iconScale: 0.9981516px (0.38024822dp)
+    	cellScaleToFit : 0.9981516px (0.38024822dp)
+    	extraSpace: 186.0px (70.85714dp)
+    	unscaled extraSpace: 186.34444px (70.98836dp)
+    	maxEmptySpace: 299.0px (113.90476dp)
+    	workspaceTopPadding: 95.0px (36.190475dp)
+    	workspaceBottomPadding: 91.0px (34.666668dp)
+    	overviewTaskMarginPx: 42.0px (16.0dp)
+    	overviewTaskIconSizePx: 126.0px (48.0dp)
+    	overviewTaskIconDrawableSizePx: 116.0px (44.190475dp)
+    	overviewTaskIconDrawableSizeGridPx: 0.0px (0.0dp)
+    	overviewTaskThumbnailTopMarginPx: 168.0px (64.0dp)
+    	overviewActionsTopMarginPx: 63.0px (24.0dp)
+    	overviewActionsHeight: 126.0px (48.0dp)
+    	overviewActionsClaimedSpaceBelow: 63.0px (24.0dp)
+    	overviewActionsButtonSpacing: 95.0px (36.190475dp)
+    	overviewPageSpacing: 42.0px (16.0dp)
+    	overviewRowSpacing: 0.0px (0.0dp)
+    	overviewGridSideMargin: 0.0px (0.0dp)
+    	dropTargetBarTopMarginPx: 84.0px (32.0dp)
+    	dropTargetBarSizePx: 147.0px (56.0dp)
+    	dropTargetBarBottomMarginPx: 42.0px (16.0dp)
+    	getCellLayoutSpringLoadShrunkTop(): 401.0px (152.7619dp)
+    	getCellLayoutSpringLoadShrunkBottom(): 1673.0px (637.3333dp)
+    	workspaceSpringLoadedMinNextPageVisiblePx: 63.0px (24.0dp)
+    	getWorkspaceSpringLoadScale(): 0.8030303px (0.3059163dp)
+    	getCellLayoutHeight(): 1584.0px (603.4286dp)
+    	getCellLayoutWidth(): 1022.0px (389.33334dp)
+
+--- logfile: log-0 ---
+10/31/26 4:23 PM ModelWriter removing items from db . Reason: [removed because the corresponding package or component is removed. mOp=2 removedPackages=[com.android.nfc] removedComponents=[]]
+    Recent BC Smartspace Targets (most recent first)
+       Number of targets: 0
+
+       Number of targets: 0
+
+       Number of targets: 0
+
+       Number of targets: 0
+
+       Number of targets: 0
+
+    Data Model:
+     ---- workspace items 
+    	WorkspaceItemInfo(id=1 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a1bf6a targetComponent=ComponentInfo{com.google.android.dialer/com.google.android.dialer.extensions.GoogleDialtactsActivity} screen=0 cell(0,0) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Phone)
+    	WorkspaceItemInfo(id=2 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a1ca63 targetComponent=ComponentInfo{com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity} screen=1 cell(1,0) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Messages)
+    	WorkspaceItemInfo(id=3 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a1d55c targetComponent=ComponentInfo{com.android.chrome/com.google.android.apps.chrome.Main} screen=2 cell(2,0) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Chrome)
+    	WorkspaceItemInfo(id=4 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a430db targetComponent=ComponentInfo{com.google.android.gm/com.google.android.gm.ConversationListActivityGmail} screen=0 cell(1,4) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Gmail)
+    	WorkspaceItemInfo(id=5 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a67668 targetComponent=ComponentInfo{com.google.android.apps.photos/com.google.android.apps.photos.home.HomeActivity} screen=0 cell(2,4) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Photos)
+    	WorkspaceItemInfo(id=6 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a8bbf5 targetComponent=ComponentInfo{com.google.android.youtube/com.google.android.youtube.app.honeycomb.Shell$HomeActivity} screen=0 cell(3,4) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=YouTube)
+     ---- appwidget items 
+     ---- folder items 
+     ---- items id map 
+    	WorkspaceItemInfo(id=1 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a1bf6a targetComponent=ComponentInfo{com.google.android.dialer/com.google.android.dialer.extensions.GoogleDialtactsActivity} screen=0 cell(0,0) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Phone)
+    	WorkspaceItemInfo(id=2 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a1ca63 targetComponent=ComponentInfo{com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity} screen=1 cell(1,0) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Messages)
+    	WorkspaceItemInfo(id=3 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a1d55c targetComponent=ComponentInfo{com.android.chrome/com.google.android.apps.chrome.Main} screen=2 cell(2,0) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Chrome)
+    	WorkspaceItemInfo(id=4 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a430db targetComponent=ComponentInfo{com.google.android.gm/com.google.android.gm.ConversationListActivityGmail} screen=0 cell(1,4) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Gmail)
+    	WorkspaceItemInfo(id=5 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a67668 targetComponent=ComponentInfo{com.google.android.apps.photos/com.google.android.apps.photos.home.HomeActivity} screen=0 cell(2,4) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=Photos)
+    	WorkspaceItemInfo(id=6 type=APP container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@1a8bbf5 targetComponent=ComponentInfo{com.google.android.youtube/com.google.android.youtube.app.honeycomb.Shell$HomeActivity} screen=0 cell(3,4) span(1,1) minSpan(1,1) rank=0 user=UserHandle{0} title=YouTube)
+    DeviceSearchSettings:
+      ShortcutResult:true
+      PixelTipsResult:true
+      WebResult:true
+      PlaySearchResult:true
+      SettingsResult:true
+      PeopleResult:true
+    LauncherClient
+      isConnected: true
+      act.isBound: false
+      app.isBound: true
+      serviceVersion: 11
+      clientVersion: 20
+      isGoogleOverlayDefault: false
+      partnerOverlayProductName: 
+      isPartnerOverlayIconPresent: false
+      mActivityState: 0
+      mServiceStatus: 27
+      mCurrentServiceConnectionOptions: 15
+      Client event history:
+        16:24:04.923+0000  attachedToWindow
+        16:24:04.834+0000  stateChanged : 0
+        16:24:04.115+0000  stateChanged : 1 & 2 similar events
+        16:24:04.113+0000  setPrivateOptions : background_secondary_color_hint,override_bottom_inset,is_background_dark,system_ui_visibility,background_color_hint
+      Service event history:
+        16:24:06.215+0000  onScroll 0, overlay closed
+        16:24:06.215+0000  stateChanged: 0
+    DepthController
+    	mMaxBlurRadius=23
+    	mCrossWindowBlursEnabled=false
+    	mSurface=null
+    	mStateDepth=0.0
+    	mWidgetDepth=0.0
+    	mCurrentBlur=0
+    	mInEarlyWakeUp=false
+    	mIgnoreStateChangesDuringMultiWindowAnimation=false
+
+QuickstepLauncher:
+    	mOrientationState: [this=RecentsOrientedState@222460202 mOrientationHandler=PortraitPagedViewHandler@153676141 mDisplayRotation=0 mTouchRotation=0 mRecentsActivityRotation=0 mRecentsRotation=0 isRecentsActivityRotationAllowed=false mSystemRotation=true mStateId=38272 mFlags=299]
+NexusLauncher
+    OneSearch:
+    		shouldShowSuggest=true
+    		SearchRequestTimeout=200
+    		mEnableOneSearch=true
+    		mUseFallbackAppSearch=false
+    		mShowThreeDotMenuInQsb=false
+    		mLaunchOnDefaultBrowser=false
+    		mUseAppSearchForWeb=true
+    		mEnableQuickSearch=true
+    		mShowSearchEducardQsb=true
+    		mEnableImeLatencyLogger=false
+    		mEnableKeyboardSync=true
+    		mEnablePeekAndMatch=false
+    		mPeekStateCharlen=3
+    		mMatchStateCharlen=6
+    		mPeekBlocklen=4
+    		mEnableRichAnswer=true
+    		mEnableQuickLaunchV2=false
+    		mEnableQuickLaunchV3Qsb=false
+    		mEnableQuickLaunchV3AA=false
+    		mGboardUpdateEnterKey=false
+    		mEnableImpressionLogging=false
+    		mEnableHideGboardHeaderStatic=false
+    		mUninstalledAppsQueryLenLowerBound=4
+    		mUninstalledAppsQueryLenUpperBound=20
+    		mUninstalledAppsCount=2
+    		mIsTrampolineActivityEnabled=false
+    		mIsOpenSrpInBrowserSupported=false
+    LauncherSmartspace:
+    		mUpdatesPaused=false
+    		mIsAodEnabled=false
+    		mLastReceivedTargetIds={date_card_794317_92634}
+    		mAnimateSmartspaceUpdate=false
+    		mScrollState=0
+    		mCardPosition=0
+    		mPendingTargetIds=[]
+
+TASK 10174:com.obdreader.app.home id=10 userId=0
+  ACTIVITY com.obdreader.app/.HomeActivity fc21c17 pid=4645
+    Local Activity 3a1562 State:
+      mResumed=true mStopped=false mFinished=false
+      mIsInMultiWindowMode=false mIsInPictureInPictureMode=false
+      mChangingConfigurations=false
+      mCurrentConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h842dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 128 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.1 fontWeightAdjustment=0}
+      mLoadersStarted=true
+      Active Fragments in 8c3e94e:
+        #0: ReportFragment{cd44a6f #0 androidx.lifecycle.LifecycleDispatcher.report_fragment_tag}
+          mFragmentId=#0 mContainerId=#0 mTag=androidx.lifecycle.LifecycleDispatcher.report_fragment_tag
+          mState=5 mIndex=0 mWho=android:fragment:0 mBackStackNesting=0
+          mAdded=true mRemoving=false mFromLayout=false mInLayout=false
+          mHidden=false mDetached=false mMenuVisible=true mHasMenu=false
+          mRetainInstance=false mRetaining=false mUserVisibleHint=true
+          mFragmentManager=FragmentManager{8c3e94e in HostCallbacks{5ebb37c}}
+          mHost=android.app.Activity$HostCallbacks@5ebb37c
+          Child FragmentManager{3f36405 in ReportFragment{cd44a6f}}:
+            FragmentManager misc state:
+              mHost=android.app.Activity$HostCallbacks@5ebb37c
+              mContainer=android.app.Fragment$1@7f94c5a
+              mParent=ReportFragment{cd44a6f #0 androidx.lifecycle.LifecycleDispatcher.report_fragment_tag}
+              mCurState=5 mStateSaved=false mDestroyed=false
+      Added Fragments:
+        #0: ReportFragment{cd44a6f #0 androidx.lifecycle.LifecycleDispatcher.report_fragment_tag}
+      FragmentManager misc state:
+        mHost=android.app.Activity$HostCallbacks@5ebb37c
+        mContainer=android.app.Activity$HostCallbacks@5ebb37c
+        mCurState=5 mStateSaved=false mDestroyed=false
+    ViewRoot:
+      mAdded=true
+      mRemoved=false
+      mStopped=false
+      mPausedForTransition=false
+      mConsumeBatchedInputScheduled=false
+      mConsumeBatchedInputImmediatelyScheduled=false
+      mPendingInputEventCount=0
+      mProcessInputEventsScheduled=false
+      mTraversalScheduled=false
+      mReportNextDraw=false
+      mLocalSyncState=3
+      mLastReportedMergedConfiguration={mGlobalConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h842dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 128 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.111 fontWeightAdjustment=0} mOverrideConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h842dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 128 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.1 fontWeightAdjustment=0}}
+      mLastConfigurationFromResources={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h842dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 128 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.1 fontWeightAdjustment=0}
+      mIsAmbientMode=false
+      mUnbufferedInputSource=0
+      mAttachInfo=       AttachInfo:
+        mHasWindowFocus=true
+        mWindowVisibility=0
+        mInTouchMode=true
+        mUnbufferedDispatchRequested=false
+      android.view.ViewRootImpl$NativePreImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$ImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$NativePostImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$WindowInputEventReceiver
+       mInputChannel: f081033 com.obdreader.app/com.obdreader.app.HomeActivity (client)
+       mSeqMap: {}
+       mReceiverPtr:
+        mInputConsumer:
+          mResampleTouch = true
+          mChannel = f081033 com.obdreader.app/com.obdreader.app.HomeActivity (client)
+          mMsgDeferred: false
+          Batches:
+              <empty>
+          mSeqChains:
+              <empty>
+          mConsumeTimes:
+              <empty>
+          
+        mBatchedInputEventPending: false
+        mOutboundQueue:
+          <empty>
+        
+    Choreographer:
+      mFrameScheduled=false
+      mLastFrameTime=100396 (4257 ms ago)
+    InsetsController:
+      InsetsState
+        mDisplayFrame=Rect(0, 0 - 1080, 2400)
+        mDisplayCutout=DisplayCutout{insets=Rect(0, 128 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(492, 0 - 610, 128), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.625} cutoutSpec={M 507,64 a 33,33 0 1 0 66,0 33,33 0 1 0 -66,0 Z @left} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}}}
+        mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=28, center=Point(28, 28)}, RoundedCorner{position=TopRight, radius=28, center=Point(1052, 28)}, RoundedCorner{position=BottomRight, radius=28, center=Point(1052, 2372)}, RoundedCorner{position=BottomLeft, radius=28, center=Point(28, 2372)}]}
+        mRoundedCornerFrame=Rect(0, 0 - 1080, 2400)
+        mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(827, 0 - 1043, 128) rotation=0}
+          InsetsSource type=ITYPE_STATUS_BAR frame=[0,0][1080,128] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_NAVIGATION_BAR frame=[0,2337][1080,2400] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_LEFT_GESTURES frame=[0,0][78,2400] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_RIGHT_GESTURES frame=[1002,0][1080,2400] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_TOP_MANDATORY_GESTURES frame=[0,0][1080,160] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_BOTTOM_MANDATORY_GESTURES frame=[0,2316][1080,2400] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_TOP_DISPLAY_CUTOUT frame=[0,0][1080,128] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_TOP_TAPPABLE_ELEMENT frame=[0,0][1080,128] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_BOTTOM_TAPPABLE_ELEMENT frame=[0,0][0,0] visible=true insetsRoundedCornerFrame=false
+          InsetsSource type=ITYPE_IME frame=[0,0][0,0] visibleFrame=[0,2274][1080,2400] visible=false insetsRoundedCornerFrame=false
+    WindowOnBackDispatcher:
+        Top Callback: android.view.ViewRootImpl$$ExternalSyntheticLambda14@72ebad5
+        Callbacks: 
+          Callback: android.view.ViewRootImpl$$ExternalSyntheticLambda14@72ebad5 Priority=0
+    View Hierarchy:
+      DecorView@2051e8b[HomeActivity]
+        android.widget.LinearLayout{72d5b24 V.E...... ........ 0,0-1080,2400}
+          android.view.ViewStub{5fe8b68 G.E...... ......I. 0,0-0,0 #10201c5 android:id/action_mode_bar_stub}
+          android.widget.FrameLayout{1ecf68d V.E...... ........ 0,0-1080,2400}
+            androidx.appcompat.widget.FitWindowsLinearLayout{3122042 V.E...... ........ 0,0-1080,2400 #7f0a0034 app:id/action_bar_root aid=1073741875}
+              androidx.appcompat.widget.ViewStubCompat{64b3b81 G.E...... ......I. 0,0-0,0 #7f0a003f app:id/action_mode_bar_stub aid=1073741876}
+              androidx.appcompat.widget.ContentFrameLayout{9980853 V.E...... ........ 0,0-1080,2400 #1020002 android:id/content}
+                android.widget.LinearLayout{b770590 V.E...... ........ 0,0-1080,2400 #7f0a01b0 app:id/root aid=1073741877}
+                  android.widget.FrameLayout{2bf6e89 V.E...... ........ 0,0-1080,2190}
+                    androidx.core.widget.NestedScrollView{190d6af VFED..... ........ 0,0-1080,2190 #7f0a0187 app:id/pageDashboard aid=1073741878}
+                      android.widget.FrameLayout{66eeabc V.E...... ........ 0,0-1080,5154}
+                        com.obdreader.app.ui.LiveryStripesView{387759a V.ED..... ........ 0,0-1080,288 #7f0a01f6 app:id/stripesDash aid=1073741879}
+                        android.widget.LinearLayout{2276a45 V.E...... ........ 0,0-1080,5154 #7f0a0089 app:id/content aid=1073741880}
+                          android.widget.LinearLayout{59e2ecb V.E...... ........ 42,128-1038,485 #7f0a0232 app:id/topBar aid=1073741881}
+                            com.google.android.material.textview.MaterialTextView{a55273e V.ED..... ........ 0,267-576,330 #7f0a022b app:id/titleDashboard aid=1073741882}
+                            android.widget.TextClock{2ac99f V.ED..... ........ 576,267-869,330 #7f0a0099 app:id/dashClock aid=1073741883}
+                            androidx.appcompat.widget.AppCompatImageButton{ba07aec VFED..C.. ........ 880,241-996,357 #7f0a0228 app:id/themeButton}
+                          android.widget.LinearLayout{29df6a8 V.E...... ........ 42,485-1038,1953 #7f0a010a app:id/layoutLivery aid=1073741884}
+                            com.obdreader.app.ui.RoundelView{7506eb5 V.ED..... ........ 0,21-996,808 #7f0a01b3 app:id/rpmRoundel aid=1073741885}
+                            com.obdreader.app.ui.StartLightsView{3f8794a V.ED..... ........ 0,813-996,886 #7f0a01eb app:id/startLights aid=1073741886}
+                            android.widget.FrameLayout{efc60bb V.E...... ........ 0,928-996,1201 #7f0a009d app:id/decalSpeed aid=1073741887}
+                              com.obdreader.app.ui.DecalView{7e64131 V.ED..... ........ 0,0-996,273}
+                            android.widget.LinearLayout{29059d8 V.E...... ........ 0,1227-996,1468}
+                              android.widget.FrameLayout{1cce016 V.E...... ........ 0,0-485,241 #7f0a009b app:id/decalCoolant aid=1073741888}
+                                com.obdreader.app.ui.DecalView{99d3b84 V.ED..... ........ 0,0-485,241}
+                              android.widget.FrameLayout{7864d97 V.E...... ........ 511,0-996,241 #7f0a009c app:id/decalFuel aid=1073741889}
+                                com.obdreader.app.ui.DecalView{c2cbf6d V.ED..... ........ 0,0-485,241}
+                          android.widget.LinearLayout{efd426 G.E...... ......I. 0,0-0,0 #7f0a010b app:id/layoutTelemetry aid=1073741890}
+                            com.obdreader.app.ui.ShiftLightsView{4251867 V.ED..... ......I. 0,0-0,0 #7f0a01d0 app:id/shiftLights}
+                            android.widget.LinearLayout{7e4f614 V.E...... ......I. 0,0-0,0}
+                              android.view.View{6ef0ebd V.ED..... ......ID 0,0-0,0 #7f0a0211 app:id/teleRpmBar}
+                              android.widget.LinearLayout{d750cb2 V.E...... ......I. 0,0-0,0}
+                                com.google.android.material.textview.MaterialTextView{860d403 V.ED..... ......ID 0,0-0,0}
+                                com.obdreader.app.ui.FitTextView{f255f80 V.ED..... ......ID 0,0-0,0 #7f0a0210 app:id/teleRpm}
+                                com.google.android.material.textview.MaterialTextView{302d9b9 V.ED..... ......ID 0,0-0,0}
+                              android.view.View{4a341fe V.ED..... ......ID 0,0-0,0 #7f0a0213 app:id/teleSpeedBar}
+                              android.widget.LinearLayout{12ad5f V.E...... ......I. 0,0-0,0}
+                                com.google.android.material.textview.MaterialTextView{f40f3ac V.ED..... ......ID 0,0-0,0}
+                                com.obdreader.app.ui.FitTextView{bee5875 V.ED..... ......ID 0,0-0,0 #7f0a0212 app:id/teleSpeed}
+                                com.google.android.material.textview.MaterialTextView{2ed800a V.ED..... ......I. 0,0-0,0 #7f0a0214 app:id/teleSpeedUnit}
+                            android.widget.LinearLayout{ddec07b V.E...... ......I. 0,0-0,0 #7f0a020f app:id/telePanel}
+                              com.obdreader.app.ui.TraceView{9f9e98 V.ED..... ......I. 0,0-0,0 #7f0a0215 app:id/teleTrace}
+                              com.google.android.material.textview.MaterialTextView{7d906f1 V.ED..... ......ID 0,0-0,0 #7f0a020e app:id/teleLegend}
+                            android.widget.LinearLayout{6eb92d6 V.E...... ......I. 0,0-0,0}
+                              com.obdreader.app.ui.FitTextView{8ee957 V.ED..... ......I. 0,0-0,0 #7f0a020c app:id/teleCoolant}
+                              com.obdreader.app.ui.FitTextView{83c0c44 V.ED..... ......I. 0,0-0,0 #7f0a020d app:id/teleFuel}
+                          android.widget.LinearLayout{de6212d G.E...... ......I. 0,0-0,0 #7f0a0108 app:id/layoutCockpit aid=1073741891}
+                            com.obdreader.app.ui.CockpitRingView{ee60662 V.ED..... ......I. 0,0-0,0 #7f0a0083 app:id/cockpitRing}
+                            android.widget.LinearLayout{faec3f3 V.E...... ......I. 0,0-0,0 #7f0a00e1 app:id/glassRow}
+                              android.widget.LinearLayout{e0fa8b0 V.E...... ......I. 0,0-0,0}
+                                android.widget.TextView{a30a329 V.ED..... ......ID 0,0-0,0}
+                                android.widget.LinearLayout{32226ae V.E...... ......I. 0,0-0,0}
+                                  android.widget.TextView{5e7ac4f V.ED..... ......ID 0,0-0,0}
+                                  android.widget.TextView{e3e9fdc V.ED..... ......ID 0,0-0,0}
+                              android.widget.LinearLayout{58748e5 V.E...... ......I. 0,0-0,0}
+                                android.widget.TextView{8edffba V.ED..... ......ID 0,0-0,0}
+                                android.widget.LinearLayout{51cbe6b V.E...... ......I. 0,0-0,0}
+                                  android.widget.TextView{103ddc8 V.ED..... ......ID 0,0-0,0}
+                                  android.widget.TextView{ce88e61 V.ED..... ......ID 0,0-0,0}
+                              android.widget.LinearLayout{a6c5d86 V.E...... ......I. 0,0-0,0}
+                                android.widget.TextView{46d647 V.ED..... ......ID 0,0-0,0}
+                                android.widget.LinearLayout{55d0e74 V.E...... ......I. 0,0-0,0}
+                                  android.widget.TextView{4beaf9d V.ED..... ......ID 0,0-0,0}
+                                  android.widget.TextView{f20cc12 V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{7108fe3 G.E...... ......I. 0,0-0,0 #7f0a0109 app:id/layoutCyberpunk aid=1073741892}
+                            com.obdreader.app.ui.CyberHudView{a769de0 V.ED..... ......I. 0,0-0,0 #7f0a0096 app:id/cyberHud}
+                            android.widget.LinearLayout{3dba899 V.E...... ......I. 0,0-0,0 #7f0a0097 app:id/cyberRow}
+                              com.obdreader.app.ui.CyberChipView{13b975e V.ED..... ......I. 0,0-0,0}
+                              com.obdreader.app.ui.CyberChipView{f32473f V.ED..... ......I. 0,0-0,0}
+                              com.obdreader.app.ui.CyberChipView{3d7b80c V.ED..... ......I. 0,0-0,0}
+                          android.widget.LinearLayout{c5965c1 V.E...... ........ 42,2000-1038,2152}
+                            com.obdreader.app.ui.SkewButton{caee7a2 VFED..C.. ........ 0,0-672,152 #7f0a0087 app:id/connectButton aid=1073741893}
+                            com.obdreader.app.ui.SkewButton{a582c33 VFED..C.. ........ 698,0-996,152 #7f0a00a3 app:id/demoButton aid=1073741894}
+                          com.google.android.material.textview.MaterialTextView{3575166 V.ED..... ........ 42,2184-282,2240 #7f0a01f1 app:id/statusText aid=1073741895}
+                          com.google.android.material.textview.MaterialTextView{1deeca7 V.ED..... ........ 42,2245-1038,2333 #7f0a01f0 app:id/statusDetail aid=1073741896}
+                          android.widget.LinearLayout{2353555 G.E...... ......I. 0,0-0,0 #7f0a01a7 app:id/recordGroup aid=1073741897}
+                            com.obdreader.app.ui.SkewButton{ba5cb6a VF.D..C.. ......I. 0,0-0,0 #7f0a01a6 app:id/recordButton}
+                            com.google.android.material.textview.MaterialTextView{78e185b V.ED..... ......ID 0,0-0,0 #7f0a01a8 app:id/recordStatus}
+                          com.google.android.material.button.MaterialButton{44e48f8 GFED..C.. ......I. 0,0-0,0 #7f0a007b app:id/chooseCarButton aid=1073741898}
+                          com.google.android.material.textview.MaterialTextView{82fd554 V.ED..... ........ 42,2407-479,2489 aid=1073741899}
+                          com.google.android.material.button.MaterialButtonToggleGroup{2559cfd V.E...... ........ 42,2515-1038,2641 #7f0a01bb app:id/scoreStyle aid=1073741900}
+                            com.google.android.material.button.MaterialButton{7748bf0 VFED..C.. ........ 0,0-334,126 #7f0a01f9 app:id/styleEfficiency aid=1073741901}
+                            com.google.android.material.button.MaterialButton{ae2e569 VFED..C.. ........ 331,0-665,126 #7f0a01fa app:id/styleEveryday aid=1073741903}
+                            com.google.android.material.button.MaterialButton{cb7dbee VFED..C.. ........ 662,0-996,126 #7f0a01fb app:id/styleRacing aid=1073741902}
+                          android.widget.LinearLayout{cf71df2 V.E...... ........ 42,2662-1038,3278 #7f0a01ba app:id/scoreCard aid=1073741904}
+                            android.widget.LinearLayout{75f588f V.E...... ........ 42,42-954,179}
+                              android.widget.TextView{2ffca87 V.ED..... ........ 0,-4-158,133 aid=1073741905}
+                              android.widget.TextView{2088db4 V.ED..... ........ 158,67-245,137 aid=1073741906}
+                            android.widget.TextView{e2e771c V.ED..... ........ 42,179-954,292 aid=1073741907}
+                            android.widget.LinearLayout{dbb6f25 V.E...... ........ 42,292-954,376}
+                              android.widget.TextView{6095ddd V.ED..... ........ 0,22-876,77 aid=1073741908}
+                              android.widget.TextView{760d1d1 V.ED..... ........ 876,21-912,77 aid=1073741909}
+                            com.google.android.material.progressindicator.LinearProgressIndicator{49c8fa V.ED..... ........ 42,376-954,386}
+                            android.widget.LinearLayout{602eeab V.E...... ........ 42,386-954,470}
+                              android.widget.TextView{ccd3436 V.ED..... ........ 0,22-876,77 aid=1073741910}
+                              android.widget.TextView{10bdf37 V.ED..... ........ 876,21-912,77 aid=1073741911}
+                            com.google.android.material.progressindicator.LinearProgressIndicator{739e908 V.ED..... ........ 42,470-954,480}
+                            android.widget.LinearLayout{cd8d8a1 V.E...... ........ 42,480-954,564}
+                              android.widget.TextView{b9afca4 V.ED..... ........ 0,22-876,77 aid=1073741912}
+                              android.widget.TextView{4cfba0d V.ED..... ........ 876,21-912,77 aid=1073741913}
+                            com.google.android.material.progressindicator.LinearProgressIndicator{7db7ac6 V.ED..... ........ 42,564-954,574}
+                          android.widget.LinearLayout{b83ac43 V.E...... ........ 42,3304-1038,3440}
+                            com.obdreader.app.ui.SkewButton{a305dc2 VFED..C.. ........ 0,0-996,136 #7f0a0194 app:id/perfButton aid=1073741914}
+                            com.obdreader.app.ui.SkewButton{93537d3 GFED..C.. ......I. 0,0-0,0}
+                            com.obdreader.app.ui.SkewButton{2dd3f10 GFED..C.. ......I. 0,0-0,0 #7f0a00f1 app:id/historyButton aid=1073741915}
+                          com.google.android.material.textview.MaterialTextView{45ef2c0 V.ED..... ........ 42,3514-350,3596 aid=1073741916}
+                          android.widget.LinearLayout{ae40bf9 V.E...... ........ 42,3622-1038,5080 #7f0a00de app:id/gaugeGrid aid=1073741917}
+                            com.obdreader.app.ui.TowerRowView{7caea09 V.ED..... ........ 0,0-996,152}
+                            com.obdreader.app.ui.TowerRowView{aa940e V.ED..... ........ 0,162-996,314}
+                            com.obdreader.app.ui.TowerRowView{2917e2f V.ED..... ........ 0,324-996,476}
+                            com.obdreader.app.ui.TowerRowView{3bf3c3c V.ED..... ........ 0,486-996,638}
+                            com.obdreader.app.ui.TowerRowView{f2f1dc5 V.ED..... ........ 0,648-996,800}
+                            com.obdreader.app.ui.TowerRowView{d7fe31a V.ED..... ........ 0,810-996,962}
+                            com.obdreader.app.ui.TowerRowView{6c1ce4b V.ED..... ........ 0,972-996,1124}
+                            com.obdreader.app.ui.TowerRowView{661e028 V.ED..... ........ 0,1134-996,1286}
+                            com.obdreader.app.ui.TowerRowView{e8d141 V.ED..... ........ 0,1296-996,1448}
+                    androidx.core.widget.NestedScrollView{c2916e6 GFED..... ......I. 0,0-0,0 #7f0a0189 app:id/pageGraphs aid=1073741918}
+                      android.widget.FrameLayout{e5d0427 V.E...... ......I. 0,0-0,0}
+                        com.obdreader.app.ui.LiveryStripesView{208d6d4 V.ED..... ......I. 0,0-0,0 #7f0a01f8 app:id/stripesGraphs}
+                        android.widget.LinearLayout{b30407d V.E...... ......I. 0,0-0,0 #7f0a008b app:id/contentGraphs}
+                          com.google.android.material.textview.MaterialTextView{4dfbb72 V.ED..... ......I. 0,0-0,0 #7f0a022e app:id/titleGraphs}
+                          com.google.android.material.textview.MaterialTextView{a8bbbc3 V.ED..... ......ID 0,0-0,0 #7f0a00e8 app:id/graphRate}
+                          com.google.android.material.chip.ChipGroup{c868c40 V.E...... ......I. 0,0-0,0 #7f0a00e4 app:id/graphChips}
+                            com.google.android.material.chip.Chip{d856779 VFED..C.. ......ID 0,0-0,0 #2}
+                            com.google.android.material.chip.Chip{7ea1cbe VFED..C.. ......ID 0,0-0,0 #3}
+                            com.google.android.material.chip.Chip{c64511f VFED..C.. ......ID 0,0-0,0 #4}
+                            com.google.android.material.chip.Chip{4682c6c VFED..C.. ......ID 0,0-0,0 #5}
+                            com.google.android.material.chip.Chip{56c0235 VFED..C.. ......ID 0,0-0,0 #6}
+                            com.google.android.material.chip.Chip{1a746ca VFED..C.. ......ID 0,0-0,0 #7}
+                            com.google.android.material.chip.Chip{606e03b VFED..C.. ......ID 0,0-0,0 #8}
+                            com.google.android.material.chip.Chip{1e1a358 VFED..C.. ......ID 0,0-0,0 #9}
+                            com.google.android.material.chip.Chip{ae78cb1 VFED..C.. ......ID 0,0-0,0 #a}
+                            com.google.android.material.chip.Chip{35b0596 VFED..C.. ......ID 0,0-0,0 #b}
+                            com.google.android.material.chip.Chip{1794517 VFED..C.. ......ID 0,0-0,0 #c}
+                            com.google.android.material.chip.Chip{a799d04 VFED..C.. ......ID 0,0-0,0 #d}
+                            com.google.android.material.chip.Chip{8b742ed VFED..C.. ......ID 0,0-0,0 #e}
+                          com.google.android.material.button.MaterialButton{cb9e522 VFED..C.. ......I. 0,0-0,0 #7f0a00e6 app:id/graphOrder}
+                          android.widget.LinearLayout{9431bb3 V.E...... ......I. 0,0-0,0}
+                            com.google.android.material.button.MaterialButtonToggleGroup{3758570 V.E...... ......I. 0,0-0,0 #7f0a00e9 app:id/graphWindow}
+                              com.google.android.material.button.MaterialButton{c5220e9 VFED..C.. ......I. 0,0-0,0 #7f0a0270 app:id/window10}
+                              com.google.android.material.button.MaterialButton{235316e VFED..C.. ......I. 0,0-0,0 #7f0a0271 app:id/window30}
+                              com.google.android.material.button.MaterialButton{ec9c00f VFED..C.. ......I. 0,0-0,0 #7f0a0272 app:id/window60}
+                            com.google.android.material.button.MaterialButton{f05889c VFED..C.. ......I. 0,0-0,0 #7f0a00e7 app:id/graphPause}
+                          android.widget.LinearLayout{9a2e2a5 V.E...... ......I. 0,0-0,0 #7f0a00e5 app:id/graphList}
+                            com.obdreader.app.ui.GraphStripView{c06f67a V.ED...L. ......ID 0,0-0,0}
+                            com.obdreader.app.ui.GraphStripView{a6c4e2b V.ED...L. ......ID 0,0-0,0}
+                            com.obdreader.app.ui.GraphStripView{309288 V.ED...L. ......ID 0,0-0,0}
+                          com.google.android.material.textview.MaterialTextView{e840421 V.ED..... ......ID 0,0-0,0}
+                          com.google.android.material.button.MaterialButton{9fe0046 VFED..C.. ......I. 0,0-0,0 #7f0a01b6 app:id/savedLogsButton}
+                    androidx.core.widget.NestedScrollView{15fa207 GFED..... ......I. 0,0-0,0 #7f0a0188 app:id/pageDiagnostics aid=1073741919}
+                      android.widget.FrameLayout{1804f34 V.E...... ......I. 0,0-0,0}
+                        com.obdreader.app.ui.LiveryStripesView{1fbc15d V.ED..... ......I. 0,0-0,0 #7f0a01f7 app:id/stripesDiag}
+                        android.widget.LinearLayout{809dad2 V.E...... ......I. 0,0-0,0 #7f0a008a app:id/contentDiag}
+                          com.google.android.material.textview.MaterialTextView{d4a57a3 V.ED..... ......I. 0,0-0,0 #7f0a022c app:id/titleDiagnostics}
+                          com.google.android.material.textview.MaterialTextView{a6d2aa0 V.ED..... ......ID 0,0-0,0 #7f0a01f2 app:id/statusText2}
+                          com.obdreader.app.ui.MilBannerView{b381659 V.ED..... ......I. 0,0-0,0 #7f0a0137 app:id/milBanner}
+                            androidx.appcompat.widget.AppCompatImageView{f86d21e V.ED..... ......ID 0,0-0,0 #7f0a0138 app:id/milLamp}
+                            android.widget.LinearLayout{1a0caff V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{f8a50cc V.ED..... ......ID 0,0-0,0 #7f0a00b8 app:id/dtcStatus}
+                              com.google.android.material.textview.MaterialTextView{c4abf15 V.ED..... ......ID 0,0-0,0 #7f0a00b9 app:id/dtcSub}
+                          android.widget.LinearLayout{149f22a V.E...... ......I. 0,0-0,0}
+                            com.obdreader.app.ui.SkewButton{ac1181b VF.D..C.. ......I. 0,0-0,0 #7f0a01a2 app:id/readDtcButton}
+                          com.google.android.material.button.MaterialButton{971adb8 GFED..C.. ......I. 0,0-0,0 #7f0a01cf app:id/shareReportButton}
+                          android.widget.LinearLayout{ca53791 V.E...... ......I. 0,0-0,0 #7f0a00b7 app:id/dtcContainer}
+                          com.google.android.material.textview.MaterialTextView{46d06f6 V.ED..... ......ID 0,0-0,0}
+                          com.obdreader.app.ui.VinDecalView{2cf1af7 V.ED..... ......I. 0,0-0,0 #7f0a0251 app:id/vinDecal}
+                            com.google.android.material.textview.MaterialTextView{e6fed64 V.ED..... ......ID 0,0-0,0 #7f0a0253 app:id/vinLabel}
+                            com.google.android.material.textview.MaterialTextView{f54bbcd VFED..CL. ......I. 0,0-0,0 #7f0a0257 app:id/vinText}
+                          android.widget.LinearLayout{5da9c82 V.E...... ......I. 0,0-0,0}
+                            android.widget.LinearLayout{8506f93 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{af07bd0 V.ED..... ......ID 0,0-0,0 #7f0a024a app:id/vehicleText}
+                              com.google.android.material.textview.MaterialTextView{fe47c9 V.ED..... ......ID 0,0-0,0 #7f0a019f app:id/protocolText}
+                            com.google.android.material.button.MaterialButton{499fece VF.D..C.. ......I. 0,0-0,0 #7f0a0250 app:id/vinButton}
+                          com.google.android.material.textview.MaterialTextView{28871ef G.ED..... ......I. 0,0-0,0 #7f0a0254 app:id/vinMismatch}
+                          com.google.android.material.button.MaterialButton{4a984fc GFED..C.. ......I. 0,0-0,0 #7f0a0255 app:id/vinMismatchFix}
+                          com.google.android.material.textview.MaterialTextView{99a9785 GFED..CL. ......I. 0,0-0,0 #7f0a0256 app:id/vinNote}
+                          com.google.android.material.button.MaterialButton{6db39da VFED..C.. ......I. 0,0-0,0 #7f0a0252 app:id/vinEnter}
+                          com.google.android.material.textview.MaterialTextView{f943e0b V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{487f4e8 V.E...... ......I. 0,0-0,0 #7f0a0058 app:id/batteryCard}
+                            com.google.android.material.textview.MaterialTextView{df22701 V.ED..... ......ID 0,0-0,0 #7f0a005b app:id/batteryRating}
+                            com.google.android.material.textview.MaterialTextView{3c319a6 V.ED..... ......ID 0,0-0,0 #7f0a005c app:id/batteryText}
+                            com.google.android.material.textview.MaterialTextView{846afe7 G.ED..... ......I. 0,0-0,0 #7f0a0059 app:id/batteryHistory}
+                            android.widget.LinearLayout{35b7794 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{cd9323d V.ED..... ......ID 0,0-0,0 #1}
+                              com.google.android.material.materialswitch.MaterialSwitch{df72a32 VFED..C.. ......I. 0,0-0,0 #7f0a005d app:id/batteryWatchSwitch}
+                            com.google.android.material.textview.MaterialTextView{5c46383 V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.textview.MaterialTextView{5427900 G.ED..... ......I. 0,0-0,0 #7f0a005a app:id/batteryNight}
+                          com.google.android.material.textview.MaterialTextView{42bb539 V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{ae9b77e VFE...C.. ......I. 0,0-0,0 #7f0a006d app:id/carRow}
+                            android.widget.LinearLayout{4dfb4df V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{fd6252c V.ED..... ......ID 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{9896bf5 V.ED..... ......ID 0,0-0,0 #7f0a006f app:id/carSetting}
+                              androidx.appcompat.widget.AppCompatImageView{2e5cd8a V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.textview.MaterialTextView{334bffb V.ED..... ......ID 0,0-0,0 #7f0a0069 app:id/carHelp}
+                            com.google.android.material.textview.MaterialTextView{7166818 GFED..C.. ......I. 0,0-0,0 #7f0a0068 app:id/carExpect}
+                          android.widget.LinearLayout{2d1d271 VFE...C.. ......I. 0,0-0,0 #7f0a019d app:id/protocolRow}
+                            android.widget.LinearLayout{5db3856 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{20560d7 V.ED..... ......ID 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{d15edc4 V.ED..... ......ID 0,0-0,0 #7f0a019e app:id/protocolSetting}
+                              androidx.appcompat.widget.AppCompatImageView{a6024ad V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.textview.MaterialTextView{ea83e2 V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{ad53373 VFE...C.. ......I. 0,0-0,0 #7f0a01a4 app:id/reconnectRow}
+                            android.widget.LinearLayout{662230 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{b075ea9 V.ED..... ......ID 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{b0fc2e V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.materialswitch.MaterialSwitch{1c593cf VFED..C.. ......I. 0,0-0,0 #7f0a01a5 app:id/reconnectSwitch}
+                          android.widget.LinearLayout{543315c VFE...C.. ......I. 0,0-0,0 #7f0a01b9 app:id/scanRow}
+                            android.widget.LinearLayout{fce3c65 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{c54ad3a V.ED..... ......ID 0,0-0,0}
+                              androidx.appcompat.widget.AppCompatImageView{1b19deb V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.textview.MaterialTextView{5800748 V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{36b39e1 VFE...C.. ......I. 0,0-0,0 #7f0a01a3 app:id/readinessRow}
+                            android.widget.LinearLayout{5506306 V.E...... ......I. 0,0-0,0}
+                              android.widget.TextView{e0a2dc7 V.ED..... ......ID 0,0-0,0}
+                              android.widget.ImageView{3324ff4 V.ED..... ......ID 0,0-0,0}
+                            android.widget.TextView{b80931d V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{7ffa992 VFE...C.. ......I. 0,0-0,0 #7f0a0217 app:id/testsRow}
+                            android.widget.LinearLayout{671df63 V.E...... ......I. 0,0-0,0}
+                              android.widget.TextView{a1e7760 V.ED..... ......ID 0,0-0,0}
+                              android.widget.ImageView{b984419 V.ED..... ......ID 0,0-0,0}
+                            android.widget.TextView{8eaccde V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{8190ebf VFE...C.. ......I. 0,0-0,0 #7f0a013c app:id/modulesRow}
+                            android.widget.LinearLayout{be3a98c V.E...... ......I. 0,0-0,0}
+                              android.widget.TextView{be008d5 V.ED..... ......ID 0,0-0,0}
+                              android.widget.ImageView{ad2d8ea V.ED..... ......ID 0,0-0,0}
+                            android.widget.TextView{8d9d7db V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{2e7d278 VFE...C.. ......I. 0,0-0,0 #7f0a00c7 app:id/enhancedRow}
+                            android.widget.LinearLayout{fa55d51 V.E...... ......I. 0,0-0,0}
+                              android.widget.TextView{97d99b6 V.ED..... ......ID 0,0-0,0}
+                              android.widget.ImageView{81416b7 V.ED..... ......ID 0,0-0,0}
+                            android.widget.TextView{8039e24 V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{7917d8d VFE...C.. ......I. 0,0-0,0 #7f0a0094 app:id/customRow}
+                            android.widget.LinearLayout{5419b42 V.E...... ......I. 0,0-0,0}
+                              android.widget.TextView{1496753 V.ED..... ......ID 0,0-0,0}
+                              android.widget.ImageView{6ee7890 V.ED..... ......ID 0,0-0,0}
+                            android.widget.TextView{ba56589 V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{b52298e VFE...C.. ......I. 0,0-0,0 #7f0a0242 app:id/unitsRow}
+                            com.google.android.material.textview.MaterialTextView{c7925af V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.textview.MaterialTextView{d6a8dbc V.ED..... ......ID 0,0-0,0 #7f0a0243 app:id/unitsSetting}
+                            androidx.appcompat.widget.AppCompatImageView{8f5d145 V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{6cb509a VFE...C.. ......I. 0,0-0,0 #7f0a004d app:id/appIconRow}
+                            com.google.android.material.textview.MaterialTextView{83c6dcb V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.textview.MaterialTextView{130c9a8 V.ED..... ......ID 0,0-0,0 #7f0a004e app:id/appIconSetting}
+                            androidx.appcompat.widget.AppCompatImageView{f273cc1 V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{67ddc66 VFE...C.. ......I. 0,0-0,0 #7f0a0266 app:id/widgetRow}
+                            com.google.android.material.textview.MaterialTextView{9a21ba7 V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.textview.MaterialTextView{89cd854 V.ED..... ......ID 0,0-0,0 #7f0a0267 app:id/widgetSetting}
+                            androidx.appcompat.widget.AppCompatImageView{9a9e3fd V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{37b58f2 VFE...C.. ......I. 0,0-0,0 #7f0a01d8 app:id/slotsRow}
+                            android.widget.LinearLayout{dcacb43 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{21925c0 V.ED..... ......ID 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{b5c2f9 V.ED..... ......ID 0,0-0,0 #7f0a01d9 app:id/slotsSetting}
+                              androidx.appcompat.widget.AppCompatImageView{462123e V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.textview.MaterialTextView{944d89f V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{64addec VFE...C.. ......I. 0,0-0,0 #7f0a0046 app:id/alertsRow}
+                            android.widget.LinearLayout{e0695b5 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{969144a V.ED..... ......ID 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{1285fbb V.ED..... ......ID 0,0-0,0}
+                            com.google.android.material.materialswitch.MaterialSwitch{fdecd8 VFED..C.. ......I. 0,0-0,0 #7f0a0047 app:id/alertsSwitch}
+                          android.widget.LinearLayout{157d831 VFE...C.. ......I. 0,0-0,0 #7f0a0115 app:id/logCard}
+                            android.widget.LinearLayout{d2c2b16 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{9f33c97 V.ED..... ......ID 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{cd0fe84 VFED..C.. ......I. 0,0-0,0 #7f0a0116 app:id/logShare}
+                              com.google.android.material.textview.MaterialTextView{a0c66d V.ED..... ......ID 0,0-0,0 #7f0a0118 app:id/logToggle}
+                            com.google.android.material.textview.MaterialTextView{637e2a2 GFED..CL. ......I. 0,0-0,0 #7f0a0117 app:id/logText}
+                          android.widget.LinearLayout{8250b33 VFE...C.. ......I. 0,0-0,0 #7f0a00ee app:id/helpRow}
+                            android.widget.LinearLayout{da17ef0 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{105c69 V.ED..... ......ID 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{55586ee V.ED..... ......ID 0,0-0,0}
+                            androidx.appcompat.widget.AppCompatImageView{e9b278f V.ED..... ......ID 0,0-0,0}
+                          android.widget.LinearLayout{5b79a1c VFE...C.. ......I. 0,0-0,0 #7f0a0247 app:id/updatesRow}
+                            android.widget.LinearLayout{dc95625 V.E...... ......I. 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{c9723fa V.ED..... ......ID 0,0-0,0}
+                              com.google.android.material.textview.MaterialTextView{6acadab V.ED..... ......ID 0,0-0,0 #7f0a0248 app:id/updatesSub}
+                              com.google.android.material.button.MaterialButton{1b23c08 VFED..C.. ......I. 0,0-0,0 #7f0a0246 app:id/updatesCheck}
+                            androidx.appcompat.widget.AppCompatImageView{d5e2fa1 V.ED..... ......ID 0,0-0,0}
+                  com.google.android.material.bottomnavigation.BottomNavigationView{625fe8e V.E...... ........ 0,2190-1080,2400 #7f0a0062 app:id/bottomNav aid=1073741920}
+                    com.google.android.material.bottomnavigation.BottomNavigationMenuView{b2385c6 V.E...... ........ 0,0-1080,147}
+                      com.google.android.material.bottomnavigation.BottomNavigationItemView{2847d52 VFE...C.. ..S..... 0,0-360,147 #7f0a015c app:id/nav_dashboard aid=1073741921}
+                        android.widget.FrameLayout{bc2fad9 V.E...... ..S..... 96,16-264,90 #7f0a0160 app:id/navigation_bar_item_icon_container aid=1073741922}
+                          android.view.View{10d837f V.ED..... ..S..... 0,0-168,74 #7f0a015f app:id/navigation_bar_item_active_indicator_view aid=1073741923}
+                          androidx.appcompat.widget.AppCompatImageView{40bdf4c V.ED..... ..S..... 52,5-115,68 #7f0a0161 app:id/navigation_bar_item_icon_view}
+                        com.google.android.material.internal.BaselineLayout{7491c9e V.E...... ..S..... 96,96-264,147 #7f0a0162 app:id/navigation_bar_item_labels_group aid=1073741924}
+                          com.google.android.material.textview.MaterialTextView{e067987 I.ED..... ..S...I. 0,0-168,48 #7f0a0164 app:id/navigation_bar_item_small_label_view aid=1073741925}
+                          com.google.android.material.textview.MaterialTextView{7df6b95 V.ED..... ..S..... 0,0-168,48 #7f0a0163 app:id/navigation_bar_item_large_label_view aid=1073741926}
+                      com.google.android.material.bottomnavigation.BottomNavigationItemView{48823 VFE...C.. ........ 360,0-720,147 #7f0a015e app:id/nav_graphs aid=1073741927}
+                        android.widget.FrameLayout{72664aa V.E...... ........ 96,16-264,90 #7f0a0160 app:id/navigation_bar_item_icon_container aid=1073741928}
+                          android.view.View{2bda438 V.ED..... ........ 0,0-168,74 #7f0a015f app:id/navigation_bar_item_active_indicator_view aid=1073741929}
+                          androidx.appcompat.widget.AppCompatImageView{e182c11 V.ED..... ........ 52,5-115,68 #7f0a0161 app:id/navigation_bar_item_icon_view}
+                        com.google.android.material.internal.BaselineLayout{380d89b V.E...... ........ 123,96-236,147 #7f0a0162 app:id/navigation_bar_item_labels_group aid=1073741930}
+                          com.google.android.material.textview.MaterialTextView{3de2176 V.ED..... ........ 0,0-113,48 #7f0a0164 app:id/navigation_bar_item_small_label_view aid=1073741931}
+                          com.google.android.material.textview.MaterialTextView{73310b4 I.ED..... ......I. 0,0-113,48 #7f0a0163 app:id/navigation_bar_item_large_label_view aid=1073741932}
+                      com.google.android.material.bottomnavigation.BottomNavigationItemView{17ad120 VFE...C.. ........ 720,0-1080,147 #7f0a015d app:id/nav_diagnostics aid=1073741933}
+                        android.widget.FrameLayout{b0a6377 V.E...... ........ 96,16-264,90 #7f0a0160 app:id/navigation_bar_item_icon_container aid=1073741934}
+                          android.view.View{a42784d V.ED..... ........ 0,0-168,74 #7f0a015f app:id/navigation_bar_item_active_indicator_view aid=1073741935}
+                          androidx.appcompat.widget.AppCompatImageView{782df02 V.ED..... ........ 52,5-115,68 #7f0a0161 app:id/navigation_bar_item_icon_view}
+                        com.google.android.material.internal.BaselineLayout{2c4cbe4 V.E...... ........ 89,96-271,147 #7f0a0162 app:id/navigation_bar_item_labels_group aid=1073741936}
+                          com.google.android.material.textview.MaterialTextView{37c013 V.ED..... ........ 0,0-182,48 #7f0a0164 app:id/navigation_bar_item_small_label_view aid=1073741937}
+                          com.google.android.material.textview.MaterialTextView{f0d24dd I.ED..... ......I. 0,0-182,48 #7f0a0163 app:id/navigation_bar_item_large_label_view aid=1073741938}
+    Looper (main, tid 2) {212b448}
+      Message 0: { when=+242ms callback=kotlinx.coroutines.android.HandlerContext$scheduleResumeAfterDelay$$inlined$Runnable$1 target=android.os.Handler }
+      Message 1: { when=+1s779ms callback=kotlinx.coroutines.android.HandlerContext$scheduleResumeAfterDelay$$inlined$Runnable$1 target=android.os.Handler }
+      Message 2: { when=+29s610ms callback=android.widget.TextClock$2 target=android.view.ViewRootImpl$ViewRootHandler }
+      (Total messages: 3, polling=false, quitting=false)
+    ResourcesManager:
+      total apks: 3
+      resources: 3
+      resource impls: 2
+    1 dumpables:
+    #0: AutofillManager
+        AutofillManager:
+          sessionId: 2147483647
+          state: FINISHED
+          context: com.obdreader.app.HomeActivity@3a1562
+          service client: android.view.autofill.AutofillManager$AutofillManagerClient@9c23852
+          client: android.view.autofill.AutofillClientController@6472723 (android.os.BinderProxy@8dfcdda)
+          enabled: true
+          enabledAugmentedOnly: false
+          hasService: true
+          hasCallback: false
+          onInvisibleCalled false
+          last autofilled data: null
+          id of last fill UI shown: null
+          tracked views: null
+          fillable ids: null
+          entered ids: {1073741824, 1073741825}
+          save trigger id: null
+          save on finish(): false
+          options: logLvl=2, compatMode=false, augmented=false, appDisabledExpiration=0
+          compat mode enabled:   fill dialog enabled: false
+          fill dialog enabled hints: []
+        false
+          debug: true verbose: false
+        Autofill Compat Mode: false
+    Local FragmentActivity 3a1562 State:
+      mCreated=true mResumed=true mStopped=false    Back Stack Index: 0
+    FragmentManager misc state:
+      mHost=androidx.fragment.app.FragmentActivity$HostCallbacks@ebc31d9
+      mContainer=androidx.fragment.app.FragmentActivity$HostCallbacks@ebc31d9
+      mCurState=7 mStateSaved=false mStopped=false mDestroyed=false
