@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.22.1 (1 November 2026)
+- The widget's numbers now roll smoothly up and down while you're connected, instead of jumping every few seconds: they move a couple of times a second, easing towards each new reading from the car. To save battery they pause while your phone's screen is off.
+
 ## 1.22.0 (27 October 2026)
 - **Choose the widget's readings.** **Diagnostics → Widget readings** picks up to three live readings for the home-screen widget, in order, from RPM, speed, the Dashboard's readings and the battery. The first is the one the 2 × 1 widget shows; with fewer than three, the others close up. RPM is shown in thousands with one decimal (700 rpm is 0.7k, 3,200 rpm is 3.2k). While the car isn't connected the widget still shows the last battery reading, code check and drive.
 
