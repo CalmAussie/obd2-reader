@@ -3044,7 +3044,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.22.0", "date": "27 October 2026", "text": "• Choose the widget's readings. Diagnostics → Widget readings picks up to three live readings for the home-screen widget, in order, from RPM, speed, the Dashboard's readings and the battery. The first is the one the 2 × 1 widget shows; with fewer than three, the others close up. RPM is shown in thousands with one decimal (700 rpm is 0.7k, 3,200 rpm is 3.2k). While the car isn't connected the widget still shows the last battery reading, code check and drive.\n• Upright widget sizes. As well as 2 × 1, 4 × 1, 2 × 2 and 4 × 2, the widget now resizes to 1 × 2 (the first reading), 1 × 4 (your readings one under another) and 2 × 4 (your readings stacked with their notes, the status and the button). The one-column sizes open the app when tapped.\n• The widget lights up near the limit. While connected, the RPM reading's cell takes your style's second colour in the last 10% before your engine's redline, and the speed reading's cell within 10% of your car's top speed. Top speeds are approximate published figures for each model and engine (from autoevolution.com's specs), covering about two thirds of the engines in the car list; with no engine chosen, the fastest version of your model is used, and a car with no published figure doesn't light up for speed."};
+const CHANGES = {"version": "1.22.1", "date": "1 November 2026", "text": "• The widget's numbers now roll smoothly up and down while you're connected, instead of jumping every few seconds: they move a couple of times a second, easing towards each new reading from the car. To save battery they pause while your phone's screen is off."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3278,7 +3278,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     if (k === "0C") return rpmGauge.warnAt != null && v >= rpmGauge.warnAt * 0.9;
     if (k === "0D") { const t = topSpeed(); return t != null && v >= t * 0.9; } return false; };
   function cells() {
-    const live3 = (k, label, unit, d, f = v => v) => { const v = live[k]; return v == null ? [label, state === "connected" ? "—" : "N/A", "", k] : [label, k === "0C" ? (v / 1000).toFixed(1) + "k" : f(v).toFixed(d), k === "0C" ? "rpm" : unit, k]; };
+    const live3 = (k, label, unit, d, f = v => v) => { const v = eased[k] ?? live[k]; return v == null ? [label, state === "connected" ? "—" : "N/A", "", k] : [label, k === "0C" ? (v / 1000).toFixed(1) + "k" : f(v).toFixed(d), k === "0C" ? "rpm" : unit, k]; };
     const drive = typeof lastTrip !== "undefined" && lastTrip ? (() => { const k = ["EVERYDAY", "EFFICIENCY"].map(x => lastTrip.scores[x]).filter(v => v != null); const sc = k.length ? Math.round(k.reduce((a, b) => a + b, 0) / k.length) : null; const d = unitsMph ? lastTrip.km * 0.621371 : lastTrip.km; return ["Last drive", d.toFixed(1) + (unitsMph ? " mi" : " km"), (sc != null ? `Score ${sc} · ` : "") + ago(lastTrip.end || Date.now())]; })() : ["Last drive", "N/A", "No drives yet"];
     if (state === "connected" && !ignOff) return wKeys.map(k => { const r = W_READINGS.find(x => x[0] === k); const temp = ["05", "0F", "46", "5C"].includes(k);
       return k === "0D" ? live3(k, r[1], unitsMph ? "mph" : "km/h", 0, v => unitsMph ? v * 0.621371 : v) : temp ? live3(k, r[1], unitsF ? "°F" : "°C", 0, v => unitsF ? v * 9 / 5 + 32 : v) : live3(k, r[1], r[2], r[3]); });
@@ -3316,7 +3316,19 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
   const pv = document.getElementById("viewPhone").onclick, cv = document.getElementById("viewCar").onclick;
   document.getElementById("viewPhone").onclick = () => { document.getElementById("home").hidden = true; document.getElementById("viewWidget").setAttribute("aria-selected", false); pv(); };
   document.getElementById("viewCar").onclick = () => { document.getElementById("home").hidden = true; document.getElementById("viewWidget").setAttribute("aria-selected", false); cv(); };
-  setInterval(draw, 1000);
+  /* The live numbers ease towards each new reading every 400 ms (mirrors obd/WidgetSmoother.kt) */
+  const eased = {};
+  let lastTick = performance.now();
+  setInterval(() => {
+    const now = performance.now(), a = 1 - Math.exp(-(now - lastTick) / 500); lastTick = now;
+    for (const k of Object.keys(live)) {
+      const t = live[k];
+      if (t == null || state !== "connected") { delete eased[k]; continue; }
+      const prev = eased[k], next = prev == null ? t : prev + (t - prev) * a;
+      eased[k] = Math.abs(t - next) < Math.abs(t) * 0.01 + 0.05 ? t : next;
+    }
+    draw();
+  }, 400);
 })();
 
 window.carReady = true;

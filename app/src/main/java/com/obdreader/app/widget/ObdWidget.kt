@@ -63,12 +63,15 @@ class ObdWidget : AppWidgetProvider() {
             AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, ObdWidget::class.java))
 
         /** Redraws every widget on the home screen (cheap when there are none), each in the layout for its size. */
-        fun refresh(context: Context) {
+        fun refresh(context: Context, readings: Map<String, Double?>? = null) {
             val app = context.applicationContext
             val ids = ids(app)
             if (ids.isEmpty()) return
             val manager = AppWidgetManager.getInstance(app)
-            val content = content(app)
+            val content = content(app, readings)
+            // Nothing on it changed (the eased numbers already landed): leave the widget as it is.
+            if (content == lastDrawn && readings != null) return
+            lastDrawn = content
             for (id in ids) {
                 if (android.os.Build.VERSION.SDK_INT >= 31) {
                     // Android 12 and newer: the launcher picks the layout for the widget's actual size
@@ -165,7 +168,10 @@ class ObdWidget : AppWidgetProvider() {
             }
         }
 
-        fun content(context: Context): WidgetContent.Content {
+        /** What the widget last showed, so an update that changes nothing isn't sent. */
+        @Volatile private var lastDrawn: WidgetContent.Content? = null
+
+        fun content(context: Context, shownReadings: Map<String, Double?>? = null): WidgetContent.Content {
             val prefs = AppPrefs.of(context)
             val s = ObdSession.state.value
             val phase = when (s.phase) {
@@ -180,7 +186,7 @@ class ObdWidget : AppWidgetProvider() {
                 phase = phase,
                 adapterName = s.adapterName,
                 isDemo = s.isDemo,
-                readings = s.readings,
+                readings = shownReadings ?: s.readings,
                 unsupported = s.unsupported,
                 mph = prefs.getBoolean(AppPrefs.UNITS_MPH, false),
                 fahrenheit = prefs.getBoolean(AppPrefs.UNITS_FAHRENHEIT, false),
@@ -270,24 +276,44 @@ class ObdWidget : AppWidgetProvider() {
      */
     object Feed {
         private var started = false
+        /** How often the widget's live numbers move while connected: often enough to roll smoothly, without flooding the launcher. */
+        private const val TICK_MS = 400L
 
         fun start(context: Context) {
             if (started) return
             started = true
             val app = context.applicationContext
-            CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).launch {
+            val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+            // At once when the connection starts, ends or the codes change.
+            scope.launch {
                 var lastPhase: ObdSession.Phase? = null
                 var lastCodes: ObdSession.Codes? = null
-                var lastDraw = 0L
                 var lastSave = 0L
                 ObdSession.state.collect { s ->
                     val now = System.currentTimeMillis()
                     val changed = s.phase != lastPhase || s.codes != lastCodes
                     if (changed || now - lastSave >= 60_000) { remember(app, s); lastSave = now }
-                    if (changed || now - lastDraw >= 3_000) {
-                        lastPhase = s.phase; lastCodes = s.codes; lastDraw = now
+                    if (changed) {
+                        lastPhase = s.phase; lastCodes = s.codes
                         refresh(app)
                     }
+                }
+            }
+            // While connected, the live numbers ease towards each new reading a few times a second,
+            // so they roll up and down instead of jumping. Paused while the phone's screen is off.
+            scope.launch {
+                val smoother = com.obdreader.app.obd.WidgetSmoother()
+                val power = app.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                var last = android.os.SystemClock.uptimeMillis()
+                while (true) {
+                    kotlinx.coroutines.delay(TICK_MS)
+                    val now = android.os.SystemClock.uptimeMillis()
+                    val s = ObdSession.state.value
+                    if (s.phase != ObdSession.Phase.CONNECTED || !power.isInteractive || ids(app).isEmpty()) {
+                        smoother.reset(); last = now; continue
+                    }
+                    refresh(app, smoother.step(s.readings, now - last))
+                    last = now
                 }
             }
         }
