@@ -1,0 +1,84 @@
+Current Location Manager state:
+  Current System Time: 10-31 16:00:26.998, Current Elapsed Time: +15m37s133ms
+  Current user: 0 [0]
+  Location mode: true
+  Battery Saver Location Mode: NO_CHANGE
+  Location Listeners:
+    Reciever[bd5d8c7 listener UpdateRecord[passive com.google.android.gms(10115 foreground) Request[POWER_NONE passive fastest=0] null] monitoring location: false]
+    Reciever[3041ef4 listener UpdateRecord[passive android(1000 foreground) Request[POWER_NONE passive fastest=+30m0s0ms] null] monitoring location: true]
+    Reciever[ee7b61d listener UpdateRecord[passive com.google.android.gms(10115 foreground) Request[POWER_NONE passive fastest=0] null] monitoring location: false]
+    Reciever[9939092 listener UpdateRecord[passive android(1000 foreground) Request[POWER_NONE passive fastest=0] null] monitoring location: false]
+    Reciever[ccd3a63 listener UpdateRecord[gps com.obdreader.app(10146 foreground) Request[ACCURACY_FINE gps requested=+1s0ms fastest=+1s0ms] null] monitoring location: true]
+  Active Records by Provider:
+    gps:
+      UpdateRecord[gps com.obdreader.app(10146 foreground) Request[ACCURACY_FINE gps requested=+1s0ms fastest=+1s0ms] null]
+    passive:
+      UpdateRecord[passive android(1000 foreground) Request[POWER_NONE passive fastest=0] null]
+      UpdateRecord[passive android(1000 foreground) Request[POWER_NONE passive fastest=+30m0s0ms] null]
+      UpdateRecord[passive com.google.android.gms(10115 foreground) Request[POWER_NONE passive fastest=0] null]
+      UpdateRecord[passive com.google.android.gms(10115 foreground) Request[POWER_NONE passive fastest=0] null]
+  Active GnssMeasurement Listeners:
+  Active GnssNavigationMessage Listeners:
+  Active GnssStatus Listeners:
+    2047 10115 com.google.android.gms: true
+  Historical Records by Provider:
+    android: passive: Min interval 0 seconds: Max interval 1800 seconds: Duration requested 15 total, 15 foreground, out of the last 15 minutes: Currently active
+    com.obdreader.app: gps: Interval 1 seconds: Duration requested 1 total, 1 foreground, out of the last 1 minutes: Currently active
+    com.google.android.gms: passive: Interval 0 seconds: Duration requested 15 total, 15 foreground, out of the last 15 minutes: Currently active
+  Last Known Locations:
+    gps: Location[gps -33.871800,151.212998 hAcc=20 et=+15m36s727ms alt=0.0 vel=0.0 bear=0.0 vAcc=??? sAcc=??? bAcc=??? {Bundle[{satellites=0, maxCn0=0, meanCn0=0}]}]
+    passive: Location[gps -33.871800,151.212998 hAcc=20 et=+15m36s727ms alt=0.0 vel=0.0 bear=0.0 vAcc=??? sAcc=??? bAcc=??? {Bundle[{satellites=0, maxCn0=0, meanCn0=0}]}]
+  Last Known Locations Coarse Intervals:
+    gps: Location[gps -33.869100,151.210000 hAcc=20 et=+14m29s744ms alt=0.0 vel=0.0 bear=0.0 vAcc=??? sAcc=??? bAcc=??? {Bundle[{satellites=0, maxCn0=0, meanCn0=0}]}]
+    passive: Location[gps -33.869100,151.210000 hAcc=20 et=+14m29s744ms alt=0.0 vel=0.0 bear=0.0 vAcc=??? sAcc=??? bAcc=??? {Bundle[{satellites=0, maxCn0=0, meanCn0=0}]}]
+  Geofences:
+  mWhitelist=[] mBlacklist=[]
+  Throttling Whitelisted Packages:
+    com.google.android.gms
+  Bypass Whitelisted Packages:
+    com.google.android.dialer
+    com.google.android.gms
+  fudger: offset: -362, 288 (meters)
+  passive provider:
+    useable=true
+    properties=com.android.internal.location.ProviderProperties@6be3660
+ report location=true
+  gps provider:
+    useable=true
+    properties=com.android.internal.location.ProviderProperties@1ce9719
+  mStarted=true   (changed +1m7s433ms ago)
+  mFixInterval=1000
+  mLowPowerMode=false
+  mGnssMeasurementsProvider.isRegistered()=false
+  mGnssNavigationMessageProvider.isRegistered()=false
+  mDisableGpsForPowerManager=false
+  mTopHalCapabilities=0x0 ( )
+GNSS_KPI_START
+  KPI logging start time: +11s680ms
+  KPI logging end time: +15m37s134ms
+  Number of location reports: 77
+  Percentage location failure: 0.0
+  Number of TTFF reports: 1
+  TTFF mean (sec): 0.0
+  TTFF standard deviation (sec): 0.0
+  Number of position accuracy reports: 77
+  Position accuracy mean (m): 20.0
+  Position accuracy standard deviation (m): 0.0
+  Number of CN0 reports: 0
+  Used-in-fix constellation types: 
+GNSS_KPI_END
+Power Metrics
+  Time on battery (min): 0.0
+  Amount of time (while on battery) Top 4 Avg CN0 > 20.0 dB-Hz (min): 0.0
+  Amount of time (while on battery) Top 4 Avg CN0 <= 20.0 dB-Hz (min): 0.0
+  Energy consumed while on battery (mAh): 0.0
+Hardware Version: 
+  native internal state: null
+  network provider:
+    useable=true
+    properties=com.android.internal.location.ProviderProperties@d5623de
+    service={com.google.android.gms/com.google.android.location.network.NetworkLocationService}@2
+  fused provider:
+    useable=true
+    properties=com.android.internal.location.ProviderProperties@84f19bf
+    service={com.google.android.gms/com.google.android.location.fused.FusedLocationService}@1
