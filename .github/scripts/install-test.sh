@@ -247,7 +247,13 @@ shot 2c-portrait-again
 W=$(view_width connectButton)
 alive && [ "${W:-0}" -ge 200 ] && log "back to portrait: OK" || { log "back to portrait: FAILED"; FAIL=1; }
 # Picture-in-picture: going Home while connected floats the readings in a small window, still connected; opening the app again restores it.
+# It's off until switched on: first, going Home leaves no floating window.
+adb logcat -c; adb shell input keyevent KEYCODE_HOME; sleep 4
+adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
+adb logcat -d -s OBD2Pip:I | grep -q "picture-in-picture: on" && { log "picture-in-picture: FAILED (on before it was switched on)"; FAIL=1; } || log "picture-in-picture: off to start with"
 if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
+  diag_top; tap_scrolled "Picture-in-picture" || { log "picture-in-picture: FAILED (no switch)"; FAIL=1; }
+  sleep 1; tap_tab Dashboard; sleep 2
   adb logcat -c; adb shell input keyevent KEYCODE_HOME; sleep 5
   shot 2d-picture-in-picture
   PIN=$(adb shell dumpsys activity activities 2>/dev/null | grep -ciE "mode=pinned|windowingMode=2|WINDOWING_MODE_PINNED")
@@ -595,7 +601,7 @@ done
 adb shell dumpsys location > "$OUT/location.txt" 2>/dev/null
 [ $ROUTE = 0 ] && grep -iE "gps|fused" "$OUT/location.txt" | grep -q "$PKG" && ROUTE=1
 # Minimised, the route must keep recording (positions further south, so they can be told apart).
-adb shell input keyevent KEYCODE_HOME; sleep 2
+adb logcat -c; adb shell input keyevent KEYCODE_HOME; sleep 2
 for i in $(seq 1 12); do
   adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1
   sleep 2
@@ -603,6 +609,7 @@ done
 adb shell dumpsys location > "$OUT/location-background.txt" 2>/dev/null
 adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 5
 shot 8a0-back-from-minimised
+adb logcat -d -s OBD2Close:I OBD2Pip:I AndroidRuntime:E > "$OUT/record-close.txt" 2>/dev/null
 scroll_top; echo "record $(view_center recordButton) connect $(view_center connectButton) demo $(view_flag demoButton)" > "$OUT/record-stop.txt"
 tap_record; sleep 2
 shot 8a-recorded

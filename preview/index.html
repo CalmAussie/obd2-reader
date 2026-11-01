@@ -826,8 +826,8 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
           <div class="h">Reconnects to your adapter when you open the app, start Android Auto or turn the ignition back on.</div>
         </div>
         <div class="setting" id="pipRow">
-          <div class="r"><span style="flex:1">Picture-in-picture</span><button class="switch" id="pipSwitch" role="switch" aria-checked="true" aria-label="Picture-in-picture"><i></i></button></div>
-          <div class="h">While you're connected, leaving the app keeps your readings in a small floating window over your other apps, like a video. Drag it anywhere; tap it for controls.</div>
+          <div class="r"><span style="flex:1">Picture-in-picture</span><button class="switch" id="pipSwitch" role="switch" aria-checked="false" aria-label="Picture-in-picture"><i></i></button></div>
+          <div class="h">Off to start with. Once on, while you're connected, leaving the app keeps your readings in a small floating window over your other apps, like a video. Drag it anywhere; tap it for controls.</div>
         </div>
         <div class="setting log">
           <div class="r"><button id="logToggle" aria-expanded="false" class="log-t">Adapter log</button><button class="link-btn" id="logShare">Save or share</button><button class="link-btn" id="logLabel">Show</button></div>
@@ -3256,7 +3256,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
 /* ===== Home-screen widget (mirrors widget/ObdWidget.kt and obd/WidgetContent.kt) ===== */
 (() => {
   document.getElementById("viewCar").insertAdjacentHTML("afterend", `<button role="tab" id="viewWidget" aria-selected="false">Widget</button>`);
-  document.getElementById("car").insertAdjacentHTML("beforebegin", `<div class="home" id="home" hidden aria-label="Home screen with the OBD2 Reader widget"><div class="home-time" id="homeTime">12:00</div><div class="wdg-sizes" role="radiogroup" aria-label="Widget size">${["4 × 2", "4 × 1", "2 × 2", "2 × 1", "1 × 2", "1 × 4", "2 × 4"].map((t, i) => `<button role="radio" aria-checked="${i === 0}" data-size="${["large", "wide", "square", "small", "narrow", "narrowtall", "tall"][i]}">${t}</button>`).join("")}</div><div class="wdg-slot"><div class="wdg" id="wdg"></div></div><p class="home-note">While you're connected, leaving the app floats your readings in a picture-in-picture window (bottom right); tap it for controls. Add the widget from your home screen: touch and hold an empty spot, tap Widgets, then OBD2 Reader. It's 4 × 2 to start, and resizes to 4 × 1, 2 × 2, 2 × 1, or upright to 1 × 2, 1 × 4 or 2 × 4. Demo car readings aren't kept, so after a demo the battery and codes show N/A.</p></div>`);
+  document.getElementById("car").insertAdjacentHTML("beforebegin", `<div class="home" id="home" hidden aria-label="Home screen with the OBD2 Reader widget"><div class="home-time" id="homeTime">12:00</div><div class="wdg-sizes" role="radiogroup" aria-label="Widget size">${["4 × 2", "4 × 1", "2 × 2", "2 × 1", "1 × 2", "1 × 4", "2 × 4"].map((t, i) => `<button role="radio" aria-checked="${i === 0}" data-size="${["large", "wide", "square", "small", "narrow", "narrowtall", "tall"][i]}">${t}</button>`).join("")}</div><div class="wdg-slot"><div class="wdg" id="wdg"></div></div><p class="home-note">With Picture-in-picture switched on (Phone → Diagnostics), leaving the app while connected floats your readings in a picture-in-picture window (bottom right); tap it for controls. Add the widget from your home screen: touch and hold an empty spot, tap Widgets, then OBD2 Reader. It's 4 × 2 to start, and resizes to 4 × 1, 2 × 2, 2 × 1, or upright to 1 × 2, 1 × 4 or 2 × 4. Demo car readings aren't kept, so after a demo the battery and codes show N/A.</p></div>`);
   const ago = t => { const m = Math.max(0, Math.floor((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.floor(m / 60)} h ago` : `${Math.floor(m / 1440)} days ago`; };
   const icon = () => { const ic = (typeof APP_ICONS !== "undefined" ? APP_ICONS : []).find(x => x[0] === (typeof appIcon !== "undefined" ? appIcon : "racing_green")) || ["", "", "", "#0F3D2E", "#F3EBD3"]; return typeof sparkIcon === "function" ? sparkIcon(ic[3], ic[4], 22) : ""; };
   /* Diagnostics → Widget readings (mirrors WidgetContent.READINGS): RPM in thousands, one decimal */
@@ -3328,8 +3328,8 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     document.getElementById("homeTime").textContent = document.getElementById("clock").textContent;
   }
   /* Picture-in-picture: while connected with the switch on, leaving the app floats your widget readings over the home screen */
-  let pipOn = true, pipCtl = false;
-  try { pipOn = localStorage.getItem("pip") !== "0"; } catch (e) {}
+  let pipOn = false, pipCtl = false;
+  try { pipOn = localStorage.getItem("pip") === "1"; } catch (e) {}
   $("pipSwitch").setAttribute("aria-checked", pipOn);
   $("pipSwitch").onclick = () => { pipOn = !pipOn; $("pipSwitch").setAttribute("aria-checked", pipOn); try { localStorage.setItem("pip", pipOn ? "1" : "0"); } catch (e) {} };
   document.getElementById("home").insertAdjacentHTML("beforeend", `<div class="wdg pipw" id="pipw" hidden aria-label="Picture-in-picture window"></div>`);
