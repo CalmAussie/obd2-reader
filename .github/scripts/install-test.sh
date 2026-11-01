@@ -255,9 +255,9 @@ if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
   # The switch is under Reconnect automatically on Diagnostics: scroll until the view tree puts it on screen, then tap it.
   diag_top; PS=no
   for i in $(seq 1 24); do
-    set -- $(view_center pipSwitch)
-    if [ -n "$2" ] && [ "$2" -gt 300 ] && [ "$2" -lt 2000 ]; then adb shell input tap $1 $2; PS=yes; break; fi
-    if [ -n "$2" ] && [ "$2" -le 300 ]; then adb shell input swipe 540 1000 540 1500 300; else adb shell input swipe 540 1500 540 1000 300; fi
+    XY=$(view_center pipSwitch); PY=""; [ -n "$XY" ] && PY=${XY#* }
+    if [ -n "$PY" ] && [ "$PY" -gt 300 ] && [ "$PY" -lt 2000 ]; then adb shell input tap $XY; PS=yes; break; fi
+    if [ -n "$PY" ] && [ "$PY" -le 300 ]; then adb shell input swipe 540 1000 540 1500 300; else adb shell input swipe 540 1500 540 1000 300; fi
     sleep 1
   done
   sleep 1; shot 2c2-pip-switch
