@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.23.0 (1 November 2026)
+- **Picture-in-picture.** While you're connected (to your car or the demo), leaving the app now keeps your readings in a small floating window over your other apps, like a video: your widget readings, the first one big, in your style's colours, lighting up near your redline or top speed just like the widget. Drag it anywhere, pinch to resize it, tap it for a Disconnect button or to go back to the full app. Putting the window away keeps you connected (the notification still has Disconnect). Turn it off with the **Picture-in-picture** switch under Reconnect automatically.
+
 ## 1.22.1 (1 November 2026)
 - The widget's numbers now roll smoothly up and down while you're connected, instead of jumping every few seconds: they move a couple of times a second, easing towards each new reading from the car. To save battery they pause while your phone's screen is off.
 

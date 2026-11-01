@@ -26,6 +26,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
+import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -405,6 +406,15 @@ open class MainActivity : AppCompatActivity() {
             background = panelBackground()
             setOnClickListener { findViewById<MaterialSwitch>(R.id.reconnectSwitch).toggle() }
         }
+        findViewById<MaterialSwitch>(R.id.pipSwitch).apply {
+            isChecked = prefs.getBoolean(PREF_PIP, true)
+            setOnCheckedChangeListener { _, on -> prefs.edit().putBoolean(PREF_PIP, on).apply(); updatePipParams() }
+        }
+        findViewById<View>(R.id.pipRow).apply {
+            background = panelBackground()
+            visibility = if (pipSupported()) View.VISIBLE else View.GONE
+            setOnClickListener { findViewById<MaterialSwitch>(R.id.pipSwitch).toggle() }
+        }
         findViewById<MaterialSwitch>(R.id.alertsSwitch).apply {
             isChecked = AppPrefs.alerts(prefs)
             setOnCheckedChangeListener { _, on -> prefs.edit().putBoolean(AppPrefs.ALERTS, on).apply() }
@@ -464,7 +474,7 @@ open class MainActivity : AppCompatActivity() {
         // service), so this screen just draws whatever state it's in.
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch { ObdSession.state.collect { render(it) } }
+                launch { ObdSession.state.collect { render(it); onStateForPip(it) } }
                 launch {
                     // Live polling adds dozens of lines a second; redraw the log at most four
                     // times a second, and only while it's open.
@@ -2672,6 +2682,126 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ---------- Picture-in-picture ----------
+
+    /** True when this phone can show a floating picture-in-picture window. */
+    private fun pipSupported(): Boolean = packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+
+    /** Picture-in-picture when leaving: switched on, supported, and connected to a car (or the demo). */
+    private fun pipWanted(): Boolean = pipSupported() && prefs.getBoolean(PREF_PIP, true) && ObdSession.state.value.isConnected
+
+    private var pipConnected: Boolean? = null
+    private var pipView: FrameLayout? = null
+
+    private fun pipParams(): android.app.PictureInPictureParams {
+        val disconnect = android.app.RemoteAction(
+            android.graphics.drawable.Icon.createWithResource(this, R.drawable.ic_close), getString(R.string.disconnect), getString(R.string.disconnect),
+            android.app.PendingIntent.getBroadcast(this, 3, Intent(this, com.obdreader.app.widget.ObdWidget::class.java).setAction(com.obdreader.app.widget.ObdWidget.ACTION_DISCONNECT),
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE),
+        )
+        return android.app.PictureInPictureParams.Builder()
+            .setAspectRatio(android.util.Rational(3, 2))
+            .setActions(listOf(disconnect))
+            .apply { if (Build.VERSION.SDK_INT >= 31) { setAutoEnterEnabled(pipWanted()); setSeamlessResizeEnabled(true) } }
+            .build()
+    }
+
+    /** Keeps Android's picture-in-picture settings in step: on Android 12 and newer it then goes into the window by itself when you leave. */
+    private fun updatePipParams() {
+        if (!pipSupported()) return
+        try { setPictureInPictureParams(pipParams()) } catch (e: Exception) { android.util.Log.w("OBD2Pip", "params: ${e.message}") }
+    }
+
+    private fun onStateForPip(s: ObdSession.State) {
+        if (s.isConnected != pipConnected) { pipConnected = s.isConnected; updatePipParams() }
+        if (isInPictureInPictureMode) drawPip()
+    }
+
+    /** Before Android 12, leaving the app (Home or another app) goes into the window here. */
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (Build.VERSION.SDK_INT < 31 && pipWanted() && !isInPictureInPictureMode) {
+            try { enterPictureInPictureMode(pipParams()) } catch (e: Exception) { android.util.Log.w("OBD2Pip", "enter: ${e.message}") }
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        val root = findViewById<ViewGroup>(android.R.id.content)
+        val main = root.getChildAt(0)
+        android.util.Log.i("OBD2Pip", "picture-in-picture: ${if (isInPictureInPictureMode) "on" else "off"}")
+        if (isInPictureInPictureMode) {
+            currentSheet?.dismiss()
+            val v = pipView ?: buildPipView().also { pipView = it; root.addView(it, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)) }
+            main.visibility = View.INVISIBLE
+            v.visibility = View.VISIBLE
+            drawPip()
+        } else {
+            pipView?.visibility = View.GONE
+            main.visibility = View.VISIBLE
+        }
+    }
+
+    /** Closing the floating window is minimising, not closing the app: the connection carries on (the notification has Disconnect). */
+    override fun onStop() {
+        if (isInPictureInPictureMode) com.obdreader.app.session.AppClose.keepConnectionUntil = System.currentTimeMillis() + 5_000
+        super.onStop()
+    }
+
+    private lateinit var pipStatus: TextView
+    private lateinit var pipMain: TextView
+    private lateinit var pipMainLabel: TextView
+    private lateinit var pipMainBox: LinearLayout
+    private val pipSmall = mutableListOf<Pair<TextView, TextView>>()
+
+    /** The floating window: your widget readings, the first one big, in your style's colours. */
+    private fun buildPipView(): FrameLayout = FrameLayout(this).apply {
+        setBackgroundColor(themeColor(R.attr.obdBg))
+        val col = LinearLayout(this@MainActivity).apply {
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+            val p = dp(8f).toInt(); setPadding(p, p, p, p)
+        }
+        pipStatus = TextView(this@MainActivity).apply { setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f); gravity = Gravity.CENTER; maxLines = 1; setTextColor(themeColor(R.attr.obdTextSecondary)) }
+        pipMainBox = LinearLayout(this@MainActivity).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL; val p = dp(4f).toInt(); setPadding(p * 2, p, p * 2, p) }
+        pipMainLabel = TextView(this@MainActivity).apply { setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f); gravity = Gravity.CENTER; maxLines = 1 }
+        pipMain = TextView(this@MainActivity).apply { typeface = displayTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 34f); gravity = Gravity.CENTER; maxLines = 1; fontFeatureSettings = "tnum" }
+        pipMainBox.addView(pipMainLabel); pipMainBox.addView(pipMain)
+        col.addView(pipStatus); col.addView(pipMainBox)
+        val row = LinearLayout(this@MainActivity).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER; setPadding(0, dp(4f).toInt(), 0, 0) }
+        pipSmall.clear()
+        repeat(2) {
+            val cell = LinearLayout(this@MainActivity).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL }
+            val l = TextView(this@MainActivity).apply { setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f); maxLines = 1; setTextColor(themeColor(R.attr.obdTextSecondary)) }
+            val v = TextView(this@MainActivity).apply { typeface = uiTypeface(600); setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f); maxLines = 1; setTextColor(themeColor(R.attr.obdTextPrimary)); fontFeatureSettings = "tnum" }
+            cell.addView(l); cell.addView(v)
+            row.addView(cell, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            pipSmall += l to v
+        }
+        col.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        addView(col, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+    }
+
+    private fun drawPip() {
+        if (pipView == null) return
+        val c = com.obdreader.app.widget.ObdWidget.content(this)
+        pipStatus.text = c.status
+        pipStatus.setTextColor(themeColor(if (c.connected) R.attr.obdAccent else R.attr.obdTextSecondary))
+        val first = c.cells.getOrNull(0)
+        pipMainLabel.text = first?.label.orEmpty()
+        pipMain.text = first?.withUnit ?: "—"
+        // Near the redline or top speed: the big reading lights up in the style's second colour, like the widget.
+        val hot = first?.highlight == true
+        pipMainBox.background = if (hot) android.graphics.drawable.GradientDrawable().apply { cornerRadius = dp(10f); setColor(themeColor(R.attr.obdStripe2)) } else null
+        val ink = if (hot) (if (androidx.core.graphics.ColorUtils.calculateLuminance(themeColor(R.attr.obdStripe2)) > 0.3) 0xFF111214.toInt() else 0xFFFFFFFF.toInt()) else themeColor(R.attr.obdTextPrimary)
+        pipMain.setTextColor(ink)
+        pipMainLabel.setTextColor(if (hot) ink else themeColor(R.attr.obdTextSecondary))
+        pipSmall.forEachIndexed { i, (l, v) ->
+            val cell = c.cells.getOrNull(i + 1)
+            (l.parent as View).visibility = if (cell == null) View.GONE else View.VISIBLE
+            l.text = cell?.label.orEmpty(); v.text = cell?.withUnit.orEmpty()
+        }
+    }
+
     private fun disconnect() = ObdSession.disconnect()
 
     /** Draws the shared connection state: status, buttons, dials, tiles, VIN and codes. */
@@ -4105,6 +4235,8 @@ open class MainActivity : AppCompatActivity() {
         private const val PREF_CAR_ASKED = "car_asked"
         private const val PREF_SCORE_STYLE = "score_style"
         private const val PREF_LAST_TRIP = "last_trip"
+        /** Picture-in-picture when leaving the app while connected (on to start with). */
+        private const val PREF_PIP = "pip"
         private const val PREF_CUSTOM = "custom_readings"
         private const val PREF_SLOTS = "dash_slots"
         private const val PREF_PERF_HISTORY = "perf_history"

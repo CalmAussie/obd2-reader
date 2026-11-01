@@ -246,6 +246,17 @@ sleep 4
 shot 2c-portrait-again
 W=$(view_width connectButton)
 alive && [ "${W:-0}" -ge 200 ] && log "back to portrait: OK" || { log "back to portrait: FAILED"; FAIL=1; }
+# Picture-in-picture: going Home while connected floats the readings in a small window, still connected; opening the app again restores it.
+if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
+  adb logcat -c; adb shell input keyevent KEYCODE_HOME; sleep 5
+  shot 2d-picture-in-picture
+  PIN=$(adb shell dumpsys activity activities 2>/dev/null | grep -ciE "mode=pinned|windowingMode=2|WINDOWING_MODE_PINNED")
+  adb logcat -d -s OBD2Pip:I OBD2Close:I > "$OUT/pip.txt" 2>/dev/null
+  adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 4
+  adb logcat -d -s OBD2Pip:I OBD2Close:I >> "$OUT/pip.txt" 2>/dev/null
+  DV2=$(view_flag demoButton); PW=$(view_width connectButton)
+  if grep -q "picture-in-picture: on" "$OUT/pip.txt" && alive && [ "$DV2" = "G" ] && [ "${PW:-0}" -ge 200 ]; then log "picture-in-picture: floated on Home and back, still connected (pinned=${PIN:-0})"; else log "picture-in-picture: FAILED ($(grep -c 'picture-in-picture: on' "$OUT/pip.txt") entries, pinned=${PIN:-0}, Demo car '${DV2:-?}', Disconnect ${PW:-0}px)"; FAIL=1; fi
+else log "picture-in-picture: not offered on this emulator"; fi
 # Centre of a view by its id, from the window's view hierarchy (works while animating).
 view_center() {
   adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null

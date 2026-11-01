@@ -687,9 +687,26 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .wdg .hot { background: var(--s2); border-radius: 10px; padding: 4px; }
 .wdg .hot, .wdg .hot small, .wdg .hot span, .wdg .hot b { color: var(--hot-ink, #111214) !important; }
 .wdg[data-theme="pitlane"] .hot { --hot-ink: #FFFFFF; }
+
+/* Picture-in-picture window over the home screen (mirrors MainActivity's floating view) */
+.home { position: relative; }
+.home.has-pip { padding-bottom: 136px; }
+.pipw { position: absolute; bottom: 16px; right: 16px; width: 156px; min-height: 0; aspect-ratio: 3 / 2; padding: 8px; gap: 2px; align-items: center; justify-content: center; text-align: center; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.5); cursor: grab; background: var(--bg, var(--panel)); }
+.pipw .pip-s { font-size: 10px; color: var(--fg-2); }
+.pipw .pip-s.on { color: var(--accent, var(--fg)); }
+.pipw .pip-m { display: flex; flex-direction: column; align-items: center; padding: 2px 10px; border-radius: 10px; }
+.pipw .pip-m small { font-size: 10px; color: var(--fg-2); }
+.pipw .pip-m b { font-family: var(--display, var(--ui)); font-size: 28px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.pipw .pip-r { display: flex; width: 100%; }
+.pipw .pip-r div { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.pipw .pip-r small { font-size: 9px; color: var(--fg-2); white-space: nowrap; }
+.pipw .pip-r b { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.pipw .pip-x { position: absolute; inset: 0; border-radius: 14px; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; gap: 10px; }
+.pipw .pip-x button { border: 0; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 12px; background: #F2F4F8; color: #111214; cursor: pointer; }
+.pipw[hidden] { display: none; }
 </style>
 
-<p class="note"><b>Live preview of the Android app, its Android Auto screen and its home-screen widget.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
+<p class="note"><b>Live preview of the Android app, its Android Auto screen, its home-screen widget and its picture-in-picture window.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
 
 <div class="view-switch" role="tablist" aria-label="Screen to show">
   <button role="tab" id="viewPhone" aria-selected="true">Phone</button>
@@ -807,6 +824,10 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
         <div class="setting" id="reconnectRow">
           <div class="r"><span style="flex:1">Reconnect automatically</span><button class="switch" id="reconnectSwitch" role="switch" aria-checked="true" aria-label="Reconnect automatically"><i></i></button></div>
           <div class="h">Reconnects to your adapter when you open the app, start Android Auto or turn the ignition back on.</div>
+        </div>
+        <div class="setting" id="pipRow">
+          <div class="r"><span style="flex:1">Picture-in-picture</span><button class="switch" id="pipSwitch" role="switch" aria-checked="true" aria-label="Picture-in-picture"><i></i></button></div>
+          <div class="h">While you're connected, leaving the app keeps your readings in a small floating window over your other apps, like a video. Drag it anywhere; tap it for controls.</div>
         </div>
         <div class="setting log">
           <div class="r"><button id="logToggle" aria-expanded="false" class="log-t">Adapter log</button><button class="link-btn" id="logShare">Save or share</button><button class="link-btn" id="logLabel">Show</button></div>
@@ -3044,7 +3065,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.22.1", "date": "1 November 2026", "text": "• The widget's numbers now roll smoothly up and down while you're connected, instead of jumping every few seconds: they move a couple of times a second, easing towards each new reading from the car. To save battery they pause while your phone's screen is off."};
+const CHANGES = {"version": "1.23.0", "date": "1 November 2026", "text": "• Picture-in-picture. While you're connected (to your car or the demo), leaving the app now keeps your readings in a small floating window over your other apps, like a video: your widget readings, the first one big, in your style's colours, lighting up near your redline or top speed just like the widget. Drag it anywhere, pinch to resize it, tap it for a Disconnect button or to go back to the full app. Putting the window away keeps you connected (the notification still has Disconnect). Turn it off with the Picture-in-picture switch under Reconnect automatically."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3235,7 +3256,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
 /* ===== Home-screen widget (mirrors widget/ObdWidget.kt and obd/WidgetContent.kt) ===== */
 (() => {
   document.getElementById("viewCar").insertAdjacentHTML("afterend", `<button role="tab" id="viewWidget" aria-selected="false">Widget</button>`);
-  document.getElementById("car").insertAdjacentHTML("beforebegin", `<div class="home" id="home" hidden aria-label="Home screen with the OBD2 Reader widget"><div class="home-time" id="homeTime">12:00</div><div class="wdg-sizes" role="radiogroup" aria-label="Widget size">${["4 × 2", "4 × 1", "2 × 2", "2 × 1", "1 × 2", "1 × 4", "2 × 4"].map((t, i) => `<button role="radio" aria-checked="${i === 0}" data-size="${["large", "wide", "square", "small", "narrow", "narrowtall", "tall"][i]}">${t}</button>`).join("")}</div><div class="wdg-slot"><div class="wdg" id="wdg"></div></div><p class="home-note">Add it from your home screen: touch and hold an empty spot, tap Widgets, then OBD2 Reader. It's 4 × 2 to start, and resizes to 4 × 1, 2 × 2, 2 × 1, or upright to 1 × 2, 1 × 4 or 2 × 4. Demo car readings aren't kept, so after a demo the battery and codes show N/A.</p></div>`);
+  document.getElementById("car").insertAdjacentHTML("beforebegin", `<div class="home" id="home" hidden aria-label="Home screen with the OBD2 Reader widget"><div class="home-time" id="homeTime">12:00</div><div class="wdg-sizes" role="radiogroup" aria-label="Widget size">${["4 × 2", "4 × 1", "2 × 2", "2 × 1", "1 × 2", "1 × 4", "2 × 4"].map((t, i) => `<button role="radio" aria-checked="${i === 0}" data-size="${["large", "wide", "square", "small", "narrow", "narrowtall", "tall"][i]}">${t}</button>`).join("")}</div><div class="wdg-slot"><div class="wdg" id="wdg"></div></div><p class="home-note">While you're connected, leaving the app floats your readings in a picture-in-picture window (bottom right); tap it for controls. Add the widget from your home screen: touch and hold an empty spot, tap Widgets, then OBD2 Reader. It's 4 × 2 to start, and resizes to 4 × 1, 2 × 2, 2 × 1, or upright to 1 × 2, 1 × 4 or 2 × 4. Demo car readings aren't kept, so after a demo the battery and codes show N/A.</p></div>`);
   const ago = t => { const m = Math.max(0, Math.floor((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.floor(m / 60)} h ago` : `${Math.floor(m / 1440)} days ago`; };
   const icon = () => { const ic = (typeof APP_ICONS !== "undefined" ? APP_ICONS : []).find(x => x[0] === (typeof appIcon !== "undefined" ? appIcon : "racing_green")) || ["", "", "", "#0F3D2E", "#F3EBD3"]; return typeof sparkIcon === "function" ? sparkIcon(ic[3], ic[4], 22) : ""; };
   /* Diagnostics → Widget readings (mirrors WidgetContent.READINGS): RPM in thousands, one decimal */
@@ -3301,9 +3322,25 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
       : size === "narrowtall" ? `${icon()}${cs.map(([l, v, sb], i) => `<div class="wdg-v ${hot(cs[i][3]) ? "hot" : ""}"><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${unit(v, live ? sb : "")}</b></div>`).join("")}`
       : size === "tall" ? top + `<div class="wdg-stack">${cs.map(([l, v, sb], i) => `<div class="${hot(cs[i][3]) ? "hot" : ""}"><small>${l}</small><b class="${v === "N/A" ? "na" : ""}">${v}</b><small>${sb}</small></div>`).join("")}</div>` + btn
       : `${icon()}<div class="wdg-one ${hot(cs[0][3]) ? "hot" : ""}"><b class="${cs[0][1] === "N/A" ? "na" : ""}">${unit(cs[0][1], live ? cs[0][2] : "")}</b><span class="${live ? "on" : ""}">${cs[0][0]} · ${status}</span></div>`;
+    drawPip(cs, status, live, unit);
     const b = document.getElementById("wdgBtn"); if (!b) { document.getElementById("homeTime").textContent = document.getElementById("clock").textContent; return; }
     document.getElementById("wdgBtn").onclick = () => { if (active) document.getElementById("connectBtn").click(); else { showWidget(false); document.getElementById("demoBtn").click(); } };
     document.getElementById("homeTime").textContent = document.getElementById("clock").textContent;
+  }
+  /* Picture-in-picture: while connected with the switch on, leaving the app floats your widget readings over the home screen */
+  let pipOn = true, pipCtl = false;
+  try { pipOn = localStorage.getItem("pip") !== "0"; } catch (e) {}
+  $("pipSwitch").setAttribute("aria-checked", pipOn);
+  $("pipSwitch").onclick = () => { pipOn = !pipOn; $("pipSwitch").setAttribute("aria-checked", pipOn); try { localStorage.setItem("pip", pipOn ? "1" : "0"); } catch (e) {} };
+  document.getElementById("home").insertAdjacentHTML("beforeend", `<div class="wdg pipw" id="pipw" hidden aria-label="Picture-in-picture window"></div>`);
+  function drawPip(cs, status, live, unit) {
+    const p = document.getElementById("pipw");
+    const shown = pipOn && state === "connected"; document.getElementById("home").classList.toggle("has-pip", shown);
+    if (!shown) { p.hidden = true; pipCtl = false; return; }
+    p.hidden = false; p.dataset.theme = document.getElementById("wdg").dataset.theme;
+    const f = cs[0], h = hot(f[3]);
+    p.innerHTML = `<span class="pip-s ${live ? "on" : ""}">${status}</span><div class="pip-m ${h ? "hot" : ""}"><small>${f[0]}</small><b>${unit(f[1], live ? f[2] : "")}</b></div><div class="pip-r">${cs.slice(1).map(([l, v, sb]) => `<div><small>${l}</small><b>${unit(v, live ? sb : "")}</b></div>`).join("")}</div>` + (pipCtl ? `<div class="pip-x"><button id="pipOpen">Open</button><button id="pipDis">Disconnect</button></div>` : "");
+    p.onclick = e => { if (e.target.id === "pipOpen") { pipCtl = false; document.getElementById("viewPhone").click(); } else if (e.target.id === "pipDis") { pipCtl = false; document.getElementById("connectBtn").click(); draw(); } else { pipCtl = !pipCtl; draw(); } };
   }
   function showWidget(on) {
     document.getElementById("home").hidden = !on;
