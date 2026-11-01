@@ -407,7 +407,7 @@ open class MainActivity : AppCompatActivity() {
             setOnClickListener { findViewById<MaterialSwitch>(R.id.reconnectSwitch).toggle() }
         }
         findViewById<MaterialSwitch>(R.id.pipSwitch).apply {
-            isChecked = prefs.getBoolean(PREF_PIP, true)
+            isChecked = prefs.getBoolean(PREF_PIP, false)
             setOnCheckedChangeListener { _, on -> prefs.edit().putBoolean(PREF_PIP, on).apply(); updatePipParams() }
         }
         findViewById<View>(R.id.pipRow).apply {
@@ -2688,10 +2688,11 @@ open class MainActivity : AppCompatActivity() {
     private fun pipSupported(): Boolean = packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 
     /** Picture-in-picture when leaving: switched on, supported, and connected to a car (or the demo). */
-    private fun pipWanted(): Boolean = pipSupported() && prefs.getBoolean(PREF_PIP, true) && ObdSession.state.value.isConnected
+    private fun pipWanted(): Boolean = pipSupported() && prefs.getBoolean(PREF_PIP, false) && ObdSession.state.value.isConnected
 
     private var pipConnected: Boolean? = null
     private var pipView: FrameLayout? = null
+    private var pipLeftAt = 0L
 
     private fun pipParams(): android.app.PictureInPictureParams {
         val disconnect = android.app.RemoteAction(
@@ -2737,6 +2738,7 @@ open class MainActivity : AppCompatActivity() {
             v.visibility = View.VISIBLE
             drawPip()
         } else {
+            pipLeftAt = System.currentTimeMillis()
             pipView?.visibility = View.GONE
             main.visibility = View.VISIBLE
         }
@@ -3144,6 +3146,9 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         // Swiped away or closed for good (not just minimised or rotated): stop the app's work.
+        android.util.Log.i("OBD2Close", "screen destroyed: finishing=$isFinishing, picture-in-picture=$isInPictureInPictureMode, left it ${System.currentTimeMillis() - pipLeftAt} ms ago")
+        // The floating window being put away or swapped back to full screen isn't closing the app.
+        if (isInPictureInPictureMode || System.currentTimeMillis() - pipLeftAt < 5_000) com.obdreader.app.session.AppClose.keepConnectionUntil = System.currentTimeMillis() + 5_000
         if (isFinishing && !isChangingConfigurations) com.obdreader.app.session.AppClose.closed(applicationContext)
         super.onDestroy()
     }
@@ -4250,7 +4255,7 @@ open class MainActivity : AppCompatActivity() {
         private const val PREF_CAR_ASKED = "car_asked"
         private const val PREF_SCORE_STYLE = "score_style"
         private const val PREF_LAST_TRIP = "last_trip"
-        /** Picture-in-picture when leaving the app while connected (on to start with). */
+        /** Picture-in-picture when leaving the app while connected (off until you turn it on). */
         private const val PREF_PIP = "pip"
         private const val PREF_CUSTOM = "custom_readings"
         private const val PREF_SLOTS = "dash_slots"
