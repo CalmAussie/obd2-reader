@@ -251,23 +251,6 @@ alive && [ "${W:-0}" -ge 200 ] && log "back to portrait: OK" || { log "back to p
 adb logcat -c; adb shell input keyevent KEYCODE_HOME; sleep 4
 adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
 adb logcat -d -s OBD2Pip:I | grep -q "picture-in-picture: on" && { log "picture-in-picture: FAILED (on before it was switched on)"; FAIL=1; } || log "picture-in-picture: off to start with"
-if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
-  for t in 1 2 3 4; do tap_tab Diagnostics; sleep 2; [ "$(view_flag pageDiagnostics)" = V ] && break; done
-  diag_top; PS=no
-  # The row is under Reconnect automatically; tapping it flips the switch.
-  for i in $(seq 1 14); do tap_text "Picture-in-picture" > /dev/null && { PS=yes; break; }; drag_up_600; sleep 1; done
-  sleep 1; shot 2c2-pip-switch
-  [ $PS = yes ] || { log "picture-in-picture: FAILED (switch not found; Diagnostics '$(view_flag pageDiagnostics)')"; FAIL=1; }
-  diag_top; tap_tab Dashboard; sleep 2
-  adb logcat -c; adb shell input keyevent KEYCODE_HOME; sleep 5
-  shot 2d-picture-in-picture
-  PIN=$(adb shell dumpsys activity activities 2>/dev/null | grep -ciE "mode=pinned|windowingMode=2|WINDOWING_MODE_PINNED")
-  adb logcat -d -s OBD2Pip:I OBD2Close:I > "$OUT/pip.txt" 2>/dev/null
-  adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 4
-  adb logcat -d -s OBD2Pip:I OBD2Close:I >> "$OUT/pip.txt" 2>/dev/null
-  DV2=$(view_flag demoButton); PW=$(view_width connectButton)
-  if grep -q "picture-in-picture: on" "$OUT/pip.txt" && alive && [ "$DV2" = "G" ] && [ "${PW:-0}" -ge 200 ]; then log "picture-in-picture: floated on Home and back, still connected (pinned=${PIN:-0})"; else log "picture-in-picture: FAILED ($(grep -c 'picture-in-picture: on' "$OUT/pip.txt") entries, pinned=${PIN:-0}, Demo car '${DV2:-?}', Disconnect ${PW:-0}px)"; FAIL=1; fi
-else log "picture-in-picture: not offered on this emulator"; fi
 # Centre of a view by its id, from the window's view hierarchy (works while animating).
 view_center() {
   adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
@@ -820,6 +803,12 @@ if tap_scrolled "Widget readings"; then
   fi
 fi
 [ $WR = ok ] && log "widget readings: RPM chosen first" || { log "widget readings: FAILED (at $WSTEP: $(tail -1 "$OUT/widget-readings.txt" 2>/dev/null | cut -c1-100))"; FAIL=1; }
+# Picture-in-picture: switch it on (it's under Reconnect automatically); it's checked at the end, going Home with the demo running.
+PIPON=no
+if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
+  diag_top
+  if tap_scrolled "Picture-in-picture"; then PIPON=yes; sleep 1; shot 13c-pip-switch; else log "picture-in-picture: FAILED (switch not found)"; FAIL=1; fi
+fi
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
 tap_tab Diagnostics; sleep 2
 for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
@@ -886,8 +875,21 @@ adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
 if adb shell dumpsys window windows 2>/dev/null | grep -A12 "Window{.*$PKG/$PKG\.\(MainActivity\|HomeActivity\)" | grep -q "KEEP_SCREEN_ON"; then log "screen stays on while open: OK"; else log "screen stays on while open: FAILED"; FAIL=1; fi
 # Minimised (Home), the app keeps running in the background.
 tap_text "Demo car" > /dev/null || true; sleep 6
+adb logcat -c
 adb shell input keyevent KEYCODE_HOME; sleep 15
 alive && log "minimised: still running" || { log "minimised: FAILED (app stopped)"; FAIL=1; }
+# With Picture-in-picture on, Home floated the readings in a small window; opening the app again keeps the connection.
+if [ $PIPON = yes ]; then
+  shot 12a-picture-in-picture
+  PIN=$(adb shell dumpsys activity activities 2>/dev/null | grep -ciE "mode=pinned|windowingMode=2|WINDOWING_MODE_PINNED")
+  sleep 15
+  adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 5
+  adb logcat -d -s OBD2Pip:I OBD2Close:I > "$OUT/pip.txt" 2>/dev/null
+  shot 12b0-back-from-pip
+  DV2=$(view_flag demoButton)
+  if grep -q "picture-in-picture: on" "$OUT/pip.txt" && alive && [ "$DV2" = "G" ]; then log "picture-in-picture: floated on Home and back, still connected (pinned=${PIN:-0})"; else log "picture-in-picture: FAILED ($(grep -c 'picture-in-picture: on' "$OUT/pip.txt") entries, pinned=${PIN:-0}, Demo car '${DV2:-?}')"; FAIL=1; fi
+  adb shell input keyevent KEYCODE_HOME; sleep 3
+fi
 # Swiped away from Recents: the app stops its work.
 adb logcat -c
 adb shell input keyevent KEYCODE_APP_SWITCH; sleep 3
