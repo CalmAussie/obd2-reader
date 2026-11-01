@@ -384,7 +384,6 @@ object ObdSession {
     }
 
     fun disconnect() {
-        if (job != null) android.util.Log.i("OBD2Close", "disconnect", Throwable("from"))
         transport?.close() // unblocks any read in progress
         job?.cancel()
     }
