@@ -253,6 +253,7 @@ adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
 adb logcat -d -s OBD2Pip:I | grep -q "picture-in-picture: on" && { log "picture-in-picture: FAILED (on before it was switched on)"; FAIL=1; } || log "picture-in-picture: off to start with"
 if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
   # The switch is under Reconnect automatically on Diagnostics: scroll until the view tree puts it on screen, then tap it.
+  for t in 1 2 3 4; do tap_tab Diagnostics; sleep 2; [ "$(view_flag pageDiagnostics)" = V ] && break; done
   diag_top; PS=no
   for i in $(seq 1 24); do
     XY=$(view_center pipSwitch); PY=""; [ -n "$XY" ] && PY=${XY#* }
@@ -261,7 +262,7 @@ if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
     sleep 1
   done
   sleep 1; shot 2c2-pip-switch
-  [ $PS = yes ] || { log "picture-in-picture: FAILED (switch not found)"; FAIL=1; }
+  [ $PS = yes ] || { log "picture-in-picture: FAILED (switch not found; Diagnostics '$(view_flag pageDiagnostics)')"; FAIL=1; }
   diag_top; tap_tab Dashboard; sleep 2
   adb logcat -c; adb shell input keyevent KEYCODE_HOME; sleep 5
   shot 2d-picture-in-picture
