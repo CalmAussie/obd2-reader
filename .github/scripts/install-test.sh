@@ -601,7 +601,9 @@ for i in $(seq 1 12); do
   sleep 2
 done
 adb shell dumpsys location > "$OUT/location-background.txt" 2>/dev/null
-adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
+adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 5
+shot 8a0-back-from-minimised
+scroll_top; echo "record $(view_center recordButton) connect $(view_center connectButton) demo $(view_flag demoButton)" > "$OUT/record-stop.txt"
 tap_record; sleep 2
 shot 8a-recorded
 # Debug builds: check the file itself has positions.

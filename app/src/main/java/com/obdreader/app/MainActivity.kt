@@ -2779,6 +2779,21 @@ open class MainActivity : AppCompatActivity() {
         }
         col.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         addView(col, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        // The window can be tiny or pinched bigger: size the text to the window's height so everything fits.
+        addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom -> if (bottom - top != oldBottom - oldTop) post { sizePip(bottom - top) } }
+    }
+
+    private fun sizePip(h: Int) {
+        if (h <= 0) return
+        val px = TypedValue.COMPLEX_UNIT_PX
+        pipStatus.setTextSize(px, h * 0.075f)
+        pipMainLabel.setTextSize(px, h * 0.075f)
+        pipMain.setTextSize(px, h * 0.26f)
+        pipSmall.forEach { (l, v) -> l.setTextSize(px, h * 0.07f); v.setTextSize(px, h * 0.12f) }
+        listOf(pipStatus, pipMainLabel, pipMain).plus(pipSmall.flatMap { listOf(it.first, it.second) }).forEach { it.includeFontPadding = false }
+        val p = (h * 0.04f).toInt(); (pipStatus.parent as View).setPadding(p, p, p, p)
+        pipMainBox.setPadding(p * 2, p / 2, p * 2, p / 2)
+        ((pipSmall.firstOrNull()?.first?.parent?.parent) as? View)?.setPadding(0, p / 2, 0, 0)
     }
 
     private fun drawPip() {
