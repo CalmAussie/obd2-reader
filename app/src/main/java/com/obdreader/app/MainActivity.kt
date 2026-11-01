@@ -513,6 +513,13 @@ open class MainActivity : AppCompatActivity() {
         // The bottom bar restores its selected tab by itself after the screen is recreated; show its page.
         showPage(bottomNav.selectedItemId)
         if (savedInstanceState == null) handleWidgetConnect(intent)
+        // Debug builds: the install test asks for pictures of the Android Auto tiles in every style.
+        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0 && intent.getBooleanExtra("car_tiles", false)) {
+            Thread {
+                val files = try { com.obdreader.app.car.CarTiles.renderSamples(applicationContext) } catch (e: Exception) { android.util.Log.w("OBD2CarTiles", "failed", e); emptyList() }
+                android.util.Log.i("OBD2CarTiles", "drew ${files.size}: ${files.joinToString(" ") { it.name }}")
+            }.start()
+        }
         com.obdreader.app.widget.ObdWidget.Feed.start(this)
         com.obdreader.app.widget.ObdWidget.refresh(this)
         // The car comes first: it decides how fault codes are explained, the redline and the protocol.
@@ -828,6 +835,7 @@ open class MainActivity : AppCompatActivity() {
             setTextColor(themeColor(R.attr.obdTextSecondary))
             setPadding(0, dp(6f).toInt(), 0, 0)
         })
+        addRouteComparison(body, trip)
         body.addView(MaterialButton(this).apply {
             setText(R.string.done)
             setOnClickListener { sheet.dismiss() }
@@ -1683,20 +1691,97 @@ open class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * Same route as before? When [trip] was recorded with its route and an earlier recorded drive
+     * followed the same roads the same way round, the summary shows how this one compared: time,
+     * average speed, idling, top speed and score. Both routes are read from their own recordings
+     * (the only place location is kept) and nothing new is saved.
+     */
+    private fun addRouteComparison(body: LinearLayout, trip: TripSummary) {
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; visibility = View.GONE }
+        body.addView(box, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val mineFiles = tripFiles(trip)
+                    if (mineFiles.isEmpty()) return@withContext null
+                    val mineLines = mineFiles.map { it.readLines() }
+                    val mine = com.obdreader.app.obd.Route.join(mineLines.map { com.obdreader.app.obd.Route.parse(it) })
+                    if (mine.isEmpty) return@withContext null
+                    val mineStats = com.obdreader.app.obd.RouteCompare.Stats.join(mineLines.mapNotNull { com.obdreader.app.obd.RouteCompare.Stats.parse(it) })
+                    val history = tripHistory()
+                    LogRecorder.saved(this@MainActivity).asSequence()
+                        .filter { it !in mineFiles && (fileStart(it) ?: Long.MAX_VALUE) < trip.startedAt }
+                        .take(60)
+                        .mapNotNull { f ->
+                            val lines = f.readLines()
+                            val route = com.obdreader.app.obd.Route.parse(lines)
+                            if (!com.obdreader.app.obd.RouteCompare.sameRoute(mine, route)) return@mapNotNull null
+                            val stats = com.obdreader.app.obd.RouteCompare.Stats.parse(lines) ?: return@mapNotNull null
+                            val start = fileStart(f) ?: f.lastModified()
+                            // The scores belong to whole drives: only compared when each recording covered its drive.
+                            fun score(t: TripSummary?, st: com.obdreader.app.obd.RouteCompare.Stats) =
+                                t?.takeIf { st.seconds >= it.connectedSeconds * 0.8 }?.let { com.obdreader.app.obd.ShareScore.of(it.scores, raceTelemetry = false).score }
+                            val before = history.firstOrNull { start in (it.startedAt - 60_000)..it.endedAt }
+                            start to com.obdreader.app.obd.RouteCompare.compare(mineStats, stats, score(trip, mineStats), score(before, stats))
+                        }
+                        .firstOrNull()
+                } catch (e: Exception) { android.util.Log.w("OBD2Route", "compare: ${e.message}"); null }
+            } ?: return@launch
+            val (foundAt, lines) = result
+            android.util.Log.i("OBD2Route", "same route as the drive of $foundAt: ${lines.joinToString { it.label + " " + it.change }}")
+            val day = java.text.SimpleDateFormat("EEE d MMM", Locale.getDefault())
+            val time = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT)
+            box.addView(TextView(this@MainActivity).apply {
+                setText(R.string.same_route_title)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
+                setPadding(0, dp(16f).toInt(), 0, dp(2f).toInt())
+            })
+            box.addView(TextView(this@MainActivity).apply {
+                text = getString(R.string.same_route_since, "${day.format(java.util.Date(foundAt))}, ${time.format(java.util.Date(foundAt))}")
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                setPadding(0, 0, 0, dp(8f).toInt())
+            })
+            val table = LinearLayout(this@MainActivity).apply {
+                orientation = LinearLayout.VERTICAL; background = tripTile()
+                setPadding(dp(14f).toInt(), dp(6f).toInt(), dp(14f).toInt(), dp(6f).toInt())
+            }
+            lines.forEach { line ->
+                table.addView(LinearLayout(this@MainActivity).apply {
+                    orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                    setPadding(0, dp(7f).toInt(), 0, dp(7f).toInt())
+                    addView(TextView(context).apply { text = line.label; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary)) },
+                        LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    addView(TextView(context).apply {
+                        text = line.now; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); fontFeatureSettings = "tnum"
+                        setTextColor(themeColor(R.attr.obdTextPrimary)); setPadding(dp(8f).toInt(), 0, dp(12f).toInt(), 0)
+                    })
+                    addView(TextView(context).apply {
+                        text = line.change; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); fontFeatureSettings = "tnum"; gravity = Gravity.END
+                        setTextColor(themeColor(when (line.better) { true -> R.attr.obdOk; false -> R.attr.obdDanger; null -> R.attr.obdTextSecondary }))
+                    }, LinearLayout.LayoutParams(dp(118f).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT))
+                })
+            }
+            box.addView(table, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            box.visibility = View.VISIBLE
+        }
+    }
+
+    /**
      * The route of [trip], from the recording(s) made during it with the route saved. Location
      * lives only in those files, so with no recording there's simply no outline.
      */
-    private fun routeFor(trip: TripSummary): com.obdreader.app.obd.Route? {
-        val stamp = java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US)
-        val routes = LogRecorder.saved(this)
-            .filter { f ->
-                val start = try { stamp.parse(f.nameWithoutExtension.removePrefix("OBD2Reader_"))?.time } catch (e: Exception) { null } ?: return@filter false
-                start <= trip.endedAt && f.lastModified() >= trip.startedAt
-            }
-            .sortedBy { it.name }
-            .map { com.obdreader.app.obd.Route.parse(it.readLines()) }
-        return com.obdreader.app.obd.Route.join(routes).takeIf { !it.isEmpty }
-    }
+    private fun routeFor(trip: TripSummary): com.obdreader.app.obd.Route? =
+        com.obdreader.app.obd.Route.join(tripFiles(trip).map { com.obdreader.app.obd.Route.parse(it.readLines()) }).takeIf { !it.isEmpty }
+
+    /** When a recording started, from its name. */
+    private fun fileStart(f: java.io.File): Long? = try {
+        java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).parse(f.nameWithoutExtension.removePrefix("OBD2Reader_"))?.time
+    } catch (e: Exception) { null }
+
+    /** The recordings made during [trip], in order. */
+    private fun tripFiles(trip: TripSummary): List<java.io.File> = LogRecorder.saved(this)
+        .filter { f -> val start = fileStart(f) ?: return@filter false; start <= trip.endedAt && f.lastModified() >= trip.startedAt }
+        .sortedBy { it.name }
 
     /** A tile one shade lighter than the sheet behind it. */
     private fun tripTile() = GradientDrawable().apply {

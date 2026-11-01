@@ -624,6 +624,24 @@ else
   log "drive card: FAILED (no trip summary after the recorded drive)"; FAIL=1
 fi
 tap_text "Done" > /dev/null || true
+# The same route again: record a second drive over the same positions; its summary compares it with last time.
+tap_tab Dashboard; sleep 2; scroll_top
+tap_text "Demo car" > /dev/null || true; sleep 8
+adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
+adb logcat -c
+if tap_record; then
+  for i in $(seq 1 10); do adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
+  for i in $(seq 1 12); do adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
+  tap_record; sleep 2
+  tap_tab Dashboard; scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 6
+  shot 8a3-same-route
+  adb logcat -d -s OBD2Route:I OBD2Route:W > "$OUT/same-route.txt" 2>/dev/null
+  if grep -q "same route as the drive" "$OUT/same-route.txt"; then log "same route: compared with last time ($(grep -o 'Time [^,]*' "$OUT/same-route.txt" | tail -1))"; else log "same route: FAILED (not compared: $(tail -1 "$OUT/same-route.txt" | cut -c1-100))"; FAIL=1; fi
+  for k in 1 2 3; do adb shell input swipe 540 1800 540 700 300; done; sleep 1; shot 8a4-same-route-lines
+  tap_text "Done" > /dev/null || adb shell input keyevent KEYCODE_BACK; sleep 1
+else
+  log "same route: FAILED (couldn't record a second drive)"; FAIL=1
+fi
 tap_tab Graphs; sleep 2
 XY=$(view_center_bottom savedLogsButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8b-saved-drives
@@ -870,6 +888,17 @@ shot 14-swiped-to-graphs
 adb shell input swipe 100 1300 980 1320 250; sleep 2
 SW=$(adb logcat -d -s OBD2Swipe:I 2>/dev/null | grep -o "swiped to tab [0-9]" | tr '\n' ' ')
 case "$SW" in *"tab 1"*"tab 0"*) log "swipe between tabs: OK" ;; *) log "swipe between tabs: FAILED (${SW:-no swipe seen})"; FAIL=1 ;; esac
+# Android Auto tiles: debug builds draw them in every style, as the car would show them mid-drive.
+if adb shell run-as $PKG ls > /dev/null 2>&1; then
+  adb logcat -c
+  adb shell am start -W -n $PKG/.HomeActivity --ez car_tiles true > /dev/null 2>&1
+  for i in $(seq 1 40); do adb logcat -d -s OBD2CarTiles:I OBD2CarTiles:W | grep -q "drew\|failed" && break; sleep 3; done
+  adb logcat -d -s OBD2CarTiles:I OBD2CarTiles:W > "$OUT/car-tiles.txt" 2>/dev/null
+  mkdir -p "$OUT/car"
+  for f in $(adb shell run-as $PKG ls files/car-tiles 2>/dev/null | tr -d '\r'); do adb exec-out run-as $PKG cat "files/car-tiles/$f" > "$OUT/car/$f"; done
+  N=$(ls "$OUT/car" 2>/dev/null | wc -l)
+  [ "$N" -ge 10 ] && log "Android Auto tiles: drawn in every style ($N sheets)" || { log "Android Auto tiles: FAILED ($N sheets: $(tail -1 "$OUT/car-tiles.txt" | cut -c1-120))"; FAIL=1; }
+fi
 # Open on screen, the phone doesn't lock, connected or not.
 adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
 if adb shell dumpsys window windows 2>/dev/null | grep -A12 "Window{.*$PKG/$PKG\.\(MainActivity\|HomeActivity\)" | grep -q "KEEP_SCREEN_ON"; then log "screen stays on while open: OK"; else log "screen stays on while open: FAILED"; FAIL=1; fi
