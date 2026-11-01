@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.24.0 (2 November 2026)
+- **Same route as last time.** When you record a drive with its route and you've recorded the same journey before (same start, same finish, same roads, the same way round), the drive's summary compares the two: time, average speed, idling and top speed, each marked better or worse, plus your drive score when both recordings covered the whole drive. The two routes are read from their own recordings, the only place your location is ever kept, and nothing new is saved.
+- **Android Auto in your style's layout.** The car screen's tiles are now drawn with the phone's own dashboard pieces in the style you've chosen: the race-number roundel and angled decals on the liveries, shift lights and data-logger rows with live traces on Race telemetry, the glowing speed ring and glass rows on Digital cockpit, and the neon heads-up display and chips on Cyberpunk. Trouble codes show on your style's plates too. Android Auto still sets the background, the grid and the names under each tile. Pit lane is drawn in darker colours while the car's screen is in night mode.
+
 ## 1.23.0 (1 November 2026)
 - **Picture-in-picture, if you want it.** Once switched on, while you're connected (to your car or the demo), leaving the app keeps your readings in a small floating window over your other apps, like a video: your widget readings, the first one big, in your style's colours, lighting up near your redline or top speed just like the widget. Drag it anywhere, pinch to resize it, tap it for a Disconnect button or to go back to the full app. It's off to start with: turn it on with the **Picture-in-picture** switch under Reconnect automatically. Putting the window away keeps you connected (the notification still has Disconnect).
 

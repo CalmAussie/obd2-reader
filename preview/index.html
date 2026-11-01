@@ -704,6 +704,16 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .pipw .pip-x { position: absolute; inset: 0; border-radius: 14px; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; gap: 10px; }
 .pipw .pip-x button { border: 0; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 12px; background: #F2F4F8; color: #111214; cursor: pointer; }
 .pipw[hidden] { display: none; }
+
+/* Same route as last time (trip summary) */
+.same-route { background: var(--panel-2); border-radius: var(--r); padding: 4px 14px; margin-bottom: 4px; }
+.same-route div { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13px; }
+.same-route div + div { border-top: 1px solid var(--line); }
+.same-route span { flex: 1; color: var(--fg-2); }
+.same-route b { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.same-route em { width: 118px; text-align: right; font-style: normal; color: var(--fg-2); font-variant-numeric: tabular-nums; }
+.same-route em.up { color: var(--green); } .same-route em.down { color: var(--red); }
+.car-item svg.tile { overflow: visible; }
 </style>
 
 <p class="note"><b>Live preview of the Android app, its Android Auto screen, its home-screen widget and its picture-in-picture window.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -1913,7 +1923,7 @@ function renderRec() {
   const s = Math.floor((Date.now() - rec.started) / 1000);
   $("recordStatus").textContent = `Recording ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}, ${rec.rows.toLocaleString("en-AU")} rows. Saved as ${rec.name}`;
 }
-function stopRec() { if (!rec) return; if (rec.rows) savedDrives.unshift({ name: rec.name, rows: rec.rows, secs: Math.round((Date.now() - rec.started) / 1000), samples: rec.samples }); rec = null; renderRec(); }
+function stopRec() { if (!rec) return; if (rec.rows) savedDrives.unshift({ name: rec.name, rows: rec.rows, secs: Math.round((Date.now() - rec.started) / 1000), samples: rec.samples, start: rec.started }); rec = null; renderRec(); }
 $("recordBtn").onclick = () => {
   if (rec) { stopRec(); return toast("Drive saved. Open Saved drives to share it."); }
   rec = { name: `OBD2Reader_${stamp()}.csv`, started: Date.now(), rows: 0, samples: [] }; renderRec();
@@ -2452,6 +2462,7 @@ function showTripSummary(t, justEnded) {
     <div class="trip-tiles">${tiles.map(([l, v]) => `<div><span>${l}</span><b class="xb">${v}</b></div>`).join("")}</div>
     <div class="trip-h">Driving score</div><div class="trip-scores">${sc3}</div>
     ${Object.values(t.scores).every(v => v == null) ? `<p class="trip-note">Drive for at least half a minute to get a score.</p>` : ""}
+    ${sameRouteHtml(t)}
     <button class="primary trip-done" id="tripDone">Done</button><button class="trip-share" id="tripShare">Share as a picture</button>`, { sheet: true });
   $("tripDone").onclick = closeOverlay;
   $("tripShare").onclick = () => showDriveCard(t);
@@ -3065,7 +3076,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.23.0", "date": "1 November 2026", "text": "• Picture-in-picture. While you're connected (to your car or the demo), leaving the app now keeps your readings in a small floating window over your other apps, like a video: your widget readings, the first one big, in your style's colours, lighting up near your redline or top speed just like the widget. Drag it anywhere, pinch to resize it, tap it for a Disconnect button or to go back to the full app. Putting the window away keeps you connected (the notification still has Disconnect). Turn it off with the Picture-in-picture switch under Reconnect automatically."};
+const CHANGES = {"version": "1.24.0", "date": "2 November 2026", "text": "• Same route as last time. When you record a drive with its route and you've recorded the same journey before (same start, same finish, same roads, the same way round), the drive's summary compares the two: time, average speed, idling and top speed, each marked better or worse, plus your drive score when both recordings covered the whole drive. The two routes are read from their own recordings, the only place your location is ever kept, and nothing new is saved.\n• Android Auto in your style's layout. The car screen's tiles are now drawn with the phone's own dashboard pieces in the style you've chosen: the race-number roundel and angled decals on the liveries, shift lights and data-logger rows with live traces on Race telemetry, the glowing speed ring and glass rows on Digital cockpit, and the neon heads-up display and chips on Cyberpunk. Trouble codes show on your style's plates too. Android Auto still sets the background, the grid and the names under each tile. Pit lane is drawn in darker colours while the car's screen is in night mode."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3367,6 +3378,149 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     draw();
   }, 400);
 })();
+
+/* ===== 1.24.0: Android Auto tiles in the style's own layout (mirrors car/CarTiles.kt) =====
+   Each tile is a picture of the phone's dashboard piece: roundel and angled decals on the liveries,
+   shift lights and data-logger rows with traces on Race telemetry, the speed ring and glass rows on
+   Digital cockpit, the heads-up display and chips on Cyberpunk. Pit lane goes dark (Kerb's colours) in the car. */
+(function () {
+  const probes = {};
+  function vars(id) {
+    if (!probes[id]) { const d = document.createElement("div"); d.dataset.theme = id; d.hidden = true; document.body.appendChild(d); probes[id] = d; }
+    const cs = getComputedStyle(probes[id]), g = n => cs.getPropertyValue(n).trim();
+    return { base: g("--base"), panel: g("--panel"), line: g("--line"), fg: g("--fg"), fg2: g("--fg-2"), s1: g("--s1"), s2: g("--s2"), track: g("--track") || "#2A2B30", red: g("--red") || "#FF3B2F", roundel: g("--roundel"), ink: g("--roundel-ink") };
+  }
+  const hist = {}; let histAt = 0;
+  const DISPLAY = "font-family:Archivo;font-stretch:125%;font-weight:850;font-style:italic;font-variant-numeric:tabular-nums";
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  function decal(c, value, unit, frac, hot, wide, top) {
+    const W = wide ? 380 : 340, H = wide ? 208 : 184, o = Math.tan(12 * Math.PI / 180) * H;
+    const fill = hot ? c.red : c.fg;
+    return `<svg class="tile" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polygon points="${o},0 ${W},0 ${W - o},${H} 0,${H}" fill="${c.panel}"/>
+      <polygon points="${o},0 ${o + 12},0 12,${H} 0,${H}" fill="${hot ? c.red : c.s1}"/>
+      ${top != null ? `<text x="${W - 40}" y="40" text-anchor="end" font-size="24" fill="${c.fg2}" font-family="Archivo">Top ${top} ${esc(unit)}</text>` : ""}
+      <text x="${o * 0.3 + 40}" y="${wide ? H - 40 : 126}" font-size="${wide ? 104 : 64}" fill="${fill}" style="${DISPLAY}">${esc(value)}<tspan font-size="26" fill="${c.fg2}" style="font-style:normal;font-stretch:100%;font-weight:500" dx="10">${value === "N/A" ? "" : esc(unit)}</tspan></text>
+      ${wide ? "" : `<rect x="${o * 0.6 + 30}" y="${H - 30}" width="${W - o - 60 - o * 0.6}" height="8" fill="${c.track}"/><rect x="${o * 0.6 + 30}" y="${H - 30}" width="${Math.max(0, (W - o - 60 - o * 0.6) * (frac || 0))}" height="8" fill="${fill}"/>`}</svg>`;
+  }
+  function trace(pts, x, y, w, h, min, max, col) {
+    if (!pts || pts.length < 2) return "";
+    const d = pts.map((v, i) => `${(x + w * i / 93).toFixed(1)},${(y + h - h * Math.max(0, Math.min(1, (v - min) / (max - min || 1)))).toFixed(1)}`).join(" ");
+    return `<polyline points="${d}" fill="none" stroke="${col}" stroke-width="3" stroke-linejoin="round"/>`;
+  }
+  const CH = { "0C": "#FF3B30", "0D": "#2FD573", "05": "#FFB000", "11": "#5AC8FA", "2F": "#BF5AF2", VOLT: "#E9EBEE" };
+  function row(c, kind, key, value, unit, min, max, hot) {
+    const W = 380, H = kind === "glass" ? 120 : 150;
+    const bg = kind === "glass" ? `<rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="30" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.14)"/>`
+      : `<rect width="${W}" height="${H}" rx="4" fill="${c.panel}"/><rect width="6" height="${H}" fill="${CH[key] || c.s1}"/>`;
+    const col = hot ? c.red : c.fg;
+    const font = kind === "glass" ? "font-family:Archivo;font-weight:300;font-variant-numeric:tabular-nums" : "font-family:Archivo;font-stretch:75%;font-weight:700;font-variant-numeric:tabular-nums";
+    return `<svg class="tile" viewBox="0 0 ${W} ${H}" aria-hidden="true">${bg}
+      ${kind === "glass" ? `<rect x="36" y="${H - 34}" width="${W - 72}" height="6" rx="3" fill="rgba(255,255,255,.12)"/><rect x="36" y="${H - 34}" width="${Math.max(0, (W - 72) * Math.max(0, Math.min(1, ((hist[key] || []).slice(-1)[0] - min) / (max - min || 1))) || 0)}" height="6" rx="3" fill="${c.s1}"/>`
+        : trace(hist[key], 24, 30, 200, 90, min, max, CH[key] || c.s1)}
+      <text x="${W - 30}" y="${kind === "glass" ? 72 : 100}" text-anchor="end" font-size="${kind === "glass" ? 58 : 66}" fill="${col}" style="${font}">${esc(value)}</text>
+      <text x="${W - 30}" y="${kind === "glass" ? 100 : 132}" text-anchor="end" font-size="22" fill="${c.fg2}" font-family="Archivo">${value === "N/A" ? "" : esc(unit)}</text></svg>`;
+  }
+  function lights(rpm, redline) {
+    const lit = rpm == null ? 0 : Math.max(0, Math.min(15, Math.ceil(15 * rpm / (redline * 0.97)))), flash = rpm != null && rpm >= redline;
+    let s = ""; for (let i = 0; i < 15; i++) { const on = flash || i < lit, col = flash ? "#3A8BFF" : ["#2FD573", "#FFB000", "#FF3B30"][Math.floor(i / 5)]; s += `<rect x="${6 + i * 25}" y="6" width="20" height="20" rx="3" fill="${on ? col : "#24262B"}"/>`; }
+    return s;
+  }
+  function telemetryRpm(c, value, rpm, redline, min, max, hot) {
+    return row(c, "tower", "0C", value, "rpm", min, max, hot).replace('viewBox="0 0 380 150"', 'viewBox="0 0 380 190"').replace(/<rect width="380"/, `<g>${lights(rpm, redline)}</g><g transform="translate(0,40)"><rect width="380"`).replace("</svg>", "</g></svg>");
+  }
+  function ring(c, speed, rpm, rpmMax, redline, unit, top) {
+    const a = (f, r) => arcPath(130, 120, r, 140, 140 + 260 * Math.max(0.001, Math.min(1, f)));
+    const sf = speed == null ? 0 : speed / (unit === "mph" ? 150 : 240), rf = rpm == null ? 0 : rpm / rpmMax;
+    return `<svg class="tile" viewBox="0 0 260 230" aria-hidden="true"><defs><linearGradient id="ckg" x1="0" x2="1"><stop offset="0" stop-color="${c.s1}"/><stop offset="1" stop-color="${c.s2}"/></linearGradient></defs>
+      <path d="${a(1, 104)}" stroke="rgba(255,255,255,.08)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="${a(rf, 104)}" stroke="${rpm != null && rpm >= redline ? c.red : c.fg}" stroke-width="4" fill="none" stroke-linecap="round" opacity=".85"/>
+      <path d="${a(1, 88)}" stroke="rgba(255,255,255,.1)" stroke-width="12" fill="none" stroke-linecap="round"/><path d="${a(sf, 88)}" stroke="url(#ckg)" stroke-width="12" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 6px ${c.s1})"/>
+      <text x="130" y="128" text-anchor="middle" font-size="78" fill="${c.fg}" style="font-family:Archivo;font-weight:300;font-variant-numeric:tabular-nums">${speed == null ? "—" : Math.round(speed)}</text>
+      <text x="130" y="158" text-anchor="middle" font-size="15" fill="${c.fg2}" font-family="Archivo">${esc(unit)}${top != null ? ` · top ${top}` : ""}</text>
+      <text x="130" y="205" text-anchor="middle" font-size="15" fill="${c.fg}" font-family="Archivo">${rpm == null ? "— rpm" : Math.round(rpm).toLocaleString("en-US") + " rpm"}</text></svg>`;
+  }
+  const cut = (W, H, k) => `${k},0 ${W},0 ${W},${H - k} ${W - k},${H} 0,${H} 0,${k}`;
+  function hud(c, speed, rpm, rpmMax, redline, unit, top) {
+    const W = 420, H = 240, n = 24, lit = rpm == null ? 0 : Math.round(n * Math.min(1, rpm / rpmMax));
+    let bars = ""; for (let i = 0; i < n; i++) { const f = i / (n - 1), col = rpm != null && (i + 1) / n * rpmMax >= redline ? c.red : `color-mix(in srgb, ${c.s2} ${Math.round((1 - f) * 100)}%, ${c.s1})`; bars += `<polygon points="${24 + i * 15 + 6},30 ${24 + i * 15 + 18},30 ${24 + i * 15 + 12},56 ${24 + i * 15},56" fill="${i < lit ? col : "#1E1A30"}"/>`; }
+    const v = speed == null ? "—" : String(Math.round(speed)), st = "font-family:Archivo;font-stretch:125%;font-weight:700;font-variant-numeric:tabular-nums";
+    return `<svg class="tile" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polygon points="${cut(W, H, 22)}" fill="${c.panel}" stroke="${c.s1}" stroke-width="2.5" style="filter:drop-shadow(0 0 6px ${c.s1})"/>${bars}
+      <text x="214" y="168" text-anchor="middle" font-size="104" fill="${c.s2}" opacity=".85" style="${st}">${v}</text><text x="206" y="164" text-anchor="middle" font-size="104" fill="${c.s1}" opacity=".85" style="${st}">${v}</text><text x="210" y="166" text-anchor="middle" font-size="104" fill="${c.fg}" style="${st}">${v}</text>
+      <text x="210" y="210" text-anchor="middle" font-size="18" fill="${c.fg2}" letter-spacing="4" font-family="Archivo" font-weight="600">${esc(unit.toUpperCase())}${top != null ? ` · TOP ${top}` : ""}</text></svg>`;
+  }
+  function chip(c, value, unit, frac, hot) {
+    const W = 340, H = 150, n = 12; let seg = "";
+    for (let i = 0; i < n; i++) seg += `<rect x="${28 + i * 24}" y="${H - 34}" width="18" height="10" fill="${i < Math.round(n * (frac || 0)) ? (hot ? c.red : c.s2) : "#1E1A30"}"/>`;
+    return `<svg class="tile" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polygon points="${cut(W, H, 16)}" fill="${c.panel}" stroke="${c.s2}" stroke-width="2" style="filter:drop-shadow(0 0 5px ${c.s2})"/>
+      <text x="28" y="88" font-size="58" fill="${hot ? c.red : c.fg}" style="font-family:Archivo;font-stretch:125%;font-weight:700;font-variant-numeric:tabular-nums">${esc(value)}<tspan font-size="22" fill="${c.fg2}" dx="8" style="font-stretch:100%;font-weight:500">${value === "N/A" ? "" : esc(unit)}</tspan></text>${seg}</svg>`;
+  }
+  const prev = renderCar;
+  renderCar = function () {
+    const main = $("carMain"); if (!main || $("car").hidden) return;
+    if (carScreen === "codes" && state === "connected") return prev();
+    carScreen = "dash";
+    const lay = LAYOUT[themeId] || "livery", c = vars(themeId === "pitlane" ? "kerb" : themeId);
+    const [acc, onAcc] = CAR_ACCENT[themeId] || CAR_ACCENT.asphalt;
+    $("car").style.setProperty("--car-accent", acc); $("car").style.setProperty("--car-on-accent", onAcc);
+    const connected = state === "connected" && !ignOff, now = performance.now();
+    const status = state === "connecting" ? "Connecting…" : state === "waiting" ? statusNow.title : statusNow.kind === "error" ? statusNow.title : lastUsed ? "Not connected" : "Pair on phone";
+    const redline = rpmGauge.warnAt || 6500, rpmMax = rpmGauge.max || 8000;
+    const vals = CAR_TILES.map(t => { const raw = connected ? uVal(t.key, live[t.key]) : null; return [raw, carGlide(t.key, raw, now)]; });
+    if (now - histAt > 320) { histAt = now; CAR_TILES.forEach((t, i) => { const v = vals[i][1]; if (v == null) delete hist[t.key]; else (hist[t.key] = hist[t.key] || []).push(v), hist[t.key].length > 94 && hist[t.key].shift(); }); }
+    const rpm = vals[0][1], speed = vals[1][1];
+    const top = sc.top != null ? Math.round(uVal("0D", sc.top)) : null;
+    const items = CAR_TILES.map((t, i) => {
+      const [raw, shown] = vals[i]; const unit = uUnit(t.key, t.unit);
+      const max = t.key === "0C" ? rpmMax : t.max, warn = t.key === "0C" ? redline : t.warn;
+      const high = raw != null && warn != null && raw >= warn;
+      const text = i === 0 && !connected ? status : high ? "High" : t.key === "0D" && top != null ? `Top ${top} ${unit}` : t.key === "VOLT" && connected && chgShown ? `${unit} · ${CHG[chgShown]} (est.)` : unit;
+      const value = shown == null ? (connected ? "—" : naText()) : t.key === "0C" ? (Math.floor(shown / 10) * 10).toLocaleString("en-US") : shown.toFixed(t.dec);
+      const frac = shown == null ? 0 : Math.max(0, Math.min(1, (shown - t.min) / (max - t.min)));
+      let img;
+      if (lay === "livery") img = t.key === "0C" ? carRoundelNum(Math.min(1, (shown || 0) / max), shown == null ? "—" : value) : decal(c, value, unit, frac, high, t.key === "0D", t.key === "0D" ? top : null);
+      else if (lay === "telemetry") img = t.key === "0C" ? telemetryRpm(c, value, rpm, redline, t.min, max, high) : row(c, "tower", t.key, value, unit, t.min, max, high);
+      else if (lay === "cockpit") img = t.key === "0D" ? ring(c, speed, rpm, rpmMax, redline, unit, top) : row(c, "glass", t.key, value, unit, t.min, max, high);
+      else img = t.key === "0D" ? hud(c, speed, rpm, rpmMax, redline, unit, top) : chip(c, value, unit, frac, high);
+      return `<div class="car-item car-${lay}${high ? " hot" : ""}">${img}<div class="t">${t.title}</div><div class="x${high ? " hot" : ""}">${text}</div></div>`;
+    }).join("");
+    const codesLabel = sharedCodes == null ? "Codes" : sharedCodes.length ? `Codes (${sharedCodes.length})` : "No codes";
+    const actions = connected ? [["codes", codesLabel], ["disconnect", "Disconnect"]]
+      : state === "connecting" || state === "waiting" ? [["disconnect", "Stop"]]
+      : (lastUsed ? [["connect", "Connect"]] : []).concat([["demo", "Demo"]]);
+    main.innerHTML = carHead("OBD2 Reader", { actions }) + `<div class="car-grid">${items}</div>`;
+  };
+})();
+
+
+/* ===== 1.24.0: Same route as last time (mirrors obd/RouteCompare.kt and MainActivity.addRouteComparison) =====
+   The demo car always drives the same loop, so a drive recorded in the preview matches the last recorded one. */
+function recStats(samples) {
+  if (!samples || samples.length < 3) return null;
+  let last = null, driving = 0, idle = 0, km = 0, top = null;
+  for (const [t, rpm, v] of samples) {
+    const dt = last == null ? 0 : Math.max(0, Math.min(5, t - last)); last = t;
+    if (v == null) continue;
+    if (v > 2) { driving += dt; km += v * dt / 3600; } else if ((rpm || 0) > 300) idle += dt;
+    if (top == null || v > top) top = v;
+  }
+  return { secs: Math.round(last - samples[0][0]), driving, idle: Math.round(idle), avg: driving >= 1 ? km / (driving / 3600) : null, top };
+}
+function sameRouteHtml(t) {
+  const mine = savedDrives.filter(d => d.start >= t.start - 1000 && d.start <= t.end), before = savedDrives.find(d => d.start < t.start - 1000);
+  if (!mine.length || !before) return "";
+  const a = recStats(mine.flatMap(d => d.samples)), b = recStats(before.samples);
+  if (!a || !b) return "";
+  const timeCh = (d, less, more) => Math.abs(d) < 30 ? "About the same" : d < 0 ? `${tripDur(-d)} ${less}` : `${tripDur(d)} ${more}`;
+  const signed = (d, u) => { const r = Math.round(d); return r === 0 ? "About the same" : r > 0 ? `+${r} ${u}` : `\u2212${-r} ${u}`; };
+  const better = (d, band) => Math.abs(d) < band ? null : d > 0;
+  const sp = v => unitsMph ? v * 0.621371 : v, su = unitsMph ? "mph" : "km/h";
+  const lines = [["Time", tripDur(a.secs), timeCh(a.secs - b.secs, "quicker", "slower"), better(b.secs - a.secs, 30)]];
+  if (a.avg != null && b.avg != null) lines.push(["Average speed", uSpeedText(a.avg), signed(sp(a.avg) - sp(b.avg), su), better(sp(a.avg) - sp(b.avg), 1)]);
+  lines.push(["Idling", tripDur(a.idle), timeCh(a.idle - b.idle, "less", "more"), better(b.idle - a.idle, 30)]);
+  if (a.top != null && b.top != null) lines.push(["Top speed", uSpeedText(a.top), signed(sp(a.top) - sp(b.top), su), null]);
+  const when = new Date(before.start), day = when.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" }), tm = when.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return `<div class="trip-h">Same route as last time</div><p class="trip-note" style="margin-top:0">Compared with your drive on ${day}, ${tm}</p>
+    <div class="same-route">${lines.map(([l, v, ch, g]) => `<div><span>${l}</span><b>${v}</b><em class="${g === true ? "up" : g === false ? "down" : ""}">${ch}</em></div>`).join("")}</div>`;
+}
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);
