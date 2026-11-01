@@ -255,7 +255,7 @@ if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
   for t in 1 2 3 4; do tap_tab Diagnostics; sleep 2; [ "$(view_flag pageDiagnostics)" = V ] && break; done
   diag_top; PS=no
   # The row is under Reconnect automatically; tapping it flips the switch.
-  tap_scrolled "Picture-in-picture" && PS=yes
+  for i in $(seq 1 14); do tap_text "Picture-in-picture" > /dev/null && { PS=yes; break; }; drag_up_600; sleep 1; done
   sleep 1; shot 2c2-pip-switch
   [ $PS = yes ] || { log "picture-in-picture: FAILED (switch not found; Diagnostics '$(view_flag pageDiagnostics)')"; FAIL=1; }
   diag_top; tap_tab Dashboard; sleep 2
