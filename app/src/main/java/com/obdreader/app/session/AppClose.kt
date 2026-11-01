@@ -15,8 +15,12 @@ object AppClose {
     /** Set while Android Auto is showing the app on the car screen. */
     @Volatile var carScreenOpen = false
 
+    /** Until this time the app's screen closing isn't the user closing the app (the picture-in-picture window being put away). */
+    @Volatile var keepConnectionUntil = 0L
+
     fun closed(context: Context) {
         if (carScreenOpen) { android.util.Log.i("OBD2Close", "closed, but Android Auto is open: keeping the connection"); return }
+        if (System.currentTimeMillis() < keepConnectionUntil) { android.util.Log.i("OBD2Close", "picture-in-picture window closed: keeping the connection"); return }
         if (System.currentTimeMillis() < com.obdreader.app.ui.AppIcons.switchingUntil) { android.util.Log.i("OBD2Close", "screen reopened for the new app icon: keeping the connection"); return }
         android.util.Log.i("OBD2Close", "closed: stopping recording, connection and service")
         LogRecorder.stop()

@@ -118,7 +118,9 @@
 
         <activity
             android:name=".HomeActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity="com.obdreader.app.home" />
