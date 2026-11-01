@@ -64,6 +64,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
         )
     }
 
+    private val carTiles = CarTiles(carContext)
     private var lastPhase: ObdSession.Phase? = null
     private var lastTitle: String? = null
 
@@ -98,11 +99,21 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
         val s = ObdSession.state.value
         val now = SystemClock.uptimeMillis()
         val items = ItemList.Builder()
-        tiles.forEachIndexed { i, t ->
+        // Step every reading first: the cockpit ring and the HUD show speed and engine speed together.
+        val shownAll = tiles.map { t ->
             val raw = Units.value(t.key, s.readings[t.key])
             t.smooth.set(raw?.toFloat())
             t.smooth.step(now)
-            val shown = if (raw == null) null else t.smooth.shown
+            raw to (if (raw == null) null else t.smooth.shown)
+        }
+        val rpmTile = tiles[0]
+        val speedTile = tiles[1]
+        val rpmShown = shownAll[0].second
+        val speedShown = shownAll[1].second
+        val top = DriveScorer.topSpeed.value?.let { Units.speed(it).toFloat() }
+        val checkEngine = (s.codes?.total ?: 0) > 0
+        tiles.forEachIndexed { i, t ->
+            val (raw, shown) = shownAll[i]
             val unsupported = t.key in s.unsupported
             val high = raw != null && t.warnAt != null && raw >= t.warnAt
             val text = when {
@@ -110,20 +121,22 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
                 unsupported -> "Not supported"
                 high -> "High"
                 // The drive's top speed under the speed (tile text can change freely; only titles must stay fixed).
-                t.key == HEX_SPEED && DriveScorer.topSpeed.value != null -> "Top ${Units.speed(DriveScorer.topSpeed.value!!).roundToInt()} ${t.unit}"
+                t.key == HEX_SPEED && top != null -> "Top ${top.roundToInt()} ${t.unit}"
                 // Battery: the estimated charging status under the voltage.
                 t.key == ObdSession.VOLTAGE_KEY && s.isConnected && s.charging != null -> "${t.unit} · ${s.charging.short} (est.)"
                 else -> t.unit
             }
-            val image = if (t.key == HEX_RPM) {
-                CarLivery.roundel(carContext, ((shown ?: 0f) / t.max).coerceIn(0f, 1f), shown?.let { String.format(Locale.US, "%,d", ((it / 10f).toInt() * 10)) } ?: "—")
-            } else {
-                CarLivery.readingTile(
-                    carContext,
-                    value = if (unsupported) "N/A" else shown?.let { String.format(Locale.US, "%.${t.decimals}f", it) } ?: "—",
-                    fraction = shown?.let { ((it - t.min) / (t.max - t.min)).coerceIn(0f, 1f) },
-                    high = high,
+            val image = try {
+                carTiles.image(
+                    CarTiles.Reading(t.key, t.unit, t.decimals, t.min, t.max, t.warnAt, shown, unsupported),
+                    speed = speedShown, rpm = rpmShown, rpmMax = rpmTile.max, redline = rpmTile.warnAt ?: 6500f,
+                    speedMax = speedTile.max, speedUnit = speedTile.unit, top = top, checkEngine = checkEngine,
                 )
+            } catch (e: Exception) {
+                // Never lose the car screen over a drawing problem: fall back to the plain tiles.
+                android.util.Log.w("OBD2Car", "tile: ${e.message}")
+                if (t.key == HEX_RPM) CarLivery.roundel(carContext, ((shown ?: 0f) / t.max).coerceIn(0f, 1f), shown?.let { String.format(Locale.US, "%,d", ((it / 10f).toInt() * 10)) } ?: "—")
+                else CarLivery.readingTile(carContext, if (unsupported) "N/A" else shown?.let { String.format(Locale.US, "%.${t.decimals}f", it) } ?: "—", shown?.let { ((it - t.min) / (t.max - t.min)).coerceIn(0f, 1f) }, high)
             }
             items.addItem(
                 GridItem.Builder()

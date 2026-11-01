@@ -19,6 +19,11 @@ import kotlinx.coroutines.launch
  */
 class CodesScreen(carContext: CarContext) : Screen(carContext) {
 
+    private val carTiles = CarTiles(carContext)
+
+    /** The code on the phone's plate for your style (or the simple plate if drawing it fails). */
+    private fun plate(code: String, stored: Boolean) = try { carTiles.plate(code, stored) } catch (e: Exception) { CarLivery.plate(carContext, code, stored) }
+
     private var loading = false
     private var error: String? = null
 
@@ -72,6 +77,6 @@ class CodesScreen(carContext: CarContext) : Screen(carContext) {
     private fun row(code: String, kind: String) = Row.Builder()
         .setTitle(DtcLibrary.title(code, ObdSession.carMake(carContext), ObdSession.carYear(carContext)))
         .addText("$code, $kind")
-        .setImage(CarLivery.plate(carContext, code, stored = kind.startsWith("Stored")), Row.IMAGE_TYPE_LARGE)
+        .setImage(plate(code, kind.startsWith("Stored")), Row.IMAGE_TYPE_LARGE)
         .build()
 }
