@@ -9,6 +9,14 @@ import kotlin.math.sin
  * A simulated ELM327 + car, so the whole app can be tried without hardware.
  * Speaks the same text protocol as a real adapter (CAN, ATS0/ATH0 style).
  */
+/**
+ * Debug builds only (set by the install test): a pending code the demo car starts reporting mid-drive,
+ * so the new-code notification can be checked. Always null in normal use.
+ */
+object DemoTestHooks {
+    @Volatile var newPendingCode: String? = null
+}
+
 class DemoTransport(
     /** The VIN the demo car reports: made from the user's chosen car, so the demo matches it. */
     private val vin: String = "1FAHP3F27CL123456",
@@ -51,7 +59,7 @@ class DemoTransport(
             cmd.startsWith("22") && cmd.length == 6 -> enhanced(header, cmd.substring(2))?.let { "62${cmd.substring(2)}$it" } ?: "NO DATA"
             cmd == "090A" -> "490A01" + "ECM-EngineControl".padEnd(20, '\u0000').map { String.format(Locale.US, "%02X", it.code) }.joinToString("")
             cmd == "03" -> "430201330420"
-            cmd == "07" -> "47010171"
+            cmd == "07" -> DemoTestHooks.newPendingCode?.let { "470201710" + it.removePrefix("P0").padStart(3, '0') } ?: "47010171"
             cmd == "0902" -> vinFrames(vin)
             // Freeze frame: stored with P0133 on a warm engine at a steady 64 km/h, a little lean.
             cmd.length == 6 && cmd.startsWith("02") && cmd.endsWith("00") -> freeze(cmd.substring(2, 4))?.let { "42${cmd.substring(2, 4)}00$it" } ?: "NO DATA"

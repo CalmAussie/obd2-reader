@@ -69,10 +69,35 @@ object Alerts {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED
         ) return
+        val quiet = alert.kind == AlertRules.Kind.NEW_CODE
         val open = PendingIntent.getActivity(
-            context, 10 + alert.kind.ordinal, Intent(context, HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            context, 10 + alert.kind.ordinal,
+            Intent(context, HomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP).apply { if (quiet) putExtra(EXTRA_SHOW_CODES, true) },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+        if (quiet) {
+            // A new trouble code isn't an emergency: a quiet notification (no sound, vibration or pop-up,
+            // on the phone or the car's screen) that waits in the notification list until you look.
+            val b = NotificationCompat.Builder(context, CODES_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(alert.title)
+                .setContentText(alert.text)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(alert.text))
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
+                .setSilent(true)
+                .setOnlyAlertOnce(true)
+                .setAutoCancel(true)
+                .setContentIntent(open)
+                .extend(CarAppExtender.Builder().setContentTitle(alert.title).setContentText(alert.text).setContentIntent(open)
+                    .setImportance(androidx.core.app.NotificationManagerCompat.IMPORTANCE_LOW).build())
+            try {
+                CarNotificationManager.from(context).notify(NOTIFICATION_BASE + 600 + (alert.code?.hashCode()?.mod(100) ?: 0), b)
+                android.util.Log.i("OBD2Alerts", "new code ${alert.code}: quiet notification")
+            } catch (e: SecurityException) {
+            }
+            return
+        }
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(alert.title)
@@ -96,13 +121,23 @@ object Alerts {
     private fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(CHANNEL_ID, "Driving alerts", NotificationManager.IMPORTANCE_HIGH).apply {
-            description = "Engine running hot, battery not charging and new trouble codes"
+            description = "Engine running hot, oil hot and battery not charging"
             enableVibration(true)
             vibrationPattern = longArrayOf(0, 300, 150, 300)
         }
         context.getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
+        context.getSystemService(NotificationManager::class.java)?.createNotificationChannel(
+            NotificationChannel(CODES_CHANNEL_ID, "New trouble codes", NotificationManager.IMPORTANCE_LOW).apply {
+                description = "A quiet note when the car reports a new trouble code while you drive"
+                enableVibration(false); setSound(null, null)
+            },
+        )
     }
 
     private const val CHANNEL_ID = "alerts"
+    private const val CODES_CHANNEL_ID = "new_codes"
+
+    /** Opens the app on Diagnostics, where the new code is listed. */
+    const val EXTRA_SHOW_CODES = "show_codes"
     private const val NOTIFICATION_BASE = 1000
 }

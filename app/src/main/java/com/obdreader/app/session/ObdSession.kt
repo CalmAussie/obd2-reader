@@ -106,7 +106,8 @@ object ObdSession {
     private const val MAX_LOG_LINES = 200
     private const val FIRST_CODE_CHECK_MS = 8_000L
     private const val MISSES_BEFORE_NA = 3
-    private const val CODE_CHECK_MS = 120_000L
+    /** How often the codes are read again while connected, so a new one shows up within half a minute. */
+    private const val CODE_CHECK_MS = 30_000L
 
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
