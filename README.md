@@ -22,7 +22,7 @@ The real app, version 1.4.2, running on Android 15 with the demo car:
 </p>
 
 <p align="center">
-  <img src="docs/screen-android-auto.png" width="560" alt="Android Auto screen in the Asphalt style: engine speed in the rev roundel, with speed, coolant, throttle, fuel and battery on angled decals">
+  <img src="docs/screen-android-auto.png" width="560" alt="Android Auto screen in the Asphalt style: engine speed in the rev roundel at the top centre, with speed, coolant, throttle, fuel and battery on angled decals">
 </p>
 
 ## Install

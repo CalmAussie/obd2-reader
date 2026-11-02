@@ -172,8 +172,8 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
                 if (!night && theme.id != "pitlane") continue
                 val tiles = CarTiles(context) { night }.apply { themeOverride = theme.id }
                 val readings = listOf(
-                    Reading(HEX_RPM, "rpm", 0, 0f, 7000f, 6500f, 3240f, false),
                     Reading(HEX_SPEED, "km/h", 0, 0f, 240f, null, 87f, false),
+                    Reading(HEX_RPM, "rpm", 0, 0f, 7000f, 6500f, 3240f, false),
                     Reading("05", "°C", 0, -40f, 130f, 110f, 91f, false),
                     Reading("11", "%", 0, 0f, 100f, null, 22f, false),
                     Reading("2F", "%", 0, 0f, 100f, null, 64f, false),

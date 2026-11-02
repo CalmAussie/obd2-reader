@@ -34,7 +34,7 @@ import kotlin.math.roundToInt
  *   An update only counts as a refresh (free) if the title, the number of tiles and each tile's
  *   title stay the same. So there's one grid for every state (not connected, connecting,
  *   live, ignition off) with fixed tile titles; the live numbers are drawn into the tiles'
- *   images, and the status goes in the first tile's text.
+ *   images, and the status goes in the engine-speed tile's text.
  * - The car throttles how often the screen redraws. Within that, the screen refreshes several
  *   times a second, and each reading glides between refreshes, like the phone's Dashboard.
  */
@@ -55,8 +55,9 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
         // The rev roundel follows the car's engine, as the phone's dial does.
         val rec = com.obdreader.app.session.AppPrefs.savedCar(com.obdreader.app.session.AppPrefs.of(carContext))?.let { com.obdreader.app.obd.VehicleCatalog.recommend(it) }
         listOf(
-            tile(Pids.RPM, "Engine speed", max = com.obdreader.app.obd.VehicleCatalog.dialMax(rec?.redline).toFloat(), warn = (rec?.redline ?: 6500).toFloat()),
+            // Speed first, so engine speed sits top centre of the grid in every style.
             tile(Pids.SPEED, "Speed", 240f),
+            tile(Pids.RPM, "Engine speed", max = com.obdreader.app.obd.VehicleCatalog.dialMax(rec?.redline).toFloat(), warn = (rec?.redline ?: 6500).toFloat()),
             tile(0x05, "Coolant"),
             tile(0x11, "Throttle"),
             tile(0x2F, "Fuel"),
@@ -106,10 +107,12 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
             t.smooth.step(now)
             raw to (if (raw == null) null else t.smooth.shown)
         }
-        val rpmTile = tiles[0]
-        val speedTile = tiles[1]
-        val rpmShown = shownAll[0].second
-        val speedShown = shownAll[1].second
+        val iRpm = tiles.indexOfFirst { it.key == HEX_RPM }
+        val iSpeed = tiles.indexOfFirst { it.key == HEX_SPEED }
+        val rpmTile = tiles[iRpm]
+        val speedTile = tiles[iSpeed]
+        val rpmShown = shownAll[iRpm].second
+        val speedShown = shownAll[iSpeed].second
         val top = DriveScorer.topSpeed.value?.let { Units.speed(it).toFloat() }
         val checkEngine = (s.codes?.total ?: 0) > 0
         tiles.forEachIndexed { i, t ->
@@ -117,7 +120,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
             val unsupported = t.key in s.unsupported
             val high = raw != null && t.warnAt != null && raw >= t.warnAt
             val text = when {
-                i == 0 && !s.isConnected -> statusLine(s)
+                i == iRpm && !s.isConnected -> statusLine(s)
                 unsupported -> "Not supported"
                 high -> "High"
                 // The drive's top speed under the speed (tile text can change freely; only titles must stay fixed).

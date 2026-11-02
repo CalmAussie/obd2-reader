@@ -2113,8 +2113,8 @@ disconnect = function () { codeLines = []; _disc2(); renderLog(); $("graphRate")
    Android Auto's 5-template rule); live numbers drawn into the tile images; ~5 refreshes a
    second with each value gliding between refreshes. */
 const CAR_TILES = [
-  { key: "0C", title: "Engine speed", unit: "rpm", dec: 0, min: 0, max: 8000, warn: 6500 },
   { key: "0D", title: "Speed", unit: "km/h", dec: 0, min: 0, max: 240, warn: null },
+  { key: "0C", title: "Engine speed", unit: "rpm", dec: 0, min: 0, max: 8000, warn: 6500 },
   { key: "05", title: "Coolant", unit: "°C", dec: 0, min: 40, max: 120, warn: 108 },
   { key: "11", title: "Throttle", unit: "%", dec: 0, min: 0, max: 100, warn: null },
   { key: "2F", title: "Fuel", unit: "%", dec: 0, min: 0, max: 100, warn: null },
@@ -3076,7 +3076,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.24.0", "date": "2 November 2026", "text": "• Same route as last time. When you record a drive with its route and you've recorded the same journey before (same start, same finish, same roads, the same way round), the drive's summary compares the two: time, average speed, idling and top speed, each marked better or worse, plus your drive score when both recordings covered the whole drive. The two routes are read from their own recordings, the only place your location is ever kept, and nothing new is saved.\n• Android Auto in your style's layout. The car screen's tiles are now drawn with the phone's own dashboard pieces in the style you've chosen: the race-number roundel and angled decals on the liveries, shift lights and data-logger rows with live traces on Race telemetry, the glowing speed ring and glass rows on Digital cockpit, and the neon heads-up display and chips on Cyberpunk. Trouble codes show on your style's plates too. Android Auto still sets the background, the grid and the names under each tile. Pit lane is drawn in darker colours while the car's screen is in night mode."};
+const CHANGES = {"version": "1.24.1", "date": "2 November 2026", "text": "• On the Android Auto screen, engine speed (the rev roundel on the liveries) now sits top centre in every style, with speed to its left."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3466,13 +3466,13 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     const redline = rpmGauge.warnAt || 6500, rpmMax = rpmGauge.max || 8000;
     const vals = CAR_TILES.map(t => { const raw = connected ? uVal(t.key, live[t.key]) : null; return [raw, carGlide(t.key, raw, now)]; });
     if (now - histAt > 320) { histAt = now; CAR_TILES.forEach((t, i) => { const v = vals[i][1]; if (v == null) delete hist[t.key]; else (hist[t.key] = hist[t.key] || []).push(v), hist[t.key].length > 94 && hist[t.key].shift(); }); }
-    const rpm = vals[0][1], speed = vals[1][1];
+    const iR = CAR_TILES.findIndex(t => t.key === "0C"), rpm = vals[iR][1], speed = vals[CAR_TILES.findIndex(t => t.key === "0D")][1];
     const top = sc.top != null ? Math.round(uVal("0D", sc.top)) : null;
     const items = CAR_TILES.map((t, i) => {
       const [raw, shown] = vals[i]; const unit = uUnit(t.key, t.unit);
       const max = t.key === "0C" ? rpmMax : t.max, warn = t.key === "0C" ? redline : t.warn;
       const high = raw != null && warn != null && raw >= warn;
-      const text = i === 0 && !connected ? status : high ? "High" : t.key === "0D" && top != null ? `Top ${top} ${unit}` : t.key === "VOLT" && connected && chgShown ? `${unit} · ${CHG[chgShown]} (est.)` : unit;
+      const text = t.key === "0C" && !connected ? status : high ? "High" : t.key === "0D" && top != null ? `Top ${top} ${unit}` : t.key === "VOLT" && connected && chgShown ? `${unit} · ${CHG[chgShown]} (est.)` : unit;
       const value = shown == null ? (connected ? "—" : naText()) : t.key === "0C" ? (Math.floor(shown / 10) * 10).toLocaleString("en-US") : shown.toFixed(t.dec);
       const frac = shown == null ? 0 : Math.max(0, Math.min(1, (shown - t.min) / (max - t.min)));
       let img;
