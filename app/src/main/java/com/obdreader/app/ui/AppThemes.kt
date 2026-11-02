@@ -3,7 +3,7 @@ package com.obdreader.app.ui
 import androidx.annotation.StyleRes
 import com.obdreader.app.R
 
-/** The styles a user can pick: seven livery colourways, plus three layouts of their own. */
+/** The styles a user can pick: seven livery colourways, plus six layouts of their own. */
 object AppThemes {
 
     data class AppTheme(
@@ -11,7 +11,7 @@ object AppThemes {
         val name: String,
         val description: String,
         @StyleRes val style: Int,
-        /** True for the telemetry, cockpit and cyberpunk layouts, which change the dashboard's layout too. */
+        /** True for the styles with a layout of their own (telemetry, cockpit, cyberpunk, retro, rally, hairline), which change the dashboard's layout too. */
         val ownLayout: Boolean = false,
     )
 
@@ -37,6 +37,21 @@ object AppThemes {
             "cyberpunk", "Cyberpunk",
             "A neon heads-up display: a climbing rev bar, glitch-split speed digits and glowing readouts on night-city black.",
             R.style.Theme_ObdReader_Cyberpunk, ownLayout = true,
+        ),
+        AppTheme(
+            "retro", "Retro digital",
+            "An 80s digital dash in glowing teal: a stepped bar-graph rev counter and big glowing digits.",
+            R.style.Theme_ObdReader_Retro, ownLayout = true,
+        ),
+        AppTheme(
+            "rally", "Rally stage",
+            "Paper white, black and safety orange, like a co-driver's board. Chunky numbers, easy to read in sun.",
+            R.style.Theme_ObdReader_Rally, ownLayout = true,
+        ),
+        AppTheme(
+            "hairline", "Hairline",
+            "Fine lines on black, like a watch face: a hairline rev dial round one big, thin speed.",
+            R.style.Theme_ObdReader_Hairline, ownLayout = true,
         ),
     )
 

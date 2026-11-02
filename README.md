@@ -147,7 +147,7 @@ Turn a recorded drive into a video of your gauges (shift lights, rev arc, rpm, s
 The overlay is 30 frames a second, 16:9, with the gauges along the bottom, so it fits over landscape footage. It uses the colours of the style you've chosen, and your units (km/h or mph).
 
 ## Styles
-Tap the palette icon on the Dashboard to choose a style. Your choice is saved. Every style also works in landscape: turn your phone sideways and the Dashboard puts the main dial on the left and the other readouts, Connect and status on the right. The first seven are colourways of the livery dashboard; the last three each have a dashboard layout of their own.
+Tap the palette icon on the Dashboard to choose a style. Your choice is saved. Every style also works in landscape: turn your phone sideways and the Dashboard puts the main dial on the left and the other readouts, Connect and status on the right. The first seven are colourways of the livery dashboard; the last six each have a dashboard layout of their own.
 
 | Style | Look |
 |---|---|
@@ -161,9 +161,12 @@ Tap the palette icon on the Dashboard to choose a style. Your choice is saved. E
 | Race telemetry | A data-logger screen: shift lights, big numbers and a live 30-second trace of engine speed, road speed and throttle |
 | Digital cockpit | One big speed in a glowing ring, on layered glass |
 | Cyberpunk | A neon heads-up display: a climbing rev bar, split-colour speed digits and glowing readouts |
+| Retro digital | An 80s digital dash in glowing teal: a stepped bar-graph rev counter, big glowing digits over their unlit "88", and segment-bar readouts |
+| Rally stage | Paper white, black and safety orange, like a co-driver's board: engine speed huge with the redline marked, chunky blocks and a strip of readings. Easy to read in sun |
+| Hairline | Fine lines on black, like a watch face: a hairline rev dial round one big, thin speed, and the readings as a quiet list |
 
 ## Android Auto
-The car screen shows live RPM, speed, coolant, throttle, fuel and battery, refreshing about five times a second with each number gliding to the next reading, and lists trouble codes. Its tiles are drawn with your style's own dashboard pieces (the roundel and decals on the liveries, shift lights across the top and traces on Race telemetry, the speed ring on Digital cockpit, the heads-up display on Cyberpunk), and trouble codes show on your style's plates. Android Auto still sets the background, the grid and the names under each tile.
+The car screen shows live RPM, speed, coolant, throttle, fuel and battery, refreshing about five times a second with each number gliding to the next reading, and lists trouble codes. Its tiles are drawn with your style's own dashboard pieces (the roundel and decals on the liveries, shift lights across the top and traces on Race telemetry, the speed ring on Digital cockpit, the heads-up display on Cyberpunk, the digital dash on Retro digital, the rev board on Rally stage, the watch-face dial on Hairline), and trouble codes show on your style's plates. Android Auto still sets the background, the grid and the names under each tile.
 
 Android Auto only shows Play Store apps until you allow others. On your phone:
 1. Open Android Auto's settings (search "Android Auto" in Settings).

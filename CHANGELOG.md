@@ -2,6 +2,12 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.26.0 (3 November 2026)
+- **Three new layouts**, from the palette button on the Dashboard. **Retro digital:** an 80s digital dash in glowing teal. A stepped bar-graph rev counter climbs through amber to red at your redline, the speed glows in big digits over their unlit "88", engine speed shows in amber beside it, and your three readings have segment bars.
+- **Rally stage:** paper white, black and safety orange, like a rally co-driver's board. Engine speed is huge on a black board with hazard stripes and a rev bar with your redline marked, speed sits in a black frame, your first reading on an orange block and the other two in a strip below. Easy to read in sun.
+- **Hairline:** fine lines on black, like a watch face. A hairline rev dial (a tick every 500 rpm, numbers every 1,000, red from your redline) with one orange needle wraps a big, thin speed, and your readings sit below as a quiet list.
+- Each new layout carries through the app: the live-data list, buttons, Diagnostics, the style picker, drive cards and the Android Auto screen.
+
 ## 1.25.0 (3 November 2026)
 - **New codes while you drive.** The app now checks the car's trouble codes every 30 seconds while connected (instead of every 2 minutes), including pending codes the car hasn't confirmed yet. When a new one appears mid-drive, it tells you with a quiet notification: no sound, vibration or pop-up, on the phone or in Android Auto, just a note in your notifications with what the code means. Tap it to open Diagnostics. Codes already there when you connect don't notify. You can change how these look in Android's settings under the "New trouble codes" notifications; the hot-engine and battery alerts still sound as before.
 

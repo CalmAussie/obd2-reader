@@ -42,12 +42,15 @@ fun Context.themeBool(@AttrRes attr: Int): Boolean {
 }
 
 /** The dashboard this theme uses. */
-enum class DashLayout { LIVERY, TELEMETRY, COCKPIT, CYBERPUNK }
+enum class DashLayout { LIVERY, TELEMETRY, COCKPIT, CYBERPUNK, RETRO, RALLY, HAIRLINE }
 
 fun Context.dashLayout(): DashLayout = when (themeInt(R.attr.obdLayout, 0)) {
     1 -> DashLayout.TELEMETRY
     2 -> DashLayout.COCKPIT
     3 -> DashLayout.CYBERPUNK
+    4 -> DashLayout.RETRO
+    5 -> DashLayout.RALLY
+    6 -> DashLayout.HAIRLINE
     else -> DashLayout.LIVERY
 }
 

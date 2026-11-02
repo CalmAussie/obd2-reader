@@ -722,6 +722,72 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .quiet-note span { color: var(--fg-2); }
 .quiet-note small { display: block; font-size: 11px; color: var(--fg-2); margin-bottom: 2px; }
 .quiet-note.gone { opacity: 0; pointer-events: none; }
+
+/* ---------- Retro digital, Rally stage and Hairline (mirror ui/RetroViews.kt, RallyViews.kt, HairlineViews.kt) ---------- */
+[data-theme="retro"] {
+  --base: #06100E; --panel: #020807; --panel-2: #0B1C18; --line: #12352C;
+  --fg: #BFFFEA; --fg-2: #3F9C83; --ink: #06100E;
+  --s1: #3DFFC4; --s2: #FFD23F; --s3: #06100E;
+  --roundel: #0A1714; --roundel-ink: #3DFFC4; --ring: #3DFFC4; --track: #0D211C;
+  --accent: #3DFFC4; --on-accent: #02120D; --red: #FF4D3D; --amber: #FFD23F; --green: #3DFFC4; --r: 6px; --skew: 0deg;
+}
+[data-theme="rally"] {
+  --base: #F2F0EA; --panel: #FFFFFF; --panel-2: #E8E5DC; --line: #CFCBC0;
+  --fg: #111111; --fg-2: #5E5B53; --ink: #F2F0EA;
+  --s1: #FF5B00; --s2: #111111; --s3: #F2F0EA;
+  --roundel: #111111; --roundel-ink: #F2F0EA; --ring: #FF5B00; --track: #DAD6CB;
+  --accent: #111111; --on-accent: #F2F0EA; --red: #D9180F; --amber: #E39600; --green: #11A150; --r: 6px; --skew: 0deg;
+  --scrim: rgba(17, 17, 17, .4); color-scheme: light;
+}
+[data-theme="hairline"] {
+  --base: #0B0B0C; --panel: #141416; --panel-2: #1C1C1F; --line: #26262A;
+  --fg: #F4F4F2; --fg-2: #8B8B8E; --ink: #0B0B0C;
+  --s1: #FF6A3D; --s2: #F4F4F2; --s3: #0B0B0C;
+  --roundel: #F4F4F2; --roundel-ink: #0B0B0C; --ring: #FF6A3D; --track: #222225;
+  --accent: #F4F4F2; --on-accent: #0B0B0C; --red: #FF453A; --green: #5EE38A; --r: 14px; --skew: 0deg;
+}
+.lay-retro, .lay-rally, .lay-hairline { display: none; }
+.phone[data-layout="retro"] .lay-retro, .phone[data-layout="rally"] .lay-rally, .phone[data-layout="hairline"] .lay-hairline { display: block; }
+.phone.land .land-left .lay-retro, .phone.land .land-left .lay-rally, .phone.land .land-left .lay-hairline { display: block; }
+.rt-dash svg, .ra-rev svg, .hl-dial svg { display: block; width: 100%; height: auto; overflow: visible; }
+.hl-dial { max-width: 340px; margin: 0 auto; }
+[data-layout="retro"] .xb { font-stretch: 75%; font-weight: 700; font-style: normal; letter-spacing: .04em; }
+[data-layout="retro"] .go-btn { box-shadow: 0 0 14px rgba(61, 255, 196, .35); }
+.rt-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.rt-chip { background: var(--panel); border-radius: 6px; box-shadow: inset 0 0 0 1px var(--line); padding: 9px 10px; min-width: 0; }
+.rt-chip .cl { display: block; font-size: 9px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rt-chip b { display: block; margin-top: 4px; font: 700 26px var(--ui); font-stretch: 75%; color: var(--s1); text-shadow: 0 0 8px rgba(61, 255, 196, .6); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rt-chip.hot b { color: var(--red); text-shadow: 0 0 8px rgba(255, 77, 61, .6); }
+.rt-chip small { font: 500 11px var(--ui); color: var(--fg-2); text-shadow: none; margin-left: 4px; }
+.rt-chip i { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; height: 6px; margin-top: 6px; }
+.rt-chip i u { background: var(--track); } .rt-chip i u.on { background: var(--s1); box-shadow: 0 0 4px var(--s1); } .rt-chip.hot i u.on { background: var(--red); }
+[data-layout="rally"] .xb { font-stretch: 125%; font-weight: 850; font-style: italic; }
+.ra-blocks { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; margin-top: 10px; }
+.ra-block { border-radius: 6px; padding: 10px 12px; min-width: 0; display: flex; flex-direction: column; }
+.ra-block.out { box-shadow: inset 0 0 0 3px var(--s2); background: var(--base); }
+.ra-block.or { background: var(--s1); }
+.ra-block .cl, .ra-cell .cl { font: 700 10px var(--ui); font-stretch: 125%; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ra-block b { font: 850 italic 44px/1.05 var(--ui); font-stretch: 125%; font-variant-numeric: tabular-nums; white-space: nowrap; margin-top: 2px; }
+.ra-block b small, .ra-cell b small { font: 600 12px var(--ui); font-stretch: 100%; font-style: normal; margin-left: 4px; }
+.ra-block .nt { font: 600 11px var(--ui); color: var(--fg-2); margin-top: auto; }
+.ra-block.or .nt { color: var(--s2); }
+.ra-block.hot.out { box-shadow: inset 0 0 0 3px var(--red); } .ra-block.hot.or { background: var(--red); }
+.ra-strip { display: grid; grid-template-columns: 1fr 1fr; margin-top: 10px; border-top: 3px solid var(--s2); border-bottom: 3px solid var(--s2); }
+.ra-cell { padding: 8px 8px 10px; min-width: 0; } .ra-cell + .ra-cell { border-left: 1px solid var(--line); }
+.ra-cell .cl { color: var(--fg-2); }
+.ra-cell b { display: block; font: 850 italic 22px var(--ui); font-stretch: 125%; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ra-cell.hot b { color: var(--red); }
+.hl-list { margin-top: 6px; border-top: 1px solid var(--line); }
+.hl-list div { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.hl-list span { color: var(--fg-2); } .hl-list b { font-weight: 400; font-variant-numeric: tabular-nums; }
+.hl-list .hot b { color: var(--red); }
+[data-layout="hairline"] .xb { font-stretch: 100%; font-weight: 300; font-style: normal; }
+[data-layout="hairline"] .go-btn { background: transparent; color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); border-radius: 999px; }
+[data-layout="hairline"] .demo, [data-layout="hairline"] .btn { border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+[data-layout="hairline"] .trow { background: none; border-radius: 0; border-bottom: 1px solid var(--line); padding-left: 0; grid-template-columns: 0 1fr auto; }
+[data-layout="hairline"] .trow .tab, [data-layout="hairline"] .trow .bar { display: none; }
+[data-layout="hairline"] .trow .l { color: var(--fg-2); font-weight: 400; }
+[data-layout="hairline"] .trow .v { font-stretch: 100%; font-weight: 400; font-style: normal; font-size: 16px; }
 </style>
 
 <p class="note"><b>Live preview of the Android app, its Android Auto screen, its home-screen widget and its picture-in-picture window.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -1472,9 +1538,12 @@ const THEMES = [
   ["telemetry", "Race telemetry", "A data-logger screen: shift lights, big numbers and a live 30-second trace for every reading."],
   ["cockpit", "Digital cockpit", "Calm and premium, like a modern EV: one big speed in a glowing ring, on layered glass."],
   ["cyberpunk", "Cyberpunk", "A neon heads-up display: a climbing rev bar, glitch-split speed digits and glowing readouts on night-city black."],
+  ["retro", "Retro digital", "An 80s digital dash in glowing teal: a stepped bar-graph rev counter and big glowing digits."],
+  ["rally", "Rally stage", "Paper white, black and safety orange, like a co-driver's board. Chunky numbers, easy to read in sun."],
+  ["hairline", "Hairline", "Fine lines on black, like a watch face: a hairline rev dial round one big, thin speed."],
 ];
 /* The last three change the dashboard's layout as well as its colours */
-const LAYOUT = { telemetry: "telemetry", cockpit: "cockpit", cyberpunk: "cyberpunk" };
+const LAYOUT = { telemetry: "telemetry", cockpit: "cockpit", cyberpunk: "cyberpunk", retro: "retro", rally: "rally", hairline: "hairline" };
 const OLD_THEMES = { midnight: "asphalt", racing: "asphalt", daylight: "pitlane", lcd: "asphalt", night: "asphalt", red: "kerb", optitron: "endurance", white: "pitlane", digital: "drift" };
 function swatch(id) {
   if (id === "telemetry") {
@@ -1485,6 +1554,19 @@ function swatch(id) {
     const bars = Array.from({ length: 9 }, (_, i) => `<rect x="${7 + i * 6.6}" y="${17 - i * 1.1}" width="5" height="${2 + i * 1.1}" fill="${i < 6 ? `color-mix(in srgb, #FF2BD6 ${Math.round(i / 5 * 100)}%, #00F0FF)` : "rgba(255,255,255,.16)"}"/>`).join("");
     const t = (x, c) => `<text x="${x}" y="42" text-anchor="middle" font-size="17" fill="${c}" style="font-family:var(--ui);font-stretch:125%;font-weight:700">88</text>`;
     return `<span data-theme="cyberpunk" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><rect width="72" height="54" rx="4" fill="#07060D"/>${bars}${t(35, "#FF2BD6")}${t(37, "#00F0FF")}${t(36, "#EDEBFF")}<line x1="6" y1="49" x2="30" y2="49" stroke="#00F0FF"/><line x1="42" y1="49" x2="66" y2="49" stroke="#FF2BD6"/></svg></span>`;
+  }
+  if (id === "retro") {
+    const bars = Array.from({ length: 10 }, (_, i) => `<rect x="${7 + i * 6}" y="${16 - i * 0.9}" width="4.4" height="${4 + i * 0.9}" fill="${i < 6 ? "#3DFFC4" : "rgba(255,255,255,.14)"}"/>`).join("");
+    return `<span data-theme="retro" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><rect width="72" height="54" rx="4" fill="#06100E"/>${bars}<text x="8" y="46" font-size="22" fill="rgba(255,255,255,.12)" style="font-family:var(--ui);font-stretch:75%;font-weight:700">88</text><text x="8" y="46" font-size="22" fill="#3DFFC4" style="font-family:var(--ui);font-stretch:75%;font-weight:700;filter:drop-shadow(0 0 2px #3DFFC4)">80</text><text x="66" y="46" text-anchor="end" font-size="9" fill="#FFD23F" style="font-family:var(--ui);font-stretch:75%;font-weight:700">2880</text></svg></span>`;
+  }
+  if (id === "rally") {
+    const st = [0, 1, 2, 3, 4].map(i => `<path d="M${50 + i * 6} 8h3l-13 26h-3z" fill="#FF5B00"/>`).join("");
+    return `<span data-theme="rally" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><defs><clipPath id="swRal"><rect x="54" y="8" width="13" height="26"/></clipPath></defs><rect width="72" height="54" rx="4" fill="#F2F0EA"/><rect x="5" y="8" width="62" height="26" rx="2" fill="#111"/><g clip-path="url(#swRal)">${st}</g><text x="8" y="27" font-size="13" fill="#F2F0EA" style="font-family:var(--ui);font-stretch:125%;font-weight:850;font-style:italic">2,880</text><rect x="5.7" y="38.7" width="29.6" height="10.6" rx="2" fill="none" stroke="#111" stroke-width="1.4"/><rect x="40" y="38" width="27" height="12" rx="2" fill="#FF5B00"/></svg></span>`;
+  }
+  if (id === "hairline") {
+    let t = ""; for (let i = 0; i <= 16; i++) { const a = (225 - 270 * i / 16) * Math.PI / 180, l = i % 2 ? 1.8 : 3.4, c = i >= 14 ? "#FF453A" : i % 2 ? "rgba(255,255,255,.45)" : "#F4F4F2"; t += `<line x1="${(36 + 20 * Math.cos(a)).toFixed(1)}" y1="${(30 - 20 * Math.sin(a)).toFixed(1)}" x2="${(36 + (20 - l) * Math.cos(a)).toFixed(1)}" y2="${(30 - (20 - l) * Math.sin(a)).toFixed(1)}" stroke="${c}" stroke-width=".6"/>`; }
+    const na = (225 - 270 * 0.4) * Math.PI / 180;
+    return `<span data-theme="hairline" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><rect width="72" height="54" rx="4" fill="#0B0B0C"/>${t}<line x1="${(36 + 12 * Math.cos(na)).toFixed(1)}" y1="${(30 - 12 * Math.sin(na)).toFixed(1)}" x2="${(36 + 21 * Math.cos(na)).toFixed(1)}" y2="${(30 - 21 * Math.sin(na)).toFixed(1)}" stroke="#FF6A3D" stroke-width="1.2" stroke-linecap="round"/><text x="36" y="35" text-anchor="middle" font-size="14" font-weight="300" fill="#F4F4F2" style="font-family:var(--ui)">80</text></svg></span>`;
   }
   if (id === "cockpit") {
     return `<span data-theme="cockpit" style="display:contents"><svg class="sw" viewBox="0 0 72 54" aria-hidden="true"><defs><radialGradient id="swCp" cx="50%" cy="30%" r="80%"><stop offset="0" stop-color="#16244A"/><stop offset="1" stop-color="#05070C"/></radialGradient><linearGradient id="swCpG" x1="0" x2="1"><stop offset="0" stop-color="#5B8CFF"/><stop offset="1" stop-color="#3FE0D0"/></linearGradient></defs><rect width="72" height="54" rx="4" fill="url(#swCp)"/><path d="${arcPath(36, 29, 19, 140, 400)}" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-linecap="round"/><path d="${arcPath(36, 29, 19, 140, 300)}" fill="none" stroke="url(#swCpG)" stroke-width="3" stroke-linecap="round"/><text x="36" y="34" text-anchor="middle" font-size="14" font-weight="300" fill="#EEF2FA" style="font-family:var(--ui)">87</text></svg></span>`;
@@ -3084,7 +3166,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.25.0", "date": "3 November 2026", "text": "• New codes while you drive. The app now checks the car's trouble codes every 30 seconds while connected (instead of every 2 minutes), including pending codes the car hasn't confirmed yet. When a new one appears mid-drive, it tells you with a quiet notification: no sound, vibration or pop-up, on the phone or in Android Auto, just a note in your notifications with what the code means. Tap it to open Diagnostics. Codes already there when you connect don't notify. You can change how these look in Android's settings under the \"New trouble codes\" notifications; the hot-engine and battery alerts still sound as before."};
+const CHANGES = {"version": "1.26.0", "date": "3 November 2026", "text": "• Three new layouts, from the palette button on the Dashboard. Retro digital: an 80s digital dash in glowing teal. A stepped bar-graph rev counter climbs through amber to red at your redline, the speed glows in big digits over their unlit \"88\", engine speed shows in amber beside it, and your three readings have segment bars.\n• Rally stage: paper white, black and safety orange, like a rally co-driver's board. Engine speed is huge on a black board with hazard stripes and a rev bar with your redline marked, speed sits in a black frame, your first reading on an orange block and the other two in a strip below. Easy to read in sun.\n• Hairline: fine lines on black, like a watch face. A hairline rev dial (a tick every 500 rpm, numbers every 1,000, red from your redline) with one orange needle wraps a big, thin speed, and your readings sit below as a quiet list.\n• Each new layout carries through the app: the live-data list, buttons, Diagnostics, the style picker, drive cards and the Android Auto screen."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3559,6 +3641,95 @@ document.querySelector(".statusbar").addEventListener("click", () => {
   $("phone").insertAdjacentHTML("beforeend", `<button class="quiet-note" id="quietNote"><small>OBD2 Reader · New trouble codes</small><b>New trouble code P0300</b><span>Random or multiple cylinder misfire. Tap to see what it means and how soon to get it checked.</span></button>`);
   $("quietNote").onclick = () => { document.querySelectorAll(".quiet-note,.sb-note").forEach(n => n.remove()); document.querySelector('.nav button:last-child').click(); };
 });
+
+
+/* ===== 1.26.0: Retro digital, Rally stage and Hairline layouts (mirror ui/RetroViews.kt, RallyViews.kt, HairlineViews.kt) ===== */
+(function () {
+  const slotsR = [["05", "Coolant", "°C", 0, 40, 120, 108], ["2F", "Fuel", "%", 0, 0, 100, null], ["VOLT", "Battery", "V", 1, 11, 15, null]];
+  const segs = () => Array.from({ length: 10 }, () => "<u></u>").join("");
+  document.querySelector(".lay-cyberpunk").insertAdjacentHTML("afterend", `
+    <div class="lay-retro"><div class="rt-dash"><svg id="rtDash" viewBox="0 0 360 222" role="img" aria-label="Speed and engine speed"></svg></div>
+      <div class="rt-row">${slotsR.map(([k, l, u]) => `<div class="rt-chip" id="rt${k}"><span class="cl">${l}</span><b><span>—</span><small>${u}</small></b><i>${segs()}</i></div>`).join("")}</div></div>
+    <div class="lay-rally"><div class="ra-rev"><svg id="raRev" viewBox="0 0 340 150" role="img" aria-label="Engine speed"></svg></div>
+      <div class="ra-blocks"><div class="ra-block out" id="raSpeed"><span class="cl">Speed</span><b><span>—</span><small>km/h</small></b><span class="nt"></span></div>
+        <div class="ra-block or" id="ra05"><span class="cl">Coolant</span><b><span>—</span><small>°C</small></b><span class="nt"></span></div></div>
+      <div class="ra-strip"><div class="ra-cell" id="ra2F"><span class="cl">Fuel</span><b><span>—</span><small>%</small></b></div><div class="ra-cell" id="raVOLT"><span class="cl">Battery</span><b><span>—</span><small>V</small></b></div></div></div>
+    <div class="lay-hairline"><div class="hl-dial"><svg id="hlDial" viewBox="0 0 320 290" role="img" aria-label="Speed and engine speed"></svg></div>
+      <div class="hl-list">${slotsR.map(([k, l, u]) => `<div id="hl${k}"><span>${l}</span><b>—</b></div>`).join("")}</div></div>`);
+  const unit = () => window.SPEED_UNIT || "km/h";
+  const top = () => window.topSpeedNow != null ? Math.round(uVal("0D", window.topSpeedNow)) : null;
+  function retro(speed, rpm) {
+    const W = 360, L = 16, R = W - 16, B = 92, N = 28, gap = 3, bw = (R - L - gap * (N - 1)) / N, max = rpmGauge.max, warn = rpmGauge.warnAt;
+    const fr = rpm == null ? 0 : Math.min(1, rpm / max);
+    let bars = "", scale = "";
+    for (let i = 0; i < N; i++) {
+      const x = L + i * (bw + gap), h = 24 + 38 * i / (N - 1), at = (i + 1) / N * max;
+      const c = at >= warn ? "var(--red)" : at >= warn * 0.8 ? "#FFD23F" : "#3DFFC4", lit = fr > 0.003 && (i + 0.5) / N <= fr + 0.5 / N;
+      bars += lit ? `<rect x="${(x - 2).toFixed(1)}" y="${B - h - 2}" width="${(bw + 4).toFixed(1)}" height="${h + 4}" fill="${c}" opacity=".24"/><rect x="${x.toFixed(1)}" y="${B - h}" width="${bw.toFixed(1)}" height="${h}" fill="${c}"/>` : `<rect x="${x.toFixed(1)}" y="${B - h}" width="${bw.toFixed(1)}" height="${h}" fill="var(--track)"/>`;
+    }
+    for (let k = 1; k * 1000 <= max; k += max > 10000 ? 2 : 1) if (k * 1000 / max > 0.18) scale += `<text x="${(L + (R - L) * k * 1000 / max).toFixed(1)}" y="22" text-anchor="middle" font-size="9" fill="var(--fg-2)" style="font-weight:600;letter-spacing:.2em">${k}</text>`;
+    const s = speed == null ? "—" : String(Math.round(speed)), hot = rpm != null && rpm >= warn, num = "font-family:var(--ui);font-stretch:75%;font-weight:700;font-variant-numeric:tabular-nums";
+    $("rtDash").innerHTML = `<rect x="1" y="1" width="${W - 2}" height="220" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="1.2"/>
+      <text x="16" y="22" font-size="9" fill="var(--fg-2)" style="font-weight:600;letter-spacing:.2em">RPM ×1000</text>${scale}${bars}
+      <text x="16" y="116" font-size="9" fill="var(--fg-2)" style="font-weight:600;letter-spacing:.2em">SPEED ${unit().toUpperCase()}</text>
+      <text x="14" y="206" font-size="104" fill="var(--track)" style="${num}">${"8".repeat(Math.max(2, s.length))}</text>
+      <text x="14" y="206" font-size="104" fill="#3DFFC4" style="${num};filter:drop-shadow(0 0 7px rgba(61,255,196,.8))">${s.length < 2 ? "<tspan visibility='hidden'>8</tspan>" : ""}${s}</text>
+      <text x="${W - 16}" y="150" text-anchor="end" font-size="9" fill="var(--fg-2)" style="font-weight:600;letter-spacing:.2em">ENGINE</text>
+      <text x="${W - 16}" y="188" text-anchor="end" font-size="38" fill="${hot ? "var(--red)" : "#FFD23F"}" style="${num};filter:drop-shadow(0 0 5px ${hot ? "rgba(255,77,61,.7)" : "rgba(255,210,63,.7)"})">${rpm == null ? "—" : Math.round(rpm / 10) * 10}</text>
+      ${top() != null ? `<text x="${W - 16}" y="206" text-anchor="end" font-size="9" fill="var(--fg-2)" style="font-weight:600;letter-spacing:.2em">TOP ${top()}</text>` : ""}`;
+  }
+  function rally(rpm) {
+    const W = 340, H = 150, L = 18, R = W - 76, max = rpmGauge.max, warn = rpmGauge.warnAt, f = rpm == null ? 0 : Math.min(1, rpm / max), hot = rpm != null && rpm >= warn;
+    const t = rpm == null ? "—" : fmtInt(Math.round(rpm / 10) * 10), rx = L + (R - L) * Math.min(1, warn / max);
+    let st = ""; for (let x = W - 58; x < W + 60; x += 28) st += `<path d="M${x} 0h14l${-0.6 * H} ${H}h-14z" fill="#FF5B00"/>`;
+    $("raRev").innerHTML = `<defs><clipPath id="raClip"><rect x="${W - 58}" y="0" width="58" height="${H}"/></clipPath><linearGradient id="raGrad" x1="0" x2="1"><stop offset="0" stop-color="#F2F0EA"/><stop offset="1" stop-color="#FF5B00"/></linearGradient></defs>
+      <rect width="${W}" height="${H}" rx="8" fill="#111"/><g clip-path="url(#raClip)">${st}</g>
+      <text x="${L}" y="26" font-size="11" fill="#A8A59C" style="font-weight:700;font-stretch:125%;letter-spacing:.14em">ENGINE</text>
+      <text x="${L - 2}" y="92" font-size="${t.length > 5 ? 60 : 66}" fill="${hot ? "var(--red)" : "#F2F0EA"}" style="font-family:var(--ui);font-stretch:125%;font-weight:850;font-style:italic;font-variant-numeric:tabular-nums">${t}<tspan font-size="13" fill="#A8A59C" style="font-stretch:100%;font-style:normal;font-weight:600" dx="6">rpm</tspan></text>
+      <rect x="${L}" y="108" width="${R - L}" height="14" fill="#2A2A2A"/>${f > 0 ? `<rect x="${L}" y="108" width="${((R - L) * f).toFixed(1)}" height="14" fill="url(#raGrad)"/>` : ""}
+      <rect x="${(rx - 1.5).toFixed(1)}" y="104" width="3" height="22" fill="#FF5B00"/>
+      <text x="${L}" y="138" font-size="10" fill="#A8A59C" style="font-weight:600">0</text><text x="${(L + R) / 2}" y="138" text-anchor="middle" font-size="10" fill="#A8A59C" style="font-weight:600">REDLINE ${fmtInt(warn)}</text><text x="${R}" y="138" text-anchor="end" font-size="10" fill="#A8A59C" style="font-weight:600">${Math.round(max / 1000)}k</text>`;
+  }
+  function hairline(speed, rpm) {
+    const cx = 160, cy = 150, r = 136, max = rpmGauge.max, warn = rpmGauge.warnAt;
+    const P = (a, rad) => [cx + rad * Math.cos(a), cy - rad * Math.sin(a)].map(v => v.toFixed(1));
+    let ticks = "", nums = "";
+    const halves = Math.max(2, Math.round(max / 500));
+    for (let i = 0; i <= halves; i++) {
+      const at = i * 500, a = (225 - 270 * at / max) * Math.PI / 180, major = i % 2 === 0, len = major ? 14 : 7;
+      const [x1, y1] = P(a, r), [x2, y2] = P(a, r - len);
+      ticks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${at >= warn ? "var(--red)" : major ? "var(--fg)" : "var(--fg-2)"}" stroke-width="${major ? 2.2 : 1.2}" stroke-linecap="round"/>`;
+    }
+    // Each number centred on its own point a fixed gap inside the long ticks (dominant-baseline centres it vertically).
+    for (let k = 0; k * 1000 <= max + 1; k += max > 10000 ? 2 : 1) {
+      const a = (225 - 270 * k * 1000 / max) * Math.PI / 180, [x, y] = P(a, r - 30);
+      nums += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="14" fill="${k * 1000 >= warn ? "var(--red)" : "var(--fg-2)"}" style="font-variant-numeric:tabular-nums">${k}</text>`;
+    }
+    const f = rpm == null ? 0 : Math.min(1, rpm / max), na = (225 - 270 * f) * Math.PI / 180, [n1x, n1y] = P(na, r - 40), [n2x, n2y] = P(na, r + 4);
+    const s = speed == null ? "—" : Math.round(speed), hot = rpm != null && rpm >= warn;
+    $("hlDial").innerHTML = `${ticks}${nums}
+      <text x="${cx}" y="${cy - 6}" text-anchor="middle" dominant-baseline="central" font-size="104" fill="var(--fg)" style="font-weight:300;letter-spacing:-.04em;font-variant-numeric:tabular-nums">${s}</text>
+      <text x="${cx}" y="${cy + 52}" text-anchor="middle" font-size="14" fill="var(--fg-2)">${unit()}${top() != null ? ` · top ${top()}` : ""}</text>
+      <text x="${cx}" y="${cy + 112}" text-anchor="middle" font-size="15" font-weight="500" fill="${hot ? "var(--red)" : "var(--fg)"}" style="font-variant-numeric:tabular-nums">${rpm == null ? "—" : fmtInt(Math.round(rpm / 10) * 10)} rpm</text>
+      <line x1="${n1x}" y1="${n1y}" x2="${n2x}" y2="${n2y}" stroke="var(--s1)" stroke-width="3.4" stroke-linecap="round" opacity="${rpm == null ? .35 : 1}"/>`;
+  }
+  let sp = null, rp = null;
+  const draw = () => { retro(sp, rp); rally(rp); hairline(sp, rp); const b = $("raSpeed"); b.querySelector("b span").textContent = sp == null ? "—" : Math.round(sp); b.querySelector("b small").textContent = unit(); b.querySelector(".nt").textContent = top() != null ? `Top ${top()}` : ""; };
+  const gR = smoother(v => { rp = v; draw(); }, 2), gS = smoother(v => { sp = v; draw(); }, 0.05);
+  const r0 = rpmGauge.set, s0 = speedGauge.set;
+  rpmGauge.set = v => { r0(v); gR(v); };
+  speedGauge.set = v => { s0(v); gS(v); };
+  function slot(k, v) {
+    const d = slotsR.find(x => x[0] === k); if (!d) return; const [, , , dec, lo, hi, warn] = d;
+    const txt = v == null ? naText() : v.toFixed(dec), hot = v != null && warn != null && v >= warn, f = v == null ? 0 : Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
+    const c = $("rt" + k); c.querySelector("b span").textContent = txt; c.classList.toggle("hot", hot); noUnit(c.querySelector("b"), v);
+    [...c.querySelectorAll("u")].forEach((u, i) => u.classList.toggle("on", v != null && i < Math.round(f * 10)));
+    const ra = $("ra" + k); ra.querySelector("b span").textContent = txt; ra.classList.toggle("hot", hot); noUnit(ra.querySelector("b"), v);
+    const hl = $("hl" + k); hl.querySelector("b").textContent = v == null ? naText() : `${txt} ${d[2]}`; hl.classList.toggle("hot", hot);
+  }
+  ["05", "2F", "VOLT"].forEach(k => { const base = tiles[k]; tiles[k] = v => { base && base(v); slot(k, v); }; });
+  draw();
+})();
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

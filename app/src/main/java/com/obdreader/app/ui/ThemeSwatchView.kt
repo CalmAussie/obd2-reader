@@ -83,6 +83,53 @@ class ThemeSwatchView(context: Context, theme: AppThemes.AppTheme) : View(contex
                 text.typeface = t.uiTypeface(300); text.textSize = 14 * u; text.color = fg
                 canvas.drawText("87", 36 * u, 34 * u, text)
             }
+            DashLayout.RETRO -> {
+                // A stepped teal bar graph over glowing digits.
+                for (i in 0 until 10) {
+                    val x = (7 + i * 6f) * u
+                    val top = (16 - i * 0.9f) * u
+                    paint.color = if (i < 6) s1 else if (i < 8) Color.argb(50, 255, 255, 255) else Color.argb(30, 255, 255, 255)
+                    canvas.drawRect(x, top, x + 4.4f * u, 20 * u, paint)
+                }
+                text.typeface = display; text.textSize = 22 * u; text.textAlign = Paint.Align.LEFT
+                text.color = Color.argb(40, 255, 255, 255); canvas.drawText("88", 8 * u, 46 * u, text)
+                text.color = s1; text.setShadowLayer(4 * u, 0f, 0f, s1); canvas.drawText("80", 8 * u, 46 * u, text); text.clearShadowLayer()
+                text.textSize = 9 * u; text.color = s2; text.textAlign = Paint.Align.RIGHT
+                canvas.drawText("2880", 66 * u, 46 * u, text)
+                text.textAlign = Paint.Align.CENTER
+            }
+            DashLayout.RALLY -> {
+                // A black board with hazard stripes, the number huge.
+                paint.color = s2; rect.set(5 * u, 8 * u, 67 * u, 34 * u); canvas.drawRoundRect(rect, 2 * u, 2 * u, paint)
+                canvas.save(); canvas.clipRect(54 * u, 8 * u, 67 * u, 34 * u)
+                paint.color = s1
+                for (i in 0 until 5) { val x = (50 + i * 6) * u; canvas.drawPath(android.graphics.Path().apply { moveTo(x, 8 * u); lineTo(x + 3 * u, 8 * u); lineTo(x - 10 * u, 34 * u); lineTo(x - 13 * u, 34 * u); close() }, paint) }
+                canvas.restore()
+                text.typeface = display; text.textSize = 13 * u; text.color = bg; text.textAlign = Paint.Align.LEFT
+                canvas.drawText("2,880", 8 * u, 27 * u, text)
+                paint.color = s1; rect.set(40 * u, 38 * u, 67 * u, 50 * u); canvas.drawRoundRect(rect, 2 * u, 2 * u, paint)
+                paint.style = Paint.Style.STROKE; paint.strokeWidth = 1.4f * u; paint.color = s2
+                rect.set(5.7f * u, 38.7f * u, 35.3f * u, 49.3f * u); canvas.drawRoundRect(rect, 2 * u, 2 * u, paint)
+                paint.style = Paint.Style.FILL
+                text.textAlign = Paint.Align.CENTER
+            }
+            DashLayout.HAIRLINE -> {
+                // Fine ticks round a thin number.
+                val cx = 36 * u; val cy = 30 * u; val r = 20 * u
+                paint.style = Paint.Style.STROKE; paint.strokeWidth = 0.6f * u
+                for (i in 0..16) {
+                    val a = Math.toRadians(225.0 - 270.0 * i / 16)
+                    val len = if (i % 2 == 0) 3.4f * u else 1.8f * u
+                    paint.color = if (i >= 14) Color.parseColor("#FF453A") else if (i % 2 == 0) fg else Color.argb(120, 255, 255, 255)
+                    canvas.drawLine(cx + r * Math.cos(a).toFloat(), cy - r * Math.sin(a).toFloat(), cx + (r - len) * Math.cos(a).toFloat(), cy - (r - len) * Math.sin(a).toFloat(), paint)
+                }
+                val a = Math.toRadians(225.0 - 270.0 * 0.4)
+                paint.color = s1; paint.strokeWidth = 1.2f * u
+                canvas.drawLine(cx + (r - 8 * u) * Math.cos(a).toFloat(), cy - (r - 8 * u) * Math.sin(a).toFloat(), cx + (r + u) * Math.cos(a).toFloat(), cy - (r + u) * Math.sin(a).toFloat(), paint)
+                paint.style = Paint.Style.FILL
+                text.typeface = t.uiTypeface(300); text.textSize = 14 * u; text.color = fg
+                canvas.drawText("80", cx, cy + 5 * u, text)
+            }
             DashLayout.CYBERPUNK -> {
                 // A climbing neon rev bar over split-colour digits.
                 for (i in 0 until 9) {
