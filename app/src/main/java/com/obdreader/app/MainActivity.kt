@@ -513,13 +513,7 @@ open class MainActivity : AppCompatActivity() {
         // The bottom bar restores its selected tab by itself after the screen is recreated; show its page.
         showPage(bottomNav.selectedItemId)
         if (savedInstanceState == null) handleWidgetConnect(intent)
-        // Debug builds: the install test asks for pictures of the Android Auto tiles in every style.
-        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0 && intent.getBooleanExtra("car_tiles", false)) {
-            Thread {
-                val files = try { com.obdreader.app.car.CarTiles.renderSamples(applicationContext) } catch (e: Exception) { android.util.Log.w("OBD2CarTiles", "failed", e); emptyList() }
-                android.util.Log.i("OBD2CarTiles", "drew ${files.size}: ${files.joinToString(" ") { it.name }}")
-            }.start()
-        }
+        drawCarTilesIfAsked(intent)
         com.obdreader.app.widget.ObdWidget.Feed.start(this)
         com.obdreader.app.widget.ObdWidget.refresh(this)
         // The car comes first: it decides how fault codes are explained, the redline and the protocol.
@@ -2749,6 +2743,7 @@ open class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        drawCarTilesIfAsked(intent)
         handleWidgetConnect(intent)
     }
 
@@ -2765,6 +2760,16 @@ open class MainActivity : AppCompatActivity() {
             last != null -> startSession(last)
             else -> showConnectSheet()
         }
+    }
+
+    /** Debug builds: the install test asks for pictures of the Android Auto tiles in every style. */
+    private fun drawCarTilesIfAsked(intent: Intent?) {
+        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) == 0 || intent?.getBooleanExtra("car_tiles", false) != true) return
+        intent.removeExtra("car_tiles")
+        Thread {
+            val files = try { com.obdreader.app.car.CarTiles.renderSamples(applicationContext) } catch (e: Throwable) { android.util.Log.w("OBD2CarTiles", "failed", e); emptyList() }
+            android.util.Log.i("OBD2CarTiles", "drew ${files.size}: ${files.joinToString(" ") { it.name }}")
+        }.start()
     }
 
     // ---------- Picture-in-picture ----------
