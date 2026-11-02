@@ -162,7 +162,7 @@ Tap the palette icon on the Dashboard to choose a style. Your choice is saved. E
 | Cyberpunk | A neon heads-up display: a climbing rev bar, split-colour speed digits and glowing readouts |
 
 ## Android Auto
-The car screen shows live RPM, speed, coolant, throttle, fuel and battery, refreshing about five times a second with each number gliding to the next reading, and lists trouble codes. Its tiles are drawn with your style's own dashboard pieces (the roundel and decals on the liveries, shift lights and traces on Race telemetry, the speed ring on Digital cockpit, the heads-up display on Cyberpunk), and trouble codes show on your style's plates. Android Auto still sets the background, the grid and the names under each tile.
+The car screen shows live RPM, speed, coolant, throttle, fuel and battery, refreshing about five times a second with each number gliding to the next reading, and lists trouble codes. Its tiles are drawn with your style's own dashboard pieces (the roundel and decals on the liveries, shift lights across the top and traces on Race telemetry, the speed ring on Digital cockpit, the heads-up display on Cyberpunk), and trouble codes show on your style's plates. Android Auto still sets the background, the grid and the names under each tile.
 
 Android Auto only shows Play Store apps until you allow others. On your phone:
 1. Open Android Auto's settings (search "Android Auto" in Settings).
