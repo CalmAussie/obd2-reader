@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.24.1 (2 November 2026)
+- On the Android Auto screen, engine speed (the rev roundel on the liveries) now sits top centre in every style, with speed to its left.
+
 ## 1.24.0 (2 November 2026)
 - **Same route as last time.** When you record a drive with its route and you've recorded the same journey before (same start, same finish, same roads, the same way round), the drive's summary compares the two: time, average speed, idling and top speed, each marked better or worse, plus your drive score when both recordings covered the whole drive. The two routes are read from their own recordings, the only place your location is ever kept, and nothing new is saved.
 - **Android Auto in your style's layout.** The car screen's tiles are now drawn with the phone's own dashboard pieces in the style you've chosen: the race-number roundel and angled decals on the liveries, shift lights and data-logger rows with live traces on Race telemetry, the glowing speed ring and glass rows on Digital cockpit, and the neon heads-up display and chips on Cyberpunk. Trouble codes show on your style's plates too. Android Auto still sets the background, the grid and the names under each tile. Pit lane is drawn in darker colours while the car's screen is in night mode.
