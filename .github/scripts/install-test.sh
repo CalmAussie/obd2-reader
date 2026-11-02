@@ -635,7 +635,7 @@ if tap_record; then
   tap_record; sleep 2
   tap_tab Dashboard; scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 6
   shot 8a3-same-route
-  adb logcat -d -s OBD2Route:I OBD2Route:W > "$OUT/same-route.txt" 2>/dev/null
+  adb logcat -d -s OBD2Route:I > "$OUT/same-route.txt" 2>/dev/null
   if grep -q "same route as the drive" "$OUT/same-route.txt"; then log "same route: compared with last time ($(grep -o 'Time [^,]*' "$OUT/same-route.txt" | tail -1))"; else log "same route: FAILED (not compared: $(tail -1 "$OUT/same-route.txt" | cut -c1-100))"; FAIL=1; fi
   for k in 1 2 3; do adb shell input swipe 540 1800 540 700 300; done; sleep 1; shot 8a4-same-route-lines
   tap_text "Done" > /dev/null || adb shell input keyevent KEYCODE_BACK; sleep 1
@@ -892,8 +892,8 @@ case "$SW" in *"tab 1"*"tab 0"*) log "swipe between tabs: OK" ;; *) log "swipe b
 if adb shell run-as $PKG ls > /dev/null 2>&1; then
   adb logcat -c
   adb shell am start -W -n $PKG/.HomeActivity --ez car_tiles true > /dev/null 2>&1
-  for i in $(seq 1 40); do adb logcat -d -s OBD2CarTiles:I OBD2CarTiles:W | grep -q "drew\|failed" && break; sleep 3; done
-  adb logcat -d -s OBD2CarTiles:I OBD2CarTiles:W > "$OUT/car-tiles.txt" 2>/dev/null
+  for i in $(seq 1 40); do adb logcat -d -s OBD2CarTiles:V | grep -q "drew\|failed" && break; sleep 3; done
+  adb logcat -d -s OBD2CarTiles:V > "$OUT/car-tiles.txt" 2>/dev/null
   mkdir -p "$OUT/car"
   for f in $(adb shell run-as $PKG ls files/car-tiles 2>/dev/null | tr -d '\r'); do adb exec-out run-as $PKG cat "files/car-tiles/$f" > "$OUT/car/$f"; done
   N=$(ls "$OUT/car" 2>/dev/null | wc -l)
