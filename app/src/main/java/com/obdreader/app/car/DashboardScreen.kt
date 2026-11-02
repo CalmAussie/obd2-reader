@@ -133,7 +133,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
                 carTiles.image(
                     CarTiles.Reading(t.key, t.unit, t.decimals, t.min, t.max, t.warnAt, shown, unsupported),
                     speed = speedShown, rpm = rpmShown, rpmMax = rpmTile.max, redline = rpmTile.warnAt ?: 6500f,
-                    speedMax = speedTile.max, speedUnit = speedTile.unit, top = top, checkEngine = checkEngine,
+                    speedMax = speedTile.max, speedUnit = speedTile.unit, top = top, checkEngine = checkEngine, slot = i,
                 )
             } catch (e: Exception) {
                 // Never lose the car screen over a drawing problem: fall back to the plain tiles.

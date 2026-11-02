@@ -3076,7 +3076,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.24.1", "date": "2 November 2026", "text": "• On the Android Auto screen, engine speed (the rev roundel on the liveries) now sits top centre in every style, with speed to its left."};
+const CHANGES = {"version": "1.24.2", "date": "2 November 2026", "text": "• On Race telemetry, the Android Auto screen's shift lights now run the full width of the screen, across the top row of tiles: five green over speed, five amber over engine speed and five red over coolant. Android Auto doesn't let an app draw one strip across its grid, so the lights are split across the three tiles in line."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3425,6 +3425,12 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     let s = ""; for (let i = 0; i < 15; i++) { const on = flash || i < lit, col = flash ? "#3A8BFF" : ["#2FD573", "#FFB000", "#FF3B30"][Math.floor(i / 5)]; s += `<rect x="${6 + i * 25}" y="6" width="20" height="20" rx="3" fill="${on ? col : "#24262B"}"/>`; }
     return s;
   }
+  /* Five of the 15 shift lights ([part] 0 green, 1 amber, 2 red): the top row's three tiles carry one strip between them. */
+  function withLights(svg, rpm, redline, part) {
+    const lit = rpm == null ? 0 : Math.max(0, Math.min(15, Math.ceil(15 * rpm / (redline * 0.97)))), flash = rpm != null && rpm >= redline;
+    let s = ""; for (let k = 0; k < 5; k++) { const i = part * 5 + k, on = flash || i < lit, col = flash ? "#3A8BFF" : ["#2FD573", "#FFB000", "#FF3B30"][part]; s += `<rect x="${k * 77}" y="6" width="72" height="24" rx="3" fill="${on ? col : "#24262B"}"/>`; }
+    return svg.replace(/viewBox="0 0 380 (\d+)"/, (m, hgt) => `viewBox="0 0 380 ${+hgt + 44}"`).replace(/(<svg[^>]*>)/, `$1<g>${s}</g><g transform="translate(0,44)">`).replace(/<\/svg>$/, "</g></svg>");
+  }
   function telemetryRpm(c, value, rpm, redline, min, max, hot) {
     return row(c, "tower", "0C", value, "rpm", min, max, hot).replace('viewBox="0 0 380 150"', 'viewBox="0 0 380 190"').replace(/<rect width="380"/, `<g>${lights(rpm, redline)}</g><g transform="translate(0,40)"><rect width="380"`).replace("</svg>", "</g></svg>");
   }
@@ -3477,7 +3483,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
       const frac = shown == null ? 0 : Math.max(0, Math.min(1, (shown - t.min) / (max - t.min)));
       let img;
       if (lay === "livery") img = t.key === "0C" ? carRoundelNum(Math.min(1, (shown || 0) / max), shown == null ? "—" : value) : decal(c, value, unit, frac, high, t.key === "0D", t.key === "0D" ? top : null);
-      else if (lay === "telemetry") img = t.key === "0C" ? telemetryRpm(c, value, rpm, redline, t.min, max, high) : row(c, "tower", t.key, value, unit, t.min, max, high);
+      else if (lay === "telemetry") { img = row(c, "tower", t.key, value, unit, t.min, max, high); if (i < 3) img = withLights(img, rpm, redline, i); }
       else if (lay === "cockpit") img = t.key === "0D" ? ring(c, speed, rpm, rpmMax, redline, unit, top) : row(c, "glass", t.key, value, unit, t.min, max, high);
       else img = t.key === "0D" ? hud(c, speed, rpm, rpmMax, redline, unit, top) : chip(c, value, unit, frac, high);
       return `<div class="car-item car-${lay}${high ? " hot" : ""}">${img}<div class="t">${t.title}</div><div class="x${high ? " hot" : ""}">${text}</div></div>`;

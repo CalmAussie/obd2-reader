@@ -27,7 +27,7 @@ import com.obdreader.app.ui.themeInt
  * The Android Auto tiles, drawn with the phone's own dashboard pieces in the style you've chosen,
  * so the car screen looks like the app's layout:
  * - Liveries: the race-number roundel for engine speed and angled decals with the leading stripe.
- * - Race telemetry: shift lights over the engine speed, and data-logger rows with a 30-second trace.
+ * - Race telemetry: the shift lights across the top row, and data-logger rows with a 30-second trace.
  * - Digital cockpit: the glowing speed ring, and soft glass rows.
  * - Cyberpunk: the neon heads-up display for speed, and glowing chips.
  *
@@ -73,7 +73,8 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
     private fun dp(v: Float) = v * context().resources.displayMetrics.density
 
     /** The picture for one tile. [speed] and [rpm] feed the combined pieces (the cockpit ring and the HUD). */
-    fun image(r: Reading, speed: Float?, rpm: Float?, rpmMax: Float, redline: Float, speedMax: Float, speedUnit: String, top: Float?, checkEngine: Boolean): CarIcon {
+    /** [slot]: the tile's place in the grid, left to right then top to bottom (the top row carries Race telemetry's shift lights). */
+    fun image(r: Reading, speed: Float?, rpm: Float?, rpmMax: Float, redline: Float, speedMax: Float, speedUnit: String, top: Float?, checkEngine: Boolean, slot: Int = -1): CarIcon {
         val c = context()
         val isRpm = r.key == HEX_RPM
         val isSpeed = r.key == HEX_SPEED
@@ -96,11 +97,11 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
             }
             DashLayout.TELEMETRY -> {
                 val row = tower(c, r)
-                if (isRpm) {
-                    val lights = views.getOrPut("lights") { ShiftLightsView(c) } as ShiftLightsView
-                    lights.setRpm(rpm, redline)
-                    drawStack(listOf(lights, row), dp(190f), dp(6f))
-                } else draw(row, dp(190f))
+                // Android Auto has no full-width strip, so the 15 shift lights run across the three tiles of
+                // the top row, five on each: green on the left, amber in the middle, red on the right.
+                if (slot in 0..2) withLights(row, rpm, redline, slot, dp(190f))
+                else if (slot < 0 && isRpm) withLights(row, rpm, redline, 1, dp(190f))
+                else draw(row, dp(190f))
             }
             DashLayout.COCKPIT -> if (isSpeed) {
                 val v = views.getOrPut(r.key) { CockpitRingView(c) } as CockpitRingView
@@ -150,13 +151,26 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
         return CarIcon.Builder(IconCompat.createWithBitmap(bmp)).build()
     }
 
-    private fun drawStack(parts: List<View>, width: Float, gap: Float): CarIcon {
-        parts.forEach { measure(it, width) }
-        val h = parts.sumOf { it.height } + (gap * (parts.size - 1)).toInt()
-        val bmp = Bitmap.createBitmap(width.toInt(), h.coerceAtLeast(1), Bitmap.Config.ARGB_8888)
+    /** [row] under its third ([part] 0, 1 or 2) of the full row of shift lights, cut from one strip so the lights line up. */
+    private fun withLights(row: View, rpm: Float?, redline: Float, part: Int, width: Float): CarIcon {
+        val lights = views.getOrPut("lights") { ShiftLightsView(context()) } as ShiftLightsView
+        lights.setRpm(rpm, redline)
+        val full = width * 3
+        measure(lights, full)
+        val strip = Bitmap.createBitmap(lights.width.coerceAtLeast(1), lights.height.coerceAtLeast(1), Bitmap.Config.ARGB_8888)
+        lights.draw(Canvas(strip))
+        val gap = dp(4f)
+        val w = (full - gap * 14) / 15
+        val x0 = part * 5 * (w + gap)
+        val src = android.graphics.Rect(x0.toInt(), 0, (x0 + 5 * w + 4 * gap).toInt().coerceAtMost(strip.width), strip.height)
+        val lh = strip.height * width / src.width()
+        measure(row, width)
+        val space = dp(6f)
+        val bmp = Bitmap.createBitmap(width.toInt(), (lh + space + row.height).toInt().coerceAtLeast(1), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
-        var y = 0f
-        parts.forEach { canvas.save(); canvas.translate(0f, y); it.draw(canvas); canvas.restore(); y += it.height + gap }
+        canvas.drawBitmap(strip, src, android.graphics.RectF(0f, 0f, width, lh), android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG))
+        canvas.translate(0f, lh + space)
+        row.draw(canvas)
         return CarIcon.Builder(IconCompat.createWithBitmap(bmp)).build()
     }
 
@@ -182,9 +196,9 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
                 // Push a few seconds of readings so the traces have something to show.
                 var icons = emptyList<CarIcon>()
                 repeat(12) { step ->
-                    icons = readings.map { r ->
+                    icons = readings.mapIndexed { slot, r ->
                         val v = r.value?.let { it * (0.85f + 0.15f * kotlin.math.sin(step / 2f)) }
-                        tiles.image(Reading(r.key, r.unit, r.decimals, r.min, r.max, r.warnAt, v, r.unsupported), 87f, 3240f, 7000f, 6500f, 240f, "km/h", 112f, true)
+                        tiles.image(Reading(r.key, r.unit, r.decimals, r.min, r.max, r.warnAt, v, r.unsupported), 87f, 3240f, 7000f, 6500f, 240f, "km/h", 112f, true, slot)
                     }
                     Thread.sleep(330)
                 }
