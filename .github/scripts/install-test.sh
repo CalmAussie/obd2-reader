@@ -904,6 +904,18 @@ adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
 if adb shell dumpsys window windows 2>/dev/null | grep -A12 "Window{.*$PKG/$PKG\.\(MainActivity\|HomeActivity\)" | grep -q "KEEP_SCREEN_ON"; then log "screen stays on while open: OK"; else log "screen stays on while open: FAILED"; FAIL=1; fi
 # Minimised (Home), the app keeps running in the background.
 tap_text "Demo car" > /dev/null || true; sleep 6
+# New trouble code mid-drive (debug builds): the demo car starts reporting a pending P0300; within the
+# 30-second code check a quiet notification appears (its own low-importance channel: no sound or pop-up).
+if adb shell run-as $PKG ls > /dev/null 2>&1; then
+  adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null
+  adb logcat -c
+  adb shell am start -n $PKG/.HomeActivity --es demo_new_code P0300 > /dev/null 2>&1
+  NC=no; for i in $(seq 1 25); do adb logcat -d -s OBD2Alerts:I | grep -q "new code P0300: quiet" && { NC=yes; break; }; sleep 2; done
+  adb shell dumpsys notification --noredact > "$OUT/notifications-codes.txt" 2>/dev/null
+  IMP=$(grep -A12 'mId=new_codes\|NotificationChannel{mId=.new_codes' "$OUT/notifications-codes.txt" | grep -o 'mImportance=[0-9]' | head -1)
+  shot 12c-new-code
+  if [ $NC = yes ] && grep -q "New trouble code P0300" "$OUT/notifications-codes.txt"; then log "new code while driving: quiet notification (${IMP:-importance ?})"; else log "new code while driving: FAILED (logged: $NC, ${IMP:-no channel})"; FAIL=1; fi
+fi
 adb logcat -c
 adb shell input keyevent KEYCODE_HOME; sleep 15
 alive && log "minimised: still running" || { log "minimised: FAILED (app stopped)"; FAIL=1; }

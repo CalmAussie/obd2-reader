@@ -37,7 +37,7 @@ class AlertRulesTest {
         assertTrue(a.codes(listOf("P0133")) { it }.isEmpty())
         val got = a.codes(listOf("P0133", "P0301")) { "Cylinder 1 misfire" }
         assertEquals(listOf("P0301"), got.map { it.code })
-        assertEquals("Cylinder 1 misfire", got[0].text)
+        assertEquals("Cylinder 1 misfire. Tap to see what it means and how soon to get it checked.", got[0].text)
         assertTrue(a.codes(listOf("P0133", "P0301")) { it }.isEmpty())
     }
 }

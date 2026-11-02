@@ -71,7 +71,7 @@ class AlertRules {
         val known = knownCodes
         knownCodes = (known ?: emptySet()) + codes
         if (known == null) return emptyList()
-        return codes.filter { it !in known }.distinct().map { Alert(Kind.NEW_CODE, "New trouble code $it", describe(it), code = it) }
+        return codes.filter { it !in known }.distinct().map { Alert(Kind.NEW_CODE, "New trouble code $it", "${describe(it)}. Tap to see what it means and how soon to get it checked.", code = it) }
     }
 
     private fun fmt(v: Double) = String.format(java.util.Locale.US, "%.1f", v)

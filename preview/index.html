@@ -714,6 +714,14 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .same-route em { width: 118px; text-align: right; font-style: normal; color: var(--fg-2); font-variant-numeric: tabular-nums; }
 .same-route em.up { color: var(--green); } .same-route em.down { color: var(--red); }
 .car-item svg.tile { overflow: visible; }
+
+/* A quiet notification: an icon in the status bar and a small note in the shade, no pop-up */
+.sb-note { display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: var(--fg-2); margin-left: 8px; vertical-align: middle; }
+.quiet-note { position: absolute; left: 12px; right: 12px; top: 34px; z-index: 6; text-align: left; background: var(--panel-2); color: var(--fg); border-radius: 14px; padding: 10px 14px; font-size: 12px; line-height: 1.4; box-shadow: 0 0 0 1px var(--line); opacity: .96; transition: opacity .4s; }
+.quiet-note b { display: block; font-size: 13px; font-weight: 600; }
+.quiet-note span { color: var(--fg-2); }
+.quiet-note small { display: block; font-size: 11px; color: var(--fg-2); margin-bottom: 2px; }
+.quiet-note.gone { opacity: 0; pointer-events: none; }
 </style>
 
 <p class="note"><b>Live preview of the Android app, its Android Auto screen, its home-screen widget and its picture-in-picture window.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
@@ -2507,7 +2515,7 @@ $("historyBtn").onclick = () => {
    they're notifications with sound and vibration, shown on Android Auto too. */
 let alertsOn = true;
 try { alertsOn = localStorage.getItem("alerts") !== "0"; } catch (e) {}
-$("reconnectRow").insertAdjacentHTML("afterend", `<div class="setting" id="alertsRow"><div class="r"><span style="flex:1">Alerts</span><button class="switch" id="alertsSwitch" role="switch" aria-checked="${alertsOn}" aria-label="Alerts"><i></i></button></div><div class="h">Sound and vibrate if the engine runs hot, the battery stops charging or a new trouble code appears. Shown on Android Auto too.</div></div>`);
+$("reconnectRow").insertAdjacentHTML("afterend", `<div class="setting" id="alertsRow"><div class="r"><span style="flex:1">Alerts</span><button class="switch" id="alertsSwitch" role="switch" aria-checked="${alertsOn}" aria-label="Alerts"><i></i></button></div><div class="h">Sound and vibrate if the engine runs hot or the battery stops charging. The codes are checked every 30 seconds while you drive, and a new one arrives as a quiet notification. Shown on Android Auto too.</div></div>`);
 $("alertsSwitch").onclick = () => { alertsOn = !alertsOn; $("alertsSwitch").setAttribute("aria-checked", alertsOn); try { localStorage.setItem("alerts", alertsOn ? "1" : "0"); } catch (e) {} };
 const alertWatch = {};
 function watchAlert(k, now, bad, ok, hold) {
@@ -3076,7 +3084,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.24.3", "date": "2 November 2026", "text": "• In the picture-in-picture window, the two smaller readings and their names are now centred in their halves of the window, like the big reading above them."};
+const CHANGES = {"version": "1.25.0", "date": "3 November 2026", "text": "• New codes while you drive. The app now checks the car's trouble codes every 30 seconds while connected (instead of every 2 minutes), including pending codes the car hasn't confirmed yet. When a new one appears mid-drive, it tells you with a quiet notification: no sound, vibration or pop-up, on the phone or in Android Auto, just a note in your notifications with what the code means. Tap it to open Diagnostics. Codes already there when you connect don't notify. You can change how these look in Android's settings under the \"New trouble codes\" notifications; the hot-engine and battery alerts still sound as before."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3527,6 +3535,30 @@ function sameRouteHtml(t) {
   return `<div class="trip-h">Same route as last time</div><p class="trip-note" style="margin-top:0">Compared with your drive on ${day}, ${tm}</p>
     <div class="same-route">${lines.map(([l, v, ch, g]) => `<div><span>${l}</span><b>${v}</b><em class="${g === true ? "up" : g === false ? "down" : ""}">${ch}</em></div>`).join("")}</div>`;
 }
+
+
+/* ===== 1.25.0: new codes while you drive (mirrors Alerts.notify for NEW_CODE) =====
+   Codes are re-read every 30 s; a code that wasn't there when you connected arrives as a quiet
+   notification: an icon in the status bar and a note in the notification list, no sound, vibration or pop-up. */
+$("noChargeBtn").insertAdjacentHTML("afterend", `<button class="sim-btn" id="newCodeBtn" hidden>Preview only: the demo car reports a new code</button>`);
+setInterval(() => { $("newCodeBtn").hidden = $("ignBtn").hidden; }, 500);
+$("newCodeBtn").onclick = () => {
+  if (!alertsOn) return toast("Alerts are off (Diagnostics → Alerts).");
+  $("newCodeBtn").disabled = true; $("newCodeBtn").textContent = "Preview only: next code check in a few seconds…";
+  setTimeout(() => {
+    $("newCodeBtn").disabled = false; $("newCodeBtn").textContent = "Preview only: the demo car reports a new code";
+    const bar = document.querySelector(".statusbar"); if (bar && !bar.querySelector(".sb-note")) bar.firstElementChild.insertAdjacentHTML("beforeend", `<span class="sb-note" title="New trouble code P0300"></span>`);
+    toast("Quiet notification: just an icon in the status bar. Tap the status bar to pull down the notifications.");
+  }, 3000);
+};
+/* Tapping the status bar pulls down the notifications, where the quiet note waits. */
+document.querySelector(".statusbar").style.cursor = "pointer";
+document.querySelector(".statusbar").addEventListener("click", () => {
+  if (document.querySelector(".quiet-note")) return document.querySelectorAll(".quiet-note").forEach(n => n.remove());
+  if (!document.querySelector(".sb-note")) return;
+  $("phone").insertAdjacentHTML("beforeend", `<button class="quiet-note" id="quietNote"><small>OBD2 Reader · New trouble codes</small><b>New trouble code P0300</b><span>Random or multiple cylinder misfire. Tap to see what it means and how soon to get it checked.</span></button>`);
+  $("quietNote").onclick = () => { document.querySelectorAll(".quiet-note,.sb-note").forEach(n => n.remove()); document.querySelector('.nav button:last-child').click(); };
+});
 
 window.carReady = true;
 if (location.hash === "#car") showView(true);

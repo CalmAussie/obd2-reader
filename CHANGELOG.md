@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.25.0 (3 November 2026)
+- **New codes while you drive.** The app now checks the car's trouble codes every 30 seconds while connected (instead of every 2 minutes), including pending codes the car hasn't confirmed yet. When a new one appears mid-drive, it tells you with a quiet notification: no sound, vibration or pop-up, on the phone or in Android Auto, just a note in your notifications with what the code means. Tap it to open Diagnostics. Codes already there when you connect don't notify. You can change how these look in Android's settings under the "New trouble codes" notifications; the hot-engine and battery alerts still sound as before.
+
 ## 1.24.3 (2 November 2026)
 - In the picture-in-picture window, the two smaller readings and their names are now centred in their halves of the window, like the big reading above them.
 

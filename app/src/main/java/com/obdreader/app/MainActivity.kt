@@ -514,6 +514,7 @@ open class MainActivity : AppCompatActivity() {
         showPage(bottomNav.selectedItemId)
         if (savedInstanceState == null) handleWidgetConnect(intent)
         drawCarTilesIfAsked(intent)
+        if (savedInstanceState == null) showCodesIfAsked(intent)
         com.obdreader.app.widget.ObdWidget.Feed.start(this)
         com.obdreader.app.widget.ObdWidget.refresh(this)
         // The car comes first: it decides how fault codes are explained, the redline and the protocol.
@@ -2744,6 +2745,7 @@ open class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         drawCarTilesIfAsked(intent)
+        showCodesIfAsked(intent)
         handleWidgetConnect(intent)
     }
 
@@ -2760,6 +2762,17 @@ open class MainActivity : AppCompatActivity() {
             last != null -> startSession(last)
             else -> showConnectSheet()
         }
+    }
+
+    /** The new-code notification opens Diagnostics, where the code is listed with what it means. */
+    private fun showCodesIfAsked(intent: Intent?) {
+        // Debug builds: the install test makes the demo car report a new pending code mid-drive.
+        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) intent?.getStringExtra("demo_new_code")?.let {
+            com.obdreader.app.obd.DemoTestHooks.newPendingCode = it; intent.removeExtra("demo_new_code")
+        }
+        if (intent?.getBooleanExtra(com.obdreader.app.session.Alerts.EXTRA_SHOW_CODES, false) != true) return
+        intent.removeExtra(com.obdreader.app.session.Alerts.EXTRA_SHOW_CODES)
+        findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav).selectedItemId = R.id.nav_diagnostics
     }
 
     /** Debug builds: the install test asks for pictures of the Android Auto tiles in every style. */
