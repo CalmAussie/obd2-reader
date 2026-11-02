@@ -300,7 +300,7 @@ scroll_top() { adb shell input swipe 540 800 540 2000 200; adb shell input swipe
 # pass is a small phone with large text (360 dp wide, text at 115%), where crowding shows up.
 for PASS in normal small; do
 if [ $PASS = small ]; then adb shell wm density 480; adb shell settings put system font_scale 1.15; sleep 3; fi
-for STYLE in "British racing" "Race telemetry" "Digital cockpit" "Cyberpunk" "Asphalt"; do
+for STYLE in "British racing" "Race telemetry" "Digital cockpit" "Cyberpunk" "Retro digital" "Rally stage" "Hairline" "Asphalt"; do
   [ $PASS = normal ] && [ "$STYLE" = "Asphalt" ] && continue
   [ $PASS = small ] && [ "$STYLE" = "British racing" ] && continue
   SLUG=$(echo "$STYLE" | tr ' A-Z' '-a-z'); [ $PASS = small ] && SLUG="small-$SLUG"
@@ -308,7 +308,7 @@ for STYLE in "British racing" "Race telemetry" "Digital cockpit" "Cyberpunk" "As
   tap_text "Done" > /dev/null || true   # close the trip summary if that drive was long enough for one
   tap_text "Style" || { log "style $STYLE: FAILED (no Style button)"; FAIL=1; continue; }
   sleep 1
-  for i in 1 2 3; do tap_text "$STYLE" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
+  for i in 1 2 3 4 5 6; do tap_text "$STYLE" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
   sleep 4
   tap_text "Demo car" || { adb shell input swipe 540 1500 540 900 300; sleep 1; tap_text "Demo car"; } || { log "style $STYLE: FAILED (no Demo car)"; FAIL=1; continue; }
   adb shell input swipe 540 900 540 1700 300   # back to the top

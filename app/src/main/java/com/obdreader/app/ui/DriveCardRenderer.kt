@@ -35,7 +35,14 @@ class DriveCardRenderer(private val context: Context) {
         SQUARE("Square (1:1) for an Instagram post", 1080, 1080),
     }
 
-    private val layout = context.dashLayout()
+    /** The style's own layout; the newer layouts borrow the card shapes closest to them, in their own colours. */
+    private val style = context.dashLayout()
+    private val layout = when (style) {
+        DashLayout.RETRO -> DashLayout.TELEMETRY
+        DashLayout.RALLY -> DashLayout.LIVERY
+        DashLayout.HAIRLINE -> DashLayout.COCKPIT
+        else -> style
+    }
     private val bg = context.themeColor(R.attr.obdBg)
     private val surface = context.themeColor(R.attr.obdSurface)
     private val s1 = context.themeColor(R.attr.obdStripe1)
@@ -83,6 +90,7 @@ class DriveCardRenderer(private val context: Context) {
             DashLayout.COCKPIT -> { paint.typeface = uiLight; paint.textSize = if (story) 92f else 76f }
             DashLayout.CYBERPUNK -> { paint.typeface = display; paint.textSize = if (story) 86f else 70f; paint.letterSpacing = 0.08f }
             DashLayout.LIVERY -> { paint.typeface = title; paint.textSize = if (story) 96f else 78f }
+            else -> Unit
         }
         paint.textAlign = Paint.Align.LEFT
         val heading = if (layout == DashLayout.CYBERPUNK) "MY DRIVE" else "My drive"
@@ -156,6 +164,34 @@ class DriveCardRenderer(private val context: Context) {
     // ---------- Each layout's look ----------
 
     private fun background(c: Canvas, w: Int, h: Int, score: Int?) {
+        when (style) {
+            DashLayout.RETRO -> {
+                c.drawColor(bg)
+                // A stepped bar graph across the top, lit by the score: teal, then amber, then red.
+                val lit = ((score ?: 0) * 28 / 100.0).roundToInt()
+                val n = 28; val gap = 8f; val bw = (w - 144f - gap * (n - 1)) / n
+                for (i in 0 until n) {
+                    val x = 72f + i * (bw + gap); val bh = 40f + 70f * i / (n - 1)
+                    val col = if (i >= 24) danger else if (i >= 19) s2 else s1
+                    fill.color = if (i < lit) col else track
+                    c.drawRect(x, 220f - bh, x + bw, 220f, fill)
+                }
+                return
+            }
+            DashLayout.RALLY -> {
+                c.drawColor(bg)
+                // Hazard stripes down the right-hand edge at the top.
+                c.save(); c.clipRect(w - 260f, 0f, w.toFloat(), 230f)
+                fill.color = s1
+                var x = w - 300f
+                while (x < w + 200f) { path.reset(); path.moveTo(x, 0f); path.lineTo(x + 40f, 0f); path.lineTo(x - 100f, 230f); path.lineTo(x - 140f, 230f); path.close(); c.drawPath(path, fill); x += 80f }
+                c.restore()
+                fill.color = s2; c.drawRect(0f, 230f, w.toFloat(), 242f, fill)
+                return
+            }
+            DashLayout.HAIRLINE -> { c.drawColor(bg); return }
+            else -> Unit
+        }
         when (layout) {
             DashLayout.LIVERY -> {
                 c.drawColor(bg)
@@ -198,6 +234,7 @@ class DriveCardRenderer(private val context: Context) {
                 stroke.shader = null; stroke.strokeWidth = 4f; stroke.color = ColorUtils.setAlphaComponent(s2, 200)
                 c.drawPath(path, stroke)
             }
+            else -> Unit
         }
     }
 
@@ -273,6 +310,7 @@ class DriveCardRenderer(private val context: Context) {
                 paint.typeface = uiBold; paint.color = muted; paint.textSize = if (story) 38f else 30f
                 c.drawText(label, cx, cy + r * 0.78f, paint)
             }
+            else -> Unit
         }
     }
 
@@ -312,6 +350,7 @@ class DriveCardRenderer(private val context: Context) {
                 stroke.shader = null; stroke.strokeWidth = 3f; stroke.color = ColorUtils.setAlphaComponent(s2, 170)
                 c.drawPath(path, stroke)
             }
+            else -> Unit
         }
     }
 

@@ -22,6 +22,7 @@ import com.obdreader.app.ui.ShiftLightsView
 import com.obdreader.app.ui.TowerRowView
 import com.obdreader.app.ui.dashLayout
 import com.obdreader.app.ui.themeInt
+import kotlin.math.roundToInt
 
 /**
  * The Android Auto tiles, drawn with the phone's own dashboard pieces in the style you've chosen,
@@ -30,6 +31,9 @@ import com.obdreader.app.ui.themeInt
  * - Race telemetry: the shift lights across the top row, and data-logger rows with a 30-second trace.
  * - Digital cockpit: the glowing speed ring, and soft glass rows.
  * - Cyberpunk: the neon heads-up display for speed, and glowing chips.
+ * - Retro digital: the 80s digital dash for speed, and glowing segment readouts.
+ * - Rally stage: the black rev board, and framed or orange blocks.
+ * - Hairline: the watch-face dial for speed, and quiet list rows.
  *
  * Android Auto keeps its own background, fonts and grid (a safety rule for every app), so each tile
  * is a picture of the phone's piece. The tile's name stays in Android Auto's own text under it.
@@ -120,6 +124,37 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
                 if (r.unsupported) v.setUnsupported() else v.setValue(r.value?.toDouble())
                 draw(v, dp(170f))
             }
+            DashLayout.RETRO -> if (isSpeed) {
+                val v = views.getOrPut(r.key) { com.obdreader.app.ui.RetroDashView(c) } as com.obdreader.app.ui.RetroDashView
+                v.rpmMax = rpmMax; v.warnAt = redline; v.speedUnit = speedUnit; v.top = top
+                v.set(speed, rpm)
+                draw(v, dp(260f))
+            } else {
+                val v = views.getOrPut(r.key) { com.obdreader.app.ui.RetroChipView(c, "", r.unit, r.decimals, r.min, r.max, r.warnAt) } as com.obdreader.app.ui.RetroChipView
+                v.labelOverride = ""
+                if (r.unsupported) v.setUnsupported() else v.setValue(r.value?.toDouble())
+                draw(v, dp(170f))
+            }
+            DashLayout.RALLY -> if (isRpm) {
+                val v = views.getOrPut(r.key) { com.obdreader.app.ui.RallyRevView(c) } as com.obdreader.app.ui.RallyRevView
+                v.max = rpmMax; v.warnAt = redline
+                v.setValue(r.value)
+                draw(v, dp(240f))
+            } else {
+                val v = views.getOrPut(r.key) {
+                    com.obdreader.app.ui.RallyBlockView(c, "", r.unit, r.decimals, r.warnAt?.toDouble(),
+                        if (slot == 2) com.obdreader.app.ui.RallyBlockView.Style.ORANGE else com.obdreader.app.ui.RallyBlockView.Style.OUTLINE)
+                } as com.obdreader.app.ui.RallyBlockView
+                if (isSpeed) v.note = top?.let { "Top ${it.roundToInt()}" }
+                if (r.unsupported) v.setUnsupported() else v.setValue(r.value?.toDouble())
+                draw(v, dp(170f))
+            }
+            DashLayout.HAIRLINE -> if (isSpeed) {
+                val v = views.getOrPut(r.key) { com.obdreader.app.ui.HairlineDialView(c) } as com.obdreader.app.ui.HairlineDialView
+                v.rpmMax = rpmMax; v.warnAt = redline; v.speedUnit = speedUnit; v.top = top
+                v.set(speed, rpm)
+                draw(v, dp(220f))
+            } else draw(tower(c, r), dp(190f))
         }
     }
 

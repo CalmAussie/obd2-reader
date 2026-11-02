@@ -190,6 +190,12 @@ open class MainActivity : AppCompatActivity() {
     private lateinit var teleFuel: TextView
     private lateinit var cockpitRing: CockpitRingView
     private lateinit var cyberHud: CyberHudView
+    private lateinit var retroDash: com.obdreader.app.ui.RetroDashView
+    private lateinit var rallyRev: com.obdreader.app.ui.RallyRevView
+    private lateinit var hairlineDial: com.obdreader.app.ui.HairlineDialView
+    private val retroChips = mutableMapOf<String, com.obdreader.app.ui.RetroChipView>()
+    private val rallyBlocks = mutableMapOf<String, com.obdreader.app.ui.RallyBlockView>()
+    private val hairlineRows = mutableMapOf<String, TowerRowView>()
     private val cyberChips = mutableMapOf<String, CyberChipView>()
     private val decals = mutableMapOf<String, DecalView>()
     private val glass = mutableMapOf<String, SmoothText>()
@@ -2185,6 +2191,9 @@ open class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.layoutTelemetry).visibility = if (dash == DashLayout.TELEMETRY) View.VISIBLE else View.GONE
         findViewById<View>(R.id.layoutCockpit).visibility = if (dash == DashLayout.COCKPIT) View.VISIBLE else View.GONE
         findViewById<View>(R.id.layoutCyberpunk).visibility = if (dash == DashLayout.CYBERPUNK) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.layoutRetro).visibility = if (dash == DashLayout.RETRO) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.layoutRally).visibility = if (dash == DashLayout.RALLY) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.layoutHairline).visibility = if (dash == DashLayout.HAIRLINE) View.VISIBLE else View.GONE
         // Livery stripes run across the top of each page; the title sits below them.
         listOf(R.id.stripesDash, R.id.stripesDiag, R.id.stripesGraphs).forEach { findViewById<LiveryStripesView>(it).visibility = if (livery) View.VISIBLE else View.GONE }
         if (livery) {
@@ -2227,6 +2236,11 @@ open class MainActivity : AppCompatActivity() {
         teleFuel = findViewById(R.id.teleFuel)
         cockpitRing = findViewById(R.id.cockpitRing)
         cyberHud = findViewById(R.id.cyberHud)
+        retroDash = findViewById(R.id.retroDash)
+        rallyRev = findViewById(R.id.rallyRev)
+        hairlineDial = findViewById(R.id.hairlineDial)
+        retroDash.speedUnit = Units.speedUnit
+        hairlineDial.speedUnit = Units.speedUnit
         val blank = getString(R.string.dash)
         teleRpmText = SmoothText(teleRpm, blank, settle = 2f) { String.format(Locale.US, "%,d", ((it / 10f).roundToInt() * 10)) }
         teleSpeedText = SmoothText(teleSpeed, blank) { it.roundToInt().toString() }
@@ -2315,6 +2329,37 @@ open class MainActivity : AppCompatActivity() {
             cyberChips[key] = chip
         }
 
+        // Retro digital: three glowing readouts with segment bars.
+        val retroRow = findViewById<LinearLayout>(R.id.retroRow)
+        slots.map { readout(it) }.forEachIndexed { i, r ->
+            val chip = com.obdreader.app.ui.RetroChipView(this, r.label, r.unit, r.decimals, r.min.toFloat(), r.max.toFloat(), r.warn?.toFloat())
+            retroRow.addView(chip, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { if (i > 0) marginStart = dp(8f).toInt() })
+            retroChips[r.key] = chip
+        }
+        // Rally stage: speed in a black frame and the first reading on an orange block, the other two in a strip.
+        val rallyRow = findViewById<LinearLayout>(R.id.rallyBlocks)
+        val speedBlock = com.obdreader.app.ui.RallyBlockView(this, "Speed", Units.speedUnit, 0, null, com.obdreader.app.ui.RallyBlockView.Style.OUTLINE)
+        rallyRow.addView(speedBlock, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.4f))
+        rallyBlocks[SPEED_KEY] = speedBlock
+        readout(slots[0]).let { r ->
+            val b = com.obdreader.app.ui.RallyBlockView(this, r.label, r.unit, r.decimals, r.warn, com.obdreader.app.ui.RallyBlockView.Style.ORANGE)
+            rallyRow.addView(b, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(10f).toInt() })
+            rallyBlocks[r.key] = b
+        }
+        val strip = findViewById<LinearLayout>(R.id.rallyStrip)
+        slots.drop(1).map { readout(it) }.forEach { r ->
+            val b = com.obdreader.app.ui.RallyBlockView(this, r.label, r.unit, r.decimals, r.warn, com.obdreader.app.ui.RallyBlockView.Style.CELL)
+            strip.addView(b, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            rallyBlocks[r.key] = b
+        }
+        // Hairline: the three chosen readings as a quiet list under the dial.
+        val hairList = findViewById<LinearLayout>(R.id.hairlineList)
+        slots.map { readout(it) }.forEach { r ->
+            val row = TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, themeColor(R.attr.obdStripe1))
+            hairList.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            hairlineRows[r.key] = row
+        }
+
         // The live-data list: everything except the readings the dashboard already shows big.
         val shownBig = setOf(RPM_KEY, SPEED_KEY, slots[0], slots[1])
         Pids.dashboard.filter { it.hex !in shownBig }.forEach { p ->
@@ -2331,6 +2376,9 @@ open class MainActivity : AppCompatActivity() {
         teleRpmText.set(value)
         cockpitRing.set(lastSpeed, value)
         cyberHud.set(lastSpeed, value)
+        retroDash.set(lastSpeed, value)
+        rallyRev.setValue(value)
+        hairlineDial.set(lastSpeed, value)
         if (ObdSession.state.value.isConnected) {
             trace.push(value, lastSpeed, ObdSession.state.value.readings[THROTTLE_KEY]?.toFloat())
             cyberHud.push(value)
@@ -2345,6 +2393,9 @@ open class MainActivity : AppCompatActivity() {
         teleSpeedText.set(value)
         cockpitRing.set(value, lastRpm)
         cyberHud.set(value, lastRpm)
+        retroDash.set(value, lastRpm)
+        rallyBlocks[SPEED_KEY]?.setValue(value?.toDouble())
+        hairlineDial.set(value, lastRpm)
     }
 
     /** The top speed this drive, beside the speed in every style. */
@@ -2353,6 +2404,9 @@ open class MainActivity : AppCompatActivity() {
         decals[SPEED_KEY]?.top = t
         cockpitRing.top = t?.toFloat()
         cyberHud.top = t?.toFloat()
+        retroDash.top = t?.toFloat()
+        hairlineDial.top = t?.toFloat()
+        rallyBlocks[SPEED_KEY]?.note = t?.let { "Top ${it.roundToInt()}" }
         findViewById<TextView>(R.id.teleSpeedUnit).setIfChanged(t?.let { "${Units.speedUnit} · top ${it.roundToInt()}" } ?: Units.speedUnit)
     }
 
@@ -2372,6 +2426,9 @@ open class MainActivity : AppCompatActivity() {
         decals[k]?.labelOverride = state?.let { ChargingStatus.label(it, roomy = false) }
         glassLabels[k]?.text = ChargingStatus.label(state, roomy = false)
         cyberChips[k]?.labelOverride = state?.short
+        retroChips[k]?.labelOverride = state?.short
+        rallyBlocks[k]?.labelOverride = state?.short
+        hairlineRows[k]?.labelOverride = state?.let { ChargingStatus.label(it) }
         if (k in teleLabels) {
             teleLabels[k] = ChargingStatus.label(state, roomy = false) + "   "
             ObdSession.state.value.readings[k]?.let { teleTexts[k]?.set(it.toFloat()) }
@@ -2384,6 +2441,9 @@ open class MainActivity : AppCompatActivity() {
         if (key !in slots) return
         decals[key]?.setUnsupported()
         cyberChips[key]?.setUnsupported()
+        retroChips[key]?.setUnsupported()
+        rallyBlocks[key]?.setUnsupported()
+        hairlineRows[key]?.setUnsupported()
         glass[key]?.showText("N/A")
         glassUnits[key]?.visibility = View.GONE
         teleTexts[key]?.showText("${teleLabels[key].orEmpty()}N/A")
@@ -2394,6 +2454,9 @@ open class MainActivity : AppCompatActivity() {
         decals[key]?.setValue(value)
         glass[key]?.set(value?.toFloat())
         cyberChips[key]?.setValue(value)
+        retroChips[key]?.setValue(value)
+        rallyBlocks[key]?.setValue(value)
+        hairlineRows[key]?.setValue(value)
         teleTexts[key]?.set(value?.toFloat())
     }
 
@@ -3713,6 +3776,9 @@ open class MainActivity : AppCompatActivity() {
         cockpitRing.warnAt = this.redline
         cyberHud.rpmMax = max
         cyberHud.warnAt = this.redline
+        retroDash.rpmMax = max; retroDash.warnAt = this.redline
+        rallyRev.max = max; rallyRev.warnAt = this.redline
+        hairlineDial.rpmMax = max; hairlineDial.warnAt = this.redline
         trace.rpmMax = max
     }
 
@@ -4142,6 +4208,9 @@ open class MainActivity : AppCompatActivity() {
                 DashLayout.TELEMETRY -> R.id.layoutTelemetry
                 DashLayout.COCKPIT -> R.id.layoutCockpit
                 DashLayout.CYBERPUNK -> R.id.layoutCyberpunk
+                DashLayout.RETRO -> R.id.layoutRetro
+                DashLayout.RALLY -> R.id.layoutRally
+                DashLayout.HAIRLINE -> R.id.layoutHairline
             })
             val connectRow = connectBtn.parent as View
             if (dash == DashLayout.TELEMETRY) {
@@ -4189,6 +4258,9 @@ open class MainActivity : AppCompatActivity() {
             roundel.maxSize = max
             cockpitRing.maxSize = max
             cyberHud.maxSize = max
+            retroDash.maxSize = max
+            rallyRev.maxSize = max
+            hairlineDial.maxSize = max
             // Telemetry: the trace beside the numbers is as tall as they are.
             trace.fixedHeight = if (landscape && dash == DashLayout.TELEMETRY) {
                 val numbers = findViewById<View>(R.id.layoutTelemetry)

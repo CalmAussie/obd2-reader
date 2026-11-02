@@ -32,7 +32,7 @@ internal fun fmt(value: Double?, decimals: Int): String =
     value?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
 
 /** A plain panel background in the theme's surface colour and corner radius. */
-fun Context.panelBackground(stroke: Boolean = dashLayout().let { it == DashLayout.COCKPIT || it == DashLayout.CYBERPUNK }): GradientDrawable =
+fun Context.panelBackground(stroke: Boolean = dashLayout().let { it == DashLayout.COCKPIT || it == DashLayout.CYBERPUNK || it == DashLayout.RETRO || it == DashLayout.HAIRLINE }): GradientDrawable =
     GradientDrawable().apply {
         cornerRadius = themeDimen(R.attr.obdCardRadius)
         setColor(themeColor(R.attr.obdSurface))
@@ -187,9 +187,13 @@ class TowerRowView(
     private val track = context.themeColor(R.attr.obdTrack)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val line = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = dp(1.6f); strokeJoin = Paint.Join.ROUND }
-    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.uiTypeface(500); textSize = dp(14f); color = text }
+    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        typeface = context.uiTypeface(if (layout == DashLayout.HAIRLINE) 400 else 500); textSize = dp(if (layout == DashLayout.HAIRLINE) 15f else 14f)
+        color = if (layout == DashLayout.HAIRLINE) muted else text
+    }
     private val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        typeface = context.displayTypeface(); textSize = dp(if (layout == DashLayout.TELEMETRY) 22f else 21f)
+        typeface = if (layout == DashLayout.HAIRLINE) context.uiTypeface(400) else context.displayTypeface()
+        textSize = dp(if (layout == DashLayout.TELEMETRY) 22f else if (layout == DashLayout.HAIRLINE) 16f else 21f)
         fontFeatureSettings = "tnum"; textAlign = Paint.Align.RIGHT
     }
     private val unitPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.uiTypeface(500); textSize = dp(12f); color = muted; textAlign = Paint.Align.RIGHT }
@@ -235,9 +239,15 @@ class TowerRowView(
         rect.set(0f, 0f, w, h)
         paint.shader = null
         paint.style = Paint.Style.FILL
-        paint.color = surface
-        canvas.drawRoundRect(rect, radius, radius, paint)
-        if (layout == DashLayout.COCKPIT || layout == DashLayout.CYBERPUNK) {
+        // Hairline: no panel at all, just a hairline under each row, like a list.
+        if (layout != DashLayout.HAIRLINE) {
+            paint.color = surface
+            canvas.drawRoundRect(rect, radius, radius, paint)
+        } else {
+            paint.color = outline
+            canvas.drawRect(0f, h - dp(1f), w, h, paint)
+        }
+        if (layout == DashLayout.COCKPIT || layout == DashLayout.CYBERPUNK || layout == DashLayout.RETRO) {
             paint.style = Paint.Style.STROKE; paint.strokeWidth = dp(1f); paint.color = outline
             canvas.drawRoundRect(rect, radius, radius, paint)
             paint.style = Paint.Style.FILL
@@ -258,6 +268,17 @@ class TowerRowView(
                 canvas.drawRect(0f, 0f, tabW, h, paint)
             }
             DashLayout.COCKPIT -> tabW = 0f
+            DashLayout.HAIRLINE -> tabW = -dp(14f)
+            DashLayout.RETRO -> {
+                tabW = dp(3f)
+                paint.color = if (hot) danger else stripe
+                canvas.drawRect(0f, 0f, tabW, h, paint)
+            }
+            DashLayout.RALLY -> {
+                tabW = dp(6f)
+                paint.color = if (hot) danger else stripe
+                canvas.drawRect(0f, 0f, tabW, h, paint)
+            }
             DashLayout.CYBERPUNK -> {
                 tabW = dp(3f)
                 paint.color = if (hot) danger else stripe2
@@ -265,8 +286,8 @@ class TowerRowView(
             }
         }
         val x = tabW + dp(14f)
-        val right = w - dp(14f)
-        val top = if (layout == DashLayout.TELEMETRY) dp(28f) else dp(30f)
+        val right = if (layout == DashLayout.HAIRLINE) w else w - dp(14f)
+        val top = if (layout == DashLayout.TELEMETRY) dp(28f) else if (layout == DashLayout.HAIRLINE) h / 2f + dp(5f) else dp(30f)
         // Room for the label: the row less the unit and a typical number.
         val labelRoom = right - x - unitPaint.measureText(unit) - valuePaint.measureText("888.8") - dp(12f)
         canvas.drawText(fitText(labelPaint, labelOverride ?: label, labelRoom), x, top, labelPaint)
@@ -280,6 +301,7 @@ class TowerRowView(
         val f = shownValue?.let { ((it - min) / (max - min)).coerceIn(0.0, 1.0).toFloat() } ?: 0f
         when (layout) {
             DashLayout.TELEMETRY -> drawTrace(canvas, x, right, dp(40f), h - dp(8f), if (hot) danger else channel)
+            DashLayout.HAIRLINE -> Unit
             else -> {
                 val y = h - dp(12f)
                 paint.color = track
@@ -391,10 +413,15 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
         val h = height.toFloat()
         val stroke = dp(2f)
         rect.set(stroke / 2, stroke / 2, w - stroke / 2, h - stroke / 2)
-        val r = if (layout == DashLayout.COCKPIT) h / 2 else radius
+        val r = if (layout == DashLayout.COCKPIT || layout == DashLayout.HAIRLINE) h / 2 else radius
         path.panel(rect, skew, r)
         paint.shader = null
-        if (kind == Kind.PRIMARY) {
+        if (kind == Kind.PRIMARY && layout == DashLayout.HAIRLINE) {
+            // Hairline: even the main button is just a fine outline.
+            paint.style = Paint.Style.STROKE; paint.strokeWidth = dp(1f); paint.color = fg
+            canvas.drawPath(path, paint)
+            textPaint.color = fg
+        } else if (kind == Kind.PRIMARY) {
             paint.style = Paint.Style.FILL
             if (layout == DashLayout.COCKPIT) {
                 // Opaque first: a gradient is drawn at the paint's own alpha, which the pressed

@@ -35,6 +35,9 @@ object CarLivery {
         "cyberpunk" to Colours(Color.parseColor("#FF2BD6"), Color.parseColor("#00F0FF")),
         "telemetry" to Colours(Color.parseColor("#FF453A"), Color.parseColor("#E9EBEE")),
         "cockpit" to Colours(Color.parseColor("#7FA6FF"), Color.parseColor("#EEF2FA")),
+        "retro" to Colours(Color.parseColor("#3DFFC4"), Color.parseColor("#BFFFEA")),
+        "rally" to Colours(Color.parseColor("#FF5B00"), Color.parseColor("#F2F0EA")),
+        "hairline" to Colours(Color.parseColor("#FF6A3D"), Color.parseColor("#F4F4F2")),
     )
     private val TRACK = Color.parseColor("#3C4043")
     private val HIGH = Color.parseColor("#F28B82")

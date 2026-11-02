@@ -470,4 +470,129 @@
         <item name="carColorSecondary">#F4F4F1</item>
         <item name="carColorSecondaryDark">#F4F4F1</item>
     </style>
+    <!-- Retro digital: an 80s digital dash in glowing teal -->
+    <style name="Theme.ObdReader.Retro" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#06100E</item>
+        <item name="obdSurface">#020807</item>
+        <item name="obdSurfaceHigh">#0B1C18</item>
+        <item name="obdOutline">#12352C</item>
+        <item name="obdTextPrimary">#BFFFEA</item>
+        <item name="obdTextSecondary">#3F9C83</item>
+        <item name="obdAccent">#3DFFC4</item>
+        <item name="obdAccentAlt">#FFD23F</item>
+        <item name="obdAccentContainer">#0B1C18</item>
+        <item name="obdOnAccent">#02120D</item>
+        <item name="obdTrack">#0D211C</item>
+        <item name="obdIdle">#3F9C83</item>
+        <item name="obdStripe1">#3DFFC4</item>
+        <item name="obdStripe2">#FFD23F</item>
+        <item name="obdRoundel">#0A1714</item>
+        <item name="obdRoundelInk">#3DFFC4</item>
+        <item name="obdRing">#3DFFC4</item>
+        <item name="obdDanger">#FF4D3D</item>
+        <item name="colorPrimary">#3DFFC4</item>
+        <item name="colorOnPrimary">#02120D</item>
+        <item name="colorPrimaryContainer">#0B1C18</item>
+        <item name="colorOnPrimaryContainer">#BFFFEA</item>
+        <item name="colorSecondaryContainer">#0B1C18</item>
+        <item name="colorOnSecondaryContainer">#BFFFEA</item>
+        <item name="colorSurface">#020807</item>
+        <item name="colorOnSurface">#BFFFEA</item>
+        <item name="colorOnSurfaceVariant">#3F9C83</item>
+        <item name="colorOutline">#3F9C83</item>
+        <item name="colorError">#FF4D3D</item>
+        <item name="android:colorBackground">#06100E</item>
+        <item name="obdLayout">retro</item>
+        <item name="obdSkew">0.0</item>
+        <item name="obdGlow">true</item>
+        <item name="obdDisplayFont">@font/archivo_condensed_bold</item>
+        <item name="obdTitleFont">@font/archivo_expanded_bold</item>
+        <item name="obdCardRadius">6dp</item>
+        <item name="obdButtonRadius">6dp</item>
+        <item name="obdWarn">#FFD23F</item>
+        <item name="obdOk">#3DFFC4</item>
+    </style>
+
+    <!-- Rally stage: paper white, black and safety orange, like a co-driver's board -->
+    <style name="Theme.ObdReader.Rally" parent="Base.ObdReader.Light">
+        <item name="obdBg">#F2F0EA</item>
+        <item name="obdSurface">#FFFFFF</item>
+        <item name="obdSurfaceHigh">#E8E5DC</item>
+        <item name="obdOutline">#CFCBC0</item>
+        <item name="obdTextPrimary">#111111</item>
+        <item name="obdTextSecondary">#5E5B53</item>
+        <item name="obdAccent">#111111</item>
+        <item name="obdAccentAlt">#FF5B00</item>
+        <item name="obdAccentContainer">#E8E5DC</item>
+        <item name="obdOnAccent">#F2F0EA</item>
+        <item name="obdTrack">#DAD6CB</item>
+        <item name="obdIdle">#5E5B53</item>
+        <item name="obdStripe1">#FF5B00</item>
+        <item name="obdStripe2">#111111</item>
+        <item name="obdRoundel">#111111</item>
+        <item name="obdRoundelInk">#F2F0EA</item>
+        <item name="obdRing">#FF5B00</item>
+        <item name="obdDanger">#D9180F</item>
+        <item name="colorPrimary">#111111</item>
+        <item name="colorOnPrimary">#F2F0EA</item>
+        <item name="colorPrimaryContainer">#E8E5DC</item>
+        <item name="colorOnPrimaryContainer">#111111</item>
+        <item name="colorSecondaryContainer">#E8E5DC</item>
+        <item name="colorOnSecondaryContainer">#111111</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#111111</item>
+        <item name="colorOnSurfaceVariant">#5E5B53</item>
+        <item name="colorOutline">#5E5B53</item>
+        <item name="colorError">#D9180F</item>
+        <item name="android:colorBackground">#F2F0EA</item>
+        <item name="obdLayout">rally</item>
+        <item name="obdTitleFont">@font/archivo_expanded_bold</item>
+        <item name="obdSkew">0.0</item>
+        <item name="obdCardRadius">6dp</item>
+        <item name="obdButtonRadius">6dp</item>
+        <item name="obdWarn">#E39600</item>
+        <item name="obdOk">#11A150</item>
+    </style>
+
+    <!-- Hairline: fine lines on black, like a watch face -->
+    <style name="Theme.ObdReader.Hairline" parent="Base.ObdReader.Dark">
+        <item name="obdBg">#0B0B0C</item>
+        <item name="obdSurface">#141416</item>
+        <item name="obdSurfaceHigh">#1C1C1F</item>
+        <item name="obdOutline">#26262A</item>
+        <item name="obdTextPrimary">#F4F4F2</item>
+        <item name="obdTextSecondary">#8B8B8E</item>
+        <item name="obdAccent">#F4F4F2</item>
+        <item name="obdAccentAlt">#FF6A3D</item>
+        <item name="obdAccentContainer">#1C1C1F</item>
+        <item name="obdOnAccent">#0B0B0C</item>
+        <item name="obdTrack">#222225</item>
+        <item name="obdIdle">#8B8B8E</item>
+        <item name="obdStripe1">#FF6A3D</item>
+        <item name="obdStripe2">#F4F4F2</item>
+        <item name="obdRoundel">#F4F4F2</item>
+        <item name="obdRoundelInk">#0B0B0C</item>
+        <item name="obdRing">#FF6A3D</item>
+        <item name="obdDanger">#FF453A</item>
+        <item name="colorPrimary">#F4F4F2</item>
+        <item name="colorOnPrimary">#0B0B0C</item>
+        <item name="colorPrimaryContainer">#1C1C1F</item>
+        <item name="colorOnPrimaryContainer">#F4F4F2</item>
+        <item name="colorSecondaryContainer">#1C1C1F</item>
+        <item name="colorOnSecondaryContainer">#F4F4F2</item>
+        <item name="colorSurface">#141416</item>
+        <item name="colorOnSurface">#F4F4F2</item>
+        <item name="colorOnSurfaceVariant">#8B8B8E</item>
+        <item name="colorOutline">#8B8B8E</item>
+        <item name="colorError">#FF453A</item>
+        <item name="android:colorBackground">#0B0B0C</item>
+        <item name="obdLayout">hairline</item>
+        <item name="obdSkew">0.0</item>
+        <item name="obdDisplayFont">@font/archivo_light</item>
+        <item name="obdTitleFont">@font/archivo_regular</item>
+        <item name="obdCardRadius">14dp</item>
+        <item name="obdButtonRadius">24dp</item>
+        <item name="obdOk">#5EE38A</item>
+    </style>
+
 </resources>
