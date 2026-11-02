@@ -2863,9 +2863,11 @@ open class MainActivity : AppCompatActivity() {
         pipSmall.clear()
         repeat(2) {
             val cell = LinearLayout(this@MainActivity).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL }
-            val l = TextView(this@MainActivity).apply { setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f); maxLines = 1; setTextColor(themeColor(R.attr.obdTextSecondary)) }
-            val v = TextView(this@MainActivity).apply { typeface = uiTypeface(600); setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f); maxLines = 1; setTextColor(themeColor(R.attr.obdTextPrimary)); fontFeatureSettings = "tnum" }
-            cell.addView(l); cell.addView(v)
+            // Centred in their half of the window, like the big reading above.
+            val l = TextView(this@MainActivity).apply { setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f); maxLines = 1; gravity = Gravity.CENTER; setTextColor(themeColor(R.attr.obdTextSecondary)) }
+            val v = TextView(this@MainActivity).apply { typeface = uiTypeface(600); setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f); maxLines = 1; gravity = Gravity.CENTER; setTextColor(themeColor(R.attr.obdTextPrimary)); fontFeatureSettings = "tnum" }
+            val full = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            cell.addView(l, full); cell.addView(v, LinearLayout.LayoutParams(full))
             row.addView(cell, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             pipSmall += l to v
         }

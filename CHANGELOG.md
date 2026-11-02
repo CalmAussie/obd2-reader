@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.24.3 (2 November 2026)
+- In the picture-in-picture window, the two smaller readings and their names are now centred in their halves of the window, like the big reading above them.
+
 ## 1.24.2 (2 November 2026)
 - On Race telemetry, the Android Auto screen's shift lights now run the full width of the screen, across the top row of tiles: five green over speed, five amber over engine speed and five red over coolant. Android Auto doesn't let an app draw one strip across its grid, so the lights are split across the three tiles in line.
 
