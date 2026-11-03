@@ -827,7 +827,9 @@ if tap_scrolled "Report a problem"; then
   sleep 4; shot 13d-report-problem
   adb logcat -d -s OBD2Feedback:I > "$OUT/feedback.txt" 2>/dev/null
   grep -q "opening bug_report.yml (version [0-9]" "$OUT/feedback.txt" && log "report a problem: form opened ($(grep -o 'version [0-9.]*' "$OUT/feedback.txt" | tail -1))" || { log "report a problem: FAILED (not opened)"; FAIL=1; }
-  adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
+  # Close the browser (its first-run screens would sit over the app) and come back.
+  adb shell am force-stop com.android.chrome 2>/dev/null; adb shell input keyevent KEYCODE_BACK; sleep 1
+  adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3; diag_top
 else log "report a problem: FAILED (row not found)"; FAIL=1; fi
 # Picture-in-picture: switch it on (it's under Reconnect automatically); it's checked at the end, going Home with the demo running.
 PIPON=no
