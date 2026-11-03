@@ -162,5 +162,6 @@ Code lives under `app/src/main/java/com/obdreader/app/`: `obd/` (adapters, parsi
 OBD2 Reader is open source under the [MIT licence](LICENSE).
 
 - The [Archivo](https://fonts.google.com/specimen/Archivo) typeface is under the SIL Open Font License ([`licenses/Archivo-OFL.txt`](licenses/Archivo-OFL.txt)).
+- Retro digital's numbers use the [DSEG7](https://github.com/keshikan/DSEG) font by keshikan, under the SIL Open Font License ([`licenses/DSEG-OFL.txt`](licenses/DSEG-OFL.txt)).
 - Approximate top speeds come from [autoevolution.com](https://www.autoevolution.com) via the [automobile-models-and-specs](https://github.com/ilyasozkurt/automobile-models-and-specs) dataset.
 - Trouble code names follow SAE J2012, cross-checked against [python-OBD](https://github.com/brendan-w/python-OBD), [AndrOBD](https://github.com/fr3ts0n/AndrOBD) and the [Wal33D DTC database](https://github.com/Wal33D/dtc-database). Ford definitions come from Ford's published *OBD System Operation Summary* documents.
