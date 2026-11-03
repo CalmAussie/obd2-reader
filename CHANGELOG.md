@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.27.0 (3 November 2026)
+- **Report a problem or suggest an improvement from the app.** Two new rows under **Diagnostics → Help** open a short form on GitHub, with your app version and phone already filled in (and, for a problem, your car and adapter's name). Nothing is sent until you submit the form yourself, and your VIN, location and adapter log are never added to it.
+
 ## 1.26.0 (3 November 2026)
 - **Three new layouts**, from the palette button on the Dashboard. **Retro digital:** an 80s digital dash in glowing teal. A stepped bar-graph rev counter climbs through amber to red at your redline, the speed glows in big digits over their unlit "88", engine speed shows in amber beside it, and your three readings have segment bars.
 - **Rally stage:** paper white, black and safety orange, like a rally co-driver's board. Engine speed is huge on a black board with hazard stripes and a rev bar with your redline marked, speed sits in a black frame, your first reading on an orange block and the other two in a strip below. Easy to read in sun.

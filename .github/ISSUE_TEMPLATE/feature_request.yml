@@ -1,0 +1,53 @@
+name: Suggest an improvement
+description: An idea for a new feature, or for making something better.
+title: "[Idea] "
+labels: ["enhancement"]
+projects: ["CalmAussie/1"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the idea! Every suggestion is read.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: Describe the feature or change.
+      placeholder: "Show the gear I'm in, worked out from speed and engine speed."
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help?
+      description: What would it let you do, or what problem would it solve?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of the app is it about?
+      options:
+        - Dashboard and styles
+        - Graphs and recorded drives
+        - Diagnostics and trouble codes
+        - Android Auto
+        - Widget or picture-in-picture
+        - Drive cards and video overlays
+        - Connecting to the adapter
+        - Something else
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: App version (optional)
+      placeholder: "1.27.0"
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else? (optional)
+      description: Sketches, screenshots or examples from other apps are welcome.
+    validations:
+      required: false

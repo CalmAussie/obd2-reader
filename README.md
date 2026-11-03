@@ -179,6 +179,9 @@ Android Auto only shows Play Store apps until you allow others. On your phone:
 - **Not every reading on every car:** cars only answer the readings they support, so some readings say **N/A**. **Diagnostics → Scan what your car reports** shows what your car supports.
 - **Finding adapters on Android 11 and older** needs Location turned on while searching (an Android rule).
 
+## Feedback
+Found a problem or have an idea? In the app, **Diagnostics → Report a problem** or **Suggest an improvement** opens a short form here on GitHub with your app version and phone already filled in. You can also go straight to the forms: [report a problem](https://github.com/CalmAussie/obd2-reader/issues/new?template=bug_report.yml) or [suggest an improvement](https://github.com/CalmAussie/obd2-reader/issues/new?template=feature_request.yml). You need a free GitHub account to submit. Please leave out your VIN, number plate and anything else personal.
+
 ## For developers
 
 **Building:** every push to `main` runs [`.github/workflows/build.yml`](.github/workflows/build.yml). It runs the unit tests, builds a signed APK and publishes it as a GitHub release. Pushes that only change Markdown files don't build a new release. To build locally, open the project in Android Studio (JDK 17) or run `gradle assembleRelease testDebugUnitTest` with Gradle 8.7 and the Android SDK.

@@ -821,6 +821,14 @@ if tap_scrolled "Widget readings"; then
   fi
 fi
 [ $WR = ok ] && log "widget readings: RPM chosen first" || { log "widget readings: FAILED (at $WSTEP: $(tail -1 "$OUT/widget-readings.txt" 2>/dev/null | cut -c1-100))"; FAIL=1; }
+# Feedback: Report a problem opens the GitHub form with the app version filled in.
+adb logcat -c; diag_top
+if tap_scrolled "Report a problem"; then
+  sleep 4; shot 13d-report-problem
+  adb logcat -d -s OBD2Feedback:I > "$OUT/feedback.txt" 2>/dev/null
+  grep -q "opening bug_report.yml (version [0-9]" "$OUT/feedback.txt" && log "report a problem: form opened ($(grep -o 'version [0-9.]*' "$OUT/feedback.txt" | tail -1))" || { log "report a problem: FAILED (not opened)"; FAIL=1; }
+  adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
+else log "report a problem: FAILED (row not found)"; FAIL=1; fi
 # Picture-in-picture: switch it on (it's under Reconnect automatically); it's checked at the end, going Home with the demo running.
 PIPON=no
 if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
