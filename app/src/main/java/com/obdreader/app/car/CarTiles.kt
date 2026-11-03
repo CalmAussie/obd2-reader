@@ -218,7 +218,7 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
             val dir = java.io.File(context.filesDir, "car-tiles").apply { mkdirs(); listFiles()?.forEach { it.delete() } }
             val out = mutableListOf<java.io.File>()
             for (theme in AppThemes.ALL) for (night in listOf(true, false)) {
-                if (!night && theme.id != "pitlane") continue
+                if (!night && theme.id !in setOf("pitlane", "rally")) continue
                 val tiles = CarTiles(context) { night }.apply { themeOverride = theme.id }
                 val readings = listOf(
                     Reading(HEX_SPEED, "km/h", 0, 0f, 240f, null, 87f, false),
