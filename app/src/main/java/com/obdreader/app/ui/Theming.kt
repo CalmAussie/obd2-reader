@@ -71,6 +71,9 @@ fun Context.displayTypeface(): Typeface {
     return if (res != 0) font(res, Typeface.DEFAULT_BOLD) else font(R.font.archivo_expanded_black_italic, Typeface.DEFAULT_BOLD)
 }
 
+/** A seven-segment LCD font for Retro digital's numbers: every digit, "-" and the blank "!" are the same width, and "." takes none. */
+fun Context.lcdTypeface(): Typeface = font(R.font.dseg7_classic_bold_italic, Typeface.MONOSPACE)
+
 /** The theme's heading font (obdTitleFont). */
 fun Context.titleTypeface(): Typeface {
     val tv = TypedValue()

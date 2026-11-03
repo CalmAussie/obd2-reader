@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.27.2 (3 November 2026)
+- **Retro digital now uses real LCD-style numbers.** The speed, engine speed and your three readings are drawn as seven-segment digits over their unlit "8"s, like an old digital dash.
+- When there's no reading (before you connect, say), Retro digital lights the middle segment of each digit, so the dashes line up with the unlit digits behind them.
+
 ## 1.27.1 (3 November 2026)
 - **OBD2 Reader is now open source** under the MIT licence: you're free to use, change and share the code. The README has been rewritten to be shorter and up to date, with fresh screenshots.
 

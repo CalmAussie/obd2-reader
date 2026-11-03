@@ -14,6 +14,22 @@ import kotlin.math.roundToInt
 private fun View.dp(v: Float) = v * resources.displayMetrics.density
 
 /**
+ * A reading laid out on an LCD's digit cells: right-aligned in [cells] digits (blank cells are "!",
+ * the font's empty cell), or every cell's middle segment lit ("--") when there's no reading.
+ */
+internal fun lcdCells(text: String?, cells: Int): String {
+    if (text == null) return "-".repeat(cells)
+    val digits = text.count { it != '.' }
+    return "!".repeat((cells - digits).coerceAtLeast(0)) + text
+}
+
+/** The unlit cells behind a reading: an "8" for every cell, with the decimal point where it falls. */
+internal fun lcdGhost(cells: Int, decimals: Int): String {
+    val whole = (cells - decimals).coerceAtLeast(1)
+    return "8".repeat(whole) + if (decimals > 0) "." + "8".repeat(decimals) else ""
+}
+
+/**
  * The Retro digital layout's main display, an 80s digital dash: a stepped bar-graph rev counter
  * that climbs from teal through amber to red at the redline, the speed in big glowing digits with
  * the unlit "88" showing faintly behind them, and the exact engine speed in amber beside it.
@@ -49,7 +65,7 @@ class RetroDashView @JvmOverloads constructor(context: Context, attrs: Attribute
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
     private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
     private val label = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.uiTypeface(600); letterSpacing = 0.2f }
-    private val number = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.displayTypeface(); fontFeatureSettings = "tnum" }
+    private val number = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.lcdTypeface() }
     private val rect = RectF()
 
     init {
@@ -114,26 +130,34 @@ class RetroDashView @JvmOverloads constructor(context: Context, attrs: Attribute
             canvas.drawRect(x, bottom - h, x + barW, bottom, fill)
         }
 
-        // The speed: big glowing digits over their unlit "88".
-        val s = speed?.roundToInt()?.toString() ?: "—"
+        // The speed: big glowing LCD digits over their unlit "88"; no reading lights the middle segments.
+        val s = speed?.roundToInt()?.toString()
+        val cells = maxOf(2, s?.length ?: 0)
         label.textSize = 9f; label.color = muted; label.textAlign = Paint.Align.LEFT
         canvas.drawText("SPEED ${speedUnit.uppercase(Locale.US)}", 16f, 116f, label)
-        number.textSize = 104f; number.textAlign = Paint.Align.LEFT
+        number.textAlign = Paint.Align.LEFT
+        number.textSize = 74f
+        while (number.measureText("8".repeat(cells)) > 196f && number.textSize > 40f) number.textSize -= 2f
         number.clearShadowLayer()
         number.color = track
-        canvas.drawText("8".repeat(maxOf(2, s.length)), 14f, 206f, number)
+        canvas.drawText(lcdGhost(cells, 0), 18f, 202f, number)
         number.color = glow
-        number.setShadowLayer(14f, 0f, 0f, ColorUtils.setAlphaComponent(glow, 200))
-        canvas.drawText(s, 14f + if (s.length < 2) number.measureText("8") else 0f, 206f, number)
+        number.setShadowLayer(12f, 0f, 0f, ColorUtils.setAlphaComponent(glow, 200))
+        canvas.drawText(lcdCells(s, cells), 18f, 202f, number)
 
-        // Engine speed in amber on the right, with the drive's top speed under it.
+        // Engine speed in amber on the right, on its own four LCD cells, with the drive's top speed under it.
         label.textAlign = Paint.Align.RIGHT
         canvas.drawText("ENGINE", W - 16f, 150f, label)
-        number.textSize = 38f; number.textAlign = Paint.Align.RIGHT
+        val r = rpm?.let { ((it / 10f).roundToInt() * 10).toString() }
+        val rCells = maxOf(4, r?.length ?: 0)
+        number.textSize = 26f; number.textAlign = Paint.Align.RIGHT
         val hot = (rpm ?: 0f) >= warnAt
+        number.clearShadowLayer()
+        number.color = track
+        canvas.drawText(lcdGhost(rCells, 0), W - 16f, 186f, number)
         number.color = if (hot) red else amber
-        number.setShadowLayer(10f, 0f, 0f, ColorUtils.setAlphaComponent(if (hot) red else amber, 180))
-        canvas.drawText(rpm?.let { ((it / 10f).roundToInt() * 10).toString() } ?: "—", W - 16f, 188f, number)
+        number.setShadowLayer(8f, 0f, 0f, ColorUtils.setAlphaComponent(if (hot) red else amber, 180))
+        canvas.drawText(lcdCells(r, rCells), W - 16f, 186f, number)
         number.clearShadowLayer()
         top?.let { canvas.drawText("TOP ${it.roundToInt()}", W - 16f, 206f, label) }
         canvas.restore()
@@ -168,7 +192,10 @@ class RetroChipView(
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
     private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
     private val label = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.uiTypeface(600); letterSpacing = 0.2f; textSize = dp(9f) }
-    private val number = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.displayTypeface(); fontFeatureSettings = "tnum"; textSize = dp(26f) }
+    private val number = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.lcdTypeface(); textSize = dp(22f) }
+    private val naPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.displayTypeface(); textSize = dp(22f) }
+    /** Digit cells: enough for the largest reading (130 °C is three, 14.5 V is three with one after the point). */
+    private val cells = maxOf(String.format(Locale.US, "%.${decimals}f", max).count { it != '.' }, 2)
     private val unitPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.uiTypeface(500); textSize = dp(11f); color = muted }
     private val rect = RectF()
     private var unsupported = false
@@ -212,16 +239,25 @@ class RetroChipView(
         val v = value?.let { smooth.shown }
         val hot = v != null && warnAt != null && v >= warnAt
         val c = if (hot) red else glow
-        val text = if (unsupported) "N/A" else v?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
-        number.color = if (unsupported) muted else c
-        if (!unsupported) number.setShadowLayer(dp(5f), 0f, 0f, ColorUtils.setAlphaComponent(c, 170)) else number.clearShadowLayer()
-        val room = w - 2 * pad - unitPaint.measureText(unit) - dp(4f)
-        val base = dp(26f)
-        number.textSize = base
-        while (number.measureText(text) > room && number.textSize > dp(14f)) number.textSize -= dp(1f)
-        canvas.drawText(text, pad, dp(50f), number)
-        number.clearShadowLayer()
-        if (!unsupported) canvas.drawText(unit, pad + number.measureText(text) + dp(4f), dp(50f), unitPaint)
+        if (unsupported) {
+            naPaint.color = muted
+            canvas.drawText("N/A", pad, dp(50f), naPaint)
+        } else {
+            val shown = v?.let { String.format(Locale.US, "%.${decimals}f", it) }
+            val n = maxOf(cells, shown?.count { it != '.' } ?: 0)
+            val room = w - 2 * pad - unitPaint.measureText(unit) - dp(6f)
+            number.textSize = dp(22f)
+            val ghost = lcdGhost(n, decimals)
+            while (number.measureText(ghost) > room && number.textSize > dp(12f)) number.textSize -= dp(1f)
+            number.clearShadowLayer()
+            number.color = track
+            canvas.drawText(ghost, pad, dp(50f), number)
+            number.color = c
+            number.setShadowLayer(dp(5f), 0f, 0f, ColorUtils.setAlphaComponent(c, 170))
+            canvas.drawText(lcdCells(shown, n).let { if (shown == null && decimals > 0) it.dropLast(decimals) + "." + it.takeLast(decimals) else it }, pad, dp(50f), number)
+            number.clearShadowLayer()
+            canvas.drawText(unit, pad + number.measureText(ghost) + dp(6f), dp(50f), unitPaint)
+        }
         // Ten segments, lit to the reading.
         val segs = 10; val gap = dp(2f)
         val sw = (w - 2 * pad - gap * (segs - 1)) / segs
