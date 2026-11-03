@@ -867,9 +867,9 @@ else
   log "dashboard readouts: FAILED (couldn't change)"; FAIL=1
 fi
 # Units: miles and Fahrenheit, then the Dashboard shows mph.
-tap_tab Diagnostics; sleep 2
-for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
-if tap_text "Units" && tap_contains "Miles (mph" && tap_contains "Fahrenheit" && tap_text "Save"; then
+# Diagnostics keeps its scroll position, so start from the top and scroll down to the row.
+diag_top
+if tap_scrolled "Units" && tap_contains "Miles (mph" && tap_contains "Fahrenheit" && tap_text "Save"; then
   sleep 4; tap_tab Dashboard; sleep 4; scroll_top
   shot 13-imperial
   UNITS=0
