@@ -921,6 +921,14 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
           <div class="r"><span>Help</span><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
           <div class="h">Connecting an adapter, choosing your car and Android Auto</div>
         </button>
+        <button class="setting" id="reportRow">
+          <div class="r"><span>Report a problem</span><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
+          <div class="h">Something not working? Tell me on GitHub. Your app version and phone are filled in for you.</div>
+        </button>
+        <button class="setting" id="ideaRow">
+          <div class="r"><span>Suggest an improvement</span><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
+          <div class="h">An idea for a new feature, or for making something better.</div>
+        </button>
         <button class="setting" id="updatesRow">
           <div class="r"><span>App updates</span><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div>
           <div class="h" id="updatesSub">Version 1.13.3 · checks for new versions once a day</div>
@@ -3166,7 +3174,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.26.0", "date": "3 November 2026", "text": "• Three new layouts, from the palette button on the Dashboard. Retro digital: an 80s digital dash in glowing teal. A stepped bar-graph rev counter climbs through amber to red at your redline, the speed glows in big digits over their unlit \"88\", engine speed shows in amber beside it, and your three readings have segment bars.\n• Rally stage: paper white, black and safety orange, like a rally co-driver's board. Engine speed is huge on a black board with hazard stripes and a rev bar with your redline marked, speed sits in a black frame, your first reading on an orange block and the other two in a strip below. Easy to read in sun.\n• Hairline: fine lines on black, like a watch face. A hairline rev dial (a tick every 500 rpm, numbers every 1,000, red from your redline) with one orange needle wraps a big, thin speed, and your readings sit below as a quiet list.\n• Each new layout carries through the app: the live-data list, buttons, Diagnostics, the style picker, drive cards and the Android Auto screen. Rally stage is a light style, so like Pit lane it's drawn in darker colours on the car's screen at night."};
+const CHANGES = {"version": "1.27.0", "date": "3 November 2026", "text": "• Report a problem or suggest an improvement from the app. Two new rows under Diagnostics → Help open a short form on GitHub, with your app version and phone already filled in (and, for a problem, your car and adapter's name). Nothing is sent until you submit the form yourself, and your VIN, location and adapter log are never added to it."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3729,6 +3737,20 @@ document.querySelector(".statusbar").addEventListener("click", () => {
   }
   ["05", "2F", "VOLT"].forEach(k => { const base = tiles[k]; tiles[k] = v => { base && base(v); slot(k, v); }; });
   draw();
+})();
+
+
+/* ===== 1.27.0: Report a problem / Suggest an improvement (mirrors MainActivity.openFeedback) ===== */
+(function () {
+  const ver = CHANGES.version || "";
+  const open = bug => {
+    const q = new URLSearchParams({ template: bug ? "bug_report.yml" : "feature_request.yml" });
+    if (ver) q.set("version", ver);
+    if (bug) { q.set("phone", "Preview in a web browser"); if (typeof myCar !== "undefined" && myCar && typeof carLabel === "function") q.set("car", carLabel(myCar)); }
+    window.open("https://github.com/CalmAussie/obd2-reader/issues/new?" + q.toString(), "_blank", "noopener");
+  };
+  $("reportRow").onclick = () => open(true);
+  $("ideaRow").onclick = () => open(false);
 })();
 
 window.carReady = true;

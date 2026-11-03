@@ -390,6 +390,8 @@ open class MainActivity : AppCompatActivity() {
         vinBtn.setOnClickListener { readVin() }
         findViewById<View>(R.id.logCard).setOnClickListener { toggleLog() }
         findViewById<View>(R.id.helpRow).setOnClickListener { showHelp() }
+        findViewById<View>(R.id.reportRow).setOnClickListener { openFeedback(bug = true) }
+        findViewById<View>(R.id.ideaRow).setOnClickListener { openFeedback(bug = false) }
         // The button checks GitHub; the rest of the row shows what's changed since this version.
         findViewById<View>(R.id.updatesRow).setOnClickListener { showChangesSince() }
         findViewById<View>(R.id.updatesCheck).setOnClickListener { checkForUpdate(manual = true) }
@@ -2218,7 +2220,7 @@ open class MainActivity : AppCompatActivity() {
                 setGradientCenter(0.5f, 0f)
             }
         }
-        listOf(R.id.carRow, R.id.protocolRow, R.id.logCard, R.id.helpRow, R.id.updatesRow).forEach { findViewById<View>(it).background = panelBackground() }
+        listOf(R.id.carRow, R.id.protocolRow, R.id.logCard, R.id.helpRow, R.id.reportRow, R.id.ideaRow, R.id.updatesRow).forEach { findViewById<View>(it).background = panelBackground() }
         val vinDecal = findViewById<VinDecalView>(R.id.vinDecal)
         vinText.setTextColor(vinDecal.inkColor)
         findViewById<TextView>(R.id.vinLabel).setTextColor(androidx.core.graphics.ColorUtils.setAlphaComponent(vinDecal.inkColor, 180))
@@ -2824,6 +2826,30 @@ open class MainActivity : AppCompatActivity() {
             needsCar() -> showCarPicker(firstRun = true) { showConnectSheet() }
             last != null -> startSession(last)
             else -> showConnectSheet()
+        }
+    }
+
+    /**
+     * Report a problem or suggest an improvement: opens the project's GitHub form in the browser,
+     * with the app version and phone (and, for a problem, the chosen car and last adapter's name)
+     * already filled in. Nothing is sent until the person submits the form themselves; no VIN,
+     * location or log is included.
+     */
+    private fun openFeedback(bug: Boolean) {
+        val q = linkedMapOf<String, String>()
+        q["template"] = if (bug) "bug_report.yml" else "feature_request.yml"
+        q["version"] = try { packageManager.getPackageInfo(packageName, 0).versionName ?: "" } catch (e: Exception) { "" }
+        if (bug) {
+            q["phone"] = "${Build.MANUFACTURER.replaceFirstChar { it.uppercase() }} ${Build.MODEL}, Android ${Build.VERSION.RELEASE}"
+            savedCar()?.label?.let { q["car"] = it }
+            ObdSession.lastAdapterName(this)?.let { q["adapter_name"] = it }
+        }
+        val url = "https://github.com/CalmAussie/obd2-reader/issues/new?" + q.entries.joinToString("&") { (k, v) -> "$k=" + java.net.URLEncoder.encode(v, "UTF-8") }
+        android.util.Log.i("OBD2Feedback", "opening ${q["template"]} (version ${q["version"]})")
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+        } catch (e: android.content.ActivityNotFoundException) {
+            toast("No web browser found to open the form")
         }
     }
 
