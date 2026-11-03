@@ -477,7 +477,7 @@ tap_tab Diagnostics > /dev/null; sleep 1
 # VIN from the plate: typed in, it's shown instead of the car's, with what the car reports.
 if tap_scrolled "Not your VIN? Enter it"; then
   sleep 1; adb shell input keyevent KEYCODE_MOVE_END $(for i in $(seq 1 20); do printf 'KEYCODE_DEL '; done)
-  adb shell input text LFACTZ5NX62000375; sleep 1
+  adb shell input text LFASAMPLX00000001; sleep 1
   tap_text "Save" > /dev/null; sleep 2
   # The note sits under the VIN card, which can be at the bottom of the screen: bring it up first.
   adb shell input swipe 540 1500 540 900 400; sleep 1

@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 1.27.1 (3 November 2026)
+- **OBD2 Reader is now open source** under the MIT licence: you're free to use, change and share the code. The README has been rewritten to be shorter and up to date, with fresh screenshots.
+
 ## 1.27.0 (3 November 2026)
 - **Report a problem or suggest an improvement from the app.** Two new rows under **Diagnostics → Help** open a short form on GitHub, with your app version and phone already filled in (and, for a problem, your car and adapter's name). Nothing is sent until you submit the form yourself, and your VIN, location and adapter log are never added to it.
 
