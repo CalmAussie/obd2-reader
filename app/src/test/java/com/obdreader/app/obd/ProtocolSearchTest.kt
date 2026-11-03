@@ -125,7 +125,7 @@ class EngineTest {
     @Test
     fun theRevDialFollowsTheCar() {
         fun rec(make: String, year: Int, model: String?, engine: String?) = VehicleCatalog.recommend(VehicleCatalog.Car(make, year, model, engine))
-        // George's Tribute: the 2.3 I4 revs to 6,500, so the dial ends at 7k, not 8k.
+        // A 2006 Tribute: the 2.3 I4 revs to 6,500, so the dial ends at 7k, not 8k.
         val tribute = rec("Mazda", 2006, "Tribute", "2.3 I4")
         assertEquals(6500, tribute.redline); assertTrue(tribute.redlineExact); assertEquals(7000, tribute.dialMax)
         assertEquals(7000, rec("Mazda", 2006, "Tribute", "2.3").dialMax)            // typed by hand

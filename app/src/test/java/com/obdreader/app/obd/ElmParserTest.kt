@@ -132,7 +132,7 @@ class ElmParserTest {
         assertTrue(!VinDecoder.isValid("1HGCM82643A004352"))
         assertTrue(VinDecoder.isValid("JM0EP10A200123456")) // check digit optional outside North America
         assertTrue(!VinDecoder.isValid("JM0EP10A2O0123456"))
-        // Built for Australia in China: no check digit needed, and the X in position 9 is fine.
+        // Built outside North America (an L-prefixed sample): no check digit needed, and the X in position 9 is fine.
         assertTrue(VinDecoder.isValid("LFASAMPLX00000001"))
         assertEquals("LFASAMPLX00000001", VinDecoder.normalise(" lfasampl x00000001 "))
         assertEquals(null, VinDecoder.normalise("LFASAMPLX0000000"))
