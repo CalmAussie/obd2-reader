@@ -291,7 +291,8 @@ tap_scrolled() {
 }
 # Scrolls down from wherever the page is until a screen dump matches a pattern; the dump is left in $2.
 find_scrolled() {
-  for i in $(seq 1 16); do
+  # Up to 30 steps of 500px: Diagnostics is over 10,000px long, and App updates is at the bottom.
+  for i in $(seq 1 30); do
     adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$2" 2>/dev/null
     grep -q "$1" "$2" && return 0
     adb shell input swipe 540 1500 540 1000 300; sleep 1

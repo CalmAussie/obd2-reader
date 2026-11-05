@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.0.0 (6 November 2026)
+- **OBD2 Reader 2.0.** The first version shared publicly. It's a free, read-only app for cheap ELM327 adapters: live engine data, trouble codes explained in plain English, driving scores, drive recording and video overlays, a home-screen widget, picture-in-picture and Android Auto, in 13 styles.
+- Nothing new to learn if you're updating: your car, style, drives and settings carry over as they are.
+
 ## 1.27.2 (3 November 2026)
 - **Retro digital now uses real LCD-style numbers.** The speed, engine speed and your three readings are drawn as seven-segment digits over their unlit "8"s, like an old digital dash.
 - When there's no reading (before you connect, say), Retro digital lights the middle segment of each digit, so the dashes line up with the unlit digits behind them.

@@ -3181,7 +3181,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "1.27.1", "date": "3 November 2026", "text": "• OBD2 Reader is now open source under the MIT licence: you're free to use, change and share the code. The README has been rewritten to be shorter and up to date, with fresh screenshots."};
+const CHANGES = {"version": "2.0.0", "date": "6 November 2026", "text": "• OBD2 Reader 2.0. The first version shared publicly. It's a free, read-only app for cheap ELM327 adapters: live engine data, trouble codes explained in plain English, driving scores, drive recording and video overlays, a home-screen widget, picture-in-picture and Android Auto, in 13 styles.\n• Nothing new to learn if you're updating: your car, style, drives and settings carry over as they are."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
