@@ -22,6 +22,9 @@ jobs:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
     continue-on-error: ${{ matrix.experimental == true }}
+    # A normal run takes about 45 minutes. Android 17's emulator sometimes hangs instead of failing,
+    # which would hold up the reports from every other phone, so it gets a shorter limit.
+    timeout-minutes: ${{ matrix.experimental && 20 || 90 }}
     strategy:
       fail-fast: false
       matrix:

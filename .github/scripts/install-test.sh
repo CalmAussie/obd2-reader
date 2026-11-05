@@ -543,7 +543,7 @@ scroll_top
 SAVED=0
 # Screen dumps sometimes fail on a busy emulator, so the whole step gets a second go.
 for attempt in 1 2; do
-  for i in 1 2 3 4 5 6 7 8; do tap_text "Save or share code report" > /dev/null && break; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
+  diag_top; tap_scrolled "Save or share code report" > /dev/null
   sleep 1
   for k in 1 2 3; do tap_text "Save to phone (Downloads)" > /dev/null && break; sleep 1; done
   sleep 2; adb logcat -d -s OBD2Save:I 2>/dev/null | grep -q "saved .* to Downloads" && SAVED=1
