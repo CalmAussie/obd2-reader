@@ -210,7 +210,15 @@ connect_demo() {
     app_front
     [ "$(view_flag demoButton)" = G ] && return 0
     tap_text "Done" > /dev/null 2>&1 || tap_text "Cancel" > /dev/null 2>&1
-    scroll_top; XY=$(view_center demoButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 6
+    # Disconnected, the screen is still, so look for the button by its text (scrolling down a little
+    # if it's below the screen, as on a small phone); its position in the view tree is the fallback.
+    scroll_top
+    if tap_text "Demo car" || { adb shell input swipe 540 1500 540 900 300; sleep 1; tap_text "Demo car"; }; then :
+    else
+      scroll_top; XY=$(view_center demoButton); set -- $XY
+      [ -n "$XY" ] && [ "$2" -lt 2200 ] && adb shell input tap $XY
+    fi
+    sleep 6
   done
   [ "$(view_flag demoButton)" = G ]
 }
@@ -315,7 +323,8 @@ PY
 # Diagnostics, scrolled to the very top, so tap_scrolled can work down to any row.
 diag_top() { tap_tab Diagnostics; sleep 2; for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 700 540 2000 120; done; sleep 1; }
 tap_scrolled() {
-  for i in $(seq 1 16); do tap_text "$1" > /dev/null && return 0; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
+  # Up to 30 steps of 500px: Diagnostics is over 10,000px long, with Help at the bottom.
+  for i in $(seq 1 30); do tap_text "$1" > /dev/null && return 0; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
   return 1
 }
 # Scrolls down from wherever the page is until a screen dump matches a pattern; the dump is left in $2.
