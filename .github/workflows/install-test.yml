@@ -22,9 +22,7 @@ jobs:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
     continue-on-error: ${{ matrix.experimental == true }}
-    # A normal run takes about 45 minutes. Android 17's emulator sometimes hangs instead of failing,
-    # which would hold up the reports from every other phone, so it gets a shorter limit.
-    timeout-minutes: ${{ matrix.experimental && 20 || 90 }}
+    timeout-minutes: 100
     strategy:
       fail-fast: false
       matrix:
@@ -49,6 +47,11 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
       - name: Install and run on Android API ${{ matrix.api }}
+        # A normal run takes about 45 minutes. Android 17's emulator sometimes hangs instead of failing,
+        # which would hold up the reports from every other phone, so it gets a shorter limit. The limit
+        # is on this step, not the job, so running out counts as that job failing (which Android 17 is
+        # allowed to do) rather than cancelling the whole run.
+        timeout-minutes: ${{ matrix.experimental && 20 || 90 }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.level || matrix.api }}
