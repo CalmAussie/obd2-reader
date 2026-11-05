@@ -676,7 +676,7 @@ adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 5
 shot 8a0-back-from-minimised
 adb logcat -d -s OBD2Close:I OBD2Pip:I AndroidRuntime:E > "$OUT/record-close.txt" 2>/dev/null
 scroll_top; echo "record $(view_center recordButton) connect $(view_center connectButton) demo $(view_flag demoButton)" > "$OUT/record-stop.txt"
-record_set off; sleep 1
+record_set off; sleep 3
 shot 8a-recorded
 # Debug builds: check the file itself has positions.
 F=$(adb shell run-as $PKG ls files/logs 2>/dev/null | tr -d '\r' | grep csv | tail -1)
@@ -709,7 +709,8 @@ adb logcat -c
 if record_set on; then
   for i in $(seq 1 10); do adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
   for i in $(seq 1 12); do adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
-  record_set off; sleep 1
+  # Give the app a moment to finish saving the recording: the comparison reads the saved file.
+  record_set off; sleep 4
   tap_tab Dashboard; disconnect_app; sleep 3
   shot 8a3-same-route
   adb logcat -d -s OBD2Route:I > "$OUT/same-route.txt" 2>/dev/null
