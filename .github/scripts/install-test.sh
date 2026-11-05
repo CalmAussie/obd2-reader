@@ -203,6 +203,17 @@ disconnect_app() {
   done
   [ "$(view_flag demoButton)" = V ]
 }
+# Connects the demo car, and checks it worked (Demo car is hidden while connected). Closes a
+# trip summary or a picture preview first if one is still open over the Dashboard.
+connect_demo() {
+  for i in 1 2 3; do
+    app_front
+    [ "$(view_flag demoButton)" = G ] && return 0
+    tap_text "Done" > /dev/null 2>&1 || tap_text "Cancel" > /dev/null 2>&1
+    scroll_top; XY=$(view_center demoButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 6
+  done
+  [ "$(view_flag demoButton)" = G ]
+}
 FAIL=0
 # First launch asks for the car before anything else.
 SEEN=0
@@ -263,7 +274,7 @@ shot 2-demo-dashboard
 W=$(view_width connectButton)
 [ "${W:-0}" -ge 200 ] && log "button 'Disconnect': visible (${W}px)" || { log "button 'Disconnect': FAILED (${W:-0}px wide)"; FAIL=1; }
 # While connected, Demo car is hidden and Disconnect spans the row (most of the screen's width).
-DV=$(view_flag demoButton); SW=$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | cut -dx -f1)
+DV=$(view_flag demoButton); [ "$DV" = "?" ] && { sleep 3; DV=$(view_flag demoButton); W=$(view_width connectButton); }; SW=$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | cut -dx -f1)
 if [ "$DV" = "G" ] && [ "${W:-0}" -ge $(( ${SW:-1080} * 80 / 100 )) ]; then log "connected: Demo car hidden, Disconnect full width (${W}px of ${SW}px)"; else log "connected: FAILED (Demo car '${DV:-?}', Disconnect ${W:-0}px of ${SW}px)"; FAIL=1; fi
 # Turn the phone sideways: the Dashboard switches to two columns, then back to portrait.
 adb shell settings put system accelerometer_rotation 0
@@ -371,7 +382,7 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
   sleep 1
   for i in 1 2 3 4 5 6; do tap_text "$STYLE" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
   sleep 4
-  tap_text "Demo car" || { adb shell input swipe 540 1500 540 900 300; sleep 1; tap_text "Demo car"; } || { log "style $STYLE: FAILED (no Demo car)"; FAIL=1; continue; }
+  connect_demo || { log "style $STYLE: FAILED (no Demo car)"; FAIL=1; continue; }
   adb shell input swipe 540 900 540 1700 300   # back to the top
   sleep 8
   shot "5-$SLUG"
@@ -412,7 +423,7 @@ print(max(prev[x * bpp:x * bpp + 3]))
 PY
 )
     if [ "${LUM:-0}" -ge 120 ]; then log "cockpit Connect after disconnect: bright ($LUM)"; else log "cockpit Connect after disconnect: FAILED (faded, $LUM)"; FAIL=1; fi
-    tap_text "Demo car" > /dev/null; sleep 6   # carry on connected, as the next style expects
+    connect_demo   # carry on connected, as the next style expects
   fi
 done
 done
@@ -468,7 +479,7 @@ else
   log "drive card: FAILED (button missing)"; FAIL=1
 fi
 tap_text "Done" > /dev/null || true
-tap_text "Demo car" > /dev/null || true
+connect_demo
 sleep 8
 # Performance timers: the sheet opens and follows the demo car (staging, ready, timing).
 XY=$(view_center_bottom perfButton pageDashboard); [ -n "$XY" ] && adb shell input tap $XY
@@ -683,7 +694,7 @@ fi
 tap_text "Done" > /dev/null || true
 # The same route again: record a second drive over the same positions; its summary compares it with last time.
 tap_tab Dashboard; sleep 2; scroll_top
-tap_text "Demo car" > /dev/null || true; sleep 8
+connect_demo; sleep 2
 adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
 adb logcat -c
 if record_set on; then
@@ -767,7 +778,7 @@ adb shell input keyevent KEYCODE_BACK; sleep 1
 # Tried twice: on a busy emulator the demo car is sometimes still connecting the first time.
 SCAN=missing
 for attempt in 1 2; do
-  tap_tab Dashboard; sleep 2; scroll_top; tap_text "Demo car" > /dev/null 2>&1; sleep 8
+  tap_tab Dashboard; sleep 2; connect_demo; sleep 2
   diag_top
   if tap_scrolled "Scan what your car reports"; then
     sleep 8
@@ -966,7 +977,7 @@ fi
 adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
 if adb shell dumpsys window windows 2>/dev/null | grep -A12 "Window{.*$PKG/$PKG\.\(MainActivity\|HomeActivity\)" | grep -q "KEEP_SCREEN_ON"; then log "screen stays on while open: OK"; else log "screen stays on while open: FAILED"; FAIL=1; fi
 # Minimised (Home), the app keeps running in the background.
-tap_text "Demo car" > /dev/null || true; sleep 6
+connect_demo
 # New trouble code mid-drive (debug builds): the demo car starts reporting a pending P0300; within the
 # 30-second code check a quiet notification appears (its own low-importance channel: no sound or pop-up).
 if adb shell run-as $PKG ls > /dev/null 2>&1; then
