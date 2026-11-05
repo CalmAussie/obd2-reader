@@ -87,10 +87,23 @@ PY
   [ -n "$b" ] && adb shell input tap $b && sleep 1 && return 0
   return 1
 }
+# The app's view hierarchy, written to $1. "dumpsys activity top" usually has it, but Android 10
+# often lists only the launcher and search there, or times out on the animating dashboard: then
+# ask for the app's own activities by package, and retry once more if that comes back empty too.
+app_views() {
+  for i in 1 2 3; do
+    adb shell dumpsys activity top > "$1" 2>/dev/null
+    grep -q "app:id/" "$1" && grep -q "ACTIVITY $PKG/" "$1" && sed -n "/ACTIVITY $PKG\//,\$p" "$1" | grep -q "app:id/" && return 0
+    adb shell dumpsys activity $PKG > "$1" 2>/dev/null
+    grep -q "app:id/" "$1" && return 0
+    sleep 1
+  done
+  return 1
+}
 # Centre of a view inside a scrolled page, after scrolling that page all the way down.
 view_center_bottom() {   # $1 view id, $2 scrolling page id
   for k in 1 2 3 4 5; do adb shell input swipe 540 2000 540 500 150; done; sleep 2
-  adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
+  app_views "$OUT/views.txt"
   python3 - "$1" "$2" "$OUT/views.txt" <<'PY'
 import re, sys
 want, page, path = sys.argv[1], sys.argv[2], sys.argv[3]
@@ -130,7 +143,7 @@ PY
 # Size of a view by its id, from the window's view hierarchy. Unlike a UI dump, this works while
 # the dashboard is animating live data.
 view_width() {
-  adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
+  app_views "$OUT/views.txt"
   python3 - "$1" "$OUT/views.txt" <<'PY'
 import re, sys
 for line in open(sys.argv[2], encoding='utf-8', errors='ignore'):
@@ -143,7 +156,7 @@ PY
 }
 # A view's visibility by its id, from the view hierarchy: V (visible), I (invisible) or G (gone).
 view_flag() {
-  adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
+  app_views "$OUT/views.txt"
   python3 - "$1" "$OUT/views.txt" <<'PY'
 import re, sys
 for line in open(sys.argv[2], encoding='utf-8', errors='ignore'):
@@ -214,7 +227,7 @@ fi
 remember_tabs
 shot 1-opened
 alive && log "open: OK" || { log "open: FAILED (app not running)"; FAIL=1; }
-adb shell dumpsys activity top > "$OUT/views-start.txt" 2>/dev/null
+app_views "$OUT/views-start.txt"
 if grep "app:id/recordGroup" "$OUT/views-start.txt" | grep -q "{[0-9a-f]* G"; then log "record drive: hidden until connected"; else log "record drive: FAILED (shown before connecting)"; FAIL=1; fi
 # The daily update check runs a few seconds after opening. If an older build is being tested
 # and GitHub has a newer one, it offers the update: say Later so the tour can carry on.
@@ -253,7 +266,7 @@ adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 3
 adb logcat -d -s OBD2Pip:I | grep -q "picture-in-picture: on" && { log "picture-in-picture: FAILED (on before it was switched on)"; FAIL=1; } || log "picture-in-picture: off to start with"
 # Centre of a view by its id, from the window's view hierarchy (works while animating).
 view_center() {
-  adb shell dumpsys activity top > "$OUT/views.txt" 2>/dev/null
+  app_views "$OUT/views.txt"
   python3 - "$1" "$OUT/views.txt" <<'PY'
 import re, sys
 stack = []
@@ -274,6 +287,15 @@ PY
 diag_top() { tap_tab Diagnostics; sleep 2; for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 700 540 2000 120; done; sleep 1; }
 tap_scrolled() {
   for i in $(seq 1 16); do tap_text "$1" > /dev/null && return 0; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
+  return 1
+}
+# Scrolls down from wherever the page is until a screen dump matches a pattern; the dump is left in $2.
+find_scrolled() {
+  for i in $(seq 1 16); do
+    adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$2" 2>/dev/null
+    grep -q "$1" "$2" && return 0
+    adb shell input swipe 540 1500 540 1000 300; sleep 1
+  done
   return 1
 }
 # Record drive sits just below the bottom of the screen on the Dashboard, and the Dashboard
@@ -414,7 +436,7 @@ sleep 8
 XY=$(view_center_bottom perfButton pageDashboard); [ -n "$XY" ] && adb shell input tap $XY
 sleep 25
 shot 10-performance
-adb shell dumpsys activity top > "$OUT/views-perf.txt" 2>/dev/null
+app_views "$OUT/views-perf.txt"
 # The screen keeps animating, so a UI dump can fail; try a few times.
 for i in 1 2 3 4 5 6; do
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-perf.xml"
@@ -493,14 +515,10 @@ if tap_scrolled "Not your VIN? Enter it"; then
 else
   log "VIN from the plate: FAILED (no button)"; FAIL=1
 fi
-scroll_top
 # App updates: the row is on Diagnostics, near the bottom. Tapping it asks GitHub for the latest release.
-for i in 1 2 3 4 5 6 7 8; do
-  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-updates.xml"
-  grep -q 'text="App updates"' "$OUT/ui-updates.xml" && break
-  adb shell input swipe 540 1600 540 600 300; sleep 1
-done
-if grep -q 'text="App updates"' "$OUT/ui-updates.xml"; then
+# Start from the top and scroll in small steps, so a fling can't carry the row past the screen.
+diag_top
+if find_scrolled 'text="App updates"' "$OUT/ui-updates.xml"; then
   # The button sits under the row's text: scroll a little more until it's on screen, then tap it.
   for i in 1 2 3; do tap_text "Check for updates" > /dev/null && break; adb shell input swipe 540 1500 540 1100 300; sleep 1; done
   sleep 8
@@ -537,7 +555,7 @@ else
 fi
 # Or tap and hold a graph and drag it: RPM dragged below Speed.
 scroll_top; adb logcat -c
-adb shell dumpsys activity top > "$OUT/views-graphs.txt" 2>/dev/null
+app_views "$OUT/views-graphs.txt"
 STRIPS=$(python3 - "$OUT/views-graphs.txt" <<'PY'
 import re, sys
 stack = []; out = []
@@ -875,14 +893,10 @@ if tap_scrolled "Units" && tap_contains "Miles (mph" && tap_contains "Fahrenheit
   shot 13-imperial
   UNITS=0
   adb shell run-as $PKG cat shared_prefs/obd_reader.xml 2>/dev/null | grep -q 'units_mph" value="true' && UNITS=1
-  # Release builds: the Units row on Diagnostics says what's in use.
+  # Release builds can't read the app's settings: the Units row on Diagnostics says what's in use.
   if [ $UNITS = 0 ]; then
-    tap_tab Diagnostics; sleep 2
-    for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done
-    for i in 1 2 3 4; do
-      sleep 2; adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-units.xml" 2>/dev/null
-      grep -q 'text="mph, °F"' "$OUT/ui-units.xml" && { UNITS=1; break; }
-    done
+    diag_top
+    find_scrolled 'text="mph, °F"' "$OUT/ui-units.xml" && UNITS=1
     tap_tab Dashboard; sleep 2
   fi
   [ $UNITS = 1 ] && alive && log "units: mph and °F saved" || { log "units: FAILED"; FAIL=1; }
