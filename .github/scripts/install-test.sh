@@ -256,9 +256,23 @@ if [ $SEEN = 1 ]; then
   else
     log "engine list: FAILED (no Model box)"; FAIL=1
   fi
-  # The picker can still be settling on a slow phone: give the button a few tries.
-  NL=0; for i in 1 2 3 4; do tap_text "Not listed" && { NL=1; break; }; sleep 2; done
-  [ $NL = 1 ] || { log "car picker: FAILED (no Not listed button)"; FAIL=1; }
+  # Something can still be over the button on a slow phone: the engine list, the keyboard, or the
+  # sheet scrolled so the button is below the screen. Clear whichever it is, then try again.
+  NL=0
+  for i in 1 2 3 4 5; do
+    tap_text "Not listed" && { NL=1; break; }
+    if adb shell dumpsys window windows 2>/dev/null | grep -q "Window{.*PopupWindow"; then tap_contains "First, choose your car" > /dev/null
+    elif adb shell dumpsys input_method 2>/dev/null | grep -qE "mInputShown=true|isInputViewShown=true"; then adb shell input keyevent KEYCODE_BACK
+    else adb shell input swipe 540 1800 540 1200 300
+    fi
+    sleep 2
+  done
+  if [ $NL = 0 ]; then
+    adb exec-out screencap -p > "$OUT/0c-car-picker-stuck.png"
+    log "car picker: FAILED (no Not listed button)"; FAIL=1
+    # Last resort, so the rest of the tour isn't stuck behind the picker: close it with Back.
+    adb shell input keyevent KEYCODE_BACK; sleep 2
+  fi
   sleep 1
 else
   log "car picker: FAILED (not shown on first launch)"; FAIL=1
@@ -1015,7 +1029,8 @@ if [ $PIPON = yes ]; then
   adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 5
   adb logcat -d -s OBD2Pip:I OBD2Close:I > "$OUT/pip.txt" 2>/dev/null
   shot 12b0-back-from-pip
-  DV2=$(view_flag demoButton)
+  # Coming back from the floating window takes a moment on slow phones: read it again if needed.
+  DV2=$(view_flag demoButton); for i in 1 2 3; do [ "$DV2" = "?" ] || break; sleep 3; DV2=$(view_flag demoButton); done
   if grep -q "picture-in-picture: on" "$OUT/pip.txt" && alive && [ "$DV2" = "G" ]; then log "picture-in-picture: floated on Home and back, still connected (pinned=${PIN:-0})"; else log "picture-in-picture: FAILED ($(grep -c 'picture-in-picture: on' "$OUT/pip.txt") entries, pinned=${PIN:-0}, Demo car '${DV2:-?}')"; FAIL=1; fi
   adb shell input keyevent KEYCODE_HOME; sleep 3
 fi
