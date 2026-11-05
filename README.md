@@ -75,27 +75,21 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 
 Tap the palette button on the Dashboard. The first seven are colourways; the last six have layouts of their own.
 
-| Style | Look |
-|---|---|
-| Asphalt (default) | Orange and white stripes on dark grey |
-| Endurance | Night-race navy and yellow |
-| Kerb | Red and white kerb stripes |
-| Pit lane | Light, in black and red. Best in sunlight |
-| Drift | Hot pink and teal |
-| Apex | Volt yellow on carbon black |
-| British racing | Cream and gold on racing green |
-| Race telemetry | Shift lights, big numbers and live traces |
-| Digital cockpit | One big speed in a glowing ring |
-| Cyberpunk | A neon heads-up display |
-| Retro digital | An 80s digital dash in glowing teal |
-| Rally stage | Paper white, black and orange. Easy to read in sun |
-| Hairline | Fine lines on black, like a watch face |
-
-<p align="center">
-  <img src="docs/screen-retro.png" width="160" alt="Retro digital">
-  <img src="docs/screen-rally.png" width="160" alt="Rally stage">
-  <img src="docs/screen-hairline.png" width="160" alt="Hairline">
-</p>
+| Style | Look | Screenshot |
+|---|---|---|
+| Asphalt (default) | Orange and white stripes on dark grey | <img src="docs/styles/style-asphalt.png" width="120" alt="The Asphalt style"> |
+| Endurance | Night-race navy and yellow | <img src="docs/styles/style-endurance.png" width="120" alt="The Endurance style"> |
+| Kerb | Red and white kerb stripes | <img src="docs/styles/style-kerb.png" width="120" alt="The Kerb style"> |
+| Pit lane | Light, in black and red. Best in sunlight | <img src="docs/styles/style-pit-lane.png" width="120" alt="The Pit lane style"> |
+| Drift | Hot pink and teal | <img src="docs/styles/style-drift.png" width="120" alt="The Drift style"> |
+| Apex | Volt yellow on carbon black | <img src="docs/styles/style-apex.png" width="120" alt="The Apex style"> |
+| British racing | Cream and gold on racing green | <img src="docs/styles/style-british-racing.png" width="120" alt="The British racing style"> |
+| Race telemetry | Shift lights, big numbers and live traces | <img src="docs/styles/style-race-telemetry.png" width="120" alt="The Race telemetry style"> |
+| Digital cockpit | One big speed in a glowing ring | <img src="docs/styles/style-digital-cockpit.png" width="120" alt="The Digital cockpit style"> |
+| Cyberpunk | A neon heads-up display | <img src="docs/styles/style-cyberpunk.png" width="120" alt="The Cyberpunk style"> |
+| Retro digital | An 80s digital dash in glowing teal | <img src="docs/styles/style-retro-digital.png" width="120" alt="The Retro digital style"> |
+| Rally stage | Paper white, black and orange. Easy to read in sun | <img src="docs/styles/style-rally-stage.png" width="120" alt="The Rally stage style"> |
+| Hairline | Fine lines on black, like a watch face | <img src="docs/styles/style-hairline.png" width="120" alt="The Hairline style"> |
 
 ## Compatibility
 
