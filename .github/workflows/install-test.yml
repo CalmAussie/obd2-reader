@@ -2,7 +2,7 @@ name: Install test
 
 # Checks that the APK people download installs and runs on a clean phone, with nothing else
 # needed: it downloads the latest release exactly as a user would, installs it on fresh
-# emulators from Android 8 to Android 15, opens it, starts the demo car and visits every tab.
+# emulators from Android 10 to 16 (and 17, experimental), opens it, starts the demo car and visits every tab.
 # Runs after every release, and on demand from the Actions tab or a push to the qa branch.
 on:
   workflow_run:

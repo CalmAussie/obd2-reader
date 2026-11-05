@@ -181,9 +181,27 @@ for n in re.findall(r'<node [^>]*>', xml):
         print(d, (x1 + x2) // 2, (y1 + y2) // 2)
 PY
 }
+# Brings the app back to the front if something took it away (a Back too many, a browser, a
+# system screen), so later taps can't land on the home screen. Logged, so it shows in the results.
+app_front() {
+  adb shell dumpsys activity activities 2>/dev/null | grep -m1 -E "topResumedActivity|mResumedActivity" | grep -q "$PKG" && return 0
+  adb shell dumpsys input_method 2>/dev/null | grep -q "mInputShown=true" && adb shell input keyevent KEYCODE_BACK
+  adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1; sleep 3
+  echo "  (brought the app back to the front)" >> "$OUT/result.txt"
+}
 tap_tab() {
+  app_front
   local xy=$(grep "^$1 " "$OUT/tabs.txt" | cut -d' ' -f2-)
   [ -n "$xy" ] && adb shell input tap $xy && sleep 1
+}
+# Disconnects the demo car, and checks it worked (Demo car shows again): a tap on a busy, slow
+# phone can be missed. Does nothing if it's already disconnected.
+disconnect_app() {
+  for i in 1 2 3; do
+    [ "$(view_flag demoButton)" = V ] && return 0
+    scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
+  done
+  [ "$(view_flag demoButton)" = V ]
 }
 FAIL=0
 # First launch asks for the car before anything else.
@@ -328,7 +346,7 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
   # The livery colourways share one layout: the small phone checks it once, as Asphalt.
   [ $PASS = small ] && case "$STYLE" in Endurance|Kerb|"Pit lane"|Drift|Apex|"British racing") continue;; esac
   SLUG=$(echo "$STYLE" | tr ' A-Z' '-a-z'); [ $PASS = small ] && SLUG="small-$SLUG"
-  scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3   # disconnect, so the screen is still
+  disconnect_app   # disconnect, so the screen is still
   tap_text "Done" > /dev/null || true   # close the trip summary if that drive was long enough for one
   tap_text "Style" || { log "style $STYLE: FAILED (no Style button)"; FAIL=1; continue; }
   sleep 1
@@ -345,7 +363,7 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
   # Digital cockpit: after Disconnect, Connect must be drawn at full brightness again (it once
   # kept the faded look of the pressed or outline style until the app was reopened).
   if [ $PASS = normal ] && [ "$STYLE" = "Digital cockpit" ]; then
-    scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
+    disconnect_app
     tap_text "Done" > /dev/null || true; sleep 2
     scroll_top; XY=$(view_center connectButton); shot "6b-$SLUG-after-disconnect"
     # Left of centre, clear of the "Connect" label.
@@ -382,7 +400,7 @@ done
 adb shell wm density reset; adb shell settings put system font_scale 1.0; sleep 3
 # A longer drive, then Disconnect: the trip summary should sum it up.
 sleep 35
-scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
+disconnect_app
 adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-trip.xml"
 shot 7-trip-summary
 if grep -q "Your drive" "$OUT/ui-trip.xml" && grep -q "Top speed" "$OUT/ui-trip.xml"; then log "trip summary: shown"; else log "trip summary: FAILED (not shown)"; FAIL=1; fi
@@ -632,7 +650,7 @@ if [ -s "$OUT/recorded.csv" ]; then
   BG=$(awk -F, 'NR>1 && $(NF-2) != "" && $(NF-2)+0 < -33.8790 {n++} END {print n+0}' "$OUT/recorded.csv")
   [ "$BG" -ge 5 ] && log "route while minimised: kept ($BG rows)" || { log "route while minimised: FAILED (only $BG rows with a position)"; FAIL=1; }
 fi
-tap_tab Dashboard; scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 3
+tap_tab Dashboard; disconnect_app
 # The drive card for this drive should draw the route that was just recorded.
 adb logcat -c
 if tap_text "Share as a picture"; then
@@ -653,7 +671,7 @@ if tap_record; then
   for i in $(seq 1 10); do adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
   for i in $(seq 1 12); do adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
   tap_record; sleep 2
-  tap_tab Dashboard; scroll_top; XY=$(view_center connectButton); [ -n "$XY" ] && adb shell input tap $XY; sleep 6
+  tap_tab Dashboard; disconnect_app; sleep 3
   shot 8a3-same-route
   adb logcat -d -s OBD2Route:I > "$OUT/same-route.txt" 2>/dev/null
   if grep -q "same route as the drive" "$OUT/same-route.txt"; then log "same route: compared with last time ($(grep -o 'Time [^,]*' "$OUT/same-route.txt" | tail -1))"; else log "same route: FAILED (not compared: $(tail -1 "$OUT/same-route.txt" | cut -c1-100))"; FAIL=1; fi
