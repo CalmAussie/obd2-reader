@@ -256,7 +256,9 @@ if [ $SEEN = 1 ]; then
   else
     log "engine list: FAILED (no Model box)"; FAIL=1
   fi
-  tap_text "Not listed" || { log "car picker: FAILED (no Not listed button)"; FAIL=1; }
+  # The picker can still be settling on a slow phone: give the button a few tries.
+  NL=0; for i in 1 2 3 4; do tap_text "Not listed" && { NL=1; break; }; sleep 2; done
+  [ $NL = 1 ] || { log "car picker: FAILED (no Not listed button)"; FAIL=1; }
   sleep 1
 else
   log "car picker: FAILED (not shown on first launch)"; FAIL=1
@@ -709,6 +711,8 @@ adb logcat -c
 if record_set on; then
   for i in $(seq 1 10); do adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
   for i in $(seq 1 12); do adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
+  # What GPS the second recording got, to compare with the first's if the routes don't match.
+  adb shell dumpsys location > "$OUT/location-second.txt" 2>/dev/null
   # Give the app a moment to finish saving the recording: the comparison reads the saved file.
   record_set off; sleep 4
   tap_tab Dashboard; disconnect_app; sleep 3
