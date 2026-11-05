@@ -335,6 +335,25 @@ tap_record() {
   set -- $XY
   if [ "$2" -gt 2000 ]; then drag_up_600; adb shell input tap $1 $(( $2 - 580 )); else adb shell input tap $1 $2; fi
 }
+# Whether a drive is being recorded with its route right now: the app is then an active location
+# user (listed before the history part of the location dump; it moves to the history when it stops).
+recording_live() { adb shell dumpsys location 2>/dev/null | sed '/Historical/q' | grep -q "$PKG"; }
+# Taps Record drive (or Stop recording) and checks it took, tapping once more if it didn't: on a
+# slow phone the tap can land while the page is still settling. $1: on or off, what it should be.
+record_set() {
+  local want=$1
+  for i in 1 2; do
+    tap_record || return 1
+    # Up to 15s: in passing runs the location request shows within a second, so a longer wait
+    # means the tap was missed (a second tap while it was recording would stop it again).
+    for j in $(seq 1 15); do
+      sleep 1
+      if recording_live; then [ $want = on ] && return 0; else [ $want = off ] && return 0; fi
+    done
+    echo "  (record tap didn't take, tapping again)" >> "$OUT/result.txt"
+  done
+  return 1
+}
 # Scrolls the page back to the very top, so positions read from the view tree are on screen.
 scroll_top() { adb shell input swipe 540 800 540 2000 200; adb shell input swipe 540 800 540 2000 200; sleep 1; }
 # Each style with its own layout, upright and sideways, with the demo car running. The second
@@ -612,7 +631,7 @@ adb shell pm grant $PKG android.permission.ACCESS_FINE_LOCATION 2>/dev/null
 adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION 2>/dev/null
 adb shell settings put secure location_mode 3 2>/dev/null
 adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
-tap_record && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
+record_set on && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
 ROUTE=0
 for i in $(seq 1 10); do
   adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1
@@ -637,7 +656,7 @@ adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 5
 shot 8a0-back-from-minimised
 adb logcat -d -s OBD2Close:I OBD2Pip:I AndroidRuntime:E > "$OUT/record-close.txt" 2>/dev/null
 scroll_top; echo "record $(view_center recordButton) connect $(view_center connectButton) demo $(view_flag demoButton)" > "$OUT/record-stop.txt"
-tap_record; sleep 2
+record_set off; sleep 1
 shot 8a-recorded
 # Debug builds: check the file itself has positions.
 F=$(adb shell run-as $PKG ls files/logs 2>/dev/null | tr -d '\r' | grep csv | tail -1)
@@ -667,10 +686,10 @@ tap_tab Dashboard; sleep 2; scroll_top
 tap_text "Demo car" > /dev/null || true; sleep 8
 adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
 adb logcat -c
-if tap_record; then
+if record_set on; then
   for i in $(seq 1 10); do adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
   for i in $(seq 1 12); do adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
-  tap_record; sleep 2
+  record_set off; sleep 1
   tap_tab Dashboard; disconnect_app; sleep 3
   shot 8a3-same-route
   adb logcat -d -s OBD2Route:I > "$OUT/same-route.txt" 2>/dev/null
