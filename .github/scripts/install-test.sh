@@ -295,7 +295,8 @@ tap_text "Demo car" && log "demo: started" || { log "demo: FAILED (button not fo
 sleep 8
 tap_text "Allow" > /dev/null || true
 shot 2-demo-dashboard
-W=$(view_width connectButton)
+# Disconnect grows to the full row as the demo car connects: on a slow phone, measure again if it's mid-change.
+W=$(view_width connectButton); for i in 1 2 3; do [ "${W:-0}" -ge 200 ] && break; sleep 3; W=$(view_width connectButton); done
 [ "${W:-0}" -ge 200 ] && log "button 'Disconnect': visible (${W}px)" || { log "button 'Disconnect': FAILED (${W:-0}px wide)"; FAIL=1; }
 # While connected, Demo car is hidden and Disconnect spans the row (most of the screen's width).
 DV=$(view_flag demoButton); [ "$DV" = "?" ] && { sleep 3; DV=$(view_flag demoButton); W=$(view_width connectButton); }; SW=$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | cut -dx -f1)
