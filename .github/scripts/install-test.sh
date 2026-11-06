@@ -733,7 +733,11 @@ if record_set on; then
   tap_tab Dashboard; disconnect_app; sleep 3
   shot 8a3-same-route
   adb logcat -d -s OBD2Route:I > "$OUT/same-route.txt" 2>/dev/null
-  if grep -q "same route as the drive" "$OUT/same-route.txt"; then log "same route: compared with last time ($(grep -o 'Time [^,]*' "$OUT/same-route.txt" | tail -1))"; else log "same route: FAILED (not compared: $(tail -1 "$OUT/same-route.txt" | cut -c1-100))"; FAIL=1; fi
+  if grep -q "same route as the drive" "$OUT/same-route.txt"; then log "same route: compared with last time ($(grep -o 'Time [^,]*' "$OUT/same-route.txt" | tail -1))"; else
+    log "same route: FAILED (not compared: $(tail -1 "$OUT/same-route.txt" | cut -c1-100))"; FAIL=1
+    # Debug builds: keep both recordings, to see why their routes didn't match.
+    for f in $(adb shell run-as $PKG ls files/logs 2>/dev/null | tr -d '\r' | grep csv); do adb exec-out run-as $PKG cat "files/logs/$f" > "$OUT/route-$f"; done
+  fi
   for k in 1 2 3; do adb shell input swipe 540 1800 540 700 300; done; sleep 1; shot 8a4-same-route-lines
   tap_text "Done" > /dev/null || adb shell input keyevent KEYCODE_BACK; sleep 1
 else
