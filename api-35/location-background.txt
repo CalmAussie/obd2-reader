@@ -1,0 +1,345 @@
+Location Manager State:
+  User Info:
+    current users: u[0]
+  Location Settings:
+    Location Setting: true
+    Location Allow/Deny Packages:
+    Throttling Allow Packages:
+      com.google.android.gms
+    Emergency Bypass Allow Packages:
+      com.google.android.dialer[*]
+      com.google.android.gms[.thunderbird]
+      com.google.android.apps.scone[satellite_esos]
+      com.android.phone[telephony]
+  Location Providers:
+    passive provider:
+      service: registered
+      listeners:
+        10143/com.google.android.gms[network_location_provider]/FCAD3EF6 Request[PASSIVE, minUpdateInterval=0, hiddenFromAppOps, WorkSource{10143 com.google.android.gms}]
+        10143/com.google.android.gms[fused_location_provider]/9FFC8F46 Request[PASSIVE, minUpdateInterval=0, hiddenFromAppOps, WorkSource{10143 com.google.android.gms}]
+        1000/android[SensorNotificationService]/9852AA66 Request[PASSIVE, minUpdateInterval=+30m0s0ms, minUpdateDistance=100000.0, WorkSource{1000 android}]
+      last location=Location[gps -33.883600,151.218998 hAcc=5.0 et=+30m33s91ms alt=0.0 vAcc=0.5 mslAlt=-22.141715014214597 mslAltAcc=0.5682429 vel=0.0 sAcc=0.5 bear=0.0 bAcc=30.0 {Bundle[{satellites=0, maxCn0=0, meanCn0=0}]}]
+      enabled=true
+      allowed=true
+      identity=1000/android[LocationService]
+      properties=ProviderProperties[powerUsage=Low, accuracy=Fine]
+    network provider:
+      service: ProviderRequest[@+6h0m0s0ms, WorkSource{10137 com.google.android.as}]
+      listeners:
+        1000/android[GnssService]/C651616E Request[PASSIVE, minUpdateInterval=0, hiddenFromAppOps, WorkSource{1000 android}]
+        10137/com.google.android.as/3F4D1C21 Request[@+6h0m0s0ms BALANCED, minUpdateDistance=100000.0, WorkSource{10137 com.google.android.as}]
+      last location=null
+      enabled=true
+      allowed=true
+      identity=10143/com.google.android.gms[network_location_provider]
+      extra attribution tags={awareness_provider, activity_recognition_provider, network_location_provider, gnss_location_provider, network_location_calibration, current_semantic_location, fused_location_provider, wearable_flp_shim, geofencer_provider}
+      properties=ProviderProperties[powerUsage=Medium, accuracy=Fine, requires=network, supports=[altitude]]
+      stationary throttled=false (not idle) (not stationary)
+      target service=10143/com.google.android.gms/com.google.android.location.network.NetworkLocationService@2
+      connected=true
+    fused provider:
+      service: ProviderRequest[@+1s0ms, HIGH_ACCURACY, WorkSource{10209 com.obdreader.app}]
+      listeners:
+        10209/com.obdreader.app/D5680CF8 Request[@+1s0ms HIGH_ACCURACY, minUpdateInterval=+500ms, WorkSource{10209 com.obdreader.app}]
+      last location=Location[fused -33.883610,151.219020 hAcc=5.0 et=+30m33s91ms alt=0.0 vAcc=0.5 mslAlt=-22.141604939629037 mslAltAcc=0.5682429 vel=16.152529 sAcc=0.5 bear=116.5994 bAcc=30.0]
+      enabled=true
+      allowed=true
+      identity=10143/com.google.android.gms[fused_location_provider]
+      extra attribution tags={awareness_provider, activity_recognition_provider, network_location_provider, gnss_location_provider, network_location_calibration, current_semantic_location, fused_location_provider, wearable_flp_shim, geofencer_provider}
+      properties=ProviderProperties[powerUsage=Low, accuracy=Fine, supports=[bearing,speed,altitude]]
+      stationary throttled=false (not idle) (not stationary)
+      target service=10143/com.google.android.gms/com.google.android.location.fused.FusedLocationService@1
+      connected=true
+    gps provider:
+      service: ProviderRequest[@+1s0ms, HIGH_ACCURACY, WorkSource{10209 com.obdreader.app}]
+      listeners:
+        10143/com.google.android.gms[fused_location_provider]/87F40487 Request[@+1s0ms HIGH_ACCURACY, hiddenFromAppOps, WorkSource{10209 com.obdreader.app}]
+      last location=Location[gps -33.883600,151.218998 hAcc=5.0 et=+30m33s91ms alt=0.0 vAcc=0.5 mslAlt=-22.141715014214597 mslAltAcc=0.5682429 vel=0.0 sAcc=0.5 bear=0.0 bAcc=30.0 {Bundle[{satellites=0, maxCn0=0, meanCn0=0}]}]
+      enabled=true
+      allowed=true
+      identity=1000/android[GnssService]
+      properties=ProviderProperties[powerUsage=High, accuracy=Fine, requires=satellite, supports=[bearing,speed,altitude]]
+      stationary throttled=false (not idle) (not stationary)
+      mStarted=true   (changed +1m40s611ms ago)
+      mBatchingEnabled=true
+      mBatchingStarted=false
+      mBatchSize=4
+      mFixInterval=1000
+      GNSS_KPI_START
+        KPI logging start time: +31s239ms
+        KPI logging end time: +30m33s331ms
+        Number of location reports: 78
+        Percentage location failure: 14.102564102564102
+        Number of TTFF reports: 1
+        TTFF mean (sec): 4.361
+        TTFF standard deviation (sec): 0.0
+        Number of position accuracy reports: 67
+        Position accuracy mean (m): 5.0
+        Position accuracy standard deviation (m): 0.0
+        Number of CN0 reports: 1774
+        Top 4 Avg CN0 mean (dB-Hz): 30.0
+        Top 4 Avg CN0 standard deviation (dB-Hz): 0.0
+        Total number of sv status messages processed: 10644
+        Total number of L5 sv status messages processed: 0
+        Total number of sv status messages processed, where sv is used in fix: 0
+        Total number of L5 sv status messages processed, where sv is used in fix: 0
+        Number of L5 CN0 reports: 0
+        Used-in-fix constellation types: 
+      GNSS_KPI_END
+      Power Metrics
+        Time on battery (min): 0.0
+        Amount of time (while on battery) Top 4 Avg CN0 > 20.0 dB-Hz (min): 0.0
+        Amount of time (while on battery) Top 4 Avg CN0 <= 20.0 dB-Hz (min): 0.0
+        Energy consumed while on battery (mAh): 0.0
+      Hardware Version: 
+  Historical Aggregate Location Provider Data:
+    passive:
+      10143/com.google.android.gms[fused_location_provider]: min/max interval = passive/passive, total/active/foreground duration = +29m53s937ms/+29m53s936ms/+29m53s936ms, locations = 134
+      1000/android[SensorNotificationService]: min/max interval = passive/passive, total/active/foreground duration = +29m58s735ms/+29m58s729ms/+29m58s729ms, locations = 1
+      10143/com.google.android.gms[network_location_provider]: min/max interval = passive/passive, total/active/foreground duration = +29m50s964ms/+29m50s959ms/+29m50s960ms, locations = 134
+    gps:
+      10143/com.google.android.gms[fused_location_provider]: min/max interval = 1s/1s, total/active/foreground duration = +1m40s705ms/+1m40s617ms/+1m40s619ms, locations = 67
+    fused:
+      10209/com.obdreader.app: min/max interval = 1s/1s, total/active/foreground duration = +1m40s736ms/+1m40s735ms/+1m40s736ms, locations = 67
+    network:
+      10137/com.google.android.as: min/max interval = 21600s/21600s, total/active/foreground duration = +29m49s104ms/+29m49s80ms/+29m49s87ms, locations = 0
+      1000/android[GnssService]: min/max interval = passive/passive, total/active/foreground duration = +30m2s55ms/+29m56s140ms/+30m2s49ms, locations = 0
+  Historical Aggregate Gnss Measurement Provider Data:
+  GNSS Manager:
+    Capabilities: [SCHEDULING ACCUMULATED_DELTA_RANGE(unknown) TOTAL_POWER SINGLEBAND_TRACKING_POWER MULTIBAND_TRACKING_POWER SINGLEBAND_ACQUISITION_POWER MULTIBAND_ACQUISITION_POWER OTHER_MODES_POWER]
+    GNSS Hardware Model Name: Android Studio Emulator GPS
+    Status Provider:
+      service: registered
+      listeners:
+        10143/com.google.android.gms[network_location_provider]/AF336394
+        10143/com.google.android.gms[fused_location_provider]/25795D02
+    Measurements Provider:
+      service: unregistered
+      last measurements=null
+    Navigation Message Provider:
+      service: unregistered
+    Antenna Info Provider:
+      Antenna Infos: null
+      service: unregistered
+  Geofence Manager:
+    service: unregistered
+  Event Log:
+    11-06 02:55:33.712: passive provider [u0] enabled
+    11-06 02:55:35.517: gps provider [u0] enabled
+    11-06 02:55:35.542: network provider +registration 1000/android[GnssService]/C651616E -> Request[PASSIVE, minUpdateInterval=0, hiddenFromAppOps, WorkSource{1000 android}]
+    11-06 02:55:35.793: passive provider [u0] enabled
+    11-06 02:55:35.793: gps provider [u0] enabled
+    11-06 02:55:36.366: fused provider [u0] enabled
+    11-06 02:55:36.454: [u0] visible
+    11-06 02:55:38.862: passive provider +registration 1000/android[SensorNotificationService]/9852AA66 -> Request[PASSIVE, minUpdateInterval=+30m0s0ms, minUpdateDistance=100000.0, WorkSource{1000 android}]
+    11-06 02:55:38.868: passive provider request = ProviderRequest[@0]
+    11-06 02:55:41.438: network provider [u0] enabled
+    11-06 02:55:43.660: passive provider +registration 10143/com.google.android.gms[fused_location_provider]/9FFC8F46 -> Request[PASSIVE, minUpdateInterval=0, hiddenFromAppOps, WorkSource{10143 com.google.android.gms}]
+    11-06 02:55:46.633: passive provider +registration 10143/com.google.android.gms[network_location_provider]/FCAD3EF6 -> Request[PASSIVE, minUpdateInterval=0, hiddenFromAppOps, WorkSource{10143 com.google.android.gms}]
+    11-06 02:55:48.493: network provider +registration 10137/com.google.android.as/3F4D1C21 -> Request[@+6h0m0s0ms BALANCED, minUpdateDistance=100000.0, WorkSource{10137 com.google.android.as}]
+    11-06 02:55:48.517: network provider request = ProviderRequest[@+6h0m0s0ms, WorkSource{10137 com.google.android.as}]
+    11-06 03:23:51.070: location [u0] enabled
+    11-06 03:23:56.861: fused provider +registration 10209/com.obdreader.app/D5680CF8 -> Request[@+1s0ms HIGH_ACCURACY, minUpdateInterval=+500ms, WorkSource{10209 com.obdreader.app}]
+    11-06 03:23:56.862: fused provider request = ProviderRequest[@+1s0ms, HIGH_ACCURACY, WorkSource{10209 com.obdreader.app}]
+    11-06 03:23:56.892: gps provider +registration 10143/com.google.android.gms[fused_location_provider]/87F40487 -> Request[@+1s0ms HIGH_ACCURACY, hiddenFromAppOps, WorkSource{10209 com.obdreader.app}]
+    11-06 03:23:56.980: gps provider request = ProviderRequest[@+1s0ms, HIGH_ACCURACY, WorkSource{10209 com.obdreader.app}]
+    11-06 03:25:05.361: gps provider received location[1]
+    11-06 03:25:05.361: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:05.361: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:05.361: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:05.393: fused provider received location[1]
+    11-06 03:25:05.394: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:05.394: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:05.394: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:06.370: gps provider received location[1]
+    11-06 03:25:06.370: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:06.370: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:06.370: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:06.390: fused provider received location[1]
+    11-06 03:25:06.391: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:06.391: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:06.391: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:07.396: gps provider received location[1]
+    11-06 03:25:07.396: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:07.396: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:07.396: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:07.407: fused provider received location[1]
+    11-06 03:25:07.408: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:07.408: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:07.408: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:09.357: gps provider received location[1]
+    11-06 03:25:09.358: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:09.358: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:09.358: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:09.363: fused provider received location[1]
+    11-06 03:25:09.364: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:09.364: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:09.364: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:10.373: gps provider received location[1]
+    11-06 03:25:10.373: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:10.373: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:10.373: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:10.379: fused provider received location[1]
+    11-06 03:25:10.379: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:10.380: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:10.380: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:11.385: gps provider received location[1]
+    11-06 03:25:11.385: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:11.385: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:11.385: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:11.440: fused provider received location[1]
+    11-06 03:25:11.440: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:11.443: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:11.443: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:12.525: gps provider received location[1]
+    11-06 03:25:12.525: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:12.526: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:12.526: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:12.588: fused provider received location[1]
+    11-06 03:25:12.589: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:12.589: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:12.589: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:14.355: gps provider received location[1]
+    11-06 03:25:14.355: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:14.356: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:14.356: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:14.358: fused provider received location[1]
+    11-06 03:25:14.359: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:14.359: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:14.359: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:15.480: gps provider received location[1]
+    11-06 03:25:15.481: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:15.481: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:15.481: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:15.482: fused provider received location[1]
+    11-06 03:25:15.483: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:15.483: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:15.483: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:17.359: gps provider received location[1]
+    11-06 03:25:17.359: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:17.359: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:17.359: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:17.361: fused provider received location[1]
+    11-06 03:25:17.362: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:17.362: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:17.362: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:18.355: gps provider received location[1]
+    11-06 03:25:18.356: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:18.356: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:18.356: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:18.358: fused provider received location[1]
+    11-06 03:25:18.358: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:18.358: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:18.358: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:19.355: gps provider received location[1]
+    11-06 03:25:19.356: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:19.356: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:19.356: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:19.359: fused provider received location[1]
+    11-06 03:25:19.359: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:19.359: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:19.359: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:21.355: gps provider received location[1]
+    11-06 03:25:21.355: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:21.355: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:21.355: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:21.357: fused provider received location[1]
+    11-06 03:25:21.357: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:21.357: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:21.357: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:22.356: gps provider received location[1]
+    11-06 03:25:22.356: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:22.356: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:22.356: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:22.359: fused provider received location[1]
+    11-06 03:25:22.359: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:22.359: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:22.359: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:23.356: gps provider received location[1]
+    11-06 03:25:23.356: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:23.356: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:23.356: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:23.358: fused provider received location[1]
+    11-06 03:25:23.358: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:23.358: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:23.359: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:25.356: gps provider received location[1]
+    11-06 03:25:25.356: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:25.356: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:25.357: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:25.358: fused provider received location[1]
+    11-06 03:25:25.358: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:25.358: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:25.358: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:26.356: gps provider received location[1]
+    11-06 03:25:26.356: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:26.356: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:26.356: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:26.358: fused provider received location[1]
+    11-06 03:25:26.358: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:26.358: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:26.358: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:27.357: gps provider received location[1]
+    11-06 03:25:27.357: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:27.357: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:27.357: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:27.359: fused provider received location[1]
+    11-06 03:25:27.360: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:27.360: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:27.360: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:28.356: gps provider received location[1]
+    11-06 03:25:28.357: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:28.357: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:28.357: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:28.361: fused provider received location[1]
+    11-06 03:25:28.361: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:28.361: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:28.362: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:29.357: gps provider received location[1]
+    11-06 03:25:29.357: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:29.357: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:29.357: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:29.359: fused provider received location[1]
+    11-06 03:25:29.359: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:29.359: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:29.359: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:31.357: gps provider received location[1]
+    11-06 03:25:31.357: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:31.357: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:31.357: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:31.359: fused provider received location[1]
+    11-06 03:25:31.360: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:31.360: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:31.360: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:33.357: gps provider received location[1]
+    11-06 03:25:33.358: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:33.358: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:33.358: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:33.360: fused provider received location[1]
+    11-06 03:25:33.361: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:33.361: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:33.361: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:34.358: gps provider received location[1]
+    11-06 03:25:34.358: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:34.358: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:34.358: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:34.360: fused provider received location[1]
+    11-06 03:25:34.361: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:34.361: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:34.361: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:35.580: gps provider received location[1]
+    11-06 03:25:35.580: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:35.580: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:35.580: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:35.582: fused provider received location[1]
+    11-06 03:25:35.583: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:35.583: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:35.583: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:37.358: gps provider received location[1]
+    11-06 03:25:37.359: gps provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/87F40487
+    11-06 03:25:37.359: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:37.359: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
+    11-06 03:25:37.363: fused provider received location[1]
+    11-06 03:25:37.363: fused provider delivered location[1] to 10209/com.obdreader.app/D5680CF8
+    11-06 03:25:37.363: passive provider delivered location[1] to 10143/com.google.android.gms[network_location_provider]/FCAD3EF6
+    11-06 03:25:37.363: passive provider delivered location[1] to 10143/com.google.android.gms[fused_location_provider]/9FFC8F46
