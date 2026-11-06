@@ -1,0 +1,90 @@
+--------- beginning of main
+11-06 02:51:45.930 25994 25994 W app_process: type=1400 audit(0.0:3337): avc: denied { read } for name="u:object_r:device_config_runtime_native_boot_prop:s0" dev="tmpfs" ino=6714 scontext=u:r:shell:s0 tcontext=u:object_r:device_config_runtime_native_boot_prop:s0 tclass=file permissive=0
+11-06 02:51:45.930 25994 25994 W app_process: type=1400 audit(0.0:3338): avc: denied { read } for name="u:object_r:device_config_runtime_native_boot_prop:s0" dev="tmpfs" ino=6714 scontext=u:r:shell:s0 tcontext=u:object_r:device_config_runtime_native_boot_prop:s0 tclass=file permissive=0
+11-06 02:51:45.930 25994 25994 W app_process: type=1400 audit(0.0:3339): avc: denied { read } for name="u:object_r:device_config_runtime_native_boot_prop:s0" dev="tmpfs" ino=6714 scontext=u:r:shell:s0 tcontext=u:object_r:device_config_runtime_native_boot_prop:s0 tclass=file permissive=0
+11-06 02:51:45.944 25994 25994 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-06 02:51:45.945 25994 25994 E libc    : Access denied finding property "persist.device_config.runtime_native_boot.enable_apex_image"
+11-06 02:51:45.945 25994 25994 I AndroidRuntime: Using default boot image
+11-06 02:51:45.945 25994 25994 E libc    : Access denied finding property "persist.device_config.runtime_native_boot.disable_lock_profiling"
+11-06 02:51:45.945 25994 25994 I AndroidRuntime: Leaving lock profiling enabled
+11-06 02:51:45.945 25994 25994 E libc    : Access denied finding property "persist.device_config.runtime_native_boot.enable_generational_cc"
+11-06 02:51:45.956 25994 25994 I app_process: Core platform API reporting enabled, enforcing=false
+11-06 02:51:45.984 25994 25994 D ICU     : Time zone APEX file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+11-06 02:51:45.986 25994 25994 W app_process: Unexpected CPU variant for X86 using defaults: x86_64
+11-06 02:51:45.987 25994 25994 I app_process: The ClassLoaderContext is a special shared library.
+11-06 02:51:45.993 25994 25994 W app_process: JNI RegisterNativeMethods: attempt to register 0 native methods for android.media.AudioAttributes
+11-06 02:51:45.995 25994 25994 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-06 02:51:46.000 25994 25994 D AndroidRuntime: Shutting down VM
+--------- beginning of system
+11-06 02:51:46.002  1908  1925 D AutofillManagerService: Close system dialogs
+11-06 02:51:46.005  2066  2066 V StatusBar: mStatusBarWindow: com.android.systemui.statusbar.phone.StatusBarWindowView{8b6bc24 V.E...... ........ 0,0-1080,63} canPanelBeCollapsed(): false
+11-06 02:51:46.007  1908  1923 W InputReader: Device has associated, but no associated display id.
+11-06 02:51:46.007  1908  1923 I chatty  : uid=1000(system) Binder:1908_1 identical 8 lines
+11-06 02:51:46.007  1908  1923 W InputReader: Device has associated, but no associated display id.
+11-06 02:51:46.008  1908  2974 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000000 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity (has extras)} from uid 10108
+11-06 02:51:46.192  1908  1908 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+11-06 02:51:46.192  1908  1908 W RemoteAppPredictionService: could not bind to Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } using flags 67108865
+11-06 02:51:46.418  1908  2974 W InputReader: Device has associated, but no associated display id.
+11-06 02:51:46.442  1908  2974 I chatty  : uid=1000(system) Binder:1908_14 identical 28 lines
+11-06 02:51:46.442  1908  2974 W InputReader: Device has associated, but no associated display id.
+11-06 02:51:46.480  2066  2341 D EGL_emulation: eglMakeCurrent: 0x7465f484b300: ver 3 0 (tinfo 0x7465f48dc700)
+11-06 02:51:49.076  1697  3116 D gralloc_ranchu: gralloc_alloc: Creating ashmem region of size 10371072
+11-06 02:51:49.079  1567  1567 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@3.0::IMapper/default in either framework or device manifest.
+11-06 02:51:49.079 26008 26008 W Gralloc3: mapper 3.x is not supported
+11-06 02:51:49.084 26008 26008 D HostConnection: createUnique: call
+11-06 02:51:49.086 26008 26008 D HostConnection: HostConnection::get() New Host Connection established 0x7ba91f15e5a0, tid 26008
+11-06 02:51:49.087 26008 26008 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-06 02:51:49.088 26008 26008 D eglCodecCommon: allocate: Ask for block of size 0x1000
+11-06 02:51:49.088 26008 26008 D eglCodecCommon: allocate: ioctl allocate returned offset 0x3ff607000 size 0x2000
+11-06 02:51:49.107 26008 26008 D eglCodecCommon: allocate: Ask for block of size 0x9e4000
+11-06 02:51:49.108 26008 26008 D eglCodecCommon: allocate: ioctl allocate returned offset 0x3fec24000 size 0x9e5000
+11-06 02:51:49.480 26010 26010 W app_process: type=1400 audit(0.0:3340): avc: denied { read } for name="u:object_r:device_config_runtime_native_boot_prop:s0" dev="tmpfs" ino=6714 scontext=u:r:shell:s0 tcontext=u:object_r:device_config_runtime_native_boot_prop:s0 tclass=file permissive=0
+11-06 02:51:49.480 26010 26010 I chatty  : uid=2000(shell) app_process identical 1 line
+11-06 02:51:49.480 26010 26010 W app_process: type=1400 audit(0.0:3342): avc: denied { read } for name="u:object_r:device_config_runtime_native_boot_prop:s0" dev="tmpfs" ino=6714 scontext=u:r:shell:s0 tcontext=u:object_r:device_config_runtime_native_boot_prop:s0 tclass=file permissive=0
+11-06 02:51:49.487 26010 26010 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-06 02:51:49.488 26010 26010 E libc    : Access denied finding property "persist.device_config.runtime_native_boot.enable_apex_image"
+11-06 02:51:49.488 26010 26010 I AndroidRuntime: Using default boot image
+11-06 02:51:49.488 26010 26010 E libc    : Access denied finding property "persist.device_config.runtime_native_boot.disable_lock_profiling"
+11-06 02:51:49.488 26010 26010 I AndroidRuntime: Leaving lock profiling enabled
+11-06 02:51:49.489 26010 26010 E libc    : Access denied finding property "persist.device_config.runtime_native_boot.enable_generational_cc"
+11-06 02:51:49.489 26010 26010 I app_process: Core platform API reporting enabled, enforcing=false
+11-06 02:51:49.518 26010 26010 D ICU     : Time zone APEX file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+11-06 02:51:49.520 26010 26010 W app_process: Unexpected CPU variant for X86 using defaults: x86_64
+11-06 02:51:49.537 26010 26010 I app_process: The ClassLoaderContext is a special shared library.
+11-06 02:51:49.544 26010 26010 W app_process: JNI RegisterNativeMethods: attempt to register 0 native methods for android.media.AudioAttributes
+11-06 02:51:49.546 26010 26010 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-06 02:51:49.806 26010 26010 D AndroidRuntime: Shutting down VM
+11-06 02:51:51.926  1786  1786 E netmgr  : Failed to open QEMU pipe 'qemud:network': Invalid argument
+11-06 02:51:52.637  1795  1795 E wifi_forwarder: RemoteConnection failed to initialize: RemoteConnection failed to open pipe
+11-06 02:51:53.875  1697  3116 D gralloc_ranchu: gralloc_alloc: Creating ashmem region of size 10371072
+11-06 02:51:53.893  1567  1567 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@3.0::IMapper/default in either framework or device manifest.
+11-06 02:51:53.893 26024 26024 W Gralloc3: mapper 3.x is not supported
+11-06 02:51:53.898 26024 26024 D HostConnection: createUnique: call
+11-06 02:51:53.900 26024 26024 D HostConnection: HostConnection::get() New Host Connection established 0x7ce3c761e5a0, tid 26024
+11-06 02:51:53.902 26024 26024 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-06 02:51:53.903 26024 26024 D eglCodecCommon: allocate: Ask for block of size 0x1000
+11-06 02:51:53.903 26024 26024 D eglCodecCommon: allocate: ioctl allocate returned offset 0x3ff607000 size 0x2000
+11-06 02:51:53.921 26024 26024 D eglCodecCommon: allocate: Ask for block of size 0x9e4000
+11-06 02:51:53.923 26024 26024 D eglCodecCommon: allocate: ioctl allocate returned offset 0x3fec24000 size 0x9e5000
+11-06 02:51:54.310 26029 26029 W app_process: type=1400 audit(0.0:3343): avc: denied { read } for name="u:object_r:device_config_runtime_native_boot_prop:s0" dev="tmpfs" ino=6714 scontext=u:r:shell:s0 tcontext=u:object_r:device_config_runtime_native_boot_prop:s0 tclass=file permissive=0
+11-06 02:51:54.310 26029 26029 I chatty  : uid=2000(shell) app_process identical 1 line
+11-06 02:51:54.310 26029 26029 W app_process: type=1400 audit(0.0:3345): avc: denied { read } for name="u:object_r:device_config_runtime_native_boot_prop:s0" dev="tmpfs" ino=6714 scontext=u:r:shell:s0 tcontext=u:object_r:device_config_runtime_native_boot_prop:s0 tclass=file permissive=0
+11-06 02:51:54.322 26029 26029 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-06 02:51:54.323 26029 26029 E libc    : Access denied finding property "persist.device_config.runtime_native_boot.enable_apex_image"
+11-06 02:51:54.323 26029 26029 I AndroidRuntime: Using default boot image
+11-06 02:51:54.323 26029 26029 E libc    : Access denied finding property "persist.device_config.runtime_native_boot.disable_lock_profiling"
+11-06 02:51:54.323 26029 26029 I AndroidRuntime: Leaving lock profiling enabled
+11-06 02:51:54.323 26029 26029 E libc    : Access denied finding property "persist.device_config.runtime_native_boot.enable_generational_cc"
+11-06 02:51:54.324 26029 26029 I app_process: Core platform API reporting enabled, enforcing=false
+11-06 02:51:54.380 26029 26029 D ICU     : Time zone APEX file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+11-06 02:51:54.384 26029 26029 W app_process: Unexpected CPU variant for X86 using defaults: x86_64
+11-06 02:51:54.385 26029 26029 I app_process: The ClassLoaderContext is a special shared library.
+11-06 02:51:54.392 26029 26029 W app_process: JNI RegisterNativeMethods: attempt to register 0 native methods for android.media.AudioAttributes
+11-06 02:51:54.394 26029 26029 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-06 02:51:54.409 26029 26029 D AndroidRuntime: Shutting down VM
+11-06 02:51:54.410  1908  1925 D AutofillManagerService: Close system dialogs
+11-06 02:51:54.410  2066  2066 V StatusBar: mStatusBarWindow: com.android.systemui.statusbar.phone.StatusBarWindowView{8b6bc24 V.E...... ........ 0,0-1080,63} canPanelBeCollapsed(): false
+11-06 02:51:54.415  1908  1926 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity (has extras)} from uid 0
+11-06 02:51:54.421  1908  2974 W InputReader: Device has associated, but no associated display id.
+11-06 02:51:54.422  1908  1908 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+11-06 02:51:54.422  1908  1908 W RemoteAppPredictionService: could not bind to Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } using flags 67108865
