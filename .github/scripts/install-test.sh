@@ -372,6 +372,18 @@ tap_record() {
   set -- $XY
   if [ "$2" -gt 2000 ]; then drag_up_600; adb shell input tap $1 $(( $2 - 580 )); else adb shell input tap $1 $2; fi
 }
+# Keeps the emulator's GPS position fresh between the end of a fed route and Stop recording. Newer
+# Android stops passing on a position that doesn't change, and the app writes no position once it's
+# 5s old: it then carries the route on from the demo car's speed (as for a tunnel), so each
+# recording would end wherever the car "drove" to before Stop. A real moving car keeps getting fixes.
+# Nudges the position by under half a metre each second, so every fix is new.
+gps_hold() {   # $1 longitude, $2 latitude
+  touch "$OUT/.gps-hold"
+  ( n=0; while [ -f "$OUT/.gps-hold" ]; do n=$((n + 1))
+      adb emu geo fix "$(awk "BEGIN{printf \"%.6f\", $1 + ($n % 2) * 0.000004}")" "$2" > /dev/null 2>&1; sleep 1
+    done ) &
+}
+gps_release() { rm -f "$OUT/.gps-hold"; sleep 2; }
 # Whether a drive is being recorded with its route right now: the app is then an active location
 # user (listed before the history part of the location dump; it moves to the history when it stops).
 recording_live() { adb shell dumpsys location 2>/dev/null | sed '/Historical/q' | grep -q "$PKG"; }
@@ -668,7 +680,11 @@ adb shell pm grant $PKG android.permission.ACCESS_FINE_LOCATION 2>/dev/null
 adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION 2>/dev/null
 adb shell settings put secure location_mode 3 2>/dev/null
 adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
+# Hold the start while Record is tapped, so the recording's first position is the start itself
+# (newer Android passes on no position until it changes, and the app would estimate the start).
+gps_hold 151.2093 -33.8688
 record_set on && log "record drive: on the Dashboard while connected" || { log "record drive: FAILED (no button on the Dashboard)"; FAIL=1; }
+gps_release
 ROUTE=0
 for i in $(seq 1 10); do
   adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1
@@ -688,12 +704,13 @@ for i in $(seq 1 12); do
   adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1
   sleep 2
 done
+gps_hold 151.2188 -33.8836   # where the fed route ends, until Stop recording
 adb shell dumpsys location > "$OUT/location-background.txt" 2>/dev/null
 adb shell am start -W -n $PKG/.MainActivity > /dev/null; sleep 5
 shot 8a0-back-from-minimised
 adb logcat -d -s OBD2Close:I OBD2Pip:I AndroidRuntime:E > "$OUT/record-close.txt" 2>/dev/null
 scroll_top; echo "record $(view_center recordButton) connect $(view_center connectButton) demo $(view_flag demoButton)" > "$OUT/record-stop.txt"
-record_set off; sleep 3
+record_set off; gps_release; sleep 1
 shot 8a-recorded
 # Debug builds: check the file itself has positions.
 F=$(adb shell run-as $PKG ls files/logs 2>/dev/null | tr -d '\r' | grep csv | tail -1)
@@ -723,13 +740,16 @@ tap_tab Dashboard; sleep 2; scroll_top
 connect_demo; sleep 2
 adb emu geo fix 151.2093 -33.8688 > /dev/null 2>&1
 adb logcat -c
+gps_hold 151.2093 -33.8688
 if record_set on; then
+  gps_release
   for i in $(seq 1 10); do adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
   for i in $(seq 1 12); do adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
+  gps_hold 151.2188 -33.8836
   # What GPS the second recording got, to compare with the first's if the routes don't match.
   adb shell dumpsys location > "$OUT/location-second.txt" 2>/dev/null
   # Give the app a moment to finish saving the recording: the comparison reads the saved file.
-  record_set off; sleep 4
+  record_set off; gps_release; sleep 2
   tap_tab Dashboard; disconnect_app; sleep 3
   shot 8a3-same-route
   adb logcat -d -s OBD2Route:I > "$OUT/same-route.txt" 2>/dev/null
@@ -741,6 +761,7 @@ if record_set on; then
   for k in 1 2 3; do adb shell input swipe 540 1800 540 700 300; done; sleep 1; shot 8a4-same-route-lines
   tap_text "Done" > /dev/null || adb shell input keyevent KEYCODE_BACK; sleep 1
 else
+  gps_release
   log "same route: FAILED (couldn't record a second drive)"; FAIL=1
 fi
 tap_tab Graphs; sleep 2
