@@ -1,0 +1,76 @@
+name: WIP check
+
+# Work-in-progress builds on the wip branch: compile, unit tests, and the emulator tour on the
+# freshly built APK. Nothing is released. Reports go to the wip-reports branch.
+on:
+  push:
+    branches: [wip]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: "17" }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: "8.7" }
+      - name: Build and test
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          gradle --no-daemon assembleDebug testDebugUnitTest 2>&1 | tee reports/build.log
+          cp app/build/outputs/apk/debug/*.apk OBD2Reader.apk
+      - name: Keep the build log
+        if: always()
+        run: |
+          mkdir -p reports; grep -E "^e: |^w: .*(MainActivity|Telemetry|CarSupport|Trip)|FAILED|error:" reports/build.log | sed 's#file:///home/runner/work/obd2-reader/obd2-reader/##' > reports/errors.txt || true
+          mkdir -p reports/tests; cp app/build/test-results/testDebugUnitTest/*.xml reports/tests/ 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: build, path: "reports/\nOBD2Reader.apk" }
+  emulator:
+    needs: build
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [29, 35]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with: { name: build }
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash .github/scripts/install-test.sh ${{ matrix.api }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: "emu-${{ matrix.api }}", path: reports/ }
+  report:
+    needs: [build, emulator]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: got }
+      - name: Push reports to wip-reports
+        run: |
+          git init -q out && cd out
+          git config user.name "wip-bot"; git config user.email "wip-bot@users.noreply.github.com"
+          cp -r ../got/* . 2>/dev/null || true
+          rm -f build/OBD2Reader.apk
+          git add -A && git commit -qm "WIP reports for ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:wip-reports
