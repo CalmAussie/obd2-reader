@@ -3223,7 +3223,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "2.3.0", "date": "11 November 2026", "text": "• Module codes on older Fords and Mazdas. Codes from other modules now works on 1996–2007 Fords and Mazdas that use J1850 PWM, such as the Tribute, Escape, Explorer and Ranger. It reads the ABS, instrument cluster and body modules straight away, and Search every address finds the rest. Many cheap clone adapters can't use J1850 PWM; a genuine ELM327 or OBDLink can.\n• The second network. On Fords and Mazdas, Search the second network reads the modules on pins 3 and 11 (cluster, body, climate, audio and doors) with adapters that can switch to it, such as OBDLink MX+ and EX. Other adapters are told plainly that they can't.\n• 1996–2000 Volvos. On the 850, S70, V70, C70 and XC70, Codes from other modules reads Volvo's own modules with its keyword D3 B0 protocol: engine, ABS, automatic transmission, instrument cluster, immobiliser, climate, alarm, power seats and auxiliary heater, with Volvo's code numbers (such as CI-221) and what they mean.\n• True mileage on those Volvos. Enhanced diagnostics shows the mileage stored in the instrument cluster, which stays right even when the dashboard odometer has stopped.\n• The new searches leave airbag modules alone, and all of them only read."};
+const CHANGES = {"version": "2.3.1", "date": "11 November 2026", "text": "• Swipe down to close settings. Units, Dashboard readouts, Widget readings, Android Auto readings, Where your car was sold and Protocol now open as sheets you can swipe down to close, like the rest of Diagnostics. When one opens another, each swipe closes one, so two swipes take you back to Diagnostics."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3874,20 +3874,23 @@ document.querySelector(".statusbar").addEventListener("click", () => {
   label();
   function pick(chosen) {
     const names = [1, 2, 3, 4].map(i => `Tile ${i + 2}`);
-    const s = overlay(`<h3>Android Auto readings</h3><p class="msg">Speed and engine speed always come first. Choose the four tiles after them.</p>${names.map((n, i) => `<button class="setting" data-slot="${i}" style="display:block;width:100%;text-align:left;margin-top:6px">${n}: <b>${info(chosen[i]).label}</b></button>`).join("")}<div class="btns"><button id="aReset">Reset</button><button id="aCancel">Cancel</button><button id="aSave">Save</button></div>`);
-    s.querySelectorAll("[data-slot]").forEach(b => b.onclick = () => {
-      const slot = +b.dataset.slot; closeOverlay();
-      const s2 = overlay(`<h3>${names[slot]}</h3>${choices.map(k => `<button class="radio" role="radio" aria-checked="${chosen[slot] === k}" data-k="${k}"><span class="c"></span><span class="n">${info(k).label}</span></button>`).join("")}`);
-      s2.querySelectorAll("[data-k]").forEach(r => r.onclick = () => {
+    const row = i => `<span>${names[i]}</span><b>${info(chosen[i]).label}</b>`;
+    const first = stackSheet(`<h2>Android Auto readings</h2><p class="msg">Speed and engine speed always come first. Choose the four tiles after them.</p>${names.map((n, i) => `<button class="setting place" data-slot="${i}">${row(i)}</button>`).join("")}<div class="btns"><button id="aReset">Reset</button><button id="aSave" class="primary">Save</button></div>`);
+    first.el.querySelectorAll("[data-slot]").forEach(b => b.onclick = () => {
+      const slot = +b.dataset.slot;
+      // The choices open on top: picking (or a swipe down) closes only this sheet.
+      const second = stackSheet(`<h2>${names[slot]}</h2>${choices.map(k => `<button class="radio" role="radio" aria-checked="${chosen[slot] === k}" data-k="${k}"><span class="c"></span><span class="n">${info(k).label}</span></button>`).join("")}`);
+      second.el.querySelectorAll("[data-k]").forEach(r => r.onclick = () => {
         const k = r.dataset.k, other = chosen.indexOf(k);
         if (other >= 0 && other !== slot) chosen[other] = chosen[slot]; // swap rather than show one twice
-        chosen[slot] = k; closeOverlay(); pick(chosen);
+        chosen[slot] = k;
+        first.el.querySelectorAll("[data-slot]").forEach(x => x.innerHTML = row(+x.dataset.slot));
+        second.close();
       });
     });
-    $("aCancel").onclick = closeOverlay;
-    const done = keys => { carKeys = keys; try { localStorage.setItem("carReadings", JSON.stringify(keys)); } catch (e) {} apply(); label(); closeOverlay(); renderCar(); };
-    $("aReset").onclick = () => done(DEF.slice());
-    $("aSave").onclick = () => { done(chosen.slice()); toast("The car's screen shows these now."); };
+    const done = keys => { carKeys = keys; try { localStorage.setItem("carReadings", JSON.stringify(keys)); } catch (e) {} apply(); label(); first.close(); renderCar(); };
+    first.el.querySelector("#aReset").onclick = () => done(DEF.slice());
+    first.el.querySelector("#aSave").onclick = () => { done(chosen.slice()); toast("The car's screen shows these now."); };
   }
   document.getElementById("autoRow").onclick = () => pick(carKeys.slice());
 })();
@@ -3913,6 +3916,35 @@ document.querySelector(".statusbar").addEventListener("click", () => {
       if (typeof updateCarSetting === "function") updateCarSetting();
     });
   };
+})();
+
+
+/* ===== 2.3.1: settings pickers are sheets that stack; a swipe down closes only the top one (mirrors MainActivity.choiceSheet) ===== */
+function stackSheet(html) {
+  const s = document.createElement("div");
+  s.className = "scrim stacked";
+  s.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"><div class="handle"></div>${html}</div>`;
+  const sheet = s.firstElementChild;
+  const close = () => { sheet.style.transition = "transform .2s ease"; sheet.style.transform = "translateY(110%)"; setTimeout(() => s.remove(), 200); };
+  s.addEventListener("click", e => { if (e.target === s) close(); });
+  // Drag down anywhere on the sheet (while it's scrolled to the top) to close it.
+  let y0 = null, dy = 0;
+  sheet.addEventListener("pointerdown", e => { if (sheet.scrollTop <= 0 && !e.target.closest("button")) { y0 = e.clientY; dy = 0; sheet.setPointerCapture(e.pointerId); } });
+  sheet.addEventListener("pointermove", e => { if (y0 == null) return; dy = Math.max(0, e.clientY - y0); sheet.style.transition = "none"; sheet.style.transform = `translateY(${dy}px)`; });
+  const end = () => { if (y0 == null) return; y0 = null; if (dy > 80) close(); else { sheet.style.transition = "transform .2s ease"; sheet.style.transform = ""; } };
+  sheet.addEventListener("pointerup", end); sheet.addEventListener("pointercancel", end);
+  $("phone").appendChild(s);
+  return { el: s, close };
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape") { const top = [...document.querySelectorAll(".scrim.stacked")].pop(); if (top) { e.stopImmediatePropagation(); top.remove(); } } }, true);
+(function () {
+  const st = document.createElement("style");
+  st.textContent = `.scrim.stacked .sheet{touch-action:pan-y;max-height:85%;overflow:auto}
+.scrim.stacked .setting.place{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;text-align:left}
+.scrim.stacked .setting.place b{color:var(--accent);font-weight:600}
+.scrim.stacked .btns{display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-top:18px}
+.scrim.stacked .btns .primary{background:var(--accent);color:var(--on-accent,#fff);border-radius:999px;padding:8px 18px}`;
+  document.head.appendChild(st);
 })();
 
 window.carReady = true;
