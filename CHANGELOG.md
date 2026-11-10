@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.3.0 (11 November 2026)
+- **Module codes on older Fords and Mazdas.** Codes from other modules now works on 1996–2007 Fords and Mazdas that use J1850 PWM, such as the Tribute, Escape, Explorer and Ranger. It reads the ABS, instrument cluster and body modules straight away, and Search every address finds the rest. Many cheap clone adapters can't use J1850 PWM; a genuine ELM327 or OBDLink can.
+- **The second network.** On Fords and Mazdas, Search the second network reads the modules on pins 3 and 11 (cluster, body, climate, audio and doors) with adapters that can switch to it, such as OBDLink MX+ and EX. Other adapters are told plainly that they can't.
+- Both new searches leave airbag modules alone, and both only read.
+
 ## 2.2.0 (10 November 2026)
 - **Boost pressure.** A new reading for turbocharged and supercharged cars: how far the manifold pressure is above the outside air. You can put it in a main readout, the Live data list, Graphs, the widget, Android Auto and recorded drives. Below zero is the engine's vacuum. It needs a car that reports manifold pressure; if the car doesn't report the outside air pressure, sea level is used and the reading is marked "est.".
 - **Pressure units.** Choose kPa, psi or bar under Diagnostics → Units, for boost and manifold pressure.

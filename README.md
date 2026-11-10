@@ -68,7 +68,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 - **Freeze frame:** the engine's readings at the moment a code was stored.
 - **Code report:** save or share all your codes with your mechanic.
 - **Battery checks:** how far the battery dips when starting, and an optional overnight drain check.
-- **Deeper checks:** readiness monitors, self-test results, and codes from ABS, airbags and other modules (on CAN cars).
+- **Deeper checks:** readiness monitors, self-test results, and codes from ABS, airbags and other modules (on CAN cars, and on 1996–2007 Fords and Mazdas). On Fords and Mazdas it can also read the second network on pins 3 and 11, with adapters that support it such as OBDLink MX+.
 - **VIN:** reads your car's VIN. You can enter the one on your plate if they differ.
 
 ## Styles

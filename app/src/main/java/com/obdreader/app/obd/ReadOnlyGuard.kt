@@ -5,7 +5,8 @@ import java.util.Locale
 /**
  * OBD2 Reader is read-only: it never changes anything in the car. Every command passes through
  * here before it reaches the adapter, and only the adapter's own settings (AT commands) and
- * OBD2 *read* services are let through.
+ * OBD2 *read* services are let through (and on STN adapters, the few ST commands that identify
+ * the adapter or switch which of the car's networks it listens to).
  *
  * Blocked, among everything else: service 04 (clear trouble codes and turn off the check-engine
  * light), service 08 (control on-board systems) and the UDS services workshop tools use to clear
@@ -30,6 +31,10 @@ object ReadOnlyGuard {
         // AT commands configure the ELM327 adapter itself and send nothing to the car, except
         // ATWM, which sets a message the adapter sends to the car on its own, so it's blocked.
         if (cmd.startsWith("AT")) return !cmd.startsWith("ATWM")
+        // STN adapters (OBDLink and others) add ST commands. Only these are let through: identify
+        // (STI, STDI), report the protocol (STPR, STPRS) and set it (STP 53 for the second network,
+        // then back). Every other ST command is blocked, including the ones that send raw messages.
+        if (cmd.startsWith("ST")) return cmd in setOf("STI", "STDI", "STPR", "STPRS") || Regex("STP[0-9]{1,2}").matches(cmd)
         if (cmd.length < 2 || !cmd.all { it in '0'..'9' || it in 'A'..'F' }) return false
         return cmd.substring(0, 2) in READ_SERVICES
     }

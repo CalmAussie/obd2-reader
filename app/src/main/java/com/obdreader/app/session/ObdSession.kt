@@ -569,17 +569,24 @@ object ObdSession {
      */
     suspend fun scanModules(context: Context): List<Pair<ModuleScan.Module, ModuleScan.Answer>>? {
         val c = client ?: throw IOException("Not connected")
+        if (ModuleScan.isFordPwm(carMake(context), _state.value.protocolCode)) return ModuleScan.Pwm.KNOWN.map { m -> m to readPwmModule(c, m) }
         if (!c.isCan) return null
         val modules = ModuleScan.modulesFor(carMake(context), AppPrefs.savedCar(AppPrefs.of(context))?.model, carIs29Bit())
         return modules.map { m -> m to readModule(c, m) }
     }
 
-    /** One module's codes. A 29-bit module on an 11-bit car is asked with the adapter briefly on the 29-bit form of the car's protocol. */
-    private suspend fun readModule(c: ElmClient, m: ModuleScan.Module): ModuleScan.Answer {
-        val switch = if (m.is29Bit && !carIs29Bit()) ModuleScan.protocolSwitch(_state.value.protocolCode) else null
+    /**
+     * One module's codes. A 29-bit module on an 11-bit car is asked with the adapter briefly on the
+     * 29-bit form of the car's protocol; [network] is the switch to and from the second network
+     * for a module that's on it.
+     */
+    private suspend fun readModule(c: ElmClient, m: ModuleScan.Module, network: Pair<String, String>? = null): ModuleScan.Answer {
+        val switch = network ?: if (m.is29Bit && !carIs29Bit()) ModuleScan.protocolSwitch(_state.value.protocolCode) else null
         if (m.is29Bit && !carIs29Bit() && switch == null) return ModuleScan.Answer.Silent
         val point = (listOfNotNull(switch?.first) + ModuleScan.pointAt(m)).map { it to 1500L }
-        val back = ModuleScan.pointBack(CarCoverage.defaultHeader(_state.value.protocolCode)) + listOfNotNull(switch?.second)
+        // Back to the car's own network first, then the usual header.
+        val back = if (network != null) listOf(network.second) + ModuleScan.pointBack(CarCoverage.defaultHeader(_state.value.protocolCode))
+            else ModuleScan.pointBack(CarCoverage.defaultHeader(_state.value.protocolCode)) + listOfNotNull(switch?.second)
         var answer = ModuleScan.parseUds(c.sequence(point + (ModuleScan.UDS_REQUEST to 3000L), back).last())
         if (answer is ModuleScan.Answer.Refused) {
             answer = ModuleScan.parseKwp(c.sequence(point + (ModuleScan.KWP_REQUEST to 3000L), back).last())
@@ -603,6 +610,7 @@ object ObdSession {
         progress: (Int, Int) -> Unit,
     ): List<Pair<ModuleScan.Module, ModuleScan.Answer>>? {
         val c = client ?: throw IOException("Not connected")
+        if (ModuleScan.isFordPwm(carMake(context), _state.value.protocolCode)) return searchPwmModules(c, already, progress)
         if (!c.isCan) return null
         val make = carMake(context)
         val bit29 = carIs29Bit()
@@ -632,6 +640,95 @@ object ObdSession {
             val m = ModuleScan.Module(ModuleScan.nameFor(make, req, bit29), req, reply)
             m to readModule(c, m)
         }
+    }
+
+    /**
+     * One module on a J1850 PWM Ford or Mazda: pointed at with its physical header, asked for its
+     * codes (Ford's 13, then 18 if it says no), and the adapter pointed back at the engine computer.
+     */
+    private suspend fun readPwmModule(c: ElmClient, m: ModuleScan.Module): ModuleScan.Answer {
+        val back = listOfNotNull(CarCoverage.defaultHeader("1")?.let { "ATSH $it" })
+        val point = listOf("ATSH ${m.request}" to 1500L)
+        var answer = ModuleScan.Pwm.parse(c.sequence(point + (ModuleScan.Pwm.REQUEST to 3000L), back).last())
+        if (answer !is ModuleScan.Answer.Codes) {
+            val second = ModuleScan.Pwm.parse(c.sequence(point + (ModuleScan.Pwm.STATUS_REQUEST to 3000L), back).last())
+            if (second is ModuleScan.Answer.Codes || answer is ModuleScan.Answer.Silent) answer = second
+        }
+        appendLog("= ${m.name} (${m.reply}): " + when (val a = answer) {
+            is ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) "no codes" else a.codes.joinToString(", ") { it.label }
+            ModuleScan.Answer.Refused -> "doesn't offer its codes this way"
+            ModuleScan.Answer.Silent -> "didn't answer"
+        })
+        return answer
+    }
+
+    /**
+     * "Search every address" on a J1850 PWM Ford or Mazda: every module address except the
+     * airbag (restraints) range, asked with a short wait, a block at a time.
+     */
+    private suspend fun searchPwmModules(c: ElmClient, already: Set<String>, progress: (Int, Int) -> Unit): List<Pair<ModuleScan.Module, ModuleScan.Answer>> {
+        val all = ModuleScan.Pwm.SEARCH
+        appendLog("= Searching every J1850 module address (${all.size}, airbags left out) with a read-only request")
+        val back = listOfNotNull("ATST 32", CarCoverage.defaultHeader("1")?.let { "ATSH $it" })
+        val found = mutableListOf<Int>()
+        var done = 0
+        for (block in all.chunked(16)) {
+            // A shorter wait than usual (about 150 ms): J1850 modules answer well within it.
+            val cmds = listOf("ATST 25" to 1000L) + block.flatMap { listOf("ATSH ${ModuleScan.Pwm.header(it)}" to 1000L, ModuleScan.Pwm.REQUEST to 1000L) }
+            val replies = c.sequence(cmds, back)
+            block.forEachIndexed { i, addr -> if (ModuleScan.Pwm.answered(replies[1 + i * 2 + 1])) found += addr }
+            done += block.size
+            progress(done, all.size)
+        }
+        appendLog("= Found ${found.size} answering: " + found.joinToString(", ") { String.format(java.util.Locale.US, "%02X", it) }.ifEmpty { "none" })
+        return found.map { ModuleScan.Pwm.module(it) }.filter { it.request !in already }.map { it to readPwmModule(c, it) }
+    }
+
+    /** The second network's result: the adapter can't reach it, or what answered there. */
+    sealed class SecondNetworkResult {
+        object AdapterCantReach : SecondNetworkResult()
+        data class Found(val modules: List<Pair<ModuleScan.Module, ModuleScan.Answer>>) : SecondNetworkResult()
+    }
+
+    /**
+     * Searches a Ford's or Mazda's second network (MS-CAN) for modules and reads their codes. Needs
+     * an STN adapter (OBDLink and others): it's switched to the second network for each block of
+     * requests and straight back to the car's own protocol after it, so live readings carry on in
+     * between. Airbag modules are never asked.
+     */
+    suspend fun searchSecondNetwork(progress: (Int, Int) -> Unit): SecondNetworkResult {
+        val c = client ?: throw IOException("Not connected")
+        val net = ModuleScan.SecondNetwork
+        if (!net.isStn(c.sequence(listOf(net.IDENTIFY to 1500L)).last())) {
+            appendLog("= Second network: the adapter isn't an STN adapter, so it can't switch to pins 3 and 11")
+            return SecondNetworkResult.AdapterCantReach
+        }
+        val own = net.protocolFrom(c.sequence(listOf(net.READ_PROTOCOL to 1500L)).last())
+            ?: return SecondNetworkResult.AdapterCantReach.also { appendLog("= Second network: the adapter didn't say which protocol it's on") }
+        val switch = net.SWITCH to net.switchBack(own)
+        val sweep = net.SWEEP
+        val defaultHeader = CarCoverage.defaultHeader(_state.value.protocolCode)
+        val setup = listOf(switch.first) + ModuleScan.sweepSetup(sweep)
+        val teardown = listOf(switch.second) + ModuleScan.sweepTeardown(defaultHeader)
+        appendLog("= Searching the second network (MS-CAN, ${sweep.requests.size} addresses, airbags left out) with a read-only request")
+        val found = linkedMapOf<String, String>()
+        var done = 0
+        for (block in sweep.requests.chunked(16)) {
+            val cmds = setup.map { it to 1500L } + block.flatMap { listOf(ModuleScan.sweepProbe(it) to 1000L, ModuleScan.UDS_REQUEST to 1000L) }
+            val replies = c.sequence(cmds, teardown)
+            if (net.refused(replies[0])) {
+                appendLog("= Second network: the adapter can't switch to it")
+                return SecondNetworkResult.AdapterCantReach
+            }
+            block.forEachIndexed { i, req ->
+                ModuleScan.answeringAddresses(replies[setup.size + i * 2 + 1], false).firstOrNull()?.let { if (req !in found) found[req] = it }
+            }
+            done += block.size
+            progress(done, sweep.requests.size)
+        }
+        appendLog("= Second network: ${found.size} answering: " + found.entries.joinToString(", ") { "${it.key}→${it.value}" }.ifEmpty { "none" })
+        val modules = found.map { (req, reply) -> ModuleScan.Module(net.nameFor(req), req, reply) }.filter { !ModuleScan.isAirbag(it) }
+        return SecondNetworkResult.Found(modules.map { it to readModule(c, it, switch) })
     }
 
     /**

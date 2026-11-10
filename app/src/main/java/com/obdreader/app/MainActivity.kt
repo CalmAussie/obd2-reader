@@ -1050,7 +1050,7 @@ open class MainActivity : AppCompatActivity() {
         val make = ObdSession.carMake(this); val year = ObdSession.carYear(this)
         infoSheet(getString(R.string.modules_title)) { heading, line, body ->
             if (results == null) {
-                line("Other modules are read on CAN cars. This car uses an older protocol, where only the engine computer can be reached with a standard adapter.", true)
+                line("Other modules are read on CAN cars (most from 2008), and on Fords and Mazdas that use J1850. This car uses an older protocol, where only the engine computer can be reached with a standard adapter.", true)
                 return@infoSheet
             }
             val all = results + found.orEmpty()
@@ -1081,6 +1081,13 @@ open class MainActivity : AppCompatActivity() {
                 }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16f).toInt() })
                 line(getString(R.string.modules_search_help), true)
             }
+            if (ModuleScan.SecondNetwork.offeredFor(make, ObdSession.state.value.protocolCode)) {
+                body.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                    text = getString(R.string.modules_second); setTextColor(themeColor(R.attr.obdAccent))
+                    setOnClickListener { searchSecondNetwork() }
+                }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16f).toInt() })
+                line(getString(R.string.modules_second_help), true)
+            }
             heading("About this")
             line("Read-only: the app asks each module for its codes and never clears them. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true)
         }
@@ -1107,6 +1114,60 @@ open class MainActivity : AppCompatActivity() {
                 // A known module that was silent before but answered the search moves to the found list.
                 val foundReq = found.orEmpty().map { it.first.request }.toSet()
                 moduleSheet(results.filter { it.first.request !in foundReq }, found.orEmpty())
+            } catch (e: CancellationException) { throw e } catch (e: Exception) {
+                wait.dismiss(); toast("The car stopped answering. Try again.")
+            }
+        }
+    }
+
+    /** "Search the second network" (Fords and Mazdas, STN adapters), with a progress bar, then its own sheet. */
+    private fun searchSecondNetwork() {
+        if (!ObdSession.state.value.isConnected) { toast("Connect to your car first."); return }
+        currentSheet?.dismiss()
+        val bar = com.google.android.material.progressindicator.LinearProgressIndicator(this).apply {
+            isIndeterminate = false; max = 100; setPadding(dp(24f).toInt(), dp(16f).toInt(), dp(24f).toInt(), dp(8f).toInt())
+        }
+        val wait = MaterialAlertDialogBuilder(this).setTitle(R.string.modules_second).setView(bar)
+            .setMessage("Asking every module address on the second network in turn. This takes about a minute.").setCancelable(false).show()
+        lifecycleScope.launch {
+            try {
+                val result = ObdSession.searchSecondNetwork { done, total ->
+                    runOnUiThread { bar.setProgressCompat(if (total == 0) 100 else done * 100 / total, true) }
+                }
+                wait.dismiss()
+                val make = ObdSession.carMake(this@MainActivity); val year = ObdSession.carYear(this@MainActivity)
+                when (result) {
+                    ObdSession.SecondNetworkResult.AdapterCantReach -> {
+                        android.util.Log.i("OBD2Deep", "second network: adapter can't reach it")
+                        infoSheet(getString(R.string.modules_second)) { _, line, _ ->
+                            line("Your adapter can't switch to the second network. Adapters built on STN chips can, such as OBDLink MX+ and OBDLink EX; most cheap ELM327 adapters can't.", false)
+                            line("Everything else in Deeper checks still works with your adapter.", true)
+                        }
+                    }
+                    is ObdSession.SecondNetworkResult.Found -> {
+                        logModules(result.modules, "second network")
+                        infoSheet(getString(R.string.modules_second)) { heading, line, _ ->
+                            val total = result.modules.sumOf { (it.second as? ModuleScan.Answer.Codes)?.codes?.size ?: 0 }
+                            line(when {
+                                result.modules.isEmpty() -> "No modules answered on the second network. Your car may not have one, or its modules don't share their codes this way."
+                                total == 0 -> "${result.modules.size} ${if (result.modules.size == 1) "module" else "modules"} answered, with no codes."
+                                else -> "$total ${if (total == 1) "code" else "codes"} found."
+                            }, false)
+                            result.modules.forEach { (m, a) ->
+                                heading(m.name)
+                                when (a) {
+                                    is ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) line("No codes", true) else a.codes.forEach { c ->
+                                        line("${c.label}  ${DtcLibrary.lookup(c.code, make, year).title}" + if (c.pending && !c.confirmed) " (pending)" else " (stored)", false)
+                                    }
+                                    ModuleScan.Answer.Refused -> line("Answered, but doesn't share its codes this way.", true)
+                                    ModuleScan.Answer.Silent -> line("Didn't answer when asked for its codes.", true)
+                                }
+                            }
+                            heading("About this")
+                            line("Read-only: the app asks each module for its codes and never clears them. The airbag module is never asked.", true)
+                        }
+                    }
+                }
             } catch (e: CancellationException) { throw e } catch (e: Exception) {
                 wait.dismiss(); toast("The car stopped answering. Try again.")
             }

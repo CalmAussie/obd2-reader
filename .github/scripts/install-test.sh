@@ -906,6 +906,22 @@ if tap_scrolled "Codes from other modules"; then
   adb shell input keyevent KEYCODE_BACK; sleep 2
 fi
 [ $SEARCH = 1 ] && log "module search: found Module at 7A0" || { log "module search: FAILED ($(tail -1 "$OUT/deep-search.txt" 2>/dev/null | cut -c1-120))"; FAIL=1; }
+# Second network: the demo adapter answers like an OBDLink, and its cluster has B1342 stored there.
+SECOND=0
+diag_top
+adb logcat -c
+if tap_scrolled "Codes from other modules"; then
+  sleep 8
+  if tap_scrolled "Search the second network"; then
+    for i in $(seq 1 45); do
+      adb logcat -d -s OBD2Deep:I > "$OUT/deep-second.txt" 2>/dev/null
+      grep -q "second network: .*Instrument cluster=B1342" "$OUT/deep-second.txt" && { SECOND=1; break; }; sleep 3
+    done
+    sleep 2; shot 13b-second-network
+  fi
+  adb shell input keyevent KEYCODE_BACK; sleep 2
+fi
+[ $SECOND = 1 ] && log "second network: cluster code read" || { log "second network: FAILED ($(tail -1 "$OUT/deep-second.txt" 2>/dev/null | cut -c1-120))"; FAIL=1; }
 # App icon: choosing Cobalt switches the home-screen entry to its icon; then back to Racing green.
 icon_entry() { adb shell dumpsys package $PKG 2>/dev/null | sed -n '/enabledComponents:/,/disabledComponents:/p' | grep -oE "$PKG\.(Icon[A-Za-z]+|MainActivity)" | head -1; }
 ICON=fail

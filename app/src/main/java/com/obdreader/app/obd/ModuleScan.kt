@@ -229,6 +229,143 @@ object ModuleScan {
     fun nameFor(make: String?, request: String, carIs29Bit: Boolean): String =
         modulesFor(make, null, carIs29Bit).firstOrNull { it.request == request }?.name ?: "Module at $request"
 
+    // ---- Airbags: never asked by the newer searches ----
+
+    /**
+     * Ford's airbag (restraint) module addresses. The J1850 search and the second-network search skip
+     * them, and never ask anything of a module whose name says it's an airbag module. (Reading
+     * codes can't set an airbag off, but these modules are left alone all the same.)
+     */
+    private val AIRBAG_CAN = setOf("737", "765")
+    fun isAirbag(m: Module): Boolean =
+        m.request in AIRBAG_CAN || m.name.contains("airbag", ignoreCase = true) || m.name.contains("restraint", ignoreCase = true) || m.name.contains("SRS")
+
+    // ---- Older Fords and Mazdas: J1850 PWM (protocol 1) ----
+
+    /**
+     * Fords and Mazdas from 1996 to about 2007 talk OBD2 on J1850 PWM, and their other modules
+     * sit on the same wires. Each has a one-byte physical address, assigned by range in SAE
+     * J2178: brakes 28–2F, body 40–57, restraints 58–5F, driver information 60–6F, and so on.
+     * A module is asked with header C4 <address> F1 (physical addressing, from the tester at F1).
+     * The restraints range (airbags) is never asked.
+     */
+    object Pwm {
+        val AIRBAGS = 0x58..0x5F
+        /** Every address the search asks: modules start at 10; F0 and up are testers. */
+        val SEARCH: List<Int> = (0x10..0xEF).filter { it !in AIRBAGS }
+
+        fun header(address: Int) = String.format(Locale.US, "C4%02XF1", address)
+        fun module(address: Int) = Module(nameFor(address), header(address), String.format(Locale.US, "%02X", address))
+
+        /** The ones worth asking straight away: the ABS and the instrument cluster. */
+        val KNOWN: List<Module> = listOf(module(0x28), module(0x60), module(0x40))
+
+        /** What a module at [address] is, from the SAE J2178 address ranges. */
+        fun nameFor(address: Int): String = when (address) {
+            in 0x10..0x17 -> "Engine computer (PCM)"
+            in 0x18..0x1F -> "Transmission"
+            in 0x20..0x27 -> "Drivetrain (4WD/AWD)"
+            in 0x28..0x2F -> "ABS and traction control"
+            in 0x30..0x37 -> "Power steering"
+            in 0x38..0x3F -> "Suspension"
+            in 0x40..0x57 -> "Body / general electronics"
+            in 0x60..0x6F -> "Instrument cluster"
+            in 0x70..0x7F -> "Lighting"
+            in 0x80..0x8F -> "Audio"
+            in 0x90..0x97 -> "Phone"
+            in 0x98..0x9F -> "Climate control"
+            in 0xA0..0xBF -> "Doors, seats and mirrors"
+            in 0xC0..0xC7 -> "Security (anti-theft)"
+            else -> String.format(Locale.US, "Module at %02X", address)
+        }
+
+        /** Ford's "read trouble codes" requests on J1850: all groups (FF), then by status. */
+        const val REQUEST = "13FF00"
+        const val STATUS_REQUEST = "1800FF00"
+
+        /** Whether [lines] answered a request at all (positive, or a "no"), so the search knows a module is there. */
+        fun answered(lines: List<String>): Boolean = rows(lines).any { it[0] == 0x53 || it[0] == 0x58 || (it[0] == 0x7F && it.size >= 2 && (it[1] == 0x13 || it[1] == 0x18)) }
+
+        /**
+         * A module's answer to [REQUEST]: each frame is 53 then two-byte codes (00 00 is padding),
+         * or to [STATUS_REQUEST]: 58, then three bytes per code (code, status), with a count first.
+         * KWP-style status bytes vary by maker, so every listed code is shown as stored.
+         */
+        fun parse(lines: List<String>): Answer {
+            val rows = rows(lines)
+            if (rows.isEmpty()) return Answer.Silent
+            val codes = mutableListOf<Code>()
+            var positive = false
+            for (r in rows) when (r[0]) {
+                0x53 -> { positive = true; r.drop(1).chunked(2).filter { it.size == 2 && !(it[0] == 0 && it[1] == 0) }.forEach { codes += Code(decode(it[0], it[1]), true, false, null) } }
+                0x58 -> {
+                    positive = true
+                    val rest = r.drop(1).let { if (it.size % 3 == 1) it.drop(1) else it }
+                    rest.chunked(3).filter { it.size == 3 && !(it[0] == 0 && it[1] == 0) }.forEach { codes += Code(decode(it[0], it[1]), true, false, null) }
+                }
+            }
+            if (!positive) return if (rows.any { it[0] == 0x7F }) Answer.Refused else Answer.Silent
+            return Answer.Codes(codes.distinctBy { it.label })
+        }
+
+        /** Data lines as bytes (headers off), leaving out the adapter's own messages. */
+        private fun rows(lines: List<String>): List<List<Int>> = lines.map { it.replace(" ", "").uppercase(Locale.US) }
+            .filter { it.length >= 2 && it.length % 2 == 0 && it.all { c -> c in '0'..'9' || c in 'A'..'F' } }
+            .map { ElmParser.toBytes(it).toList() }
+    }
+
+    /** True for a car on J1850 PWM ([protocolCode] 1) whose make is a Ford or Mazda. */
+    fun isFordPwm(make: String?, protocolCode: String?): Boolean =
+        Family.of(make) == Family.FORD && protocolCode?.trim()?.uppercase(Locale.US)?.removePrefix("A") == "1"
+
+    // ---- The second network (medium-speed CAN on pins 3 and 11) ----
+
+    /**
+     * Fords and Mazdas put the cluster, body, climate, audio and door modules on a slower second
+     * network (MS-CAN, 125 kbit/s) wired to pins 3 and 11 of the OBD2 port. A plain ELM327 can't
+     * reach it; adapters built on STN chips (OBDLink MX+, EX and others) can, with STP 53. The car
+     * is switched back to its own protocol (read with STPR) after every block of requests.
+     */
+    object SecondNetwork {
+        const val IDENTIFY = "STI"
+        const val READ_PROTOCOL = "STPR"
+        const val SWITCH = "STP 53"
+        fun switchBack(protocol: String) = "STP $protocol"
+
+        /** Offered for Fords and Mazdas, on CAN or J1850 PWM cars. */
+        fun offeredFor(make: String?, protocolCode: String?): Boolean {
+            val p = protocolCode?.trim()?.uppercase(Locale.US)?.removePrefix("A")
+            return Family.of(make) == Family.FORD && p in setOf("1", "6", "7", "8", "9")
+        }
+
+        /** True when the adapter said it's an STN chip (answer to STI, e.g. "STN2120 v5.6.19"). */
+        fun isStn(lines: List<String>): Boolean = lines.any { it.uppercase(Locale.US).contains("STN") }
+
+        /** The STN protocol number from STPR ("31"), or null if the adapter didn't give one. */
+        fun protocolFrom(lines: List<String>): String? = lines.firstNotNullOfOrNull { l -> l.trim().takeIf { it.length in 1..2 && it.all(Char::isDigit) } }
+
+        /** The adapter refused a command ("?") or doesn't know it. */
+        fun refused(lines: List<String>): Boolean = lines.isEmpty() || lines.any { it.trim() == "?" || it.contains("ERROR", ignoreCase = true) }
+
+        /** Every 11-bit module address, without the OBD2 ones and the airbag modules. */
+        val SWEEP = Sweep((0x700..0x7F7).filter { it != 0x7DF && it !in 0x7E0..0x7EF && hex3(it) !in AIRBAG_CAN }.map(::hex3), "700", "700")
+
+        /** Ford's names for the modules on its second network. */
+        fun nameFor(request: String): String = when (request) {
+            "720" -> "Instrument cluster"
+            "726" -> "Body / general electronics"
+            "727" -> "Audio"
+            "733" -> "Climate control"
+            "736" -> "Parking sensors"
+            "740" -> "Driver's door"
+            "741" -> "Passenger door"
+            "744" -> "Driver's seat"
+            "7A5" -> "Front controls (FCIM)"
+            "7D0" -> "Infotainment (SYNC)"
+            else -> "Module at $request"
+        }
+    }
+
     /** Requests, in the order to try them: UDS first, then KWP2000. */
     const val UDS_REQUEST = "1902FF"
     const val KWP_REQUEST = "1800FF00"

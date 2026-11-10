@@ -51,6 +51,10 @@ class DemoTransport(
             cmd.startsWith("ATSH") -> { header = cmd.substring(4); "OK" }
             cmd == "ATH1" || cmd == "ATH0" -> { headers = cmd == "ATH1"; "OK" }
             cmd.startsWith("AT") -> "OK"
+            // An STN adapter (like an OBDLink), so the second-network search can be tried.
+            cmd == "STI" -> "STN2120 v5.6.19"
+            cmd == "STPR" -> if (msCan) "53" else "31"
+            cmd.startsWith("STP") -> { msCan = cmd == "STP53"; "OK" }
             // Readiness: check-engine light on with 2 codes; all monitors done except the evaporative system.
             cmd == "0101" -> "410182076504"
             cmd == "0904" -> "490401" + "1L8A-14C204-AAA".padEnd(16, '\u0000').map { String.format(Locale.US, "%02X", it.code) }.joinToString("")
@@ -131,13 +135,20 @@ class DemoTransport(
     }
 
     private var header = "7DF"
+    /** On the second network (MS-CAN): only the cluster and body module answer there. */
+    @Volatile private var msCan = false
     @Volatile private var headers = false
 
     /**
      * Other modules: the ABS has a stored code, the airbag module and the transmission have none,
-     * and one module the car's make isn't known for (at 7A0) answers the search with none.
+     * and one module the car's make isn't known for (at 7A0) answers the search with none. On the
+     * second network, the instrument cluster has a stored code and the body module none.
      */
-    private fun moduleCodes(h: String): String? = when (h) {
+    private fun moduleCodes(h: String): String? = if (msCan) when (h) {
+        "720" -> "5902FF93420008" // the instrument cluster: B1342 stored
+        "726" -> "5902FF"
+        else -> null
+    } else when (h) {
         "760" -> "5902FF51451C0A"
         "737", "7E1", "7A0" -> "5902FF"
         "7E0", "7DF" -> "5902FF0133000801710004"
