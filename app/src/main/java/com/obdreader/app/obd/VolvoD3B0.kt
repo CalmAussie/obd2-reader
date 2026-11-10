@@ -42,9 +42,17 @@ object VolvoD3B0 {
 
     const val READ_CODES = "AE01"
     const val READ_MILEAGE = "B903"
+    /** Some 1996–97 850 clusters want the request padded, on a 4-byte header (84 51 13). */
+    const val READ_MILEAGE_PADDED = "B90300"
 
-    /** The only Volvo requests that may be sent: both only read. */
-    val ALLOWED_REQUESTS = setOf(READ_CODES, READ_MILEAGE)
+    /** The only Volvo requests that may be sent: all only read. */
+    val ALLOWED_REQUESTS = setOf(READ_CODES, READ_MILEAGE, READ_MILEAGE_PADDED)
+
+    /** Engine modules: when neither answers, the engine is one that only speaks standard OBD2 (Motronic 4.3 and others). */
+    val ENGINES = setOf("7A", "11")
+
+    /** True when the adapter refused Volvo's wake-up address command (ATIIA), so it can't reach these modules. */
+    fun adapterRefused(reply: List<String>): Boolean = reply.any { it.trim() == "?" }
 
     /** The tester-present message the ELM327 sends every few seconds to keep a module awake. */
     fun keepAlive(address: String) = "ATWM 82 $address 13 A1"
@@ -70,6 +78,8 @@ object VolvoD3B0 {
     fun pointAt(m: Module): List<String> = listOf(
         "ATPC", "ATSP 3", "ATH1", "ATAL", "ATKW0", "ATSR 13", "ATST FF", "ATIIA ${m.init}", keepAlive(m.address), "ATSH 83 ${m.address} 13",
     )
+    /** The cluster again, on the 4-byte header some 1996–97 850s need for the padded mileage request. */
+    val COMBI_PADDED_HEADER = "ATSH 84 51 13"
     val POINT_BACK = listOf("ATPC", "ATIIA 33", "ATWM 68 6A F1 01 00", "ATSH 68 6A F1", "ATAR", "ATKW1", "ATNL", "ATST 32", "ATH0")
 
     /** One message from a module: who sent it and its data (without header and checksum). */

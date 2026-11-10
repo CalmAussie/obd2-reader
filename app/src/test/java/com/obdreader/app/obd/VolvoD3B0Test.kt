@@ -62,6 +62,7 @@ class VolvoD3B0Test {
     @Test fun guardLetsOnlyVolvoReadsThrough() {
         assertTrue(ReadOnlyGuard.isAllowed("AE01"))
         assertTrue(ReadOnlyGuard.isAllowed("B903"))
+        assertTrue(ReadOnlyGuard.isAllowed("B90300"))
         assertTrue(ReadOnlyGuard.isAllowed("ATWM 82 51 13 A1"))
         assertTrue(ReadOnlyGuard.isAllowed("ATWM 68 6A F1 01 00"))
         assertTrue(ReadOnlyGuard.isAllowed("ATIIA 51"))
@@ -71,5 +72,10 @@ class VolvoD3B0Test {
         assertFalse(ReadOnlyGuard.isAllowed("A0"))
         assertFalse(ReadOnlyGuard.isAllowed("ATWM 82 51 13 AF 01"))
         assertFalse(ReadOnlyGuard.isAllowed("ATWM 81 51 13 B0"))
+    }
+
+    @Test fun adapterThatCantWakeVolvoModules() {
+        assertTrue(VolvoD3B0.adapterRefused(listOf("?")))
+        assertFalse(VolvoD3B0.adapterRefused(listOf("OK")))
     }
 }

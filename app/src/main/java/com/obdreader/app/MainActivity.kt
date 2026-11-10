@@ -1066,11 +1066,29 @@ open class MainActivity : AppCompatActivity() {
                     ModuleScan.Answer.Silent -> line("Didn't answer: not fitted, or on a part of the car's network the adapter can't reach.", true)
                 }
             }
-            show(results)
-            if (ObdSession.isVolvoD3B0(this)) {
+            val volvo = ObdSession.isVolvoD3B0(this)
+            if (!volvo) show(results)
+            if (volvo) {
+                // Only the modules this car has: the rest are listed together, not one "didn't answer" each.
+                val answered = results.filter { it.second !is ModuleScan.Answer.Silent }
+                if (ObdSession.volvoAdapterRefused) {
+                    line("Your adapter can't wake Volvo's own modules: it doesn't support the command they need, which many cheap clones leave out. Adapters that can: OBDLink (MX+, LX, EX), BAFX and Veepeak OBDCheck BLE+. Everything else in the app still works with your adapter.", false)
+                } else {
+                    show(answered)
+                    if (answered.none { it.first.request in com.obdreader.app.obd.VolvoD3B0.ENGINES }) {
+                        heading("Engine")
+                        line("Your engine's codes are on the Diagnostics tab. This engine (such as the turbo 850's Motronic 4.3) reports them with standard OBD2 rather than Volvo's own protocol, and the app reads those on every car.", true)
+                    }
+                    if (answered.none { it.first.request == com.obdreader.app.obd.VolvoD3B0.COMBI.address }) {
+                        heading(com.obdreader.app.obd.VolvoD3B0.COMBI.name)
+                        line("Didn't answer. Some 1996–97 850s have a Yazaki-made cluster that doesn't talk through the OBD2 port; its warning lights still work as normal.", true)
+                    }
+                    val skip = com.obdreader.app.obd.VolvoD3B0.ENGINES + com.obdreader.app.obd.VolvoD3B0.COMBI.address
+                    val missing = results.filter { it.second is ModuleScan.Answer.Silent && it.first.request !in skip }
+                    if (missing.isNotEmpty()) line("Not on this car (or not answering): " + missing.joinToString(", ") { it.first.name } + ".", true)
+                }
                 heading("About Volvo module codes")
                 line("Read with Volvo's own keyword D3 B0 protocol, which these 1996–2000 cars use. The airbag module is never asked. Code meanings come from Volvo owners' work (jonesrh.info) and aren't Volvo's official list.", true)
-                line("If no module answers, your adapter probably can't do Volvo's wake-up: many cheap clones can't. An OBDLink, BAFX or genuine ELM327 can. Turbo 850s with Motronic 4.3 don't answer for the engine, and some 1996–97 850s with a Yazaki cluster don't answer for the cluster.", true)
             } else if (found != null) {
                 body.addView(TextView(this).apply {
                     text = "Found by searching"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
@@ -1207,7 +1225,9 @@ open class MainActivity : AppCompatActivity() {
                     }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
                     addView(TextView(this@MainActivity).apply { text = odo; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f); setTextColor(themeColor(R.attr.obdAccent)) })
                 })
-                line(if (volvoKm == null) "The instrument cluster didn't answer. Some adapters can't wake Volvo's modules; an OBDLink or a genuine ELM327 can." else "The mileage the instrument cluster has stored, counted in 10-mile steps, so it's right to within 10 miles (16 km) even if the dashboard odometer has stopped. A replaced cluster shows its own mileage.", true)
+                line(if (volvoKm == null && ObdSession.volvoAdapterRefused) "Your adapter can't wake Volvo's instrument cluster (many cheap clones can't). An OBDLink, BAFX or Veepeak OBDCheck BLE+ can."
+                    else if (volvoKm == null) "Your instrument cluster didn't share its mileage. Some 1996–97 850s have a Yazaki-made cluster that doesn't give it out through the OBD2 port at all, so no app can read it there; the mileage is still on the dashboard."
+                    else "The mileage the instrument cluster has stored, counted in 10-mile steps, so it's right to within 10 miles (16 km) even if the dashboard odometer has stopped. A replaced cluster shows its own mileage.", true)
             }
             when {
                 volvo && tried.isEmpty() -> {}

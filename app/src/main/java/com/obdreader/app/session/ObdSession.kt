@@ -660,6 +660,9 @@ object ObdSession {
         appendLog("= Volvo keyword D3 B0: reading ${v.MODULES.size} modules' codes (the airbag module is left alone)")
         val cmds = v.MODULES.flatMap { m -> v.pointAt(m).map { it to 2000L } + (v.READ_CODES to 8000L) }
         val replies = c.sequence(cmds, v.POINT_BACK)
+        val iiaAt = v.pointAt(v.MODULES.first()).indexOfFirst { it.startsWith("ATIIA") }
+        volvoAdapterRefused = v.adapterRefused(replies[iiaAt])
+        if (volvoAdapterRefused) appendLog("= The adapter doesn't know ATIIA, so it can't wake Volvo's modules")
         var i = 0
         return v.MODULES.map { m ->
             i += v.pointAt(m).size
@@ -674,12 +677,21 @@ object ObdSession {
         }
     }
 
-    /** The Volvo instrument cluster's stored mileage in km (the true distance, to within 16 km), or null. */
+    /** True when the adapter refused Volvo's wake-up command in the last Volvo read (a clone that can't do it). */
+    @Volatile var volvoAdapterRefused = false
+        private set
+
+    /**
+     * The Volvo instrument cluster's stored mileage in km (the true distance, to within 16 km), or
+     * null. Asked as B9 03 first, then padded on a 4-byte header, which some 1996–97 850s need.
+     */
     suspend fun readVolvoMileage(): Double? {
         val c = client ?: throw IOException("Not connected")
         val v = com.obdreader.app.obd.VolvoD3B0
-        val lines = c.sequence(v.pointAt(v.COMBI).map { it to 2000L } + (v.READ_MILEAGE to 8000L), v.POINT_BACK).last()
-        return v.mileageKm(lines).also { appendLog("= Instrument cluster mileage: " + (it?.let { km -> String.format(java.util.Locale.US, "%.0f km", km) } ?: "no answer")) }
+        val point = v.pointAt(v.COMBI)
+        val replies = c.sequence(point.map { it to 2000L } + (v.READ_MILEAGE to 8000L) + (v.COMBI_PADDED_HEADER to 2000L) + (v.READ_MILEAGE_PADDED to 8000L), v.POINT_BACK)
+        volvoAdapterRefused = v.adapterRefused(replies[point.indexOfFirst { it.startsWith("ATIIA") }])
+        return (v.mileageKm(replies[point.size]) ?: v.mileageKm(replies[point.size + 2])).also { appendLog("= Instrument cluster mileage: " + (it?.let { km -> String.format(java.util.Locale.US, "%.0f km", km) } ?: "no answer")) }
     }
 
     /**
