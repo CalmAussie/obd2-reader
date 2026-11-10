@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.0.1 (10 November 2026)
+- **Speeds of 100 and over fit every style.** Retro digital always shows three digit cells, like a real digital dash, and Hairline's big speed shrinks a little to stay clear of the dial's numbers. Every style, Android Auto, the widget and picture-in-picture were checked at 188 km/h.
+- **Recorded routes start in the right place.** When you started recording, the phone could hand over an old position it remembered from earlier (even somewhere else), which then began the route there. Only fresh positions are used now.
+- **Android Auto shows the app's current icon.** If it still shows an old one, restart your phone: Android Auto keeps its own copy of app icons until then.
+
 ## 2.0.0 (6 November 2026)
 - **OBD2 Reader 2.0.** The first version shared publicly. It's a free, read-only app for cheap ELM327 adapters: live engine data, trouble codes explained in plain English, driving scores, drive recording and video overlays, a home-screen widget, picture-in-picture and Android Auto, in 13 styles.
 - Nothing new to learn if you're updating: your car, style, drives and settings carry over as they are.

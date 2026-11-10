@@ -29,7 +29,12 @@ object LocationFeed {
     private var manager: LocationManager? = null
     private val listener = object : LocationListener {
         override fun onLocationChanged(l: Location) {
-            latest = Fix(l.latitude, l.longitude, if (l.hasAccuracy()) l.accuracy else null, SystemClock.elapsedRealtime())
+            // Aged by when the position was measured, not when it arrived: when updates start, the
+            // phone can hand over a position it remembered from earlier (even hours ago, somewhere
+            // else), which would otherwise begin the route there. One that's already too old is ignored.
+            val measuredAt = l.elapsedRealtimeNanos / 1_000_000
+            if (SystemClock.elapsedRealtime() - measuredAt > MAX_AGE_MS) return
+            latest = Fix(l.latitude, l.longitude, if (l.hasAccuracy()) l.accuracy else null, measuredAt)
         }
         @Deprecated("Needed on Android 9 and older") override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
         override fun onProviderEnabled(provider: String) {}
