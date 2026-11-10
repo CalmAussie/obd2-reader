@@ -13,9 +13,12 @@ import androidx.car.app.model.Template
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.obdreader.app.obd.Boost
+import com.obdreader.app.obd.CarReadings
 import com.obdreader.app.obd.DemoTransport
 import com.obdreader.app.obd.Pids
 import com.obdreader.app.obd.Units
+import com.obdreader.app.session.AppPrefs
 import com.obdreader.app.session.DriveScorer
 import com.obdreader.app.session.ObdSession
 import com.obdreader.app.ui.SmoothValue
@@ -44,25 +47,40 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
         val smooth = SmoothValue(tauMs = 140f, settle = if (decimals > 0) 0.05f else 0.5f, maxStepMs = 300L, firstStepMs = REFRESH_MS)
     }
 
-    private val tiles: List<Tile> by lazy {
-        fun pid(n: Int) = Pids.dashboard.first { it.number == n }
-        // In the chosen units (mph, °F), like the phone.
-        fun tile(n: Int, title: String, max: Float? = null, warn: Float? = null) = pid(n).let {
+    private var tilesFor: String? = null
+    private var tiles: List<Tile> = emptyList()
+
+    /** Speed and engine speed, then the four chosen readings (Diagnostics → Android Auto readings). */
+    private fun buildTiles(chosen: List<String>): List<Tile> {
+        // In the chosen units (mph, °F, psi), like the phone.
+        fun u(k: String, v: Double) = Units.value(k, v).toFloat()
+        fun pidTile(n: Int, title: String, max: Float? = null, warn: Float? = null) = Pids.dashboard.first { it.number == n }.let {
             val k = it.hex
-            fun u(v: Double) = Units.value(k, v).toFloat()
-            Tile(k, title, Units.unit(k, it.unit), it.decimals, u(it.min), max?.let { m -> u(m.toDouble()) } ?: u(it.max), warn ?: it.warnAbove?.let { w -> u(w) })
+            Tile(k, title, Units.unit(k, it.unit), Units.decimals(k, it.decimals), u(k, it.min), max?.let { m -> u(k, m.toDouble()) } ?: u(k, it.max), warn ?: it.warnAbove?.let { w -> u(k, w) })
+        }
+        fun tile(k: String): Tile = when (k) {
+            ObdSession.VOLTAGE_KEY -> Tile(k, "Battery", "V", 1, 11f, 15f, null)
+            Boost.KEY -> Tile(k, Boost.LABEL, Units.unit(k, "kPa"), Units.decimals(k, 0), u(k, Boost.MIN), u(k, Boost.MAX), null)
+            else -> Pids.dashboard.first { it.hex == k }.let { pidTile(it.number, SHORT[k] ?: it.label) }
         }
         // The rev roundel follows the car's engine, as the phone's dial does.
-        val rec = com.obdreader.app.session.AppPrefs.savedCar(com.obdreader.app.session.AppPrefs.of(carContext))?.let { com.obdreader.app.obd.VehicleCatalog.recommend(it) }
-        listOf(
+        val rec = AppPrefs.savedCar(AppPrefs.of(carContext))?.let { com.obdreader.app.obd.VehicleCatalog.recommend(it) }
+        return listOf(
             // Speed first, so engine speed sits top centre of the grid in every style.
-            tile(Pids.SPEED, "Speed", 240f),
-            tile(Pids.RPM, "Engine speed", max = com.obdreader.app.obd.VehicleCatalog.dialMax(rec?.redline).toFloat(), warn = (rec?.redline ?: 6500).toFloat()),
-            tile(0x05, "Coolant"),
-            tile(0x11, "Throttle"),
-            tile(0x2F, "Fuel"),
-            Tile(ObdSession.VOLTAGE_KEY, "Battery", "V", 1, 11f, 15f, null),
-        )
+            pidTile(Pids.SPEED, "Speed", 240f),
+            pidTile(Pids.RPM, "Engine speed", max = com.obdreader.app.obd.VehicleCatalog.dialMax(rec?.redline).toFloat(), warn = (rec?.redline ?: 6500).toFloat()),
+        ) + chosen.map { tile(it) }
+    }
+
+    /** The tiles, rebuilt when the chosen readings change (new titles count as a new template, so only then). */
+    private fun currentTiles(): List<Tile> {
+        val saved = AppPrefs.of(carContext).getString(AppPrefs.CAR_READINGS, null).orEmpty()
+        if (saved != tilesFor || tiles.isEmpty()) {
+            tiles = buildTiles(CarReadings.decode(saved))
+            tilesFor = saved
+            carTiles.reset()
+        }
+        return tiles
     }
 
     private val carTiles = CarTiles(carContext)
@@ -99,6 +117,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
     override fun onGetTemplate(): Template {
         val s = ObdSession.state.value
         val now = SystemClock.uptimeMillis()
+        val tiles = currentTiles()
         val items = ItemList.Builder()
         // Step every reading first: the cockpit ring and the HUD show speed and engine speed together.
         val shownAll = tiles.map { t ->
@@ -127,6 +146,8 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
                 t.key == HEX_SPEED && top != null -> "Top ${top.roundToInt()} ${t.unit}"
                 // Battery: the estimated charging status under the voltage.
                 t.key == ObdSession.VOLTAGE_KEY && s.isConnected && s.charging != null -> "${t.unit} · ${s.charging.short} (est.)"
+                // Boost against sea level when the car doesn't give the outside air pressure.
+                t.key == Boost.KEY && s.isConnected && Boost.KEY in s.standIns -> "${t.unit} (est.)"
                 else -> t.unit
             }
             val image = try {
@@ -204,5 +225,7 @@ class DashboardScreen(carContext: CarContext) : Screen(carContext) {
         private const val REFRESH_MS = 200L
         private val HEX_RPM = String.format(Locale.US, "%02X", Pids.RPM)
         private val HEX_SPEED = String.format(Locale.US, "%02X", Pids.SPEED)
+        /** Shorter tile titles where the phone's label is long. */
+        private val SHORT = mapOf("2F" to "Fuel", "0B" to "Manifold", "10" to "Airflow", "0E" to "Timing", "04" to "Load")
     }
 }

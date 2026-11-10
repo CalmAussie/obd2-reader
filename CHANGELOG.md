@@ -2,6 +2,12 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.2.0 (10 November 2026)
+- **Boost pressure.** A new reading for turbocharged and supercharged cars: how far the manifold pressure is above the outside air. You can put it in a main readout, the Live data list, Graphs, the widget, Android Auto and recorded drives. Below zero is the engine's vacuum. It needs a car that reports manifold pressure; if the car doesn't report the outside air pressure, sea level is used and the reading is marked "est.".
+- **Pressure units.** Choose kPa, psi or bar under Diagnostics → Units, for boost and manifold pressure.
+- **Choose what Android Auto shows.** Diagnostics → Android Auto readings picks the four tiles next to speed and engine speed, from any of the app's readings. Changes show on the car's screen straight away.
+- The demo car is now turbocharged, so boost has something to show.
+
 ## 2.1.0 (10 November 2026)
 - **Older cars, back to 1994.** The car list now covers the first OBD2 cars: earlier years for over 200 models, earlier engines with their redlines, and models that ended in the 1990s, such as the Volvo 850, 940 and 960, Saab 900, Ford Taurus and Mazda RX-7.
 - If your car uses an older system that an OBD2 adapter can't read, the app now tells you when you choose it. This covers cars from before 1996 in the US, Commodores before the VX, and EF and EL Falcons.

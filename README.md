@@ -47,9 +47,9 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 ## Features
 
 **On the road**
-- **Live data:** speed, revs, coolant, fuel, throttle, battery and more, gliding smoothly. Readings past their limit turn red.
+- **Live data:** speed, revs, coolant, fuel, throttle, boost, battery and more, gliding smoothly. Readings past their limit turn red. Units in km/h or mph, °C or °F, and kPa, psi or bar.
 - **13 styles:** from racing liveries to an 80s digital dash. Every style works in landscape too.
-- **Android Auto:** your readings and trouble codes on the car's screen, drawn in your style.
+- **Android Auto:** your readings and trouble codes on the car's screen, drawn in your style. You choose which readings it shows.
 - **Picture-in-picture (optional):** keep your readings in a small window over other apps.
 - **Home-screen widget:** live readings while connected, the last drive and battery reading when not.
 - **Alerts:** a hot engine, a battery not charging, or a new trouble code mid-drive. New codes notify quietly.

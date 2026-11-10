@@ -74,6 +74,7 @@ import com.obdreader.app.obd.DtcDescriptions
 import com.obdreader.app.obd.ElmClient
 import com.obdreader.app.obd.ObdTransport
 import com.obdreader.app.obd.Pid
+import com.obdreader.app.obd.Boost
 import com.obdreader.app.obd.Pids
 import com.obdreader.app.obd.ObdProtocols
 import com.obdreader.app.obd.VehicleCatalog
@@ -215,16 +216,18 @@ open class MainActivity : AppCompatActivity() {
 
     private fun readout(key: String): Readout =
         (Pids.dashboard.firstOrNull { it.hex == key }?.let { Readout(it.hex, it.label, it.unit, it.decimals, it.min, it.max, it.warnAbove) }
-            ?: Readout(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0, null)).inUnits()
+            ?: if (key == Boost.KEY) Readout(Boost.KEY, Boost.LABEL, "kPa", 0, Boost.MIN, Boost.MAX, null)
+            else Readout(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0, null)).inUnits()
 
-    /** The readout in the chosen units (°F, mph) where that applies. */
-    private fun Readout.inUnits(): Readout = if (!Units.isTemperature(key) && !Units.isSpeed(key)) this else copy(
-        unit = Units.unit(key, unit), min = Units.value(key, min), max = Units.value(key, max), warn = warn?.let { Units.value(key, it) },
+    /** The readout in the chosen units (°F, mph, psi) where that applies. */
+    private fun Readout.inUnits(): Readout = if (!Units.isTemperature(key) && !Units.isSpeed(key) && !Units.isPressure(key)) this else copy(
+        unit = Units.unit(key, unit), decimals = Units.decimals(key, decimals),
+        min = Units.value(key, min), max = Units.value(key, max), warn = warn?.let { Units.value(key, it) },
     )
 
     /** Every reading that can go in a main readout (not engine speed or speed, which have their own). */
     private val readoutChoices: List<Readout> by lazy {
-        Pids.dashboard.filter { it.hex != RPM_KEY && it.hex != SPEED_KEY }.map { readout(it.hex) } + readout(VOLTAGE_KEY)
+        Pids.dashboard.filter { it.hex != RPM_KEY && it.hex != SPEED_KEY }.map { readout(it.hex) } + readout(Boost.KEY) + readout(VOLTAGE_KEY)
     }
 
     /** What the main readouts show, chosen under Diagnostics → Dashboard readouts. Coolant, fuel and battery to start with. */
@@ -433,7 +436,7 @@ open class MainActivity : AppCompatActivity() {
         }
         Alerts.start(this)
         findViewById<TextView>(R.id.slotsSetting).text = slots.joinToString(", ") { readout(it).label }
-        findViewById<TextView>(R.id.unitsSetting).text = "${Units.speedUnit}, ${Units.temperatureUnit}"
+        findViewById<TextView>(R.id.unitsSetting).text = "${Units.speedUnit}, ${Units.temperatureUnit}, ${Units.pressure.unit}"
         findViewById<View>(R.id.unitsRow).apply {
             background = panelBackground()
             setOnClickListener { showUnitsPicker() }
@@ -442,6 +445,11 @@ open class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.widgetRow).apply {
             background = panelBackground()
             setOnClickListener { showWidgetReadings(com.obdreader.app.obd.WidgetContent.decodeReadings(prefs.getString(com.obdreader.app.widget.ObdWidget.PREF_READINGS, null)).toMutableList()) }
+        }
+        findViewById<TextView>(R.id.autoSetting).text = carReadingsLabel()
+        findViewById<View>(R.id.autoRow).apply {
+            background = panelBackground()
+            setOnClickListener { showCarReadings(com.obdreader.app.obd.CarReadings.decode(prefs.getString(AppPrefs.CAR_READINGS, null)).toMutableList()) }
         }
         findViewById<TextView>(R.id.appIconSetting).text = AppIcons.current(this).name
         findViewById<View>(R.id.appIconRow).apply {
@@ -860,6 +868,7 @@ open class MainActivity : AppCompatActivity() {
     private fun showUnitsPicker() {
         var mph = Units.mph
         var fahrenheit = Units.fahrenheit
+        var pressure = Units.pressure
         val view = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24f).toInt(), dp(4f).toInt(), dp(24f).toInt(), 0) }
         fun group(title: String, options: List<String>, selected: Int, onPick: (Int) -> Unit) {
             view.addView(TextView(this).apply {
@@ -877,16 +886,18 @@ open class MainActivity : AppCompatActivity() {
         }
         group("Speed and distance", listOf("Kilometres (km/h, km)", "Miles (mph, mi)"), if (mph) 1 else 0) { mph = it == 1 }
         group("Temperature", listOf("Celsius (°C)", "Fahrenheit (°F)"), if (fahrenheit) 1 else 0) { fahrenheit = it == 1 }
+        group("Pressure (boost, manifold)", listOf("Kilopascals (kPa)", "Pounds per square inch (psi)", "Bar"), pressure.ordinal) { pressure = Units.Pressure.values()[it] }
         view.addView(TextView(this).apply {
             text = "Recorded drives (CSV) and the adapter log stay in the car's own metric units."
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)); setPadding(0, dp(10f).toInt(), 0, 0)
         })
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.units)
-            .setView(view)
+            .setView(android.widget.ScrollView(this).apply { addView(view) })
             .setPositiveButton("Save") { _, _ ->
-                if (mph != Units.mph || fahrenheit != Units.fahrenheit) {
-                    prefs.edit().putBoolean(AppPrefs.UNITS_MPH, mph).putBoolean(AppPrefs.UNITS_FAHRENHEIT, fahrenheit).apply()
+                if (mph != Units.mph || fahrenheit != Units.fahrenheit || pressure != Units.pressure) {
+                    prefs.edit().putBoolean(AppPrefs.UNITS_MPH, mph).putBoolean(AppPrefs.UNITS_FAHRENHEIT, fahrenheit)
+                        .putString(AppPrefs.UNITS_PRESSURE, pressure.name).apply()
                     AppPrefs.applyUnits(prefs)
                     recreate() // rebuilds every readout in the new units
                 }
@@ -1273,6 +1284,45 @@ open class MainActivity : AppCompatActivity() {
             saveCustom(customReadings() + r)
             d.dismiss(); showCustomReadings()
         }
+    }
+
+    private fun carReadingsLabel(): String =
+        com.obdreader.app.obd.CarReadings.decode(prefs.getString(AppPrefs.CAR_READINGS, null)).joinToString(", ") { com.obdreader.app.obd.CarReadings.label(it) }
+
+    /**
+     * Diagnostics → Android Auto readings: the four tiles next to speed and engine speed on the
+     * car's screen, in order. Picking one that's already shown swaps them.
+     */
+    private fun showCarReadings(chosen: MutableList<String>) {
+        val all = com.obdreader.app.obd.CarReadings.CHOICES
+        val names = (1..com.obdreader.app.obd.CarReadings.COUNT).map { "Tile ${it + 2}" }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.car_readings)
+            .setItems(names.mapIndexed { i, n -> "$n: ${com.obdreader.app.obd.CarReadings.label(chosen[i])}" }.toTypedArray()) { _, slot ->
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(names[slot])
+                    .setSingleChoiceItems(all.map { it.label }.toTypedArray(), all.indexOfFirst { it.key == chosen[slot] }) { d, i ->
+                        val pick = all[i].key
+                        val other = chosen.indexOf(pick)
+                        if (other >= 0 && other != slot) chosen[other] = chosen[slot] // swap rather than show one twice
+                        chosen[slot] = pick
+                        d.dismiss()
+                        showCarReadings(chosen)
+                    }
+                    .setNegativeButton("Back") { _, _ -> showCarReadings(chosen) }
+                    .show()
+            }
+            .setPositiveButton("Save") { _, _ ->
+                prefs.edit().putString(AppPrefs.CAR_READINGS, com.obdreader.app.obd.CarReadings.encode(chosen)).apply()
+                android.util.Log.i("OBD2Car", "car readings: " + chosen.joinToString(","))
+                findViewById<TextView>(R.id.autoSetting).text = carReadingsLabel()
+            }
+            .setNeutralButton("Reset") { _, _ ->
+                prefs.edit().remove(AppPrefs.CAR_READINGS).apply()
+                findViewById<TextView>(R.id.autoSetting).text = carReadingsLabel()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun widgetReadingsLabel(): String =
@@ -1804,7 +1854,8 @@ open class MainActivity : AppCompatActivity() {
     private data class Channel(val key: String, val label: String, val unit: String, val decimals: Int, val min: Double, val max: Double)
 
     private val channels: List<Channel> by lazy {
-        Pids.dashboard.map { Channel(it.hex, if (it.number == Pids.RPM) "RPM" else it.label, Units.unit(it.hex, it.unit), it.decimals, Units.value(it.hex, it.min), Units.value(it.hex, it.max)) } +
+        Pids.dashboard.map { Channel(it.hex, if (it.number == Pids.RPM) "RPM" else it.label, Units.unit(it.hex, it.unit), Units.decimals(it.hex, it.decimals), Units.value(it.hex, it.min), Units.value(it.hex, it.max)) } +
+            Channel(Boost.KEY, Boost.LABEL, Units.unit(Boost.KEY, "kPa"), Units.decimals(Boost.KEY, 0), Units.value(Boost.KEY, Boost.MIN), Units.value(Boost.KEY, Boost.MAX)) +
             Channel(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0)
     }
 
@@ -2367,6 +2418,9 @@ open class MainActivity : AppCompatActivity() {
         Pids.dashboard.filter { it.hex !in shownBig }.forEach { p ->
             val r = readout(p.hex)
             addTile(p.hex, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, Channels.forKey(p.hex, themeColor(R.attr.obdStripe1))))
+        }
+        if (Boost.KEY !in shownBig) readout(Boost.KEY).let { r ->
+            addTile(Boost.KEY, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, Channels.forKey(Boost.KEY, themeColor(R.attr.obdStripe1))))
         }
         if (VOLTAGE_KEY !in shownBig) addTile(VOLTAGE_KEY, TowerRowView(this, "Battery", "V", 11.0, 15.0, 15.0, 1, Channels.forKey(VOLTAGE_KEY, themeColor(R.attr.obdStripe1))))
     }

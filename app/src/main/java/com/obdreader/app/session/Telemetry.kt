@@ -76,7 +76,7 @@ object LogRecorder {
 
     private var job: Job? = null
     private val columns: List<Pair<String, String>> =
-        Pids.dashboard.map { it.hex to "${it.label} (${it.unit})" } + (ObdSession.VOLTAGE_KEY to "Battery (V)")
+        Pids.dashboard.map { it.hex to "${it.label} (${it.unit})" } + (com.obdreader.app.obd.Boost.KEY to "Boost (kPa)") + (ObdSession.VOLTAGE_KEY to "Battery (V)")
 
     fun folder(context: Context): File = File(context.filesDir, "logs").apply { mkdirs() }
 

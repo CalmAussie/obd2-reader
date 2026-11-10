@@ -25,6 +25,7 @@ import com.obdreader.app.obd.ObdException
 import com.obdreader.app.obd.ObdProtocols
 import com.obdreader.app.obd.ObdTransport
 import com.obdreader.app.obd.Pid
+import com.obdreader.app.obd.Boost
 import com.obdreader.app.obd.Pids
 import com.obdreader.app.obd.ReconnectPolicy
 import com.obdreader.app.obd.DtcLibrary
@@ -315,10 +316,15 @@ object ObdSession {
         misses.clear()
         chargingWatch.reset()
         batteryWatch.reset()
-        _state.update { it.copy(standIns = standIns.associate { s -> s.forHex to s.pid.label }) }
-        val pids = base + standIns.map { it.pid }
+        // Boost comes from manifold pressure less the outside air pressure, when the car gives it.
+        val hasBaro = supported != null && Boost.BAROMETRIC.number in supported
+        lastBaro = null
+        val labels = standIns.associate { s -> s.forHex to s.pid.label } + (if (hasBaro) emptyMap() else mapOf(Boost.KEY to Boost.ESTIMATE_LABEL))
+        _state.update { it.copy(standIns = labels) }
+        val pids = base + standIns.map { it.pid } + listOfNotNull(Boost.BAROMETRIC.takeIf { hasBaro })
         val covered = base.map { it.hex }.toSet() + standIns.map { it.forHex }
-        _state.update { s -> s.copy(unsupported = Pids.dashboard.map { it.hex }.filter { it !in covered }.toSet()) }
+        val boostMissing = if ("0B" in covered) emptySet() else setOf(Boost.KEY)
+        _state.update { s -> s.copy(unsupported = Pids.dashboard.map { it.hex }.filter { it !in covered }.toSet() + boostMissing) }
 
         while (currentCoroutineContext().isActive) {
             try {
@@ -467,6 +473,8 @@ object ObdSession {
 
     /** Readings arriving under one key that stand in for another (accelerator pedal for throttle, say). */
     private var standInFor: Map<String, String> = emptyMap()
+    /** The latest outside air pressure (kPa), for boost. */
+    private var lastBaro: Double? = null
     private val misses = mutableMapOf<String, Int>()
     private val chargingWatch = ChargingStatus.Watch()
     private val batteryWatch = com.obdreader.app.obd.BatteryCheck.Watch()
@@ -781,6 +789,9 @@ object ObdSession {
                     misses.remove(k)
                 }
             }
+            // Outside air pressure is only kept for boost, which follows manifold pressure.
+            values.remove(Boost.BAROMETRIC.hex)?.let { lastBaro = it }
+            if ("0B" in values) values[Boost.KEY] = values["0B"]?.let { Boost.from(it, lastBaro) }
             values[ThrottleCalibration.KEY]?.let { raw ->
                 values[ThrottleCalibration.KEY] = throttle.adjust(raw)
                 if (throttle.changed) throttleKey?.let { k -> appContext?.let { AppPrefs.of(it).edit().putFloat(k, throttle.closed!!.toFloat()).apply() } }

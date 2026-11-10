@@ -190,6 +190,7 @@ class ObdWidget : AppWidgetProvider() {
                 unsupported = s.unsupported,
                 mph = prefs.getBoolean(AppPrefs.UNITS_MPH, false),
                 fahrenheit = prefs.getBoolean(AppPrefs.UNITS_FAHRENHEIT, false),
+                pressure = com.obdreader.app.obd.Units.Pressure.from(prefs.getString(AppPrefs.UNITS_PRESSURE, null)),
                 battery = WidgetContent.decodeSeen(prefs.getString(PREF_BATTERY, null)),
                 codes = WidgetContent.decodeCodes(prefs.getString(PREF_CODES, null)),
                 lastDrive = trip?.let { WidgetContent.LastDrive(it.distanceKm, ShareScore.of(it.scores, raceTelemetry = false).score, it.endedAt) },

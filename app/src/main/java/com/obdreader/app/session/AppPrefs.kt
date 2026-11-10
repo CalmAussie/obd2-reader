@@ -25,6 +25,9 @@ object AppPrefs {
     const val ALERTS = "alerts"
     const val UNITS_MPH = "units_mph"
     const val UNITS_FAHRENHEIT = "units_fahrenheit"
+    const val UNITS_PRESSURE = "units_pressure"
+    /** The four Android Auto readings next to speed and engine speed (see CarReadings). */
+    const val CAR_READINGS = "car_readings"
     const val USER_VIN = "user_vin"
     /** Battery checks at engine start (time, resting and cranking voltage): no location. */
     const val BATTERY_CHECKS = "battery_checks"
@@ -55,6 +58,7 @@ object AppPrefs {
     fun applyUnits(prefs: SharedPreferences) {
         com.obdreader.app.obd.Units.mph = prefs.getBoolean(UNITS_MPH, false)
         com.obdreader.app.obd.Units.fahrenheit = prefs.getBoolean(UNITS_FAHRENHEIT, false)
+        com.obdreader.app.obd.Units.pressure = com.obdreader.app.obd.Units.Pressure.from(prefs.getString(UNITS_PRESSURE, null))
     }
 
     fun savedCar(prefs: SharedPreferences): VehicleCatalog.Car? {

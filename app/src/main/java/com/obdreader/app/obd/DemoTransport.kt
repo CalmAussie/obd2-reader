@@ -99,6 +99,7 @@ class DemoTransport(
             0x0C -> two(if (ph == 0) 0 else 220 * 4)
             0x0D, 0x11, 0x04, 0x10, 0x0E -> if (number == 0x10) two(0) else if (number == 0x0E) one(64.0 * 2) else one(0.0)
             0x0B -> one(100.0)
+            0x33 -> one(100.0)
             else -> pidRunning(number, 0.0)
         }
         return pidRunning(number, seconds() - ENGINE_OFF_S - CRANK_S)
@@ -117,7 +118,9 @@ class DemoTransport(
             0x04 -> one(pct(18 + drive * 65))
             0x05 -> one(min(90.0, 45 + t * 1.5) + 40)
             0x0F -> one(31.0 + 40)
-            0x0B -> one(32 + drive * 60)
+            // A turbocharged engine: vacuum at idle, about 0.6 bar of boost flat out.
+            0x0B -> one(32 + drive * 130)
+            0x33 -> one(100.0)
             0x10 -> two(((2.5 + drive * 30) * 100).toInt())
             0x0E -> one((12 + drive * 18 + 64) * 2)
             0x2F -> one(pct(62.0))

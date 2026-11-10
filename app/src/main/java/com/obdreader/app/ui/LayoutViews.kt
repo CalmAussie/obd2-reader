@@ -25,7 +25,7 @@ object Channels {
     val THROTTLE = Color.parseColor("#34D17A")
     private val byPid = mapOf(
         "11" to "#34D17A", "04" to "#FFB000", "0F" to "#34C8E0", "0B" to "#B57CFF", "10" to "#FF7AC6",
-        "0E" to "#E6E15A", "46" to "#9AA3AD", "5C" to "#FF8A3D", "VOLT" to "#7DD3A0",
+        "0E" to "#E6E15A", "46" to "#9AA3AD", "5C" to "#FF8A3D", "VOLT" to "#7DD3A0", "BOOST" to "#C8A26B",
     ).mapValues { Color.parseColor(it.value) }
 
     fun forKey(key: String, fallback: Int): Int = byPid[key] ?: fallback

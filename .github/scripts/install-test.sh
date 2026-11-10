@@ -947,6 +947,24 @@ if tap_scrolled "Widget readings"; then
   fi
 fi
 [ $WR = ok ] && log "widget readings: RPM chosen first" || { log "widget readings: FAILED (at $WSTEP: $(tail -1 "$OUT/widget-readings.txt" 2>/dev/null | cut -c1-100))"; FAIL=1; }
+# Android Auto readings: put Boost in the first chosen tile and save.
+AR=fail; ASTEP="row"
+diag_top; adb logcat -c
+if tap_scrolled "Android Auto readings"; then
+  sleep 2; shot 13c-car-readings; ASTEP="Tile 3"
+  if tap_contains "Tile 3"; then
+    sleep 2; ASTEP="Boost"
+    # Boost sits near the end of the list: scroll down to it if it isn't on screen.
+    tap_text "Boost" > /dev/null || { adb shell input swipe 540 1500 540 900 300; sleep 1; tap_text "Boost" > /dev/null; } && {
+      sleep 2; ASTEP="Save"
+      if tap_text "Save"; then
+        sleep 2; adb logcat -d -s OBD2Car:I > "$OUT/car-readings.txt" 2>/dev/null; ASTEP="log"
+        grep -q "car readings: BOOST," "$OUT/car-readings.txt" && AR=ok
+      fi
+    }
+  fi
+fi
+[ $AR = ok ] && log "android auto readings: Boost chosen first" || { log "android auto readings: FAILED (at $ASTEP: $(tail -1 "$OUT/car-readings.txt" 2>/dev/null | cut -c1-100))"; FAIL=1; }
 # Feedback: Report a problem opens the GitHub form with the app version filled in.
 adb logcat -c; diag_top
 if tap_scrolled "Report a problem"; then

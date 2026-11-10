@@ -74,6 +74,9 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
 
     val layout: DashLayout get() = context().dashLayout()
 
+    /** Forget the drawn tiles (the readings on the car's screen changed). */
+    fun reset() = views.clear()
+
     private fun dp(v: Float) = v * context().resources.displayMetrics.density
 
     /** The picture for one tile. [speed] and [rpm] feed the combined pieces (the cockpit ring and the HUD). */

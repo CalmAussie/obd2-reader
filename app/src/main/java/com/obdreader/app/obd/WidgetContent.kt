@@ -33,7 +33,7 @@ object WidgetContent {
 
     /** Engine speed (shown in thousands: 0.7k, 3.2k), the Dashboard's readings and the battery. */
     val READINGS: List<Reading> = Pids.dashboard.map { Reading(it.hex, if (it.hex == "0C") "RPM" else it.label, it.unit, it.decimals) } +
-        Reading("VOLT", "Battery", "V", 1)
+        Reading(Boost.KEY, Boost.LABEL, "kPa", 0) + Reading("VOLT", "Battery", "V", 1)
 
     /** Speed, coolant and battery to start with. */
     val DEFAULT_READINGS = listOf("0D", "05", "VOLT")
@@ -67,6 +67,8 @@ object WidgetContent {
         /** The engine's redline and the car's top speed (km/h), for the "near the maximum" highlight; null if not known. */
         redline: Int? = null,
         topSpeedKmh: Int? = null,
+        /** The pressure unit for manifold pressure and boost. */
+        pressure: Units.Pressure = Units.Pressure.KPA,
     ): Content {
         val active = phase != Phase.IDLE
         val status = when (phase) {
@@ -91,6 +93,7 @@ object WidgetContent {
             return when {
                 Units.isSpeed(key) -> live(key, r.label, if (mph) "mph" else "km/h", r.decimals) { if (mph) it * 0.621371 else it }
                 Units.isTemperature(key) -> live(key, r.label, if (fahrenheit) "°F" else "°C", r.decimals) { if (fahrenheit) it * 9 / 5 + 32 else it }
+                Units.isPressure(key) -> live(key, r.label, pressure.unit, maxOf(r.decimals, pressure.decimals)) { it * pressure.perKpa }
                 else -> live(key, r.label, r.unit, r.decimals)
             }
         }
