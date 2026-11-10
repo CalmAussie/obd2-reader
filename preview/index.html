@@ -797,7 +797,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .rt-chip .lcd.na em { display: none; }
 </style>
 
-<p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
+<p class="note"><b>Live preview of the Android app, its Android Auto screen, its home-screen widget and its picture-in-picture window.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
 
 <div class="view-switch" role="tablist" aria-label="Screen to show">
   <button role="tab" id="viewPhone" aria-selected="true">Phone</button>
@@ -3181,7 +3181,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "2.0.0", "date": "6 November 2026", "text": "• OBD2 Reader 2.0. The first version shared publicly. It's a free, read-only app for cheap ELM327 adapters: live engine data, trouble codes explained in plain English, driving scores, drive recording and video overlays, a home-screen widget, picture-in-picture and Android Auto, in 13 styles.\n• Nothing new to learn if you're updating: your car, style, drives and settings carry over as they are."};
+const CHANGES = {"version": "2.0.1", "date": "10 November 2026", "text": "• Speeds of 100 and over fit every style. Retro digital always shows three digit cells, like a real digital dash, and Hairline's big speed shrinks a little to stay clear of the dial's numbers. Every style, Android Auto, the widget and picture-in-picture were checked at 188 km/h.\n• Recorded routes start in the right place. When you started recording, the phone could hand over an old position it remembered from earlier (even somewhere else), which then began the route there. Only fresh positions are used now.\n• Android Auto shows the app's current icon. If it still shows an old one, restart your phone: Android Auto keeps its own copy of app icons until then."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
