@@ -66,9 +66,12 @@
             android:name="androidx.car.app.theme"
             android:resource="@style/CarAppTheme" />
 
+        <!-- Its own name and icon, as Google's car app guide asks: Android Auto shows these. -->
         <service
             android:name=".car.ObdCarAppService"
-            android:exported="true">
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="androidx.car.app.CarAppService" />
                 <!-- The closest approved Android Auto category: the adapter is a connected device in the car. -->

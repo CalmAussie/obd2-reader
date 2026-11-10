@@ -132,7 +132,7 @@ class RetroDashView @JvmOverloads constructor(context: Context, attrs: Attribute
 
         // The speed: big glowing LCD digits over their unlit "88"; no reading lights the middle segments.
         val s = speed?.roundToInt()?.toString()
-        val cells = maxOf(2, s?.length ?: 0)
+        val cells = maxOf(3, s?.length ?: 0)   // "888": a car reports up to 255 km/h (158 mph)
         label.textSize = 9f; label.color = muted; label.textAlign = Paint.Align.LEFT
         canvas.drawText("SPEED ${speedUnit.uppercase(Locale.US)}", 16f, 116f, label)
         number.textAlign = Paint.Align.LEFT

@@ -2856,8 +2856,15 @@ open class MainActivity : AppCompatActivity() {
     /** The new-code notification opens Diagnostics, where the code is listed with what it means. */
     private fun showCodesIfAsked(intent: Intent?) {
         // Debug builds: the install test makes the demo car report a new pending code mid-drive.
-        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) intent?.getStringExtra("demo_new_code")?.let {
-            com.obdreader.app.obd.DemoTestHooks.newPendingCode = it; intent.removeExtra("demo_new_code")
+        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+            intent?.getStringExtra("demo_new_code")?.let {
+                com.obdreader.app.obd.DemoTestHooks.newPendingCode = it; intent.removeExtra("demo_new_code")
+            }
+            // And a speed for the demo car to hold (above 0), or back to normal driving (0 or less).
+            if (intent?.hasExtra("demo_speed") == true) {
+                com.obdreader.app.obd.DemoTestHooks.fixedSpeed = intent.getIntExtra("demo_speed", 0).takeIf { it > 0 }
+                intent.removeExtra("demo_speed")
+            }
         }
         if (intent?.getBooleanExtra(com.obdreader.app.session.Alerts.EXTRA_SHOW_CODES, false) != true) return
         intent.removeExtra(com.obdreader.app.session.Alerts.EXTRA_SHOW_CODES)

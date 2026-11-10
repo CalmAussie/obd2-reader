@@ -407,6 +407,9 @@ record_set() {
 scroll_top() { adb shell input swipe 540 800 540 2000 200; adb shell input swipe 540 800 540 2000 200; sleep 1; }
 # Each style with its own layout, upright and sideways, with the demo car running. The second
 # pass is a small phone with large text (360 dp wide, text at 115%), where crowding shows up.
+# Debug builds hold the demo car at 188 km/h here, so every style is seen with a three-digit speed
+# (the widest a car reports: 255 km/h, 158 mph). Release builds ignore it and drive as usual.
+adb shell am start -n $PKG/.HomeActivity --ei demo_speed 188 > /dev/null 2>&1; sleep 2
 for PASS in normal small; do
 if [ $PASS = small ]; then adb shell wm density 480; adb shell settings put system font_scale 1.15; sleep 3; fi
 for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race telemetry" "Digital cockpit" "Cyberpunk" "Retro digital" "Rally stage" "Hairline" "Asphalt"; do
@@ -466,6 +469,7 @@ PY
 done
 done
 adb shell wm density reset; adb shell settings put system font_scale 1.0; sleep 3
+adb shell am start -n $PKG/.HomeActivity --ei demo_speed 0 > /dev/null 2>&1; sleep 2   # back to normal driving
 # A longer drive, then Disconnect: the trip summary should sum it up.
 sleep 35
 disconnect_app

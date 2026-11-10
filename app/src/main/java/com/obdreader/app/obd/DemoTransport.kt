@@ -15,6 +15,9 @@ import kotlin.math.sin
  */
 object DemoTestHooks {
     @Volatile var newPendingCode: String? = null
+
+    /** A speed in km/h the demo car holds, so three-digit speeds can be checked in every style. */
+    @Volatile var fixedSpeed: Int? = null
 }
 
 class DemoTransport(
@@ -109,7 +112,7 @@ class DemoTransport(
             0x00, 0x20 -> "FFFFFFFF"
             0x40 -> "FFFFFFFE"
             0x0C -> two((rpm * 4).toInt())
-            0x0D -> one(drive * 95)
+            0x0D -> one(DemoTestHooks.fixedSpeed?.toDouble() ?: (drive * 95))
             0x11 -> one(pct(12 + drive * 70))
             0x04 -> one(pct(18 + drive * 65))
             0x05 -> one(min(90.0, 45 + t * 1.5) + 40)
