@@ -1000,7 +1000,7 @@ const car = {
       case 0x04: return one(pct(18 + d * 65));
       case 0x05: return one(Math.min(90, 45 + t * 1.5) + 40);
       case 0x0F: return one(71);
-      case 0x0B: return one(32 + d * 60);
+      case 0x0B: return one(32 + d * 130);
       case 0x10: return two((2.5 + d * 30) * 100);
       case 0x0E: return one((12 + d * 18 + 64) * 2);
       case 0x2F: return one(pct(62));
@@ -1129,7 +1129,7 @@ function ignition() { lightsOut(); sweepAt = reduced ? null : performance.now();
 /* Timing tower: the remaining readings */
 const MFD_KEYS = [0x11, 0x04, 0x0F, 0x0B, 0x10, 0x0E, 0x46, 0x5C];
 const mfdDefs = MFD_KEYS.map(n => { const p = PIDS.find(x => x.n === n); return { key: hex2(n), ...p }; })
-  .concat([{ key: "VOLT", label: "Battery", unit: "V", dec: 1, min: 11, max: 15, warn: 15 }]);
+  .concat([{ key: "BOOST", label: "Boost", unit: "kPa", dec: 0, min: -100, max: 150, warn: null }, { key: "VOLT", label: "Battery", unit: "V", dec: 1, min: 11, max: 15, warn: 15 }]);
 $("mfd").innerHTML = mfdDefs.map(p => `<div class="trow" id="mfd${p.key}"><span class="tab"></span><span class="l">${p.label}</span><span class="v xb">—<small>${p.unit}</small></span><span class="bar"><b></b></span></div>`).join("");
 const tiles = {};
 mfdDefs.forEach(p => {
@@ -1671,6 +1671,7 @@ async function startSession(name, onConnected, failure) {
     for (const p of PIDS) {
       if (!p.fast && !slow) continue;
       const b = car.raw(p.n), v = (p.n === 0x2F && typeof simNoFuel !== "undefined" && simNoFuel) ? null : p.dec2(b); live[hex2(p.n)] = v;
+      if (p.n === 0x0B) { live.BOOST = v - 100; if (tiles.BOOST) tiles.BOOST(live.BOOST); }
       if (p.n === 0x0C || p.n === 0x0D || p.n === 0x11) mp += hex2(p.n) + b.map(hex2).join("");
       if (p.n === 0x0C) rpmGauge.set(v);
       else if (p.n === 0x0D) speedGauge.set(v);
@@ -1878,22 +1879,24 @@ $("viewPhone").onclick = () => showView(false);
 $("viewCar").onclick = () => showView(true);
 /* Android Auto limits how often a screen may redraw, so the car view refreshes about once a second */
 setInterval(() => { $("carClock").textContent = $("clock").textContent; renderCar(); }, 1000);
-/* ===== Units: km/h or mph, °C or °F, chosen separately (mirrors obd/Units.kt) ===== */
-var unitsMph = false, unitsF = false;
-try { unitsMph = localStorage.getItem("unitsMph") === "1"; unitsF = localStorage.getItem("unitsF") === "1"; } catch (e) {}
+/* ===== Units: km/h or mph, °C or °F, kPa, psi or bar, chosen separately (mirrors obd/Units.kt) ===== */
+var unitsMph = false, unitsF = false, unitsP = "kPa";
+const P_CONV = { kPa: [1, 0], psi: [0.145038, 1], bar: [0.01, 2] }, P_KEYS = ["0B", "BOOST"];
+try { unitsMph = localStorage.getItem("unitsMph") === "1"; unitsF = localStorage.getItem("unitsF") === "1"; unitsP = P_CONV[localStorage.getItem("unitsP")] ? localStorage.getItem("unitsP") : "kPa"; } catch (e) {}
 window.SPEED_UNIT = unitsMph ? "mph" : "km/h";
 const TEMP_KEYS = ["05", "0F", "46", "5C"];
-const uVal = (k, v) => v == null ? v : k === "0D" && unitsMph ? v * 0.621371 : TEMP_KEYS.includes(k) && unitsF ? v * 9 / 5 + 32 : v;
-const uUnit = (k, u) => k === "0D" ? window.SPEED_UNIT : TEMP_KEYS.includes(k) ? (unitsF ? "°F" : "°C") : u;
+const uVal = (k, v) => v == null ? v : k === "0D" && unitsMph ? v * 0.621371 : TEMP_KEYS.includes(k) && unitsF ? v * 9 / 5 + 32 : P_KEYS.includes(k) ? v * P_CONV[unitsP][0] : v;
+const uUnit = (k, u) => k === "0D" ? window.SPEED_UNIT : TEMP_KEYS.includes(k) ? (unitsF ? "°F" : "°C") : P_KEYS.includes(k) ? unitsP : u;
+const uDec = (k, d) => P_KEYS.includes(k) ? Math.max(d, P_CONV[unitsP][1]) : d;
 const uSpeedText = kmh => `${Math.round(uVal("0D", kmh))} ${window.SPEED_UNIT}`;
 
 /* ===== 1.2.0: Graphs tab, drive recording, detailed code cards, auto-reconnect (mirrors GraphStripView.kt, Telemetry.kt, DtcLibrary.kt, ObdSession.kt) ===== */
 const DTC = {"P0133": {"title": "Oxygen sensor slow response (bank 1, sensor 1)", "meaning": "The front oxygen sensor (before the catalytic converter), which the computer uses to set the fuel mixture, is reacting too slowly to changes in the exhaust. It's usually an ageing sensor.", "sev": "MEDIUM", "sevLabel": "Check soon", "advice": "The car is usually safe to drive for now, but fuel use, emissions or performance may suffer. Get it checked in the next few weeks.", "causes": ["An old, worn-out oxygen sensor (common after 150,000 km)", "A sensor contaminated by oil burning or a coolant leak", "An exhaust leak near the sensor"], "symptoms": ["Higher fuel use", "Can lead to a catalytic converter code if ignored"], "checks": ["Check for exhaust leaks near the sensor", "Check the engine isn't burning oil or coolant", "Replace the sensor"], "system": "Engine and transmission (powertrain), generic code (same meaning on every car)"}, "P0420": {"title": "Catalytic converter efficiency below threshold (bank 1)", "meaning": "The rear oxygen sensor shows the catalytic converter isn't cleaning the exhaust as well as it should.", "sev": "LOW", "sevLabel": "Check when convenient", "advice": "Usually safe to drive. It mainly affects emissions or a minor system, but it will keep the check-engine light on.", "causes": ["An old or failing catalytic converter", "A faulty rear oxygen sensor", "An exhaust leak near the sensors", "A misfire or oil burning that has damaged the converter"], "symptoms": ["Usually none", "Sometimes a rotten-egg smell or reduced power if the converter is blocked", "May fail an emissions inspection"], "checks": ["Fix any misfire or fuel mixture codes first: they can cause this one", "Check for exhaust leaks", "Compare front and rear oxygen sensor readings", "Replace the converter only after ruling out sensors and leaks"], "system": "Engine and transmission (powertrain), generic code (same meaning on every car)"}, "P0171": {"title": "Fuel mixture too lean (bank 1)", "meaning": "The engine is getting too much air or too little fuel, and the computer has reached the limit of how much fuel it can add to compensate.", "sev": "MEDIUM", "sevLabel": "Check soon", "advice": "The car is usually safe to drive for now, but fuel use, emissions or performance may suffer. Get it checked in the next few weeks.", "causes": ["A vacuum leak, such as a split intake hose, a loose intake boot or a leaking intake gasket", "A dirty or faulty mass air flow (MAF) sensor reading less air than is really entering", "Low fuel pressure from a weak fuel pump or a blocked fuel filter", "Clogged or leaking fuel injectors", "An exhaust leak before the front oxygen sensor"], "symptoms": ["Rough or hunting idle", "Hesitation when accelerating", "Misfires if severe"], "checks": ["Listen for hissing vacuum leaks and check intake hoses", "Clean the MAF sensor", "Check fuel pressure", "Look at long-term fuel trim on the dashboard: above +10% confirms lean"], "system": "Engine and transmission (powertrain), generic code (same meaning on every car)"}};
 const CHEV_D = "M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z";
-const GCOL = { "0C": "#FF3B30", "0D": "#3D9BFF", "11": "#34D17A", "04": "#FFB000", "0F": "#34C8E0", "0B": "#B57CFF", "10": "#FF7AC6", "0E": "#E6E15A", "46": "#9AA3AD", "5C": "#FF8A3D", VOLT: "#7DD3A0" };
+const GCOL = { "0C": "#FF3B30", "0D": "#3D9BFF", "11": "#34D17A", "04": "#FFB000", "0F": "#34C8E0", "0B": "#B57CFF", "10": "#FF7AC6", "0E": "#E6E15A", "46": "#9AA3AD", "5C": "#FF8A3D", VOLT: "#7DD3A0", BOOST: "#C8A26B" };
 const GLABEL = { "0C": "RPM", "0D": "Speed", "05": "Coolant", "2F": "Fuel level" };
 const CHANNELS = PIDS.map(p => ({ key: hex2(p.n), label: GLABEL[hex2(p.n)] || p.label, unit: p.unit, dec: p.dec, min: p.min, max: p.max, n: p.n }))
-  .concat([{ key: "VOLT", label: "Battery", unit: "V", dec: 1, min: 11, max: 15, n: null }]);
+  .concat([{ key: "BOOST", label: "Boost", unit: "kPa", dec: 0, min: -100, max: 150, n: null }, { key: "VOLT", label: "Battery", unit: "V", dec: 1, min: 11, max: 15, n: null }]);
 const ghist = {};            /* LiveHistory: last 60 s of every reading */
 let gWindow = 30000, gPaused = false, gFrozen = 0, gChannels = ["0C", "0D", "11"], gRate = 0, gCount = 0;
 let ignOff = false, autoReconnect = true;
@@ -1906,6 +1909,7 @@ function sample(key, v, t) {
 }
 function chVal(ch) {
   if (ch.key === "VOLT") return car.volts();
+  if (ch.key === "BOOST") return car.raw(0x0B)[0] - 100;
   const p = PIDS.find(p => p.n === ch.n); return p.dec2(car.raw(ch.n));
 }
 /* Fast polling: graphed readings in one multi-PID request every cycle, the rest every 10th (like ObdSession.pollLoop) */
@@ -2995,8 +2999,10 @@ $("perfBtn").onclick = () => {
    show the readings you choose under Diagnostics → Dashboard readouts. */
 const SLOT_DEFAULT = ["05", "2F", "VOLT"];
 const slotInfo = k => { if (k === "VOLT") return { label: "Battery", unit: "V", dec: 1, min: 11, max: 15, warn: null };
+  if (P_KEYS.includes(k)) { const r = k === "BOOST" ? { label: "Boost", unit: "kPa", dec: 0, min: -100, max: 150 } : { label: "Manifold pressure", unit: "kPa", dec: 0, min: 0, max: 250 };
+    return { label: r.label, unit: uUnit(k, r.unit), dec: uDec(k, r.dec), min: uVal(k, r.min), max: uVal(k, r.max), warn: null }; }
   const p = PIDS.find(x => hex2(x.n) === k); return { label: p.label, unit: p.unit, dec: p.dec || 0, min: p.min, max: p.max, warn: p.warn }; };
-const slotChoices = PIDS.filter(p => p.n !== 0x0C && p.n !== 0x0D).map(p => hex2(p.n)).concat("VOLT");
+const slotChoices = PIDS.filter(p => p.n !== 0x0C && p.n !== 0x0D).map(p => hex2(p.n)).concat("BOOST", "VOLT");
 let dashSlots = SLOT_DEFAULT;
 try { const v = JSON.parse(localStorage.getItem("dashSlots") || "null"); if (Array.isArray(v) && v.length === 3 && v.every(k => slotChoices.includes(k))) dashSlots = v; } catch (e) {}
 if (dashSlots.join() !== SLOT_DEFAULT.join()) {
@@ -3020,7 +3026,7 @@ if (dashSlots.join() !== SLOT_DEFAULT.join()) {
   /* The live-data list hides what's now shown big, and shows what isn't (coolant and fuel if swapped out). */
   setInterval(() => {
     S.forEach((el, i) => {
-      const k = dashSlots[i], r = slotInfo(k), v = state === "connected" ? live[k] : null, txt = v == null ? naText() : v.toFixed(r.dec);
+      const k = dashSlots[i], r = slotInfo(k), v = state === "connected" ? (P_KEYS.includes(k) ? uVal(k, live[k]) : live[k]) : null, txt = v == null ? naText() : v.toFixed(r.dec);
       if (el.gauge) el.gauge.set(v); if (el.tele) { el.tele.textContent = txt; noUnit(el.tele.parentNode, v); } el.cp.textContent = txt; noUnit(el.cp.parentNode, v);
       cyChip("Slot" + i, el.cyVal.id, v, r.dec, r.min, r.max, r.warn);
     });
@@ -3092,7 +3098,12 @@ if (unitsF) {
   const cd = $("coolDecal"), cv = cd.querySelector(".v"), cm = cd.querySelector(".meter b");
   coolGauge.set = v => { cv.firstChild.textContent = v == null ? "—" : Math.round(v); if (cm) cm.style.width = v == null ? "0%" : Math.max(0, Math.min(100, (v - 104) / (248 - 104) * 100)) + "%"; cd.classList.toggle("hot", v != null && v >= 226); };
 }
-$("slotsRow").insertAdjacentHTML("beforebegin", `<button class="setting" id="unitsRow"><div class="r"><span>Units</span><span id="unitsSetting">${window.SPEED_UNIT}, ${unitsF ? "°F" : "°C"}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div></button>`);
+if (unitsP !== "kPa") {
+  const conv = v => v == null ? v : v * P_CONV[unitsP][0];
+  P_KEYS.forEach(k => { if (tiles[k]) { const b = tiles[k]; tiles[k] = v => b(conv(v)); } });
+  mfdDefs.forEach(p => { if (P_KEYS.includes(p.key)) { p.min = conv(p.min); p.max = conv(p.max); p.dec = uDec(p.key, p.dec); const u = document.querySelector(`#mfd${p.key} .v small`); if (u) u.textContent = unitsP; } });
+}
+$("slotsRow").insertAdjacentHTML("beforebegin", `<button class="setting" id="unitsRow"><div class="r"><span>Units</span><span id="unitsSetting">${window.SPEED_UNIT}, ${unitsF ? "°F" : "°C"}, ${unitsP}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div></button>`);
 /* Diagnostics → App icon (mirrors ui/AppIcons.kt and MainActivity.showIconPicker) */
 const APP_ICONS = [
   ["racing_green", "Racing green", "Cream on British racing green", "#0F3D2E", "#F3EBD3"],
@@ -3119,18 +3130,19 @@ $("appIconRow").onclick = () => {
   });
 };
 $("unitsRow").onclick = () => {
-  let m = unitsMph, f = unitsF;
+  let m = unitsMph, f = unitsF, pu = unitsP;
   const radio = (name, on, val) => `<button class="radio" role="radio" aria-checked="${on}" data-g="${name}" data-v="${val}"><span class="c"></span><span class="n">${val}</span></button>`;
   const s = overlay(`<h3>Units</h3><div class="trip-h">Speed and distance</div>${radio("s", !m, "Kilometres (km/h, km)")}${radio("s", m, "Miles (mph, mi)")}
     <div class="trip-h">Temperature</div>${radio("t", !f, "Celsius (°C)")}${radio("t", f, "Fahrenheit (°F)")}
+    <div class="trip-h">Pressure (boost, manifold)</div>${radio("p", pu === "kPa", "Kilopascals (kPa)")}${radio("p", pu === "psi", "Pounds per square inch (psi)")}${radio("p", pu === "bar", "Bar")}
     <p class="msg" style="margin-top:10px">Recorded drives (CSV) and the adapter log stay in the car's own metric units.</p>
     <div class="btns"><button id="uCancel">Cancel</button><button id="uSave">Save</button></div>`);
   s.querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
     s.querySelectorAll(`[data-g="${b.dataset.g}"]`).forEach(x => x.setAttribute("aria-checked", x === b));
-    if (b.dataset.g === "s") m = b.dataset.v.startsWith("Miles"); else f = b.dataset.v.startsWith("Fahr");
+    if (b.dataset.g === "s") m = b.dataset.v.startsWith("Miles"); else if (b.dataset.g === "p") pu = b.dataset.v.startsWith("Kilo") ? "kPa" : b.dataset.v.startsWith("Pounds") ? "psi" : "bar"; else f = b.dataset.v.startsWith("Fahr");
   });
   $("uCancel").onclick = closeOverlay;
-  $("uSave").onclick = () => { try { localStorage.setItem("unitsMph", m ? "1" : "0"); localStorage.setItem("unitsF", f ? "1" : "0"); } catch (e) {} location.reload(); };
+  $("uSave").onclick = () => { try { localStorage.setItem("unitsMph", m ? "1" : "0"); localStorage.setItem("unitsF", f ? "1" : "0"); localStorage.setItem("unitsP", pu); } catch (e) {} location.reload(); };
 };
 
 
@@ -3184,7 +3196,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "2.1.0", "date": "10 November 2026", "text": "• Older cars, back to 1994. The car list now covers the first OBD2 cars: earlier years for over 200 models, earlier engines with their redlines, and models that ended in the 1990s, such as the Volvo 850, 940 and 960, Saab 900, Ford Taurus and Mazda RX-7.\n• If your car uses an older system that an OBD2 adapter can't read, the app now tells you when you choose it. This covers cars from before 1996 in the US, Commodores before the VX, and EF and EL Falcons.\n• The first OBD2 cars report fewer readings, and the car's \"what may not work\" list now says so."};
+const CHANGES = {"version": "2.2.0", "date": "10 November 2026", "text": "• Boost pressure. A new reading for turbocharged and supercharged cars: how far the manifold pressure is above the outside air. You can put it in a main readout, the Live data list, Graphs, the widget, Android Auto and recorded drives. Below zero is the engine's vacuum. It needs a car that reports manifold pressure; if the car doesn't report the outside air pressure, sea level is used and the reading is marked \"est.\".\n• Pressure units. Choose kPa, psi or bar under Diagnostics → Units, for boost and manifold pressure.\n• Choose what Android Auto shows. Diagnostics → Android Auto readings picks the four tiles next to speed and engine speed, from any of the app's readings. Changes show on the car's screen straight away.\n• The demo car is now turbocharged, so boost has something to show."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3379,7 +3391,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
   const ago = t => { const m = Math.max(0, Math.floor((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.floor(m / 60)} h ago` : `${Math.floor(m / 1440)} days ago`; };
   const icon = () => { const ic = (typeof APP_ICONS !== "undefined" ? APP_ICONS : []).find(x => x[0] === (typeof appIcon !== "undefined" ? appIcon : "racing_green")) || ["", "", "", "#0F3D2E", "#F3EBD3"]; return typeof sparkIcon === "function" ? sparkIcon(ic[3], ic[4], 22) : ""; };
   /* Diagnostics → Widget readings (mirrors WidgetContent.READINGS): RPM in thousands, one decimal */
-  const W_READINGS = [["0C", "RPM", "rpm", 0], ["0D", "Speed", "km/h", 0], ["11", "Throttle", "%", 0], ["04", "Engine load", "%", 0], ["05", "Coolant", "°C", 0], ["0F", "Intake air", "°C", 0], ["0B", "Manifold pressure", "kPa", 0], ["10", "MAF airflow", "g/s", 1], ["0E", "Timing advance", "°", 1], ["2F", "Fuel level", "%", 0], ["46", "Ambient air", "°C", 0], ["5C", "Oil temp", "°C", 0], ["VOLT", "Battery", "V", 1]];
+  const W_READINGS = [["0C", "RPM", "rpm", 0], ["0D", "Speed", "km/h", 0], ["11", "Throttle", "%", 0], ["04", "Engine load", "%", 0], ["05", "Coolant", "°C", 0], ["0F", "Intake air", "°C", 0], ["0B", "Manifold pressure", "kPa", 0], ["10", "MAF airflow", "g/s", 1], ["0E", "Timing advance", "°", 1], ["2F", "Fuel level", "%", 0], ["46", "Ambient air", "°C", 0], ["5C", "Oil temp", "°C", 0], ["BOOST", "Boost", "kPa", 0], ["VOLT", "Battery", "V", 1]];
   let wKeys = ["0D", "05", "VOLT"];
   const wName = k => (W_READINGS.find(r => r[0] === k) || [0, "None"])[1];
   document.getElementById("appIconRow").insertAdjacentHTML("afterend", `<button class="setting" id="widgetRow"><div class="r"><span>Widget readings</span><span id="widgetSetting"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div></button>`);
@@ -3421,7 +3433,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     const live3 = (k, label, unit, d, f = v => v) => { const v = eased[k] ?? live[k]; return v == null ? [label, state === "connected" ? "—" : "N/A", "", k] : [label, k === "0C" ? (v / 1000).toFixed(1) + "k" : f(v).toFixed(d), k === "0C" ? "rpm" : unit, k]; };
     const drive = typeof lastTrip !== "undefined" && lastTrip ? (() => { const k = ["EVERYDAY", "EFFICIENCY"].map(x => lastTrip.scores[x]).filter(v => v != null); const sc = k.length ? Math.round(k.reduce((a, b) => a + b, 0) / k.length) : null; const d = unitsMph ? lastTrip.km * 0.621371 : lastTrip.km; return ["Last drive", d.toFixed(1) + (unitsMph ? " mi" : " km"), (sc != null ? `Score ${sc} · ` : "") + ago(lastTrip.end || Date.now())]; })() : ["Last drive", "N/A", "No drives yet"];
     if (state === "connected" && !ignOff) return wKeys.map(k => { const r = W_READINGS.find(x => x[0] === k); const temp = ["05", "0F", "46", "5C"].includes(k);
-      return k === "0D" ? live3(k, r[1], unitsMph ? "mph" : "km/h", 0, v => unitsMph ? v * 0.621371 : v) : temp ? live3(k, r[1], unitsF ? "°F" : "°C", 0, v => unitsF ? v * 9 / 5 + 32 : v) : live3(k, r[1], r[2], r[3]); });
+      return k === "0D" ? live3(k, r[1], unitsMph ? "mph" : "km/h", 0, v => unitsMph ? v * 0.621371 : v) : temp ? live3(k, r[1], unitsF ? "°F" : "°C", 0, v => unitsF ? v * 9 / 5 + 32 : v) : P_KEYS.includes(k) ? live3(k, r[1], unitsP, uDec(k, r[3]), v => uVal(k, v)) : live3(k, r[1], r[2], r[3]); });
     if (state === "connected" && ignOff) return [live.VOLT != null ? ["Battery", live.VOLT.toFixed(1), "V"] : ["Battery", "N/A", "Not read yet"], ["Trouble codes", "N/A", "Not checked yet"], drive];
     return [["Battery", "N/A", "Not read yet"], ["Trouble codes", "N/A", "Not checked yet"], drive];
   }
@@ -3773,6 +3785,47 @@ document.querySelector(".statusbar").addEventListener("click", () => {
   };
   $("reportRow").onclick = () => open(true);
   $("ideaRow").onclick = () => open(false);
+})();
+
+
+/* ===== 2.2.0: Diagnostics → Android Auto readings (mirrors obd/CarReadings.kt and DashboardScreen.buildTiles) =====
+   Speed and engine speed stay; you choose the four tiles after them. The car's screen changes straight away. */
+(function () {
+  const DEF = ["05", "11", "2F", "VOLT"], SHORT = { "2F": "Fuel", "0B": "Manifold", "10": "Airflow", "0E": "Timing", "04": "Load" };
+  const choices = PIDS.filter(p => p.n !== 0x0C && p.n !== 0x0D).map(p => hex2(p.n)).concat("BOOST", "VOLT");
+  const info = k => k === "VOLT" ? { label: "Battery", title: "Battery", unit: "V", dec: 1, min: 11, max: 15, warn: null }
+    : k === "BOOST" ? { label: "Boost", title: "Boost", unit: "kPa", dec: 0, min: -100, max: 150, warn: null }
+    : (p => ({ label: p.label, title: SHORT[k] || p.label, unit: p.unit, dec: p.dec, min: p.min, max: p.max, warn: p.warn }))(PIDS.find(x => hex2(x.n) === k));
+  let carKeys = DEF.slice();
+  try { const v = JSON.parse(localStorage.getItem("carReadings") || "null"); if (Array.isArray(v) && v.length === 4 && new Set(v).size === 4 && v.every(k => choices.includes(k))) carKeys = v; } catch (e) {}
+  function apply() {
+    const base = CAR_TILES.slice(0, 2), cv = (k, v) => v == null ? v : uVal(k, v);
+    const rest = carKeys.map(k => { const r = info(k); return { key: k, title: r.title, unit: uUnit(k, r.unit), dec: uDec(k, r.dec), min: cv(k, r.min), max: cv(k, r.max), warn: cv(k, r.warn) }; });
+    CAR_TILES.splice(0, CAR_TILES.length, ...base, ...rest);
+    for (const k in carShown) delete carShown[k];
+  }
+  apply();
+  document.getElementById("widgetRow").insertAdjacentHTML("afterend", `<button class="setting" id="autoRow"><div class="r"><span>Android Auto readings</span><span id="autoSetting"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg></div></button>`);
+  const label = () => document.getElementById("autoSetting").textContent = carKeys.map(k => info(k).label).join(", ");
+  label();
+  function pick(chosen) {
+    const names = [1, 2, 3, 4].map(i => `Tile ${i + 2}`);
+    const s = overlay(`<h3>Android Auto readings</h3><p class="msg">Speed and engine speed always come first. Choose the four tiles after them.</p>${names.map((n, i) => `<button class="setting" data-slot="${i}" style="display:block;width:100%;text-align:left;margin-top:6px">${n}: <b>${info(chosen[i]).label}</b></button>`).join("")}<div class="btns"><button id="aReset">Reset</button><button id="aCancel">Cancel</button><button id="aSave">Save</button></div>`);
+    s.querySelectorAll("[data-slot]").forEach(b => b.onclick = () => {
+      const slot = +b.dataset.slot; closeOverlay();
+      const s2 = overlay(`<h3>${names[slot]}</h3>${choices.map(k => `<button class="radio" role="radio" aria-checked="${chosen[slot] === k}" data-k="${k}"><span class="c"></span><span class="n">${info(k).label}</span></button>`).join("")}`);
+      s2.querySelectorAll("[data-k]").forEach(r => r.onclick = () => {
+        const k = r.dataset.k, other = chosen.indexOf(k);
+        if (other >= 0 && other !== slot) chosen[other] = chosen[slot]; // swap rather than show one twice
+        chosen[slot] = k; closeOverlay(); pick(chosen);
+      });
+    });
+    $("aCancel").onclick = closeOverlay;
+    const done = keys => { carKeys = keys; try { localStorage.setItem("carReadings", JSON.stringify(keys)); } catch (e) {} apply(); label(); closeOverlay(); renderCar(); };
+    $("aReset").onclick = () => done(DEF.slice());
+    $("aSave").onclick = () => { done(chosen.slice()); toast("The car's screen shows these now."); };
+  }
+  document.getElementById("autoRow").onclick = () => pick(carKeys.slice());
 })();
 
 window.carReady = true;

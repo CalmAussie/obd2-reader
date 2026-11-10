@@ -28,6 +28,8 @@ object AppPrefs {
     const val UNITS_PRESSURE = "units_pressure"
     /** The four Android Auto readings next to speed and engine speed (see CarReadings). */
     const val CAR_READINGS = "car_readings"
+    /** Where the car was sold new (a Market name); absent means worked out from the phone's country. */
+    const val MARKET = "car_market"
     const val USER_VIN = "user_vin"
     /** Battery checks at engine start (time, resting and cranking voltage): no location. */
     const val BATTERY_CHECKS = "battery_checks"
@@ -56,10 +58,24 @@ object AppPrefs {
 
     /** Loads the chosen units (km/h or mph, °C or °F) for display. */
     fun applyUnits(prefs: SharedPreferences) {
-        com.obdreader.app.obd.Units.mph = prefs.getBoolean(UNITS_MPH, false)
-        com.obdreader.app.obd.Units.fahrenheit = prefs.getBoolean(UNITS_FAHRENHEIT, false)
-        com.obdreader.app.obd.Units.pressure = com.obdreader.app.obd.Units.Pressure.from(prefs.getString(UNITS_PRESSURE, null))
+        com.obdreader.app.obd.Units.mph = mph(prefs)
+        com.obdreader.app.obd.Units.fahrenheit = fahrenheit(prefs)
+        com.obdreader.app.obd.Units.pressure = pressure(prefs)
+        com.obdreader.app.obd.Market.current = market(prefs)
     }
+
+    /** The chosen units, or until one is chosen, what the phone's country uses. */
+    fun mph(prefs: SharedPreferences): Boolean = prefs.getBoolean(UNITS_MPH, com.obdreader.app.obd.Units.defaultMph(phoneCountry()))
+    fun fahrenheit(prefs: SharedPreferences): Boolean = prefs.getBoolean(UNITS_FAHRENHEIT, com.obdreader.app.obd.Units.defaultFahrenheit(phoneCountry()))
+    fun pressure(prefs: SharedPreferences): com.obdreader.app.obd.Units.Pressure =
+        prefs.getString(UNITS_PRESSURE, null)?.let { com.obdreader.app.obd.Units.Pressure.from(it) } ?: com.obdreader.app.obd.Units.defaultPressure(phoneCountry())
+
+    /** The phone's country, from its region setting. */
+    fun phoneCountry(): String? = java.util.Locale.getDefault().country.takeIf { it.isNotEmpty() }
+
+    /** The saved market, or the one for the phone's country. */
+    fun market(prefs: SharedPreferences): com.obdreader.app.obd.Market =
+        com.obdreader.app.obd.Market.byName(prefs.getString(MARKET, null)) ?: com.obdreader.app.obd.Market.fromCountry(phoneCountry())
 
     fun savedCar(prefs: SharedPreferences): VehicleCatalog.Car? {
         val make = prefs.getString(CAR_MAKE, null) ?: return null

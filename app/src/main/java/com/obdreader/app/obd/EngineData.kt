@@ -727,8 +727,253 @@ Land Rover | Defender | 2.5 300Tdi diesel 1994-1998 4000 D
 Aston Martin | DB7 | 3.2 supercharged I6 1994-1999 6500
 """
 
+    /** Makes and models from the rest of the world: Korea, India, Malaysia, China, Russia, Latin America and South-East Asia. */
+    private val GLOBAL = """
+Hyundai | Accent / Verna | 1.5 I4 1994-2005 6000; 1.3 I4 1994-1999 6000; 1.6 I4 2000-2026 6300; 1.4 I4 2006-2022 6300; 1.5 I4 (Smartstream) 2020-2026 6300; 1.5 diesel 2003-2010 4500 D; 1.6 diesel 2011-2019 4500 D
+Hyundai | Atos / Santro | 1.0 I4 1998-2014 6000; 1.1 I4 2003-2022 6000
+Hyundai | Bayon | 1.0 turbo 2021-2026 6000; 1.2 I4 2021-2026 6300
+Hyundai | Creta | 1.6 I4 2015-2020 6300; 1.5 I4 2020-2026 6300; 1.4 turbo 2020-2022 6000; 1.5 turbo 2022-2026 6000; 1.6 diesel 2015-2020 4500 D; 1.5 diesel 2020-2026 4500 D
+Hyundai | Elantra / Lantra | 1.6 I4 1994-2026 6300; 1.8 I4 1994-2006 6000; 2.0 I4 1996-2026 6500; 1.6 turbo 2017-2023 6500; 1.6 hybrid 2021-2026 6000 H; 2.0 turbo (N) 2022-2026 6750; 1.6 diesel 2011-2020 4500 D
+Hyundai | Equus | 3.8 V6 2009-2016 6500; 4.6 V8 2009-2013 6500; 5.0 V8 2011-2016 6500
+Hyundai | Excel | 1.5 I4 1994-2000 6000
+Hyundai | Genesis | 3.8 V6 2008-2016 6500; 3.3 V6 2014-2016 6500; 4.6 V8 2009-2011 6500; 5.0 V8 2012-2016 6500
+Hyundai | Genesis Coupe | 2.0 turbo 2009-2016 6500; 3.8 V6 2009-2016 6800
+Hyundai | Getz / Click | 1.1 I4 2002-2011 6000; 1.3 I4 2002-2005 6000; 1.4 I4 2005-2011 6300; 1.6 I4 2002-2011 6300; 1.5 diesel 2003-2011 4500 D
+Hyundai | i10 / Grand i10 | 1.1 I4 2008-2013 6000; 1.0 I3 2011-2026 6300; 1.2 I4 2008-2026 6300; 1.2 diesel 2013-2020 4500 D
+Hyundai | i20 | 1.2 I4 2008-2026 6300; 1.4 I4 2008-2020 6300; 1.6 I4 2010-2015 6300; 1.0 turbo 2016-2026 6000; 1.6 turbo (N) 2021-2024 6000; 1.4 diesel 2008-2020 4500 D; 1.5 diesel 2020-2026 4500 D
+Hyundai | i30 | 1.4 I4 2007-2020 6300; 1.6 I4 2007-2016 6300; 2.0 I4 2007-2026 6500; 1.0 turbo 2017-2026 6000; 1.4 turbo 2016-2020 6000; 1.5 turbo 2020-2026 6000; 1.6 turbo 2015-2020 6500; 2.0 turbo (N) 2017-2026 6750; 1.6 diesel 2007-2023 4500 D
+Hyundai | i40 | 1.6 I4 2011-2019 6300; 2.0 I4 2011-2019 6500; 1.7 diesel 2011-2019 4500 D
+Hyundai | iLoad / iMax / H-1 / Starex | 2.4 I4 1997-2021 6000; 2.5 diesel 1997-2021 4000 D
+Hyundai | Ioniq | 1.6 hybrid 2016-2022 6000 H
+Hyundai | Kona | 2.0 I4 2017-2026 6500; 1.0 turbo 2017-2026 6000; 1.6 turbo 2017-2026 6000; 1.6 hybrid 2019-2026 6000 H; 2.0 turbo (N) 2021-2023 6750; 1.6 diesel 2018-2020 4500 D
+Hyundai | Matrix / Lavita | 1.6 I4 2001-2010 6000; 1.8 I4 2001-2010 6000; 1.5 diesel 2001-2010 4500 D
+Hyundai | Palisade | 3.8 V6 2018-2026 6500; 3.5 V6 2025-2026 6500; 2.5 turbo hybrid 2025-2026 6000 H; 2.2 diesel 2018-2026 4500 D
+Hyundai | Santa Cruz | 2.5 I4 2021-2026 6300; 2.5 turbo 2021-2026 6000
+Hyundai | Santa Fe | 2.4 I4 2000-2018 6500; 2.7 V6 2000-2009 6500; 3.5 V6 2001-2018 6500; 3.3 V6 2007-2018 6500; 2.0 turbo 2012-2019 6500; 2.5 I4 2020-2026 6300; 2.5 turbo 2020-2026 6000; 1.6 turbo hybrid 2020-2026 6000 H; 2.0 diesel 2006-2012 4500 D; 2.2 diesel 2006-2026 4500 D
+Hyundai | Sonata / i45 | 2.0 I4 1994-2019 6000; 2.4 I4 2004-2019 6500; 2.7 V6 1998-2005 6000; 3.0 V6 1994-2005 6000; 3.3 V6 2006-2010 6500; 2.0 turbo 2011-2019 6500; 2.4 hybrid 2011-2019 6000 H; 2.5 I4 2020-2026 6300; 1.6 turbo 2020-2026 6000; 2.5 turbo 2021-2026 6000; 2.0 hybrid 2020-2026 6000 H; 2.0 diesel 2007-2010 4500 D
+Hyundai | Staria | 3.5 V6 2021-2026 6300; 2.2 diesel 2021-2026 4500 D
+Hyundai | Terracan | 3.5 V6 2001-2007 6000; 2.9 diesel 2001-2007 4000 D
+Hyundai | Tiburon / Coupe | 1.6 I4 1996-2001 6300; 2.0 I4 1996-2009 6500; 2.7 V6 2002-2009 6500
+Hyundai | Trajet | 2.0 I4 1999-2008 6000; 2.7 V6 2000-2008 6000; 2.0 diesel 2001-2008 4500 D
+Hyundai | Tucson / ix35 | 2.0 I4 2004-2026 6500; 2.7 V6 2004-2010 6500; 2.4 I4 2009-2021 6500; 1.6 turbo 2015-2026 6000; 2.5 I4 2021-2026 6300; 1.6 turbo hybrid 2021-2026 6000 H; 2.0 diesel 2004-2026 4500 D; 1.7 diesel 2015-2020 4500 D; 1.6 diesel 2020-2026 4500 D
+Hyundai | Veloster | 1.6 I4 2011-2021 6500; 1.6 turbo 2012-2021 6500; 2.0 I4 2018-2021 6500; 2.0 turbo (N) 2018-2022 6750
+Hyundai | Venue | 1.6 I4 2019-2026 6300; 1.2 I4 2019-2026 6300; 1.0 turbo 2019-2026 6000; 1.5 diesel 2020-2026 4500 D
+Hyundai | Veracruz / ix55 | 3.8 V6 2007-2012 6500; 3.0 diesel 2008-2015 4000 D
+Genesis | G70 | 2.0 turbo 2017-2021 6500; 2.5 turbo 2021-2026 6000; 3.3 turbo V6 2017-2026 6000; 2.2 diesel 2017-2020 4500 D
+Genesis | G80 | 3.8 V6 2016-2020 6500; 3.3 turbo V6 2017-2020 6000; 5.0 V8 2016-2020 6500; 2.5 turbo 2020-2026 6000; 3.5 turbo V6 2020-2026 6000; 2.2 diesel 2020-2026 4500 D
+Genesis | G90 | 3.8 V6 2016-2022 6500; 3.3 turbo V6 2016-2022 6000; 5.0 V8 2016-2022 6500; 3.5 turbo V6 2022-2026 6000
+Genesis | GV70 | 2.5 turbo 2020-2026 6000; 3.5 turbo V6 2020-2026 6000; 2.2 diesel 2020-2026 4500 D
+Genesis | GV80 | 2.5 turbo 2020-2026 6000; 3.5 turbo V6 2020-2026 6000; 3.0 diesel I6 2020-2026 4500 D
+Kia | Cadenza / K7 / K8 | 2.4 I4 2009-2016 6500; 3.3 V6 2010-2021 6500; 3.5 V6 2016-2026 6500; 2.5 I4 2019-2026 6300; 1.6 turbo hybrid 2021-2026 6000 H; 2.2 diesel 2016-2019 4500 D
+Kia | Carens / Rondo | 1.8 I4 1999-2006 6000; 2.0 I4 2002-2019 6500; 1.6 I4 2002-2019 6300; 2.4 I4 2006-2012 6500; 2.7 V6 2006-2012 6500; 2.0 diesel 2002-2013 4500 D; 1.7 diesel 2013-2019 4500 D
+Kia | Carens (2022 on) | 1.5 I4 2022-2026 6300; 1.5 turbo 2022-2026 6000; 1.5 diesel 2022-2026 4500 D
+Kia | Carnival / Sedona | 2.5 V6 1999-2006 6000; 3.5 V6 1999-2006 6000; 2.9 diesel 1999-2006 4000 D; 3.8 V6 2006-2014 6500; 3.3 V6 2010-2026 6500; 3.5 V6 (2020 on) 2020-2026 6500; 2.2 diesel 2006-2026 4500 D; 1.6 turbo hybrid 2024-2026 6000 H
+Kia | Ceed / ProCeed / XCeed | 1.4 I4 2006-2019 6300; 1.6 I4 2006-2019 6300; 2.0 I4 2006-2012 6500; 1.0 turbo 2012-2026 6000; 1.4 turbo 2018-2020 6000; 1.5 turbo 2020-2026 6000; 1.6 turbo 2013-2026 6500; 1.6 plug-in hybrid 2020-2026 6000 H; 1.6 diesel 2006-2026 4500 D
+Kia | Cerato / Forte / K3 | 1.6 I4 2003-2026 6300; 2.0 I4 2003-2026 6500; 2.4 I4 2009-2013 6500; 1.6 turbo 2013-2026 6500; 1.5 diesel 2003-2009 4500 D; 1.6 diesel 2009-2018 4500 D
+Kia | Credos / Clarus | 1.8 I4 1995-2001 6000; 2.0 I4 1995-2001 6000
+Kia | K900 / Quoris | 3.8 V6 2012-2021 6500; 5.0 V8 2014-2018 6500; 3.3 turbo V6 2018-2025 6000
+Kia | Magentis / Optima / K5 | 2.0 I4 2000-2020 6500; 2.4 I4 2000-2020 6500; 2.5 V6 2000-2005 6000; 2.7 V6 2005-2010 6500; 2.0 turbo 2011-2020 6500; 1.6 turbo 2016-2026 6000; 2.5 I4 2020-2026 6300; 2.5 turbo 2021-2026 6000; 2.0 hybrid 2011-2026 6000 H; 2.0 diesel 2006-2010 4500 D; 1.7 diesel 2016-2020 4500 D
+Kia | Mohave / Borrego | 3.8 V6 2008-2011 6500; 4.6 V8 2008-2011 6500; 3.0 diesel 2008-2026 4000 D
+Kia | Niro | 1.6 hybrid 2016-2026 6000 H
+Kia | Picanto / Morning | 1.0 I3 2004-2026 6300; 1.1 I4 2004-2011 6000; 1.2 I4 2011-2026 6300; 1.0 turbo 2017-2026 6000
+Kia | Pregio | 2.7 diesel 1995-2006 4000 D; 3.0 diesel 2002-2006 4000 D
+Kia | Pride / Festiva | 1.3 I4 1994-2000 6000
+Kia | Rio | 1.3 I4 2000-2005 6000; 1.5 I4 2000-2005 6000; 1.6 I4 2005-2023 6300; 1.4 I4 2005-2026 6300; 1.2 I4 2011-2023 6300; 1.0 turbo 2017-2023 6000; 1.5 diesel 2005-2011 4500 D; 1.4 diesel 2011-2019 4500 D
+Kia | Seltos | 2.0 I4 2019-2026 6500; 1.6 turbo 2019-2026 6000; 1.5 I4 2019-2026 6300; 1.4 turbo 2019-2022 6000; 1.5 turbo 2022-2026 6000; 1.5 diesel 2019-2026 4500 D
+Kia | Sephia / Spectra / Mentor | 1.5 I4 1994-2000 6000; 1.6 I4 1994-2004 6000; 1.8 I4 1994-2004 6000
+Kia | Shuma | 1.5 I4 1997-2004 6000; 1.8 I4 1997-2004 6000
+Kia | Sonet | 1.2 I4 2020-2026 6300; 1.0 turbo 2020-2026 6000; 1.5 diesel 2020-2026 4500 D
+Kia | Sorento | 3.5 V6 2002-2020 6000; 2.4 I4 2002-2020 6500; 3.3 V6 2009-2020 6500; 2.0 turbo 2016-2020 6500; 2.5 I4 2021-2026 6300; 2.5 turbo 2021-2026 6000; 3.5 V6 (2021 on) 2021-2026 6500; 1.6 turbo hybrid 2021-2026 6000 H; 2.5 diesel 2002-2009 4000 D; 2.2 diesel 2009-2026 4500 D
+Kia | Soul | 1.6 I4 2008-2019 6500; 2.0 I4 2008-2026 6500; 1.6 turbo 2014-2022 6000; 1.6 diesel 2008-2019 4500 D
+Kia | Sportage | 2.0 I4 1994-2026 6500; 2.7 V6 2004-2010 6500; 2.4 I4 2010-2021 6500; 2.0 turbo 2011-2016 6500; 1.6 turbo 2015-2026 6000; 2.5 I4 2022-2026 6300; 1.6 turbo hybrid 2022-2026 6000 H; 2.0 diesel 2004-2026 4500 D; 1.7 diesel 2015-2018 4500 D; 1.6 diesel 2018-2026 4500 D
+Kia | Stinger | 2.0 turbo 2017-2023 6500; 2.5 turbo 2021-2023 6000; 3.3 turbo V6 2017-2023 6000; 2.2 diesel 2017-2020 4500 D
+Kia | Stonic | 1.0 turbo 2017-2026 6000; 1.4 I4 2017-2022 6300; 1.2 I4 2017-2026 6300; 1.6 diesel 2017-2020 4500 D
+Kia | Tasman | 2.5 turbo 2025-2026 6000; 2.2 diesel 2025-2026 4500 D
+Kia | Telluride | 3.8 V6 2019-2026 6500
+Kia | Venga | 1.4 I4 2010-2019 6300; 1.6 I4 2010-2019 6300; 1.4 diesel 2010-2019 4500 D
+Kia | Opirus / Amanti | 3.5 V6 2003-2006 6000; 3.8 V6 2006-2012 6500; 2.7 V6 2003-2012 6000
+SsangYong / KGM | Actyon | 2.3 I4 2006-2012 6000; 2.0 diesel 2005-2018 4500 D
+SsangYong / KGM | Korando (to 2006) | 2.3 I4 1996-2006 6000; 3.2 I6 1997-2006 6000; 2.9 diesel 1996-2006 4000 D
+SsangYong / KGM | Korando | 2.0 I4 2010-2019 6000; 1.5 turbo 2019-2026 6000; 2.0 diesel 2010-2026 4500 D; 1.6 diesel 2019-2024 4500 D
+SsangYong / KGM | Kyron | 3.2 I6 2005-2010 6000; 2.7 diesel 2005-2014 4000 D; 2.0 diesel 2005-2014 4500 D
+SsangYong / KGM | Musso | 2.3 I4 1994-2005 6000; 3.2 I6 1994-2005 6000; 2.9 diesel 1994-2005 4000 D
+SsangYong / KGM | Musso (2018 on) | 2.2 diesel 2018-2026 4000 D
+SsangYong / KGM | Rexton | 2.3 I4 2001-2017 6000; 3.2 I6 2001-2017 6000; 2.7 diesel 2002-2017 4000 D; 2.0 diesel 2012-2017 4000 D; 2.0 turbo 2017-2026 6000; 2.2 diesel 2017-2026 4000 D
+SsangYong / KGM | Stavic / Rodius | 3.2 I6 2004-2013 6000; 2.7 diesel 2004-2013 4000 D; 2.0 diesel 2013-2019 4500 D
+SsangYong / KGM | Tivoli | 1.6 I4 2015-2026 6000; 1.5 turbo 2019-2026 6000; 1.6 diesel 2015-2026 4500 D
+SsangYong / KGM | Torres | 1.5 turbo 2022-2026 6000
+Daewoo | Kalos | 1.2 I4 2002-2007 6000; 1.4 I4 2002-2007 6000
+Daewoo | Lacetti | 1.6 I4 2003-2011 6000; 1.8 I4 2003-2011 6000
+Daewoo | Lanos | 1.5 I4 1997-2004 6000; 1.6 I4 1997-2004 6000
+Daewoo | Leganza | 2.0 I4 1997-2003 6000; 2.2 I4 1997-2003 6000
+Daewoo | Matiz | 0.8 I3 1998-2011 6000; 1.0 I4 2003-2011 6000
+Daewoo | Nexia / Cielo | 1.5 I4 1994-2008 6000
+Daewoo | Nubira | 1.6 I4 1997-2004 6000; 2.0 I4 1997-2004 6000
+Daewoo | Tacuma / Rezzo | 1.6 I4 2000-2008 6000; 2.0 I4 2000-2008 6000
+Proton | Exora | 1.6 I4 2009-2023 6000; 1.6 turbo 2012-2023 6000
+Proton | Gen-2 | 1.6 I4 2004-2012 6500; 1.3 I4 2006-2012 6500
+Proton | Iriz | 1.3 I4 2014-2026 6000; 1.6 I4 2014-2026 6000
+Proton | Persona | 1.6 I4 2007-2016 6000; 1.3 I4 2016-2026 6000
+Proton | Preve | 1.6 I4 2012-2020 6000; 1.6 turbo 2012-2020 6000
+Proton | Saga | 1.3 I4 1994-2026 6000; 1.5 I4 1994-2008 6000
+Proton | Satria / Satria Neo | 1.5 I4 1994-2005 6000; 1.6 I4 1996-2015 6500
+Proton | Waja | 1.6 I4 2000-2011 6000
+Proton | Wira | 1.5 I4 1994-2009 6000; 1.6 I4 1994-2009 6000
+Proton | X50 | 1.5 I4 2020-2026 6000; 1.5 turbo 2020-2026 6000
+Proton | X70 | 1.8 turbo 2018-2020 6000; 1.5 turbo 2020-2026 6000
+Perodua | Alza | 1.5 I4 2009-2026 6000
+Perodua | Aruz | 1.5 I4 2019-2026 6000
+Perodua | Ativa | 1.0 turbo 2021-2026 6000
+Perodua | Axia | 1.0 I3 2014-2026 6000
+Perodua | Bezza | 1.0 I3 2016-2026 6000; 1.3 I4 2016-2026 6000
+Perodua | Kancil | 0.66 I3 1994-2009 6000; 0.85 I3 1994-2009 6000
+Perodua | Kelisa | 1.0 I3 2001-2007 6000
+Perodua | Kembara | 1.0 I3 1998-2006 6000; 1.3 I4 2003-2006 6000
+Perodua | Kenari | 1.0 I3 2000-2009 6000
+Perodua | Myvi | 1.0 I3 2005-2017 6000; 1.3 I4 2005-2026 6000; 1.5 I4 2011-2026 6000
+Perodua | Viva | 0.85 I3 2007-2014 6000; 1.0 I3 2007-2014 6000
+Tata | Altroz | 1.2 I3 2020-2026 6000; 1.2 turbo 2021-2026 6000; 1.5 diesel 2020-2026 4500 D
+Tata | Harrier | 2.0 diesel 2019-2026 4500 D
+Tata | Indica / Vista | 1.4 I4 1998-2010 6000; 1.2 I4 2008-2018 6000; 1.4 diesel 1998-2018 4500 D; 1.3 diesel 2008-2018 4500 D
+Tata | Indigo / Manza | 1.4 I4 2002-2018 6000; 1.2 I4 2009-2018 6000; 1.4 diesel 2002-2018 4500 D; 1.3 diesel 2009-2018 4500 D
+Tata | Nano | 0.6 I2 2008-2018 5500
+Tata | Nexon | 1.2 turbo 2017-2026 6000; 1.5 diesel 2017-2026 4500 D
+Tata | Punch | 1.2 I3 2021-2026 6000
+Tata | Safari (to 2019) | 2.0 diesel 1998-2005 4000 D; 3.0 diesel 2005-2017 4000 D; 2.2 diesel 2005-2019 4000 D
+Tata | Safari | 2.0 diesel 2021-2026 4500 D
+Tata | Sumo | 3.0 diesel 1994-2019 4000 D
+Tata | Tiago | 1.2 I3 2016-2026 6000; 1.05 diesel 2016-2020 4500 D
+Tata | Tigor | 1.2 I3 2017-2026 6000; 1.05 diesel 2017-2020 4500 D
+Tata | Xenon | 2.2 diesel 2007-2019 4000 D
+Tata | Zest / Bolt | 1.2 turbo 2014-2019 6000; 1.3 diesel 2014-2019 4500 D
+Mahindra | Bolero | 2.5 diesel 2000-2026 4000 D; 1.5 diesel 2016-2026 4000 D
+Mahindra | KUV100 | 1.2 I3 2016-2023 6000; 1.2 diesel 2016-2020 4500 D
+Mahindra | Marazzo | 1.5 diesel 2018-2023 4500 D
+Mahindra | Pik-Up / Genio | 2.5 diesel 2006-2026 4000 D; 2.2 diesel 2010-2026 4000 D
+Mahindra | Scorpio | 2.6 diesel 2002-2009 4000 D; 2.2 diesel 2006-2026 4000 D; 2.0 turbo 2022-2026 6000
+Mahindra | Thar | 2.5 diesel 2010-2020 4000 D; 2.2 diesel 2020-2026 4500 D; 1.5 diesel 2023-2026 4500 D; 2.0 turbo 2020-2026 6000
+Mahindra | TUV300 | 1.5 diesel 2015-2020 4500 D
+Mahindra | XUV300 / XUV 3XO | 1.2 turbo 2019-2026 6000; 1.5 diesel 2019-2026 4500 D
+Mahindra | XUV500 | 2.2 diesel 2011-2021 4000 D; 2.2 I4 2016-2021 5500
+Mahindra | XUV700 | 2.0 turbo 2021-2026 6000; 2.2 diesel 2021-2026 4500 D
+Mahindra | Xylo | 2.5 diesel 2009-2019 4000 D; 2.2 diesel 2009-2019 4000 D
+Maruti Suzuki | 800 | 0.8 I3 1994-2014 6000
+Maruti Suzuki | Alto / Alto K10 | 0.8 I3 2000-2026 6000; 1.0 I3 2010-2026 6000
+Maruti Suzuki | Baleno | 1.2 I4 2015-2026 6000; 1.0 turbo 2017-2020 5500; 1.3 diesel 2015-2020 4500 D
+Maruti Suzuki | Brezza / Vitara Brezza | 1.3 diesel 2016-2020 4500 D; 1.5 I4 2020-2026 6000
+Maruti Suzuki | Celerio | 1.0 I3 2014-2026 6000; 0.8 diesel 2015-2018 4500 D
+Maruti Suzuki | Ciaz | 1.4 I4 2014-2018 6000; 1.5 I4 2018-2026 6000; 1.3 diesel 2014-2020 4500 D; 1.5 diesel 2019-2020 4500 D
+Maruti Suzuki | Dzire / Swift Dzire | 1.2 I4 2008-2026 6000; 1.3 diesel 2008-2020 4500 D
+Maruti Suzuki | Eeco / Omni | 0.8 I3 1994-2019 6000; 1.2 I4 2010-2026 6000
+Maruti Suzuki | Ertiga | 1.4 I4 2012-2018 6000; 1.5 I4 2018-2026 6000; 1.3 diesel 2012-2020 4500 D
+Maruti Suzuki | Esteem | 1.3 I4 1994-2008 6000; 1.5 diesel 1999-2008 4500 D
+Maruti Suzuki | Fronx | 1.2 I4 2023-2026 6000; 1.0 turbo 2023-2026 5500
+Maruti Suzuki | Grand Vitara (2022 on) | 1.5 I4 2022-2026 6000; 1.5 hybrid 2022-2026 5500 H
+Maruti Suzuki | Gypsy | 1.3 I4 1994-2018 6000
+Maruti Suzuki | S-Presso | 1.0 I3 2019-2026 6000
+Maruti Suzuki | Swift | 1.3 I4 2005-2011 6000; 1.2 I4 2010-2026 6000; 1.3 diesel 2007-2020 4500 D
+Maruti Suzuki | Wagon R | 1.1 I4 1999-2010 6000; 1.0 I3 2010-2026 6000; 1.2 I4 2019-2026 6000
+Maruti Suzuki | XL6 | 1.5 I4 2019-2026 6000
+Maruti Suzuki | Zen / Zen Estilo | 1.0 I4 1994-2006 6000; 1.1 I4 2006-2013 6000
+BYD | F0 | 1.0 I3 2008-2015 6000
+BYD | F3 | 1.5 I4 2005-2014 6000; 1.6 I4 2005-2014 6000
+BYD | Qin Plus DM-i | 1.5 plug-in hybrid 2021-2026 6000 H
+BYD | Song Plus DM-i / Sealion 6 | 1.5 plug-in hybrid 2020-2026 6000 H; 1.5 turbo plug-in hybrid 2023-2026 6000 H
+BYD | Shark 6 | 1.5 turbo plug-in hybrid 2024-2026 6000 H
+BYD | Tang | 2.0 turbo plug-in hybrid 2015-2026 6000 H
+GWM / Great Wall | Cannon / Ute / Poer | 2.0 diesel 2019-2026 4000 D; 2.0 turbo 2019-2026 6000; 2.4 diesel 2024-2026 4000 D
+GWM / Great Wall | Steed / Wingle | 2.4 I4 2006-2016 5500; 2.8 diesel 2006-2011 4000 D; 2.0 diesel 2010-2026 4000 D
+GWM / Great Wall | Tank 300 | 2.0 turbo 2021-2026 6000; 2.0 turbo hybrid 2023-2026 6000 H
+GWM / Great Wall | V200 / V240 | 2.4 I4 2009-2014 5500; 2.0 diesel 2009-2014 4000 D
+GWM / Great Wall | X200 / X240 | 2.4 I4 2009-2014 5500; 2.0 diesel 2009-2014 4000 D
+Haval | Dargo / H6 GT | 2.0 turbo 2021-2026 6000
+Haval | H2 | 1.5 turbo 2014-2021 6000
+Haval | H6 | 1.5 turbo 2011-2026 6000; 2.0 turbo 2011-2026 6000; 1.5 turbo hybrid 2021-2026 6000 H
+Haval | H8 | 2.0 turbo 2014-2019 6000
+Haval | H9 | 2.0 turbo 2014-2026 6000
+Haval | Jolion | 1.5 turbo 2020-2026 6000; 1.5 hybrid 2022-2026 6000 H
+Chery | A3 / J3 | 1.6 I4 2008-2015 6000; 2.0 I4 2008-2015 6000
+Chery | Arrizo 5 | 1.5 I4 2016-2026 6000; 1.5 turbo 2016-2026 6000
+Chery | Omoda 5 / C5 | 1.5 turbo 2022-2026 6000; 1.6 turbo 2022-2026 6000
+Chery | QQ | 0.8 I3 2003-2015 6000; 1.1 I4 2003-2015 6000
+Chery | Tiggo (to 2016) | 2.0 I4 2005-2016 6000; 2.4 I4 2005-2012 6000; 1.6 I4 2010-2016 6000
+Chery | Tiggo 4 / Tiggo 4 Pro | 1.5 I4 2017-2026 6000; 1.5 turbo 2017-2026 6000
+Chery | Tiggo 7 / Tiggo 7 Pro | 1.5 turbo 2016-2026 6000; 1.6 turbo 2019-2026 6000; 1.5 turbo plug-in hybrid 2023-2026 6000 H
+Chery | Tiggo 8 / Tiggo 8 Pro | 1.5 turbo 2018-2026 6000; 1.6 turbo 2019-2026 6000; 2.0 turbo 2020-2026 6000
+Geely | Atlas / Boyue | 2.0 I4 2016-2022 6000; 2.4 I4 2016-2022 6000; 1.8 turbo 2016-2022 6000; 1.5 turbo 2023-2026 6000
+Geely | CK / MK | 1.5 I4 2005-2016 6000
+Geely | Coolray / Binyue | 1.5 turbo 2018-2026 6000
+Geely | Emgrand | 1.5 I4 2009-2026 6000; 1.8 I4 2009-2016 6000
+Geely | Okavango / Haoyue | 1.5 turbo hybrid 2020-2026 6000 H
+LDV / Maxus | D90 | 2.0 turbo 2017-2024 6000; 2.0 diesel 2019-2024 4500 D
+LDV / Maxus | Deliver 9 | 2.0 diesel 2020-2026 4500 D
+LDV / Maxus | G10 | 2.0 turbo 2014-2026 6000; 1.9 diesel 2016-2026 4500 D
+LDV / Maxus | T60 | 2.8 diesel 2017-2021 4000 D; 2.0 bi-turbo diesel 2021-2026 4500 D
+LDV / Maxus | V80 | 2.5 diesel 2011-2026 4000 D
+Lada | 2105 / 2107 | 1.5 I4 1994-2012 6000; 1.6 I4 1994-2012 6000
+Lada | Granta | 1.6 I4 2011-2026 6000
+Lada | Kalina | 1.4 I4 2004-2018 6000; 1.6 I4 2004-2018 6000
+Lada | Largus | 1.6 I4 2012-2026 6000
+Lada | Niva / Niva Legend | 1.7 I4 1994-2026 5500
+Lada | Priora | 1.6 I4 2007-2018 6000
+Lada | Samara | 1.5 I4 1994-2013 6000; 1.6 I4 1994-2013 6000
+Lada | Vesta | 1.6 I4 2015-2026 6000; 1.8 I4 2015-2026 6000
+Lada | XRAY | 1.6 I4 2015-2022 6000; 1.8 I4 2015-2022 6000
+Datsun | GO / GO+ | 1.2 I3 2014-2022 6000
+Datsun | on-DO / mi-DO | 1.6 I4 2014-2020 6000
+Datsun | redi-GO | 0.8 I3 2016-2022 6000; 1.0 I3 2017-2022 6000
+Toyota | Avanza | 1.3 I4 2003-2026 6000; 1.5 I4 2006-2026 6000
+Toyota | Corolla Cross | 1.8 I4 2020-2026 6000; 2.0 I4 2021-2026 6500; 1.8 hybrid 2020-2026 5200 H; 2.0 hybrid 2022-2026 6000 H
+Toyota | Etios | 1.2 I4 2010-2020 6000; 1.5 I4 2010-2020 6000; 1.4 diesel 2010-2020 4500 D
+Toyota | Innova | 2.0 I4 2004-2026 6000; 2.7 I4 2004-2016 5500; 2.5 diesel 2004-2016 4000 D; 2.4 diesel 2016-2026 4000 D; 2.0 hybrid 2022-2026 6000 H
+Toyota | Rush | 1.5 I4 2006-2026 6000
+Toyota | Vios | 1.5 I4 2002-2026 6000; 1.3 I4 2007-2020 6000
+Nissan | Almera / Sunny | 1.4 I4 1995-2006 6000; 1.6 I4 1995-2006 6500; 1.8 I4 2000-2006 6000; 1.5 I4 2006-2026 6000; 1.0 turbo 2019-2026 6000; 2.2 diesel 2000-2006 4500 D
+Nissan | Kicks | 1.6 I4 2016-2026 6000; 1.5 I4 2016-2022 6000; 1.2 hybrid 2020-2026 6000 H
+Nissan | Terra | 2.5 diesel 2018-2026 4000 D
+Volkswagen | Fox | 1.0 I4 2003-2021 6000; 1.6 I4 2003-2021 6000
+Volkswagen | Gol | 1.0 I4 1994-2017 6000; 1.6 I4 1994-2023 6000; 1.8 I4 1994-2008 6000; 1.0 I3 2017-2023 6500
+Volkswagen | Santana | 1.6 I4 1994-2022 6000; 1.8 I4 1994-2012 6000
+Volkswagen | Saveiro | 1.6 I4 1994-2023 6000; 1.8 I4 1994-2008 6000
+Volkswagen | Virtus | 1.0 turbo 2018-2026 6000; 1.6 I4 2018-2023 6000; 1.5 turbo 2022-2026 6000
+Chevrolet | Agile | 1.4 I4 2009-2016 6000
+Chevrolet | Celta | 1.0 I4 2000-2015 6000; 1.4 I4 2004-2015 6000
+Chevrolet | Corsa | 1.0 I4 1994-2012 6000; 1.6 I4 1994-2008 6000; 1.8 I4 2002-2012 6000
+Chevrolet | Groove | 1.5 I4 2021-2026 6000
+Chevrolet | Montana | 1.4 I4 2003-2021 6000; 1.8 I4 2003-2010 6000
+Chevrolet | Montana (2023 on) | 1.2 turbo 2023-2026 6000
+Chevrolet | Onix | 1.0 I4 2012-2019 6000; 1.4 I4 2012-2019 6000; 1.0 turbo 2019-2026 6000; 1.2 I3 2019-2026 6000
+Chevrolet | Prisma | 1.0 I4 2006-2019 6000; 1.4 I4 2006-2019 6000
+Chevrolet | Sail | 1.2 I4 2010-2026 6000; 1.4 I4 2010-2026 6000; 1.5 I4 2015-2026 6000
+Ford | Figo / Ka+ | 1.2 I4 2010-2021 6500; 1.5 I4 2015-2021 6500; 1.4 diesel 2010-2015 4500 D; 1.5 diesel 2015-2021 4500 D
+Ford | Ikon | 1.3 I4 1999-2011 6000; 1.6 I4 1999-2011 6000; 1.4 diesel 2005-2011 4500 D
+Ford | Ka | 1.3 I4 1996-2008 6000; 1.2 I4 2008-2016 6000; 1.0 I3 2014-2021 6500; 1.5 I4 2014-2021 6500
+Fiat | Argo | 1.0 I3 2017-2026 6500; 1.3 I4 2017-2026 6500; 1.8 I4 2017-2022 6000
+Fiat | Cronos | 1.3 I4 2018-2026 6500; 1.8 I4 2018-2022 6000
+Fiat | Mobi | 1.0 I4 2016-2026 6000; 1.0 I3 2017-2026 6500
+Fiat | Palio | 1.0 I4 1996-2017 6000; 1.6 I4 1996-2004 6000; 1.4 I4 2004-2017 6000; 1.8 I4 2004-2017 6000
+Fiat | Pulse | 1.0 turbo 2021-2026 6000; 1.3 I4 2021-2026 6500
+Fiat | Siena / Grand Siena | 1.0 I4 1997-2021 6000; 1.6 I4 1997-2004 6000; 1.4 I4 2004-2021 6000
+Fiat | Strada | 1.4 I4 1996-2026 6000; 1.8 I4 2004-2020 6000; 1.3 I4 2020-2026 6500; 1.0 turbo 2022-2026 6000
+Fiat | Toro | 1.8 I4 2016-2022 6000; 2.4 I4 2016-2022 6000; 1.3 turbo 2021-2026 6000; 2.0 diesel 2016-2026 4500 D
+Fiat | Uno | 1.0 I4 1994-2021 6000; 1.4 I4 2004-2021 6000
+Renault | Kiger | 1.0 I3 2021-2026 6000; 1.0 turbo 2021-2026 6000
+Renault | Kwid | 0.8 I3 2015-2026 6000; 1.0 I3 2016-2026 6000
+Renault | Oroch | 1.6 I4 2015-2026 6000; 2.0 I4 2015-2022 6000; 1.3 turbo 2022-2026 6000
+Renault | Triber | 1.0 I3 2019-2026 6000
+Peugeot | 301 | 1.2 I3 2012-2026 6000; 1.6 I4 2012-2026 6000; 1.6 diesel 2012-2026 4500 D
+Mitsubishi | Attrage | 1.2 I3 2013-2026 6000
+Mitsubishi | Xpander | 1.5 I4 2017-2026 6000
+Honda | Amaze | 1.2 I4 2013-2026 6500; 1.5 diesel 2013-2023 4500 D
+Honda | Brio | 1.2 I4 2011-2026 6500
+Honda | BR-V | 1.5 I4 2015-2026 6500
+Honda | Mobilio | 1.5 I4 2014-2022 6500
+Honda | WR-V | 1.2 I4 2017-2026 6500; 1.5 diesel 2017-2023 4500 D
+Suzuki | Ertiga | 1.4 I4 2012-2018 6000; 1.5 I4 2018-2026 6000; 1.3 diesel 2012-2020 4500 D
+"""
+
     val byModel: Map<Pair<String, String>, List<VehicleCatalog.Engine>> by lazy {
-        (TEXT + "\n" + TEXT2 + "\n" + TEXT3 + "\n" + SUPPLEMENT + "\n" + NINETIES).lines().map { it.trim() }.filter { it.isNotEmpty() }.map { line ->
+        (TEXT + "\n" + TEXT2 + "\n" + TEXT3 + "\n" + SUPPLEMENT + "\n" + NINETIES + "\n" + GLOBAL).lines().map { it.trim() }.filter { it.isNotEmpty() }.map { line ->
             val (make, model, list) = line.split(" | ", limit = 3)
             (make to model) to list.split(";").mapNotNull { parse(it.trim()) }
         }.groupBy({ it.first }, { it.second }).mapValues { (_, lists) -> lists.flatten().distinctBy { it.name } }
@@ -736,7 +981,7 @@ Aston Martin | DB7 | 3.2 supercharged I6 1994-1999 6500
 
     /** Entries that don't parse (for the tests). */
     val malformed: List<String> by lazy {
-        (TEXT + "\n" + TEXT2 + "\n" + TEXT3 + "\n" + SUPPLEMENT + "\n" + NINETIES).lines().map { it.trim() }.filter { it.isNotEmpty() }.flatMap { line ->
+        (TEXT + "\n" + TEXT2 + "\n" + TEXT3 + "\n" + SUPPLEMENT + "\n" + NINETIES + "\n" + GLOBAL).lines().map { it.trim() }.filter { it.isNotEmpty() }.flatMap { line ->
             val parts = line.split(" | ", limit = 3)
             if (parts.size != 3) listOf(line) else parts[2].split(";").map { it.trim() }.filter { parse(it) == null }
         }
@@ -744,7 +989,7 @@ Aston Martin | DB7 | 3.2 supercharged I6 1994-1999 6500
 
     /** Engine names listed twice for one model (for the tests): the second would be dropped. */
     val repeated: List<String> by lazy {
-        (TEXT + "\n" + TEXT2 + "\n" + TEXT3 + "\n" + SUPPLEMENT + "\n" + NINETIES).lines().map { it.trim() }.filter { it.isNotEmpty() }
+        (TEXT + "\n" + TEXT2 + "\n" + TEXT3 + "\n" + SUPPLEMENT + "\n" + NINETIES + "\n" + GLOBAL).lines().map { it.trim() }.filter { it.isNotEmpty() }
             .mapNotNull { line -> line.split(" | ", limit = 3).takeIf { it.size == 3 } }
             .groupBy({ it[0] to it[1] }, { it[2].split(";").mapNotNull { e -> parse(e.trim())?.name } })
             .flatMap { (key, lists) -> lists.flatten().groupingBy { it }.eachCount().filter { it.value > 1 }.keys.map { "${key.first} ${key.second}: $it" } }

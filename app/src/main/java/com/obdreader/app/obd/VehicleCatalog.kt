@@ -46,6 +46,7 @@ object VehicleCatalog {
 
     internal val BASE_MAKES: List<Make> = listOf(
         Make("Ford", listOf(
+            Model("Figo / Ka+", 2010, 2021), Model("Ikon", 1999, 2011), Model("Ka", 1996, 2021),
             Model("Taurus", 1994, 2019, listOf(e("3.0 V6", 1994, 2007, 6000), e("3.8 V6", 1994, 1995, 5500), e("3.4 V8 (SHO)", 1996, 1999, 7000), e("3.5 V6", 2008, 2019, 6500))),
             Model("Escort", 1994, 2002, listOf(e("1.9 I4", 1994, 2002, 6000), e("2.0 I4", 1997, 2002, 6500))),
             Model("Probe", 1994, 1997, listOf(e("2.0 I4", 1994, 1997, 6500), e("2.5 V6", 1994, 1997, 6800))),
@@ -106,6 +107,7 @@ object VehicleCatalog {
             Model("Tribute", 2001, 2006, listOf(e("2.0 I4", 2001, 2004, 6500), e("2.3 I4", 2004, 2006, 6500), e("3.0 V6", 2001, 2006, 6250))),
         )),
         Make("Honda", listOf(
+            Model("Amaze", 2013, 2026), Model("Brio", 2011, 2026), Model("BR-V", 2015, 2026), Model("Mobilio", 2014, 2022), Model("WR-V", 2017, 2026),
             Model("Accord", 1994, 2026, listOf(
                 e("2.3", 1998, 2002, 6800), e("2.4", 2003, 2019, 6800), e("3.0 V6", 2003, 2007, 6800), e("3.5 V6", 2008, 2017, 6800),
             )), Model("Accord Euro", 2003, 2015), Model("City", 2003, 2026),
@@ -122,6 +124,7 @@ object VehicleCatalog {
             Model("ZR-V", 2023, 2026),
         )),
         Make("Toyota", listOf(
+            Model("Avanza", 2003, 2026), Model("Corolla Cross", 2020, 2026), Model("Etios", 2010, 2020), Model("Innova", 2004, 2026), Model("Rush", 2006, 2026), Model("Vios", 2002, 2026),
             Model("Supra (A80)", 1994, 2002, listOf(e("3.0 I6", 1994, 2002, 6800), e("3.0 twin-turbo I6", 1994, 2002, 6800))),
             Model("4Runner", 1996, 2024, listOf(e("2.7 I4", 1996, 2000, 5200), e("3.4 V6", 1996, 2002, 5200), e("4.0 V6", 2003, 2024, 5500), e("4.7 V8", 2003, 2009, 5400))),
             Model("Avalon", 1995, 2022, listOf(e("3.0 V6", 1995, 2004, 6000), e("3.5 V6", 2005, 2022, 6200))),
@@ -270,6 +273,7 @@ object VehicleCatalog {
             Model("Vectra", 1997, 2006), Model("Viva", 2005, 2009), Model("Zafira", 2001, 2005),
         )),
         Make("Chevrolet", listOf(
+            Model("Agile", 2009, 2016), Model("Celta", 2000, 2015), Model("Corsa", 1994, 2012), Model("Groove", 2021, 2026), Model("Montana", 2003, 2021), Model("Montana (2023 on)", 2023, 2026), Model("Onix", 2012, 2026), Model("Prisma", 2006, 2019), Model("Sail", 2010, 2026),
             Model("Lumina", 1995, 2001, listOf(e("3.1 V6", 1995, 2001, 5000))),
             Model("Cavalier", 1994, 2005, listOf(e("2.2 I4", 1994, 2005, 5500), e("2.4 I4", 1996, 2002, 6000))),
             Model("Monte Carlo", 1995, 2007, listOf(e("3.1 V6", 1995, 1999, 5000), e("3.4 V6", 2000, 2005, 5500), e("3.8 V6", 2000, 2007, 5500))),
@@ -331,6 +335,7 @@ object VehicleCatalog {
             Model("900", 1994, 1998, listOf(e("2.0 turbo", 1994, 1998, 6000), e("2.3 I4", 1994, 1998, 6000), e("2.5 V6", 1994, 1997, 6500))),
             Model("9000", 1994, 1998, listOf(e("2.3 turbo", 1994, 1998, 6000), e("3.0 V6", 1995, 1997, 6000))),Model("9-2X", 2005, 2006), Model("9-3", 1999, 2014), Model("9-5", 1998, 2011), Model("9-7X", 2005, 2009))),
         Make("Volkswagen", listOf(
+            Model("Fox", 2003, 2021), Model("Gol", 1994, 2023), Model("Santana", 1994, 2022), Model("Saveiro", 1994, 2023), Model("Virtus", 2018, 2026),
             Model("Amarok", 2011, 2026, listOf(e("2.0 TDI diesel", 2011, 2026, 4500, D), e("3.0 V6 TDI diesel", 2016, 2026, 4500, D))),
             Model("Arteon", 2017, 2026), Model("Atlas", 2017, 2026), Model("Beetle", 1998, 2019), Model("Bora", 1999, 2005),
             Model("Caddy", 2004, 2026), Model("CC", 2008, 2017), Model("Eos", 2006, 2015),
@@ -469,6 +474,7 @@ object VehicleCatalog {
             Model("ProMaster", 2014, 2026),
         )),
         Make("Fiat", listOf(
+            Model("Argo", 2017, 2026), Model("Cronos", 2018, 2026), Model("Mobi", 2016, 2026), Model("Palio", 1996, 2017), Model("Pulse", 2021, 2026), Model("Siena / Grand Siena", 1997, 2021), Model("Strada", 1996, 2026), Model("Toro", 2016, 2026), Model("Uno", 1994, 2021),
             Model("124 Spider", 2016, 2020),
             Model("500", 2007, 2026, listOf(
                 e("1.2", 2007, 2024, 6500), e("1.4", 2007, 2015, 6800), e("0.9 TwinAir turbo", 2010, 2019, 6000),
@@ -503,6 +509,7 @@ object VehicleCatalog {
             Model("Ypsilon", 2003, 2026),
         )),
         Make("Peugeot", listOf(
+            Model("301", 2012, 2026),
             Model("107 / 108", 2005, 2021), Model("2008", 2013, 2026),
             Model("206", 1998, 2010, listOf(e("1.4", 1998, 2010, 6200), e("1.6", 1998, 2010, 6200), e("2.0 (GTi/CC)", 1999, 2007, 6500))),
             Model("207", 2006, 2014), Model("208", 2012, 2026), Model("306", 1994, 2002), Model("307", 2001, 2008),
@@ -527,6 +534,7 @@ object VehicleCatalog {
 
         // Japan
         Make("Nissan", listOf(
+            Model("Almera / Sunny", 1995, 2026), Model("Kicks", 2016, 2026), Model("Terra", 2018, 2026),
             Model("300ZX", 1994, 1996, listOf(e("3.0 V6", 1994, 1996, 6500), e("3.0 twin-turbo V6", 1994, 1996, 6500))),
             Model("240SX", 1995, 1998, listOf(e("2.4 I4", 1995, 1998, 6500))),
             Model("Quest", 1994, 2002, listOf(e("3.0 V6", 1994, 1998, 6000), e("3.3 V6", 1999, 2002, 5500))),
@@ -583,6 +591,7 @@ object VehicleCatalog {
             )),
         )),
         Make("Mitsubishi", listOf(
+            Model("Attrage", 2013, 2026), Model("Xpander", 2017, 2026),
             Model("3000GT", 1994, 1999, listOf(e("3.0 V6", 1994, 1999, 6500), e("3.0 twin-turbo V6", 1994, 1999, 7000))),
             Model("Diamante", 1994, 2004, listOf(e("3.0 V6", 1994, 1996, 6000), e("3.5 V6", 1997, 2004, 6000))),
             Model("380", 2005, 2008), Model("ASX / Outlander Sport", 2010, 2026), Model("Colt", 2004, 2012),
@@ -605,6 +614,7 @@ object VehicleCatalog {
             )),
         )),
         Make("Suzuki", listOf(
+            Model("Ertiga", 2012, 2026),
             Model("Alto", 2009, 2014), Model("Baleno", 2016, 2022), Model("Celerio", 2015, 2021), Model("Equator", 2009, 2012),
             Model("Grand Vitara", 1998, 2019), Model("Ignis", 2017, 2026),
             Model("Jimny", 1998, 2026, listOf(e("1.3", 1998, 2018, 6500), e("1.5", 2018, 2026, 6000))),
@@ -727,6 +737,7 @@ object VehicleCatalog {
             Model("Range Rover Velar", 2017, 2026),
         )),
         Make("Renault", listOf(
+            Model("Kiger", 2021, 2026), Model("Kwid", 2015, 2026), Model("Oroch", 2015, 2026), Model("Triber", 2019, 2026),
             Model("Arkana", 2021, 2026), Model("Captur", 2013, 2026), Model("Clio", 1994, 2026, listOf(
                 e("1.6", 2000, 2012, 6500), e("2.0 (RS)", 2000, 2012, 7500), e("1.6 turbo (RS)", 2013, 2019, 6500), e("0.9 turbo", 2013, 2026, 6000),
                 e("1.5 diesel", 2005, 2019, 4800, D),
@@ -768,6 +779,106 @@ object VehicleCatalog {
             Model("MG3", 2011, 2026), Model("MG4", 2022, 2026), Model("HS", 2018, 2026), Model("TF", 2002, 2011), Model("ZR", 2001, 2005),
             Model("ZS", 2017, 2026), Model("ZS (Rover era)", 2001, 2005), Model("ZT", 2001, 2005),
         )),
+        Make("Hyundai", listOf(
+            Model("Accent / Verna", 1994, 2026), Model("Atos / Santro", 1998, 2022), Model("Bayon", 2021, 2026), Model("Creta", 2015, 2026),
+            Model("Elantra / Lantra", 1994, 2026), Model("Equus", 2009, 2016), Model("Excel", 1994, 2000), Model("Genesis", 2008, 2016),
+            Model("Genesis Coupe", 2009, 2016), Model("Getz / Click", 2002, 2011), Model("i10 / Grand i10", 2008, 2026),
+            Model("i20", 2008, 2026), Model("i30", 2007, 2026), Model("i40", 2011, 2019), Model("iLoad / iMax / H-1 / Starex", 1997, 2021),
+            Model("Ioniq", 2016, 2022), Model("Ioniq 5", 2021, 2026), Model("Ioniq 6", 2022, 2026), Model("Kona", 2017, 2026),
+            Model("Kona Electric", 2018, 2026), Model("Matrix / Lavita", 2001, 2010), Model("Palisade", 2018, 2026),
+            Model("Santa Cruz", 2021, 2026), Model("Santa Fe", 2000, 2026), Model("Sonata / i45", 1994, 2026), Model("Staria", 2021, 2026),
+            Model("Terracan", 2001, 2007), Model("Tiburon / Coupe", 1996, 2009), Model("Trajet", 1999, 2008),
+            Model("Tucson / ix35", 2004, 2026), Model("Veloster", 2011, 2022), Model("Venue", 2019, 2026),
+            Model("Veracruz / ix55", 2007, 2015),
+        )),
+        Make("Genesis", listOf(
+            Model("G70", 2017, 2026), Model("G80", 2016, 2026), Model("G90", 2016, 2026), Model("GV60", 2021, 2026),
+            Model("GV70", 2020, 2026), Model("GV80", 2020, 2026),
+        )),
+        Make("Kia", listOf(
+            Model("Cadenza / K7 / K8", 2009, 2026), Model("Carens / Rondo", 1999, 2019), Model("Carens (2022 on)", 2022, 2026),
+            Model("Carnival / Sedona", 1999, 2026), Model("Ceed / ProCeed / XCeed", 2006, 2026), Model("Cerato / Forte / K3", 2003, 2026),
+            Model("Credos / Clarus", 1995, 2001), Model("EV3", 2024, 2026), Model("EV6", 2021, 2026), Model("EV9", 2023, 2026),
+            Model("K900 / Quoris", 2012, 2025), Model("Magentis / Optima / K5", 2000, 2026), Model("Mohave / Borrego", 2008, 2026),
+            Model("Niro", 2016, 2026), Model("Niro EV", 2018, 2026), Model("Picanto / Morning", 2004, 2026), Model("Pregio", 1995, 2006),
+            Model("Pride / Festiva", 1994, 2000), Model("Rio", 2000, 2026), Model("Seltos", 2019, 2026),
+            Model("Sephia / Spectra / Mentor", 1994, 2004), Model("Shuma", 1997, 2004), Model("Sonet", 2020, 2026),
+            Model("Sorento", 2002, 2026), Model("Soul", 2008, 2026), Model("Sportage", 1994, 2026), Model("Stinger", 2017, 2023),
+            Model("Stonic", 2017, 2026), Model("Tasman", 2025, 2026), Model("Telluride", 2019, 2026), Model("Venga", 2010, 2019),
+            Model("Opirus / Amanti", 2003, 2012),
+        )),
+        Make("SsangYong / KGM", listOf(
+            Model("Actyon", 2005, 2018), Model("Korando (to 2006)", 1996, 2006), Model("Korando", 2010, 2026), Model("Kyron", 2005, 2014),
+            Model("Musso", 1994, 2005), Model("Musso (2018 on)", 2018, 2026), Model("Rexton", 2001, 2026),
+            Model("Stavic / Rodius", 2004, 2019), Model("Tivoli", 2015, 2026), Model("Torres", 2022, 2026),
+        )),
+        Make("Daewoo", listOf(
+            Model("Kalos", 2002, 2007), Model("Lacetti", 2003, 2011), Model("Lanos", 1997, 2004), Model("Leganza", 1997, 2003),
+            Model("Matiz", 1998, 2011), Model("Nexia / Cielo", 1994, 2008), Model("Nubira", 1997, 2004), Model("Tacuma / Rezzo", 2000, 2008),
+        )),
+        Make("Proton", listOf(
+            Model("Exora", 2009, 2023), Model("Gen-2", 2004, 2012), Model("Iriz", 2014, 2026), Model("Persona", 2007, 2026),
+            Model("Preve", 2012, 2020), Model("Saga", 1994, 2026), Model("Satria / Satria Neo", 1994, 2015), Model("Waja", 2000, 2011),
+            Model("Wira", 1994, 2009), Model("X50", 2020, 2026), Model("X70", 2018, 2026),
+        )),
+        Make("Perodua", listOf(
+            Model("Alza", 2009, 2026), Model("Aruz", 2019, 2026), Model("Ativa", 2021, 2026), Model("Axia", 2014, 2026),
+            Model("Bezza", 2016, 2026), Model("Kancil", 1994, 2009), Model("Kelisa", 2001, 2007), Model("Kembara", 1998, 2006),
+            Model("Kenari", 2000, 2009), Model("Myvi", 2005, 2026), Model("Viva", 2007, 2014),
+        )),
+        Make("Tata", listOf(
+            Model("Altroz", 2020, 2026), Model("Harrier", 2019, 2026), Model("Indica / Vista", 1998, 2018),
+            Model("Indigo / Manza", 2002, 2018), Model("Nano", 2008, 2018), Model("Nexon", 2017, 2026), Model("Punch", 2021, 2026),
+            Model("Safari (to 2019)", 1998, 2019), Model("Safari", 2021, 2026), Model("Sumo", 1994, 2019), Model("Tiago", 2016, 2026),
+            Model("Tigor", 2017, 2026), Model("Xenon", 2007, 2019), Model("Zest / Bolt", 2014, 2019),
+        )),
+        Make("Mahindra", listOf(
+            Model("Bolero", 2000, 2026), Model("KUV100", 2016, 2023), Model("Marazzo", 2018, 2023), Model("Pik-Up / Genio", 2006, 2026),
+            Model("Scorpio", 2002, 2026), Model("Thar", 2010, 2026), Model("TUV300", 2015, 2020), Model("XUV300 / XUV 3XO", 2019, 2026),
+            Model("XUV500", 2011, 2021), Model("XUV700", 2021, 2026), Model("Xylo", 2009, 2019),
+        )),
+        Make("Maruti Suzuki", listOf(
+            Model("800", 1994, 2014), Model("Alto / Alto K10", 2000, 2026), Model("Baleno", 2015, 2026),
+            Model("Brezza / Vitara Brezza", 2016, 2026), Model("Celerio", 2014, 2026), Model("Ciaz", 2014, 2026),
+            Model("Dzire / Swift Dzire", 2008, 2026), Model("Eeco / Omni", 1994, 2026), Model("Ertiga", 2012, 2026),
+            Model("Esteem", 1994, 2008), Model("Fronx", 2023, 2026), Model("Grand Vitara (2022 on)", 2022, 2026), Model("Gypsy", 1994, 2018),
+            Model("S-Presso", 2019, 2026), Model("Swift", 2005, 2026), Model("Wagon R", 1999, 2026), Model("XL6", 2019, 2026),
+            Model("Zen / Zen Estilo", 1994, 2013),
+        )),
+        Make("BYD", listOf(
+            Model("Atto 3 / Yuan Plus", 2022, 2026), Model("Dolphin", 2021, 2026), Model("F0", 2008, 2015), Model("F3", 2005, 2014),
+            Model("Han", 2020, 2026), Model("Qin Plus DM-i", 2021, 2026), Model("Seal", 2022, 2026),
+            Model("Song Plus DM-i / Sealion 6", 2020, 2026), Model("Shark 6", 2024, 2026), Model("Tang", 2015, 2026),
+        )),
+        Make("GWM / Great Wall", listOf(
+            Model("Cannon / Ute / Poer", 2019, 2026), Model("Steed / Wingle", 2006, 2026), Model("Tank 300", 2021, 2026),
+            Model("V200 / V240", 2009, 2014), Model("X200 / X240", 2009, 2014),
+        )),
+        Make("Haval", listOf(
+            Model("Dargo / H6 GT", 2021, 2026), Model("H2", 2014, 2021), Model("H6", 2011, 2026), Model("H8", 2014, 2019),
+            Model("H9", 2014, 2026), Model("Jolion", 2020, 2026),
+        )),
+        Make("Chery", listOf(
+            Model("A3 / J3", 2008, 2015), Model("Arrizo 5", 2016, 2026), Model("Omoda 5 / C5", 2022, 2026), Model("QQ", 2003, 2015),
+            Model("Tiggo (to 2016)", 2005, 2016), Model("Tiggo 4 / Tiggo 4 Pro", 2017, 2026), Model("Tiggo 7 / Tiggo 7 Pro", 2016, 2026),
+            Model("Tiggo 8 / Tiggo 8 Pro", 2018, 2026),
+        )),
+        Make("Geely", listOf(
+            Model("Atlas / Boyue", 2016, 2026), Model("CK / MK", 2005, 2016), Model("Coolray / Binyue", 2018, 2026),
+            Model("Emgrand", 2009, 2026), Model("Okavango / Haoyue", 2020, 2026),
+        )),
+        Make("LDV / Maxus", listOf(
+            Model("D90", 2017, 2024), Model("Deliver 9", 2020, 2026), Model("G10", 2014, 2026), Model("T60", 2017, 2026),
+            Model("V80", 2011, 2026),
+        )),
+        Make("Lada", listOf(
+            Model("2105 / 2107", 1994, 2012), Model("Granta", 2011, 2026), Model("Kalina", 2004, 2018), Model("Largus", 2012, 2026),
+            Model("Niva / Niva Legend", 1994, 2026), Model("Priora", 2007, 2018), Model("Samara", 1994, 2013), Model("Vesta", 2015, 2026),
+            Model("XRAY", 2015, 2022),
+        )),
+        Make("Datsun", listOf(
+            Model("GO / GO+", 2014, 2022), Model("on-DO / mi-DO", 2014, 2020), Model("redi-GO", 2016, 2022),
+        )),
     )
 
     /**
@@ -799,7 +910,7 @@ object VehicleCatalog {
     )
     private val JLR = setOf("Jaguar", "Land Rover")
     private val RENAULT_GROUP = setOf("Renault", "Dacia", "Alpine")
-    /** Sold new only in North America, so the Australian OBD2 note doesn't apply. */
+    /** Sold new only in North America, so North America's OBD2 dates apply wherever the car is. */
     private val NORTH_AMERICA_ONLY = setOf("Lincoln", "Mercury", "Oldsmobile", "Plymouth", "Scion", "Acura")
     private val DEALER_ONLY = setOf("Rolls-Royce", "Aston Martin", "Ferrari", "McLaren")
     /** Fully electric makes: no engine computer, so few or no standard OBD2 readings. */
@@ -809,6 +920,8 @@ object VehicleCatalog {
         "Nissan" to "leaf", "Mitsubishi" to "i-miev", "Subaru" to "solterra", "Lexus" to "rz", "Jaguar" to "i-pace",
         "Renault" to "zoe", "Dacia" to "spring", "MG" to "mg4", "Smart" to "#", "Volvo" to "ex30", "Volvo" to "c40",
         "Lotus" to "eletre", "Rolls-Royce" to "spectre",
+        "Hyundai" to "ioniq 5", "Hyundai" to "ioniq 6", "Hyundai" to "kona electric", "Kia" to "ev", "Kia" to "niro ev",
+        "Genesis" to "gv60", "BYD" to "atto", "BYD" to "dolphin", "BYD" to "han", "BYD" to "seal",
     )
 
     internal fun isElectric(car: Car, model: String): Boolean =
@@ -817,6 +930,7 @@ object VehicleCatalog {
             (car.make == "Acura" && model.startsWith("zdx") && car.year >= 2024)
     private val ITALIAN = setOf("Fiat", "Abarth", "Alfa Romeo", "Lancia", "Maserati")
     private val PSA = setOf("Peugeot", "Citroën", "DS")
+    private val HYUNDAI_GROUP = setOf("Hyundai", "Kia", "Genesis")
 
     /** Alphabetical, with "Other make" last. */
     val makeNames: List<String> = MAKES.map { it.name }.sortedBy { it.lowercase(Locale.US) } + OTHER_MAKE
@@ -884,7 +998,7 @@ object VehicleCatalog {
      */
     fun dialMax(redline: Int?): Int = if (redline == null) 8000 else ((redline + 500 + 999) / 1000) * 1000
 
-    fun recommend(car: Car): Recommendation {
+    fun recommend(car: Car, market: Market = Market.current): Recommendation {
         val model = car.model?.lowercase(Locale.US).orEmpty()
         val y = car.year
         var note: String? = null
@@ -1067,6 +1181,11 @@ object VehicleCatalog {
                 y >= 2004 -> listOf("5", "3", "6")
                 else -> listOf("3", "4", "5")
             }
+            car.make in HYUNDAI_GROUP -> when {
+                y >= 2008 -> listOf("6", "7")
+                y >= 2004 -> listOf("5", "3", "6")
+                else -> listOf("3", "5", "4")
+            }
             car.make in HONDA_GROUP -> when {
                 y >= 2008 -> listOf("6", "7")
                 y >= 2006 -> listOf("6", "3", "5")
@@ -1110,6 +1229,9 @@ object VehicleCatalog {
         if (car.make in RENAULT_GROUP && note == null) {
             note = "Generic OBD2 covers engine data and emissions codes. Deeper diagnostics need Renault-specific tools."
         }
+        if (car.make in HYUNDAI_GROUP && note == null) {
+            note = "Generic OBD2 covers engine data and emissions codes. Deeper diagnostics on Hyundai, Kia and Genesis need their dealer tools."
+        }
         if (car.make == "Volvo" && note == null) {
             note = "Generic OBD2 covers engine data and emissions codes. Volvo's deeper diagnostics need its own dealer tools."
         }
@@ -1130,16 +1252,18 @@ object VehicleCatalog {
                 "Electric cars don't have to support standard OBD2 engine readings, so expect little or no live data."
             }
         }
-        if (note == null && y < 2006 && car.make !in NORTH_AMERICA_ONLY) {
-            note = "Cars sold new in Australia before 2006 weren't required to have full OBD2."
+        // When OBD2 became required depends on where the car was sold new. Makes sold only in
+        // North America follow its rules wherever the car is now.
+        val engine = engineFor(car) ?: engineLike(car)
+        val isDiesel = engine?.fuel == Fuel.DIESEL || car.engine?.contains("diesel", ignoreCase = true) == true
+        if (note == null && !electric) {
+            note = (if (car.make in NORTH_AMERICA_ONLY) Market.NORTH_AMERICA else market).note(y, isDiesel)
         }
         // The first OBD2 cars: required in the US from the 1996 model year, earlier on a few.
         if (y <= 1995 && !electric) {
             val earlyNote = "OBD2 was required in the US from the 1996 model year. A few 1994 and 1995 cars already had it, but most use their maker's older system (OBD1), which an OBD2 adapter can't read, even with a similar-looking plug."
             note = if (note == null) earlyNote else "$note $earlyNote"
         }
-        val engine = engineFor(car) ?: engineLike(car)
-        val isDiesel = engine?.fuel == Fuel.DIESEL || car.engine?.contains("diesel", ignoreCase = true) == true
         if (isDiesel) {
             val dieselNote = "Diesels usually report fewer live readings than petrol engines."
             note = if (note == null) dieselNote else "$note $dieselNote"

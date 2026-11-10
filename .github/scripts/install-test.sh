@@ -1021,7 +1021,7 @@ if tap_scrolled "Units" && tap_contains "Miles (mph" && tap_contains "Fahrenheit
   # Release builds can't read the app's settings: the Units row on Diagnostics says what's in use.
   if [ $UNITS = 0 ]; then
     diag_top
-    find_scrolled 'text="mph, °F"' "$OUT/ui-units.xml" && UNITS=1
+    find_scrolled 'text="mph, °F' "$OUT/ui-units.xml" && UNITS=1
     tap_tab Dashboard; sleep 2
   fi
   [ $UNITS = 1 ] && alive && log "units: mph and °F saved" || { log "units: FAILED"; FAIL=1; }

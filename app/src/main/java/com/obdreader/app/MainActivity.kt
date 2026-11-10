@@ -446,6 +446,11 @@ open class MainActivity : AppCompatActivity() {
             background = panelBackground()
             setOnClickListener { showWidgetReadings(com.obdreader.app.obd.WidgetContent.decodeReadings(prefs.getString(com.obdreader.app.widget.ObdWidget.PREF_READINGS, null)).toMutableList()) }
         }
+        findViewById<TextView>(R.id.marketSetting).text = marketLabel()
+        findViewById<View>(R.id.marketRow).apply {
+            background = panelBackground()
+            setOnClickListener { showMarketPicker() }
+        }
         findViewById<TextView>(R.id.autoSetting).text = carReadingsLabel()
         findViewById<View>(R.id.autoRow).apply {
             background = panelBackground()
@@ -895,9 +900,11 @@ open class MainActivity : AppCompatActivity() {
             .setTitle(R.string.units)
             .setView(android.widget.ScrollView(this).apply { addView(view) })
             .setPositiveButton("Save") { _, _ ->
-                if (mph != Units.mph || fahrenheit != Units.fahrenheit || pressure != Units.pressure) {
-                    prefs.edit().putBoolean(AppPrefs.UNITS_MPH, mph).putBoolean(AppPrefs.UNITS_FAHRENHEIT, fahrenheit)
-                        .putString(AppPrefs.UNITS_PRESSURE, pressure.name).apply()
+                val changed = mph != Units.mph || fahrenheit != Units.fahrenheit || pressure != Units.pressure
+                // Saved even when unchanged, so the choice stays put if the phone's country changes.
+                prefs.edit().putBoolean(AppPrefs.UNITS_MPH, mph).putBoolean(AppPrefs.UNITS_FAHRENHEIT, fahrenheit)
+                    .putString(AppPrefs.UNITS_PRESSURE, pressure.name).apply()
+                if (changed) {
                     AppPrefs.applyUnits(prefs)
                     recreate() // rebuilds every readout in the new units
                 }
@@ -1284,6 +1291,32 @@ open class MainActivity : AppCompatActivity() {
             saveCustom(customReadings() + r)
             d.dismiss(); showCustomReadings()
         }
+    }
+
+    private fun marketLabel(): String =
+        if (prefs.contains(AppPrefs.MARKET)) AppPrefs.market(prefs).label else "Automatic (${AppPrefs.market(prefs).label})"
+
+    /**
+     * Diagnostics → Where your car was sold: decides the notes on when OBD2 became required.
+     * Automatic follows the phone's country; an imported car follows the market it was built for.
+     */
+    private fun showMarketPicker() {
+        val all = com.obdreader.app.obd.Market.values()
+        val auto = com.obdreader.app.obd.Market.fromCountry(AppPrefs.phoneCountry())
+        val names = listOf("Automatic, from your phone (${auto.label})") + all.map { it.label }
+        val chosen = com.obdreader.app.obd.Market.byName(prefs.getString(AppPrefs.MARKET, null))
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.market)
+            .setSingleChoiceItems(names.toTypedArray(), if (chosen == null) 0 else all.indexOf(chosen) + 1) { d, i ->
+                if (i == 0) prefs.edit().remove(AppPrefs.MARKET).apply() else prefs.edit().putString(AppPrefs.MARKET, all[i - 1].name).apply()
+                AppPrefs.applyUnits(prefs)
+                android.util.Log.i("OBD2Car", "market: " + com.obdreader.app.obd.Market.current.name)
+                findViewById<TextView>(R.id.marketSetting).text = marketLabel()
+                updateCarSetting()
+                d.dismiss()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun carReadingsLabel(): String =

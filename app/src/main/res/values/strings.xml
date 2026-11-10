@@ -53,7 +53,7 @@
     <string name="car_make">Manufacturer</string>
     <string name="car_year">Year</string>
     <string name="car_model">Model</string>
-    <string name="car_model_help">Start typing, e.g. Falcon, CX-5 or Civic. Leave blank if it\'s not listed.</string>
+    <string name="car_model_help">Start typing, e.g. Corolla, CX-5 or Civic. Leave blank if it\'s not listed.</string>
     <string name="car_likely">Most likely protocol</string>
     <string name="car_fallback">If this doesn\'t work, the app still tries every other protocol.</string>
     <string name="car_clear">Clear</string>
@@ -83,7 +83,7 @@
     <string name="help_adapters_title">Adapter types</string>
     <string name="help_adapters_body">Bluetooth: tap Connect, then Bluetooth. The app lists your adapter by name, whatever kind of Bluetooth it uses. If it needs pairing, Android asks for a PIN: it\'s usually 1234 or 0000.\n\nWi-Fi: join the adapter\'s Wi-Fi network in your phone\'s settings first, then connect. The usual address is 192.168.0.10, port 35000.</string>
     <string name="help_car_title">If it won\'t connect</string>
-    <string name="help_car_body">Check the ignition is on and the adapter\'s light is lit. Then, on the Diagnostics tab, tap Your car and choose your car\'s make, year and model, so the app tries its usual protocol first. Cars sold in Australia before 2006 may not fully support OBD2, and some cheap adapters can\'t talk to older Fords, GM and Chrysler cars.</string>
+    <string name="help_car_body">Check the ignition is on and the adapter\'s light is lit. Then, on the Diagnostics tab, tap Your car and choose your car\'s make, year and model, so the app tries its usual protocol first. Older cars may not fully support OBD2 (it became required from 1996 in the US, 2001 in Europe, about 2006 in Australia and later in many other countries), and some cheap adapters can\'t talk to older Fords, GM and Chrysler cars.</string>
     <string name="help_auto_title">Android Auto</string>
     <string name="help_auto_body">Android Auto only shows apps from the Play Store until you allow others. To turn that on:\n1. Open Android Auto\'s settings on your phone (search \"Android Auto\" in Settings).\n2. Scroll to the bottom and tap Version about 10 times, then confirm to turn on developer mode.\n3. Tap the three-dot menu at the top right, then Developer settings, and turn on Unknown sources.\n4. Reconnect to your car. OBD2 Reader appears in Android Auto\'s app list.\n\nConnect to your adapter from the phone first, or tap Connect on the car screen to reconnect to the last one.</string>
     <string name="help_codes_title">What codes it reads</string>
@@ -180,6 +180,7 @@
     <string name="widget_description">Live speed, coolant and battery while connected; otherwise your last battery reading, code check and drive. Connect or disconnect from the home screen.</string>
     <string name="widget_readings">Widget readings</string>
     <string name="car_readings">Android Auto readings</string>
+    <string name="market">Where your car was sold</string>
     <string name="pip">Picture-in-picture</string>
     <string name="pip_help">Off to start with. Once on, while you\'re connected, leaving the app keeps your readings in a small floating window over your other apps, like a video. Drag it anywhere; tap it for controls.</string>
     <string name="app_icon">App icon</string>

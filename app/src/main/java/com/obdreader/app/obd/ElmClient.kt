@@ -139,7 +139,7 @@ class ElmClient(
                 when {
                     forced -> "The car didn't answer on $name. Set the protocol back to Automatic on the Diagnostics tab and try again."
                     lastError?.uppercase(Locale.US)?.contains("UNABLE") == true ->
-                        "The adapter is working, but the car didn't answer on any OBD2 protocol. Turn the ignition on. Cars sold in Australia before 2006 may not support standard OBD2."
+                        "The adapter is working, but the car didn't answer on any OBD2 protocol. Turn the ignition on. Older cars may not support standard OBD2: it became required from 1996 in the US, 2001 in Europe and about 2006 in Australia, and later in many other countries."
                     else -> "The car didn't respond. Turn the ignition on and try again."
                 }
             )

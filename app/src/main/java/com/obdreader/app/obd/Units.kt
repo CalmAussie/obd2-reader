@@ -18,6 +18,16 @@ object Units {
         }
     }
 
+    /** Countries that use miles: the US and its territories, the UK and a few others. */
+    private val MILES = setOf("US", "PR", "GU", "VI", "AS", "MP", "GB", "IM", "JE", "GG", "LR", "MM", "BS", "BZ", "KY", "AG", "DM", "GD", "KN", "LC", "VC", "WS", "FK")
+    /** Countries that use °F. */
+    private val FAHRENHEIT = setOf("US", "PR", "GU", "VI", "AS", "MP", "LR", "BS", "BZ", "KY", "PW", "FM", "MH")
+
+    /** Starting units for a phone in [country] (a two-letter code), until the user picks. */
+    fun defaultMph(country: String?) = country?.uppercase() in MILES
+    fun defaultFahrenheit(country: String?) = country?.uppercase() in FAHRENHEIT
+    fun defaultPressure(country: String?): Pressure = if (country?.uppercase() in FAHRENHEIT) Pressure.PSI else Pressure.KPA
+
     /** Readings that are pressures: manifold pressure and boost. */
     private val PRESSURES = setOf("0B", Boost.KEY)
 

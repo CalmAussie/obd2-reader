@@ -26,7 +26,7 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 
 ## Every car in the list
 
-69 makes, 706 models. **Generic codes** says whether the 2,863 generic codes apply. **Manufacturer-specific codes** says how many maker definitions apply, by model year.
+87 makes, 959 models. **Generic codes** says whether the 2,863 generic codes apply. **Manufacturer-specific codes** says how many maker definitions apply, by model year.
 
 | Make | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|---|
@@ -115,6 +115,16 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Buick | Park Avenue | 1994–2005 | Yes | None yet |
 | Buick | Regal | 1994–2020 | Yes | None yet |
 | Buick | Rendezvous | 2002–2007 | Yes | None yet |
+| BYD | Atto 3 / Yuan Plus | 2022–2026 | Few or none (electric) | None |
+| BYD | Dolphin | 2021–2026 | Few or none (electric) | None |
+| BYD | F0 | 2008–2015 | Yes | None yet |
+| BYD | F3 | 2005–2014 | Yes | None yet |
+| BYD | Han | 2020–2026 | Few or none (electric) | None |
+| BYD | Qin Plus DM-i | 2021–2026 | Yes | None yet |
+| BYD | Seal | 2022–2026 | Few or none (electric) | None |
+| BYD | Shark 6 | 2024–2026 | Yes | None yet |
+| BYD | Song Plus DM-i / Sealion 6 | 2020–2026 | Yes | None yet |
+| BYD | Tang | 2015–2026 | Yes | None yet |
 | Cadillac | ATS | 2013–2019 | Yes | None yet |
 | Cadillac | CT4 | 2020–2026 | Yes | None yet |
 | Cadillac | CT5 | 2020–2026 | Yes | None yet |
@@ -126,23 +136,40 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Cadillac | STS | 2005–2011 | Yes | None yet |
 | Cadillac | XLR | 2004–2009 | Yes | None yet |
 | Cadillac | XT5 | 2017–2026 | Yes | None yet |
+| Chery | A3 / J3 | 2008–2015 | Yes | None yet |
+| Chery | Arrizo 5 | 2016–2026 | Yes | None yet |
+| Chery | Omoda 5 / C5 | 2022–2026 | Yes | None yet |
+| Chery | QQ | 2003–2015 | Yes | None yet |
+| Chery | Tiggo (to 2016) | 2005–2016 | Yes | None yet |
+| Chery | Tiggo 4 / Tiggo 4 Pro | 2017–2026 | Yes | None yet |
+| Chery | Tiggo 7 / Tiggo 7 Pro | 2016–2026 | Yes | None yet |
+| Chery | Tiggo 8 / Tiggo 8 Pro | 2018–2026 | Yes | None yet |
+| Chevrolet | Agile | 2009–2016 | Yes | None yet |
 | Chevrolet | Astro | 1994–2005 | Yes | None yet |
 | Chevrolet | Aveo | 2004–2011 | Yes | None yet |
 | Chevrolet | Blazer | 1994–2026 | Yes | None yet |
 | Chevrolet | Camaro | 2010–2024 | Yes | None yet |
 | Chevrolet | Camaro (to 2002) | 1994–2002 | Yes | None yet |
 | Chevrolet | Cavalier | 1994–2005 | Yes | None yet |
+| Chevrolet | Celta | 2000–2015 | Yes | None yet |
 | Chevrolet | Cobalt | 2005–2010 | Yes | None yet |
 | Chevrolet | Colorado | 2004–2026 | Yes | None yet |
+| Chevrolet | Corsa | 1994–2012 | Yes | None yet |
 | Chevrolet | Corvette | 1994–2026 | Yes | None yet |
 | Chevrolet | Cruze | 2011–2019 | Yes | None yet |
 | Chevrolet | Equinox | 2005–2026 | Yes | None yet |
 | Chevrolet | Express | 1996–2026 | Yes | None yet |
+| Chevrolet | Groove | 2021–2026 | Yes | None yet |
 | Chevrolet | Impala | 2000–2020 | Yes | None yet |
 | Chevrolet | Lumina | 1995–2001 | Yes | None yet |
 | Chevrolet | Malibu | 1997–2026 | Yes | None yet |
+| Chevrolet | Montana | 2003–2021 | Yes | None yet |
+| Chevrolet | Montana (2023 on) | 2023–2026 | Yes | None yet |
 | Chevrolet | Monte Carlo | 1995–2007 | Yes | None yet |
+| Chevrolet | Onix | 2012–2026 | Yes | None yet |
+| Chevrolet | Prisma | 2006–2019 | Yes | None yet |
 | Chevrolet | S-10 | 1994–2004 | Yes | None yet |
+| Chevrolet | Sail | 2010–2026 | Yes | None yet |
 | Chevrolet | Silverado | 1999–2026 | Yes | None yet |
 | Chevrolet | Spark | 2013–2022 | Yes | None yet |
 | Chevrolet | Suburban | 1994–2026 | Yes | None yet |
@@ -175,6 +202,14 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Dacia | Logan | 2004–2026 | Yes | None yet |
 | Dacia | Sandero | 2008–2026 | Yes | None yet |
 | Dacia | Spring | 2021–2026 | Few or none (electric) | None |
+| Daewoo | Kalos | 2002–2007 | Yes | None yet |
+| Daewoo | Lacetti | 2003–2011 | Yes | None yet |
+| Daewoo | Lanos | 1997–2004 | Yes | None yet |
+| Daewoo | Leganza | 1997–2003 | Yes | None yet |
+| Daewoo | Matiz | 1998–2011 | Yes | None yet |
+| Daewoo | Nexia / Cielo | 1994–2008 | Yes | None yet |
+| Daewoo | Nubira | 1997–2004 | Yes | None yet |
+| Daewoo | Tacuma / Rezzo | 2000–2008 | Yes | None yet |
 | Daihatsu | Charade | 1994–2000 | Yes | None yet |
 | Daihatsu | Copen | 2003–2006 | Yes | None yet |
 | Daihatsu | Cuore | 2000–2003 | Yes | None yet |
@@ -182,6 +217,9 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Daihatsu | Sirion | 1998–2005 | Yes | None yet |
 | Daihatsu | Terios | 1997–2006 | Yes | None yet |
 | Daihatsu | YRV | 2001–2005 | Yes | None yet |
+| Datsun | GO / GO+ | 2014–2022 | Yes | None yet |
+| Datsun | on-DO / mi-DO | 2014–2020 | Yes | None yet |
+| Datsun | redi-GO | 2016–2022 | Yes | None yet |
 | Dodge | Avenger | 2008–2014 | Yes | None yet |
 | Dodge | Caliber | 2006–2012 | Yes | None yet |
 | Dodge | Challenger | 2008–2023 | Yes | None yet |
@@ -219,16 +257,25 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Fiat | 124 Spider | 2016–2020 | Yes | None yet |
 | Fiat | 500 | 2007–2026 | Yes | None yet |
 | Fiat | 500X | 2015–2026 | Yes | None yet |
+| Fiat | Argo | 2017–2026 | Yes | None yet |
 | Fiat | Bravo | 2007–2014 | Yes | None yet |
+| Fiat | Cronos | 2018–2026 | Yes | None yet |
 | Fiat | Doblo | 2001–2026 | Yes | None yet |
 | Fiat | Ducato | 2000–2026 | Yes | None yet |
 | Fiat | Freemont | 2011–2016 | Yes | None yet |
 | Fiat | Fullback | 2016–2019 | Yes | None yet |
+| Fiat | Mobi | 2016–2026 | Yes | None yet |
 | Fiat | Multipla | 1999–2010 | Yes | None yet |
+| Fiat | Palio | 1996–2017 | Yes | None yet |
 | Fiat | Panda | 2003–2026 | Yes | None yet |
+| Fiat | Pulse | 2021–2026 | Yes | None yet |
 | Fiat | Punto | 1994–2018 | Yes | None yet |
+| Fiat | Siena / Grand Siena | 1997–2021 | Yes | None yet |
 | Fiat | Stilo | 2001–2007 | Yes | None yet |
+| Fiat | Strada | 1996–2026 | Yes | None yet |
 | Fiat | Tipo | 2016–2026 | Yes | None yet |
+| Fiat | Toro | 2016–2026 | Yes | None yet |
+| Fiat | Uno | 1994–2021 | Yes | None yet |
 | Ford | Contour | 1995–2000 | Yes | None yet |
 | Ford | Crown Victoria | 1994–2011 | Yes | None yet |
 | Ford | EcoSport | 2013–2020 | Yes | 2018–2019: 2 codes · 2020: 8 codes (petrol) |
@@ -240,7 +287,10 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Ford | F-150 | 1994–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
 | Ford | Falcon | 1994–2016 | Yes | None yet |
 | Ford | Fiesta | 2004–2019 | Yes | 2018–2019: 2 codes (petrol) |
+| Ford | Figo / Ka+ | 2010–2021 | Yes | 2018–2019: 2 codes · 2020–2021: 8 codes (petrol) |
 | Ford | Focus | 2002–2018 | Yes | 2018: 2 codes (petrol) |
+| Ford | Ikon | 1999–2011 | Yes | None yet |
+| Ford | Ka | 1996–2021 | Yes | 2018–2019: 2 codes · 2020–2021: 8 codes (petrol) |
 | Ford | Kuga | 2012–2020 | Yes | 2018–2019: 2 codes · 2020: 8 codes (petrol) |
 | Ford | Laser | 1994–2002 | Yes | None yet |
 | Ford | Mondeo | 2001–2019 | Yes | 2018–2019: 2 codes (petrol) |
@@ -253,6 +303,17 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Ford | Thunderbird | 1994–1997 | Yes | None yet |
 | Ford | Transit | 2000–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
 | Ford | Windstar | 1995–2003 | Yes | None yet |
+| Geely | Atlas / Boyue | 2016–2026 | Yes | None yet |
+| Geely | CK / MK | 2005–2016 | Yes | None yet |
+| Geely | Coolray / Binyue | 2018–2026 | Yes | None yet |
+| Geely | Emgrand | 2009–2026 | Yes | None yet |
+| Geely | Okavango / Haoyue | 2020–2026 | Yes | None yet |
+| Genesis | G70 | 2017–2026 | Yes | None yet |
+| Genesis | G80 | 2016–2026 | Yes | None yet |
+| Genesis | G90 | 2016–2026 | Yes | None yet |
+| Genesis | GV60 | 2021–2026 | Few or none (electric) | None |
+| Genesis | GV70 | 2020–2026 | Yes | None yet |
+| Genesis | GV80 | 2020–2026 | Yes | None yet |
 | GMC | Acadia | 2007–2026 | Yes | None yet |
 | GMC | Canyon | 2004–2026 | Yes | None yet |
 | GMC | Envoy | 2000–2009 | Yes | None yet |
@@ -260,6 +321,17 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | GMC | Sierra | 1994–2026 | Yes | None yet |
 | GMC | Terrain | 2010–2026 | Yes | None yet |
 | GMC | Yukon | 1994–2026 | Yes | None yet |
+| GWM / Great Wall | Cannon / Ute / Poer | 2019–2026 | Yes | None yet |
+| GWM / Great Wall | Steed / Wingle | 2006–2026 | Yes | None yet |
+| GWM / Great Wall | Tank 300 | 2021–2026 | Yes | None yet |
+| GWM / Great Wall | V200 / V240 | 2009–2014 | Yes | None yet |
+| GWM / Great Wall | X200 / X240 | 2009–2014 | Yes | None yet |
+| Haval | Dargo / H6 GT | 2021–2026 | Yes | None yet |
+| Haval | H2 | 2014–2021 | Yes | None yet |
+| Haval | H6 | 2011–2026 | Yes | None yet |
+| Haval | H8 | 2014–2019 | Yes | None yet |
+| Haval | H9 | 2014–2026 | Yes | None yet |
+| Haval | Jolion | 2020–2026 | Yes | None yet |
 | Holden | Acadia | 2018–2020 | Yes | None yet |
 | Holden | Apollo | 1994–1997 | Yes | None yet |
 | Holden | Astra | 1996–2020 | Yes | None yet |
@@ -284,6 +356,9 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Holden | Zafira | 2001–2005 | Yes | None yet |
 | Honda | Accord | 1994–2026 | Yes | None yet |
 | Honda | Accord Euro | 2003–2015 | Yes | None yet |
+| Honda | Amaze | 2013–2026 | Yes | None yet |
+| Honda | BR-V | 2015–2026 | Yes | None yet |
+| Honda | Brio | 2011–2026 | Yes | None yet |
 | Honda | City | 2003–2026 | Yes | None yet |
 | Honda | Civic | 1994–2026 | Yes | None yet |
 | Honda | CR-V | 1997–2026 | Yes | None yet |
@@ -293,14 +368,49 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Honda | Integra | 1994–2006 | Yes | None yet |
 | Honda | Jazz / Fit | 2001–2020 | Yes | None yet |
 | Honda | Legend | 1994–2012 | Yes | None yet |
+| Honda | Mobilio | 2014–2022 | Yes | None yet |
 | Honda | Odyssey | 1994–2021 | Yes | None yet |
 | Honda | Pilot | 2003–2026 | Yes | None yet |
 | Honda | Prelude | 1994–2001 | Yes | None yet |
 | Honda | S2000 | 1999–2009 | Yes | None yet |
+| Honda | WR-V | 2017–2026 | Yes | None yet |
 | Honda | ZR-V | 2023–2026 | Yes | None yet |
 | Hummer | H1 | 1994–2006 | Yes | None yet |
 | Hummer | H2 | 2003–2009 | Yes | None yet |
 | Hummer | H3 | 2006–2010 | Yes | None yet |
+| Hyundai | Accent / Verna | 1994–2026 | Yes | None yet |
+| Hyundai | Atos / Santro | 1998–2022 | Yes | None yet |
+| Hyundai | Bayon | 2021–2026 | Yes | None yet |
+| Hyundai | Creta | 2015–2026 | Yes | None yet |
+| Hyundai | Elantra / Lantra | 1994–2026 | Yes | None yet |
+| Hyundai | Equus | 2009–2016 | Yes | None yet |
+| Hyundai | Excel | 1994–2000 | Yes | None yet |
+| Hyundai | Genesis | 2008–2016 | Yes | None yet |
+| Hyundai | Genesis Coupe | 2009–2016 | Yes | None yet |
+| Hyundai | Getz / Click | 2002–2011 | Yes | None yet |
+| Hyundai | i10 / Grand i10 | 2008–2026 | Yes | None yet |
+| Hyundai | i20 | 2008–2026 | Yes | None yet |
+| Hyundai | i30 | 2007–2026 | Yes | None yet |
+| Hyundai | i40 | 2011–2019 | Yes | None yet |
+| Hyundai | iLoad / iMax / H-1 / Starex | 1997–2021 | Yes | None yet |
+| Hyundai | Ioniq | 2016–2022 | Yes | None yet |
+| Hyundai | Ioniq 5 | 2021–2026 | Few or none (electric) | None |
+| Hyundai | Ioniq 6 | 2022–2026 | Few or none (electric) | None |
+| Hyundai | Kona | 2017–2026 | Yes | None yet |
+| Hyundai | Kona Electric | 2018–2026 | Few or none (electric) | None |
+| Hyundai | Matrix / Lavita | 2001–2010 | Yes | None yet |
+| Hyundai | Palisade | 2018–2026 | Yes | None yet |
+| Hyundai | Santa Cruz | 2021–2026 | Yes | None yet |
+| Hyundai | Santa Fe | 2000–2026 | Yes | None yet |
+| Hyundai | Sonata / i45 | 1994–2026 | Yes | None yet |
+| Hyundai | Staria | 2021–2026 | Yes | None yet |
+| Hyundai | Terracan | 2001–2007 | Yes | None yet |
+| Hyundai | Tiburon / Coupe | 1996–2009 | Yes | None yet |
+| Hyundai | Trajet | 1999–2008 | Yes | None yet |
+| Hyundai | Tucson / ix35 | 2004–2026 | Yes | None yet |
+| Hyundai | Veloster | 2011–2022 | Yes | None yet |
+| Hyundai | Venue | 2019–2026 | Yes | None yet |
+| Hyundai | Veracruz / ix55 | 2007–2015 | Yes | None yet |
 | Infiniti | FX / QX70 | 2003–2017 | Yes | None yet |
 | Infiniti | G35 / G37 | 2003–2013 | Yes | None yet |
 | Infiniti | I30 / I35 | 1996–2004 | Yes | None yet |
@@ -338,6 +448,47 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Jeep | Renegade | 2015–2026 | Yes | None yet |
 | Jeep | Wagoneer | 2022–2026 | Yes | None yet |
 | Jeep | Wrangler | 1997–2026 | Yes | None yet |
+| Kia | Cadenza / K7 / K8 | 2009–2026 | Yes | None yet |
+| Kia | Carens (2022 on) | 2022–2026 | Yes | None yet |
+| Kia | Carens / Rondo | 1999–2019 | Yes | None yet |
+| Kia | Carnival / Sedona | 1999–2026 | Yes | None yet |
+| Kia | Ceed / ProCeed / XCeed | 2006–2026 | Yes | None yet |
+| Kia | Cerato / Forte / K3 | 2003–2026 | Yes | None yet |
+| Kia | Credos / Clarus | 1995–2001 | Yes | None yet |
+| Kia | EV3 | 2024–2026 | Few or none (electric) | None |
+| Kia | EV6 | 2021–2026 | Few or none (electric) | None |
+| Kia | EV9 | 2023–2026 | Few or none (electric) | None |
+| Kia | K900 / Quoris | 2012–2025 | Yes | None yet |
+| Kia | Magentis / Optima / K5 | 2000–2026 | Yes | None yet |
+| Kia | Mohave / Borrego | 2008–2026 | Yes | None yet |
+| Kia | Niro | 2016–2026 | Yes | None yet |
+| Kia | Niro EV | 2018–2026 | Few or none (electric) | None |
+| Kia | Opirus / Amanti | 2003–2012 | Yes | None yet |
+| Kia | Picanto / Morning | 2004–2026 | Yes | None yet |
+| Kia | Pregio | 1995–2006 | Yes | None yet |
+| Kia | Pride / Festiva | 1994–2000 | Yes | None yet |
+| Kia | Rio | 2000–2026 | Yes | None yet |
+| Kia | Seltos | 2019–2026 | Yes | None yet |
+| Kia | Sephia / Spectra / Mentor | 1994–2004 | Yes | None yet |
+| Kia | Shuma | 1997–2004 | Yes | None yet |
+| Kia | Sonet | 2020–2026 | Yes | None yet |
+| Kia | Sorento | 2002–2026 | Yes | None yet |
+| Kia | Soul | 2008–2026 | Yes | None yet |
+| Kia | Sportage | 1994–2026 | Yes | None yet |
+| Kia | Stinger | 2017–2023 | Yes | None yet |
+| Kia | Stonic | 2017–2026 | Yes | None yet |
+| Kia | Tasman | 2025–2026 | Yes | None yet |
+| Kia | Telluride | 2019–2026 | Yes | None yet |
+| Kia | Venga | 2010–2019 | Yes | None yet |
+| Lada | 2105 / 2107 | 1994–2012 | Yes | None yet |
+| Lada | Granta | 2011–2026 | Yes | None yet |
+| Lada | Kalina | 2004–2018 | Yes | None yet |
+| Lada | Largus | 2012–2026 | Yes | None yet |
+| Lada | Niva / Niva Legend | 1994–2026 | Yes | None yet |
+| Lada | Priora | 2007–2018 | Yes | None yet |
+| Lada | Samara | 1994–2013 | Yes | None yet |
+| Lada | Vesta | 2015–2026 | Yes | None yet |
+| Lada | XRAY | 2015–2022 | Yes | None yet |
 | Lamborghini | Aventador | 2011–2022 | Yes | None yet |
 | Lamborghini | Gallardo | 2003–2013 | Yes | None yet |
 | Lamborghini | Huracán | 2014–2026 | Yes | None yet |
@@ -356,6 +507,11 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Land Rover | Range Rover Evoque | 2011–2026 | Yes | None yet |
 | Land Rover | Range Rover Sport | 2005–2026 | Yes | None yet |
 | Land Rover | Range Rover Velar | 2017–2026 | Yes | None yet |
+| LDV / Maxus | D90 | 2017–2024 | Yes | None yet |
+| LDV / Maxus | Deliver 9 | 2020–2026 | Yes | None yet |
+| LDV / Maxus | G10 | 2014–2026 | Yes | None yet |
+| LDV / Maxus | T60 | 2017–2026 | Yes | None yet |
+| LDV / Maxus | V80 | 2011–2026 | Yes | None yet |
 | Lexus | CT | 2011–2022 | Yes | None yet |
 | Lexus | ES | 1994–2026 | Yes | None yet |
 | Lexus | GS | 1994–2020 | Yes | None yet |
@@ -391,6 +547,35 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Lotus | Exige | 2000–2021 | Yes | None yet |
 | Lucid | Air | 2021–2026 | Few or none (electric) | None |
 | Lucid | Gravity | 2025–2026 | Few or none (electric) | None |
+| Mahindra | Bolero | 2000–2026 | Yes | None yet |
+| Mahindra | KUV100 | 2016–2023 | Yes | None yet |
+| Mahindra | Marazzo | 2018–2023 | Yes | None yet |
+| Mahindra | Pik-Up / Genio | 2006–2026 | Yes | None yet |
+| Mahindra | Scorpio | 2002–2026 | Yes | None yet |
+| Mahindra | Thar | 2010–2026 | Yes | None yet |
+| Mahindra | TUV300 | 2015–2020 | Yes | None yet |
+| Mahindra | XUV300 / XUV 3XO | 2019–2026 | Yes | None yet |
+| Mahindra | XUV500 | 2011–2021 | Yes | None yet |
+| Mahindra | XUV700 | 2021–2026 | Yes | None yet |
+| Mahindra | Xylo | 2009–2019 | Yes | None yet |
+| Maruti Suzuki | 800 | 1994–2014 | Yes | None yet |
+| Maruti Suzuki | Alto / Alto K10 | 2000–2026 | Yes | None yet |
+| Maruti Suzuki | Baleno | 2015–2026 | Yes | None yet |
+| Maruti Suzuki | Brezza / Vitara Brezza | 2016–2026 | Yes | None yet |
+| Maruti Suzuki | Celerio | 2014–2026 | Yes | None yet |
+| Maruti Suzuki | Ciaz | 2014–2026 | Yes | None yet |
+| Maruti Suzuki | Dzire / Swift Dzire | 2008–2026 | Yes | None yet |
+| Maruti Suzuki | Eeco / Omni | 1994–2026 | Yes | None yet |
+| Maruti Suzuki | Ertiga | 2012–2026 | Yes | None yet |
+| Maruti Suzuki | Esteem | 1994–2008 | Yes | None yet |
+| Maruti Suzuki | Fronx | 2023–2026 | Yes | None yet |
+| Maruti Suzuki | Grand Vitara (2022 on) | 2022–2026 | Yes | None yet |
+| Maruti Suzuki | Gypsy | 1994–2018 | Yes | None yet |
+| Maruti Suzuki | S-Presso | 2019–2026 | Yes | None yet |
+| Maruti Suzuki | Swift | 2005–2026 | Yes | None yet |
+| Maruti Suzuki | Wagon R | 1999–2026 | Yes | None yet |
+| Maruti Suzuki | XL6 | 2019–2026 | Yes | None yet |
+| Maruti Suzuki | Zen / Zen Estilo | 1994–2013 | Yes | None yet |
 | Maserati | 3200 GT / Coupé / Spyder | 1998–2007 | Yes | None yet |
 | Maserati | Ghibli | 2013–2024 | Yes | None yet |
 | Maserati | GranTurismo | 2007–2026 | Yes | None yet |
@@ -468,6 +653,7 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Mitsubishi | 3000GT | 1994–1999 | Yes | None yet |
 | Mitsubishi | 380 | 2005–2008 | Yes | None yet |
 | Mitsubishi | ASX / Outlander Sport | 2010–2026 | Yes | None yet |
+| Mitsubishi | Attrage | 2013–2026 | Yes | None yet |
 | Mitsubishi | Colt | 2004–2012 | Yes | None yet |
 | Mitsubishi | Diamante | 1994–2004 | Yes | None yet |
 | Mitsubishi | Eclipse | 1994–2012 | Yes | None yet |
@@ -483,16 +669,19 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Mitsubishi | Pajero / Montero | 1994–2021 | Yes | None yet |
 | Mitsubishi | Pajero Sport / Challenger | 1996–2026 | Yes | None yet |
 | Mitsubishi | Triton / L200 | 1994–2026 | Yes | None yet |
+| Mitsubishi | Xpander | 2017–2026 | Yes | None yet |
 | Nissan | 200SX / Silvia | 1994–2002 | Yes | None yet |
 | Nissan | 240SX | 1995–1998 | Yes | None yet |
 | Nissan | 300ZX | 1994–1996 | Yes | None yet |
 | Nissan | 350Z | 2003–2009 | Yes | None yet |
 | Nissan | 370Z | 2009–2020 | Yes | None yet |
+| Nissan | Almera / Sunny | 1995–2026 | Yes | None yet |
 | Nissan | Altima | 1994–2026 | Yes | None yet |
 | Nissan | Dualis / Qashqai | 2007–2026 | Yes | None yet |
 | Nissan | Frontier | 1998–2026 | Yes | None yet |
 | Nissan | GT-R | 2008–2026 | Yes | None yet |
 | Nissan | Juke | 2010–2026 | Yes | None yet |
+| Nissan | Kicks | 2016–2026 | Yes | None yet |
 | Nissan | Leaf | 2011–2026 | Few or none (electric) | None |
 | Nissan | Maxima | 1994–2023 | Yes | None yet |
 | Nissan | Micra | 1994–2017 | Yes | None yet |
@@ -505,6 +694,7 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Nissan | Quest | 1994–2002 | Yes | None yet |
 | Nissan | Rogue | 2008–2026 | Yes | None yet |
 | Nissan | Skyline | 1994–2007 | Yes | None yet |
+| Nissan | Terra | 2018–2026 | Yes | None yet |
 | Nissan | Tiida | 2006–2013 | Yes | None yet |
 | Nissan | Titan | 2004–2024 | Yes | None yet |
 | Nissan | X-Trail | 2001–2026 | Yes | None yet |
@@ -526,12 +716,24 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Opel / Vauxhall | Vectra | 1995–2008 | Yes | None yet |
 | Opel / Vauxhall | Vivaro | 2001–2026 | Yes | None yet |
 | Opel / Vauxhall | Zafira | 1999–2019 | Yes | None yet |
+| Perodua | Alza | 2009–2026 | Yes | None yet |
+| Perodua | Aruz | 2019–2026 | Yes | None yet |
+| Perodua | Ativa | 2021–2026 | Yes | None yet |
+| Perodua | Axia | 2014–2026 | Yes | None yet |
+| Perodua | Bezza | 2016–2026 | Yes | None yet |
+| Perodua | Kancil | 1994–2009 | Yes | None yet |
+| Perodua | Kelisa | 2001–2007 | Yes | None yet |
+| Perodua | Kembara | 1998–2006 | Yes | None yet |
+| Perodua | Kenari | 2000–2009 | Yes | None yet |
+| Perodua | Myvi | 2005–2026 | Yes | None yet |
+| Perodua | Viva | 2007–2014 | Yes | None yet |
 | Peugeot | 107 / 108 | 2005–2021 | Yes | None yet |
 | Peugeot | 2008 | 2013–2026 | Yes | None yet |
 | Peugeot | 206 | 1998–2010 | Yes | None yet |
 | Peugeot | 207 | 2006–2014 | Yes | None yet |
 | Peugeot | 208 | 2012–2026 | Yes | None yet |
 | Peugeot | 3008 | 2009–2026 | Yes | None yet |
+| Peugeot | 301 | 2012–2026 | Yes | None yet |
 | Peugeot | 306 | 1994–2002 | Yes | None yet |
 | Peugeot | 307 | 2001–2008 | Yes | None yet |
 | Peugeot | 308 | 2007–2026 | Yes | None yet |
@@ -571,6 +773,17 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Porsche | Cayman | 2006–2026 | Yes | None yet |
 | Porsche | Macan | 2014–2026 | Yes | None yet |
 | Porsche | Panamera | 2009–2026 | Yes | None yet |
+| Proton | Exora | 2009–2023 | Yes | None yet |
+| Proton | Gen-2 | 2004–2012 | Yes | None yet |
+| Proton | Iriz | 2014–2026 | Yes | None yet |
+| Proton | Persona | 2007–2026 | Yes | None yet |
+| Proton | Preve | 2012–2020 | Yes | None yet |
+| Proton | Saga | 1994–2026 | Yes | None yet |
+| Proton | Satria / Satria Neo | 1994–2015 | Yes | None yet |
+| Proton | Waja | 2000–2011 | Yes | None yet |
+| Proton | Wira | 1994–2009 | Yes | None yet |
+| Proton | X50 | 2020–2026 | Yes | None yet |
+| Proton | X70 | 2018–2026 | Yes | None yet |
 | Ram | 1500 | 2010–2026 | Yes | None yet |
 | Ram | 2500 / 3500 | 2010–2026 | Yes | None yet |
 | Ram | ProMaster | 2014–2026 | Yes | None yet |
@@ -579,12 +792,16 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Renault | Clio | 1994–2026 | Yes | None yet |
 | Renault | Kadjar | 2015–2022 | Yes | None yet |
 | Renault | Kangoo | 1997–2026 | Yes | None yet |
+| Renault | Kiger | 2021–2026 | Yes | None yet |
 | Renault | Koleos | 2008–2026 | Yes | None yet |
+| Renault | Kwid | 2015–2026 | Yes | None yet |
 | Renault | Laguna | 1994–2015 | Yes | None yet |
 | Renault | Master | 2000–2026 | Yes | None yet |
 | Renault | Mégane | 1996–2026 | Yes | None yet |
+| Renault | Oroch | 2015–2026 | Yes | None yet |
 | Renault | Scénic | 1997–2022 | Yes | None yet |
 | Renault | Trafic | 2001–2026 | Yes | None yet |
+| Renault | Triber | 2019–2026 | Yes | None yet |
 | Renault | Zoe | 2013–2024 | Few or none (electric) | None |
 | Rivian | R1S | 2022–2026 | Few or none (electric) | None |
 | Rivian | R1T | 2022–2026 | Few or none (electric) | None |
@@ -643,6 +860,16 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Smart | ForFour | 2004–2021 | Yes | None yet |
 | Smart | ForTwo | 1998–2024 | Yes | None yet |
 | Smart | Roadster | 2003–2005 | Yes | None yet |
+| SsangYong / KGM | Actyon | 2005–2018 | Yes | None yet |
+| SsangYong / KGM | Korando | 2010–2026 | Yes | None yet |
+| SsangYong / KGM | Korando (to 2006) | 1996–2006 | Yes | None yet |
+| SsangYong / KGM | Kyron | 2005–2014 | Yes | None yet |
+| SsangYong / KGM | Musso | 1994–2005 | Yes | None yet |
+| SsangYong / KGM | Musso (2018 on) | 2018–2026 | Yes | None yet |
+| SsangYong / KGM | Rexton | 2001–2026 | Yes | None yet |
+| SsangYong / KGM | Stavic / Rodius | 2004–2019 | Yes | None yet |
+| SsangYong / KGM | Tivoli | 2015–2026 | Yes | None yet |
+| SsangYong / KGM | Torres | 2022–2026 | Yes | None yet |
 | Subaru | Ascent | 2019–2026 | Yes | None yet |
 | Subaru | Baja | 2003–2006 | Yes | None yet |
 | Subaru | BRZ | 2012–2026 | Yes | None yet |
@@ -659,6 +886,7 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Suzuki | Baleno | 2016–2022 | Yes | None yet |
 | Suzuki | Celerio | 2015–2021 | Yes | None yet |
 | Suzuki | Equator | 2009–2012 | Yes | None yet |
+| Suzuki | Ertiga | 2012–2026 | Yes | None yet |
 | Suzuki | Grand Vitara | 1998–2019 | Yes | None yet |
 | Suzuki | Ignis | 2017–2026 | Yes | None yet |
 | Suzuki | Jimny | 1998–2026 | Yes | None yet |
@@ -668,6 +896,20 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Suzuki | Swift | 2005–2026 | Yes | None yet |
 | Suzuki | Vitara | 2015–2026 | Yes | None yet |
 | Suzuki | XL-7 | 2001–2009 | Yes | None yet |
+| Tata | Altroz | 2020–2026 | Yes | None yet |
+| Tata | Harrier | 2019–2026 | Yes | None yet |
+| Tata | Indica / Vista | 1998–2018 | Yes | None yet |
+| Tata | Indigo / Manza | 2002–2018 | Yes | None yet |
+| Tata | Nano | 2008–2018 | Yes | None yet |
+| Tata | Nexon | 2017–2026 | Yes | None yet |
+| Tata | Punch | 2021–2026 | Yes | None yet |
+| Tata | Safari | 2021–2026 | Yes | None yet |
+| Tata | Safari (to 2019) | 1998–2019 | Yes | None yet |
+| Tata | Sumo | 1994–2019 | Yes | None yet |
+| Tata | Tiago | 2016–2026 | Yes | None yet |
+| Tata | Tigor | 2017–2026 | Yes | None yet |
+| Tata | Xenon | 2007–2019 | Yes | None yet |
+| Tata | Zest / Bolt | 2014–2019 | Yes | None yet |
 | Tesla | Cybertruck | 2023–2026 | Few or none (electric) | None |
 | Tesla | Model 3 | 2017–2026 | Few or none (electric) | None |
 | Tesla | Model S | 2012–2026 | Few or none (electric) | None |
@@ -678,24 +920,30 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Toyota | 86 / GR86 | 2012–2026 | Yes | None yet |
 | Toyota | Aurion | 2006–2017 | Yes | None yet |
 | Toyota | Avalon | 1995–2022 | Yes | None yet |
+| Toyota | Avanza | 2003–2026 | Yes | None yet |
 | Toyota | C-HR | 2017–2026 | Yes | None yet |
 | Toyota | Camry | 1994–2026 | Yes | None yet |
 | Toyota | Celica | 1994–2006 | Yes | None yet |
 | Toyota | Corolla | 1994–2026 | Yes | None yet |
+| Toyota | Corolla Cross | 2020–2026 | Yes | None yet |
 | Toyota | Echo / Yaris | 1999–2026 | Yes | None yet |
+| Toyota | Etios | 2010–2020 | Yes | None yet |
 | Toyota | Fortuner | 2015–2026 | Yes | None yet |
 | Toyota | HiAce | 1994–2026 | Yes | None yet |
 | Toyota | HiLux | 1994–2026 | Yes | None yet |
+| Toyota | Innova | 2004–2026 | Yes | None yet |
 | Toyota | Kluger / Highlander | 2003–2026 | Yes | None yet |
 | Toyota | LandCruiser | 1994–2026 | Yes | None yet |
 | Toyota | LandCruiser Prado | 1996–2026 | Yes | None yet |
 | Toyota | Prius | 2001–2026 | Yes | None yet |
 | Toyota | RAV4 | 1994–2026 | Yes | None yet |
+| Toyota | Rush | 2006–2026 | Yes | None yet |
 | Toyota | Supra | 2019–2026 | Yes | None yet |
 | Toyota | Supra (A80) | 1994–2002 | Yes | None yet |
 | Toyota | Tacoma | 1995–2026 | Yes | None yet |
 | Toyota | Tarago | 1994–2019 | Yes | None yet |
 | Toyota | Tundra | 2000–2026 | Yes | None yet |
+| Toyota | Vios | 2002–2026 | Yes | None yet |
 | Volkswagen | Amarok | 2011–2026 | Yes | None yet |
 | Volkswagen | Arteon | 2017–2026 | Yes | None yet |
 | Volkswagen | Atlas | 2017–2026 | Yes | None yet |
@@ -704,11 +952,15 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Volkswagen | Caddy | 2004–2026 | Yes | None yet |
 | Volkswagen | CC | 2008–2017 | Yes | None yet |
 | Volkswagen | Eos | 2006–2015 | Yes | None yet |
+| Volkswagen | Fox | 2003–2021 | Yes | None yet |
+| Volkswagen | Gol | 1994–2023 | Yes | None yet |
 | Volkswagen | Golf | 1994–2026 | Yes | None yet |
 | Volkswagen | Jetta | 1994–2026 | Yes | None yet |
 | Volkswagen | Multivan | 2003–2026 | Yes | None yet |
 | Volkswagen | Passat | 1994–2026 | Yes | None yet |
 | Volkswagen | Polo | 1994–2026 | Yes | None yet |
+| Volkswagen | Santana | 1994–2022 | Yes | None yet |
+| Volkswagen | Saveiro | 1994–2023 | Yes | None yet |
 | Volkswagen | Scirocco | 2009–2017 | Yes | None yet |
 | Volkswagen | T-Cross | 2019–2026 | Yes | None yet |
 | Volkswagen | T-Roc | 2017–2026 | Yes | None yet |
@@ -717,6 +969,7 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Volkswagen | Touran | 2003–2026 | Yes | None yet |
 | Volkswagen | Transporter | 1994–2026 | Yes | None yet |
 | Volkswagen | Up! | 2012–2023 | Yes | None yet |
+| Volkswagen | Virtus | 2018–2026 | Yes | None yet |
 | Volvo | 850 | 1994–1997 | Yes | None yet |
 | Volvo | 940 | 1994–1998 | Yes | None yet |
 | Volvo | 960 | 1994–1996 | Yes | None yet |

@@ -99,6 +99,13 @@ object VinDecoder {
             "SsangYong / KGM" to listOf("KPT"),
             "BYD" to listOf("LGX", "LC0"),
             "GWM / Haval" to listOf("LGW"),
+            "Daewoo" to listOf("KLA"),
+            "Tata" to listOf("MAT"),
+            "Mahindra" to listOf("MA1"),
+            "Proton" to listOf("PL1"),
+            "Lada" to listOf("XTA"),
+            "Chery" to listOf("LVV"),
+            "Geely" to listOf("L6T"),
         ).forEach { (make, codes) -> codes.forEach { put(it, make) } }
         listOf("WDB", "WDC", "WDD", "WDF", "WD3", "WD4", "4JG", "55S", "W1K", "W1N", "W1V").forEach { put(it, MERCEDES) }
     }

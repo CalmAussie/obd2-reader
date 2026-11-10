@@ -6,6 +6,9 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 - **Boost pressure.** A new reading for turbocharged and supercharged cars: how far the manifold pressure is above the outside air. You can put it in a main readout, the Live data list, Graphs, the widget, Android Auto and recorded drives. Below zero is the engine's vacuum. It needs a car that reports manifold pressure; if the car doesn't report the outside air pressure, sea level is used and the reading is marked "est.".
 - **Pressure units.** Choose kPa, psi or bar under Diagnostics → Units, for boost and manifold pressure.
 - **Choose what Android Auto shows.** Diagnostics → Android Auto readings picks the four tiles next to speed and engine speed, from any of the app's readings. Changes show on the car's screen straight away.
+- **Hyundai, Kia and cars from around the world.** The car list adds Hyundai, Kia and Genesis, plus SsangYong, Daewoo, Proton, Perodua, Tata, Mahindra, Maruti Suzuki, BYD, GWM, Haval, Chery, Geely, LDV, Lada and Datsun, and popular models from South-East Asia, India and Latin America for makes already listed. Each comes with its engines and redlines.
+- **Not just Australia.** Notes about when OBD2 became required now follow where your car was sold: the US, Europe, Australia, New Zealand, Japan, China, India or elsewhere. The app works it out from your phone's region, and you can change it under Diagnostics → Where your car was sold.
+- Units start the way your country uses them (mph and °F in the US, mph in the UK) until you choose.
 - The demo car is now turbocharged, so boost has something to show.
 
 ## 2.1.0 (10 November 2026)
