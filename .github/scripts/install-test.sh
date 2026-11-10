@@ -507,7 +507,9 @@ PY
   tap_text "Share" > /dev/null || true
   sleep 3
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-share.xml"
-  if [ -n "$(pull_made story.png Pictures "$OUT/9-drive-card.png")" ]; then
+  # The picture can still be being written when the share sheet opens: give it up to 10 seconds.
+  CARD=""; for i in 1 2 3 4 5; do CARD=$(pull_made story.png Pictures "$OUT/9-drive-card.png"); [ -n "$CARD" ] && break; sleep 2; done
+  if [ -n "$CARD" ]; then
     log "drive card: made"
   elif [ "$API" -lt 29 ] && grep -qi 'resolver\|chooser' "$OUT/ui-share.xml"; then
     # Android 8 and 9 release builds: the picture is only shared, not saved, so the share sheet opening is the check.
