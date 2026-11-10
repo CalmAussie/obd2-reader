@@ -797,7 +797,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .rt-chip .lcd.na em { display: none; }
 </style>
 
-<p class="note"><b>Live preview of the Android app, its Android Auto screen, its home-screen widget and its picture-in-picture window.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
+<p class="note"><b>Live preview of the Android app and its Android Auto screen.</b> Every button works. Connections run against the same simulated car as the app's demo mode, because a browser can't reach a real adapter.</p>
 
 <div class="view-switch" role="tablist" aria-label="Screen to show">
   <button role="tab" id="viewPhone" aria-selected="true">Phone</button>
@@ -3686,8 +3686,8 @@ document.querySelector(".statusbar").addEventListener("click", () => {
       bars += lit ? `<rect x="${(x - 2).toFixed(1)}" y="${B - h - 2}" width="${(bw + 4).toFixed(1)}" height="${h + 4}" fill="${c}" opacity=".24"/><rect x="${x.toFixed(1)}" y="${B - h}" width="${bw.toFixed(1)}" height="${h}" fill="${c}"/>` : `<rect x="${x.toFixed(1)}" y="${B - h}" width="${bw.toFixed(1)}" height="${h}" fill="var(--track)"/>`;
     }
     for (let k = 1; k * 1000 <= max; k += max > 10000 ? 2 : 1) if (k * 1000 / max > 0.18) scale += `<text x="${(L + (R - L) * k * 1000 / max).toFixed(1)}" y="22" text-anchor="middle" font-size="9" fill="var(--fg-2)" style="font-weight:600;letter-spacing:.2em">${k}</text>`;
-    const s = speed == null ? null : String(Math.round(speed)), cells = Math.max(2, s ? s.length : 0), hot = rpm != null && rpm >= warn, num = "font-family:DSEG7,monospace;font-weight:700;font-style:italic";
-    const r = rpm == null ? null : String(Math.round(rpm / 10) * 10), rc = Math.max(4, r ? r.length : 0), sz = cells > 2 ? 60 : 74;
+    const s = speed == null ? null : String(Math.round(speed)), cells = Math.max(3, s ? s.length : 0) /* "888": cars report up to 255 km/h (158 mph) */, hot = rpm != null && rpm >= warn, num = "font-family:DSEG7,monospace;font-weight:700;font-style:italic";
+    const r = rpm == null ? null : String(Math.round(rpm / 10) * 10), rc = Math.max(4, r ? r.length : 0), sz = 74;
     $("rtDash").innerHTML = `<rect x="1" y="1" width="${W - 2}" height="220" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="1.2"/>
       <text x="16" y="22" font-size="9" fill="var(--fg-2)" style="font-weight:600;letter-spacing:.2em">RPM ×1000</text>${scale}${bars}
       <text x="16" y="116" font-size="9" fill="var(--fg-2)" style="font-weight:600;letter-spacing:.2em">SPEED ${unit().toUpperCase()}</text>
@@ -3727,8 +3727,12 @@ document.querySelector(".statusbar").addEventListener("click", () => {
     }
     const f = rpm == null ? 0 : Math.min(1, rpm / max), na = (225 - 270 * f) * Math.PI / 180, [n1x, n1y] = P(na, r - 40), [n2x, n2y] = P(na, r + 4);
     const s = speed == null ? "—" : Math.round(speed), hot = rpm != null && rpm >= warn;
+    // Three digits shrink just enough to stay clear of the dial's numbers either side (as HairlineViews.kt).
+    const mc = (hairline.c ||= document.createElement("canvas").getContext("2d")); mc.font = "300 104px Archivo";
+    const wide = mc.measureText(String(s)).width * (1 - 0.04 * String(s).length / Math.max(1, String(s).length)), room = 2 * (r - 30 - 22);
+    const bs = Math.max(60, Math.min(104, Math.floor(104 * room / Math.max(1, wide) / 2) * 2));
     $("hlDial").innerHTML = `${ticks}${nums}
-      <text x="${cx}" y="${cy - 6}" text-anchor="middle" dominant-baseline="central" font-size="104" fill="var(--fg)" style="font-weight:300;letter-spacing:-.04em;font-variant-numeric:tabular-nums">${s}</text>
+      <text x="${cx}" y="${cy - 6}" text-anchor="middle" dominant-baseline="central" font-size="${bs}" fill="var(--fg)" style="font-weight:300;letter-spacing:-.04em;font-variant-numeric:tabular-nums">${s}</text>
       <text x="${cx}" y="${cy + 52}" text-anchor="middle" font-size="14" fill="var(--fg-2)">${unit()}${top() != null ? ` · top ${top()}` : ""}</text>
       <text x="${cx}" y="${cy + 112}" text-anchor="middle" font-size="15" font-weight="500" fill="${hot ? "var(--red)" : "var(--fg)"}" style="font-variant-numeric:tabular-nums">${rpm == null ? "—" : fmtInt(Math.round(rpm / 10) * 10)} rpm</text>
       <line x1="${n1x}" y1="${n1y}" x2="${n2x}" y2="${n2y}" stroke="var(--s1)" stroke-width="3.4" stroke-linecap="round" opacity="${rpm == null ? .35 : 1}"/>`;

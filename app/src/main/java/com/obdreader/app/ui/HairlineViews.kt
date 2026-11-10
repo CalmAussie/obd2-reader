@@ -106,7 +106,10 @@ class HairlineDialView @JvmOverloads constructor(context: Context, attrs: Attrib
 
         // The speed, huge and thin in the middle.
         val s = speed?.roundToInt()?.toString() ?: "—"
+        // Three digits (a car reports up to 255 km/h) shrink just enough to stay clear of the dial's
+        // numbers either side, which sit about 104 from the centre at the speed's height.
         big.textSize = 104f; big.color = fg
+        while (big.measureText(s) > 2f * (nr - 22f) && big.textSize > 60f) big.textSize -= 2f
         val bm = big.fontMetrics
         canvas.drawText(s, cx, cy - (bm.ascent + bm.descent) / 2f - 6f, big)
         small.textSize = 14f; small.color = muted
