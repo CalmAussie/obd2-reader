@@ -953,8 +953,8 @@ if tap_scrolled "Widget readings"; then
   sleep 2; shot 13-widget-readings; WSTEP="Reading 1"
   if tap_contains "Reading 1"; then
     sleep 2; shot 13b-widget-reading-1; WSTEP="RPM"
-    # The list opens scrolled to the chosen reading (Speed), just below RPM: scroll it back up first.
-    adb shell input swipe 540 900 540 1600 300; sleep 1
+    # The choices open on a sheet over the first one, at the top of the list, so RPM is in view.
+    # (No downward swipe here: on a sheet that closes it, which a later step checks on purpose.)
     if tap_text "RPM"; then
       sleep 2; WSTEP="Save"
       if tap_text "Save"; then
@@ -983,6 +983,26 @@ if tap_scrolled "Android Auto readings"; then
   fi
 fi
 [ $AR = ok ] && log "android auto readings: Boost chosen first" || { log "android auto readings: FAILED (at $ASTEP: $(tail -1 "$OUT/car-readings.txt" 2>/dev/null | cut -c1-100))"; FAIL=1; }
+# Swipe down closes one sheet at a time: Android Auto readings → Tile 3 opens a second sheet;
+# the first swipe goes back to the tile list, the second back to Diagnostics.
+SW=fail; SSTEP="row"
+diag_top
+if tap_scrolled "Android Auto readings"; then
+  sleep 2; SSTEP="Tile 3"
+  if tap_contains "Tile 3"; then
+    sleep 2; SSTEP="first swipe"
+    adb shell input swipe 540 1100 540 2300 200; sleep 2
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-swipe1.xml"
+    # Only the top window is in the dump: Tile 4 shows only once the tile list is on top again.
+    if grep -q 'text="Tile 4"' "$OUT/ui-swipe1.xml"; then
+      SSTEP="second swipe"; shot 13d-swipe-back-to-tiles
+      adb shell input swipe 540 1100 540 2300 200; sleep 2
+      adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-swipe2.xml"
+      if ! grep -q 'text="Tile 4"' "$OUT/ui-swipe2.xml" && grep -q 'Android Auto readings' "$OUT/ui-swipe2.xml"; then SW=ok; fi
+    fi
+  fi
+fi
+[ $SW = ok ] && log "swipe down: one sheet at a time" || { log "swipe down: FAILED (at $SSTEP)"; shot 13e-swipe-failed; FAIL=1; }
 # Feedback: Report a problem opens the GitHub form with the app version filled in.
 adb logcat -c; diag_top
 if tap_scrolled "Report a problem"; then

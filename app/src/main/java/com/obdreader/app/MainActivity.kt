@@ -874,43 +874,149 @@ open class MainActivity : AppCompatActivity() {
         var mph = Units.mph
         var fahrenheit = Units.fahrenheit
         var pressure = Units.pressure
-        val view = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24f).toInt(), dp(4f).toInt(), dp(24f).toInt(), 0) }
-        fun group(title: String, options: List<String>, selected: Int, onPick: (Int) -> Unit) {
-            view.addView(TextView(this).apply {
-                text = title; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
-                setPadding(0, dp(12f).toInt(), 0, dp(2f).toInt())
-            })
-            val radios = android.widget.RadioGroup(this)
-            options.forEachIndexed { i, name ->
-                radios.addView(com.google.android.material.radiobutton.MaterialRadioButton(this).apply {
-                    id = View.generateViewId(); text = name; isChecked = i == selected
-                    setOnCheckedChangeListener { _, on -> if (on) onPick(i) }
-                })
+        choiceSheet(getString(R.string.units)) { body, sheet ->
+            fun group(title: String, options: List<String>, selected: Int, onPick: (Int) -> Unit) {
+                sheetHeading(body, title)
+                val radios = android.widget.RadioGroup(this)
+                options.forEachIndexed { i, name ->
+                    radios.addView(com.google.android.material.radiobutton.MaterialRadioButton(this).apply {
+                        id = View.generateViewId(); text = name; isChecked = i == selected
+                        setOnCheckedChangeListener { _, on -> if (on) onPick(i) }
+                    })
+                }
+                body.addView(radios)
             }
-            view.addView(radios)
-        }
-        group("Speed and distance", listOf("Kilometres (km/h, km)", "Miles (mph, mi)"), if (mph) 1 else 0) { mph = it == 1 }
-        group("Temperature", listOf("Celsius (°C)", "Fahrenheit (°F)"), if (fahrenheit) 1 else 0) { fahrenheit = it == 1 }
-        group("Pressure (boost, manifold)", listOf("Kilopascals (kPa)", "Pounds per square inch (psi)", "Bar"), pressure.ordinal) { pressure = Units.Pressure.values()[it] }
-        view.addView(TextView(this).apply {
-            text = "Recorded drives (CSV) and the adapter log stay in the car's own metric units."
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)); setPadding(0, dp(10f).toInt(), 0, 0)
-        })
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.units)
-            .setView(android.widget.ScrollView(this).apply { addView(view) })
-            .setPositiveButton("Save") { _, _ ->
+            group("Speed and distance", listOf("Kilometres (km/h, km)", "Miles (mph, mi)"), if (mph) 1 else 0) { mph = it == 1 }
+            group("Temperature", listOf("Celsius (°C)", "Fahrenheit (°F)"), if (fahrenheit) 1 else 0) { fahrenheit = it == 1 }
+            group("Pressure (boost, manifold)", listOf("Kilopascals (kPa)", "Pounds per square inch (psi)", "Bar"), pressure.ordinal) { pressure = Units.Pressure.values()[it] }
+            sheetNote(body, "Recorded drives (CSV) and the adapter log stay in the car's own metric units.")
+            sheetButtons(body, "Save" to {
                 val changed = mph != Units.mph || fahrenheit != Units.fahrenheit || pressure != Units.pressure
                 // Saved even when unchanged, so the choice stays put if the phone's country changes.
                 prefs.edit().putBoolean(AppPrefs.UNITS_MPH, mph).putBoolean(AppPrefs.UNITS_FAHRENHEIT, fahrenheit)
                     .putString(AppPrefs.UNITS_PRESSURE, pressure.name).apply()
+                sheet.dismiss()
                 if (changed) {
                     AppPrefs.applyUnits(prefs)
                     recreate() // rebuilds every readout in the new units
                 }
+            })
+        }
+    }
+
+    // ---- Swipe-down sheets for settings ----
+    // Every settings picker is a bottom sheet. A picker opened from another opens on top of it, so
+    // one swipe down (or Back) closes only the top one and lands on the sheet underneath.
+
+    /** A settings sheet: [title], then [build] fills it. Swipe down or Back closes it without saving. */
+    private fun choiceSheet(title: String, build: (body: LinearLayout, sheet: BottomSheetDialog) -> Unit): BottomSheetDialog {
+        val sheet = BottomSheetDialog(this)
+        val pad = dp(20f).toInt()
+        val body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, dp(8f).toInt(), pad, dp(24f).toInt()) }
+        body.addView(TextView(this).apply {
+            text = title; setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
+            setPadding(0, 0, 0, dp(4f).toInt())
+        })
+        build(body, sheet)
+        sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
+        sheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        sheet.behavior.skipCollapsed = true
+        sheet.show()
+        return sheet
+    }
+
+    private fun sheetHeading(body: LinearLayout, text: String) = body.addView(TextView(this).apply {
+        this.text = text; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
+        setPadding(0, dp(14f).toInt(), 0, dp(2f).toInt())
+    })
+
+    private fun sheetNote(body: LinearLayout, text: String) = body.addView(TextView(this).apply {
+        this.text = text; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setLineSpacing(0f, 1.15f); setTextColor(themeColor(R.attr.obdTextSecondary))
+        setPadding(0, dp(10f).toInt(), 0, 0)
+    })
+
+    /** A tappable row: [name] with its current [value] and a chevron, opening the next sheet. */
+    private fun sheetRow(body: LinearLayout, name: String, value: String, onClick: () -> Unit): TextView {
+        val valueView = TextView(this).apply {
+            text = value; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdAccent))
+            gravity = Gravity.END
+        }
+        body.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+            background = panelBackground(); val p = dp(14f).toInt(); setPadding(p, p, dp(8f).toInt(), p)
+            isClickable = true; isFocusable = true; contentDescription = "$name: $value"
+            addView(TextView(this@MainActivity).apply {
+                text = name; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary))
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(valueView, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(android.widget.ImageView(this@MainActivity).apply {
+                setImageResource(R.drawable.ic_chevron_right); importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            })
+            setOnClickListener { onClick() }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8f).toInt() })
+        return valueView
+    }
+
+    /** A single-choice list: tapping an option calls [onPick] with its index. */
+    private fun sheetOptions(body: LinearLayout, options: List<String>, selected: Int, onPick: (Int) -> Unit) {
+        val radios = android.widget.RadioGroup(this)
+        options.forEachIndexed { i, name ->
+            radios.addView(com.google.android.material.radiobutton.MaterialRadioButton(this).apply {
+                id = View.generateViewId(); text = name; isChecked = i == selected
+                minHeight = dp(48f).toInt()
+                setOnClickListener { onPick(i) }
+            })
+        }
+        body.addView(radios)
+    }
+
+    /** Buttons along the bottom, right-aligned, the last one filled. */
+    private fun sheetButtons(body: LinearLayout, vararg buttons: Pair<String, () -> Unit>) {
+        body.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.END
+            setPadding(0, dp(18f).toInt(), 0, 0)
+            buttons.forEachIndexed { i, (label, action) ->
+                val last = i == buttons.lastIndex
+                addView(MaterialButton(this@MainActivity, null, if (last) com.google.android.material.R.attr.materialButtonStyle else com.google.android.material.R.attr.borderlessButtonStyle).apply {
+                    text = label
+                    if (!last) setTextColor(themeColor(R.attr.obdAccent))
+                    setOnClickListener { action() }
+                }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(8f).toInt() })
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        })
+    }
+
+    /**
+     * A picker for a few numbered places (Dashboard readouts, widget readings, Android Auto tiles):
+     * the first sheet lists each place and what's in it; tapping one opens a second sheet on top
+     * with the choices. Picking closes only that second sheet; Save or Reset closes the first.
+     * Choosing something already in another place swaps the two.
+     */
+    private fun <K> placesSheet(
+        title: String, note: String?, places: List<String>, chosen: MutableList<K>,
+        choicesFor: (Int) -> List<Pair<K, String>>, nameOf: (K) -> String,
+        save: (List<K>) -> Unit, reset: () -> Unit,
+    ) {
+        choiceSheet(title) { body, sheet ->
+            if (note != null) sheetNote(body, note)
+            val values = mutableListOf<TextView>()
+            places.forEachIndexed { slot, place ->
+                values += sheetRow(body, place, nameOf(chosen[slot])) {
+                    val choices = choicesFor(slot)
+                    choiceSheet(place) { inner, innerSheet ->
+                        sheetOptions(inner, choices.map { it.second }, choices.indexOfFirst { it.first == chosen[slot] }) { i ->
+                            val pick = choices[i].first
+                            val other = chosen.indexOf(pick)
+                            if (pick != null && other >= 0 && other != slot) chosen[other] = chosen[slot] // swap rather than show one twice
+                            chosen[slot] = pick
+                            places.indices.forEach { values[it].text = nameOf(chosen[it]) }
+                            innerSheet.dismiss()
+                        }
+                    }
+                }
+            }
+            sheetButtons(body, "Reset" to { reset(); sheet.dismiss() }, "Save" to { save(chosen.toList()); sheet.dismiss() })
+        }
     }
 
     // ---------- Car scan ----------
@@ -1407,18 +1513,17 @@ open class MainActivity : AppCompatActivity() {
         val auto = com.obdreader.app.obd.Market.fromCountry(AppPrefs.phoneCountry())
         val names = listOf("Automatic, from your phone (${auto.label})") + all.map { it.label }
         val chosen = com.obdreader.app.obd.Market.byName(prefs.getString(AppPrefs.MARKET, null))
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.market)
-            .setSingleChoiceItems(names.toTypedArray(), if (chosen == null) 0 else all.indexOf(chosen) + 1) { d, i ->
+        choiceSheet(getString(R.string.market)) { body, sheet ->
+            sheetNote(body, "Decides the notes on when OBD2 became required. An imported car follows the market it was built for.")
+            sheetOptions(body, names, if (chosen == null) 0 else all.indexOf(chosen) + 1) { i ->
                 if (i == 0) prefs.edit().remove(AppPrefs.MARKET).apply() else prefs.edit().putString(AppPrefs.MARKET, all[i - 1].name).apply()
                 AppPrefs.applyUnits(prefs)
                 android.util.Log.i("OBD2Car", "market: " + com.obdreader.app.obd.Market.current.name)
                 findViewById<TextView>(R.id.marketSetting).text = marketLabel()
                 updateCarSetting()
-                d.dismiss()
+                sheet.dismiss()
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
     }
 
     private fun carReadingsLabel(): String =
@@ -1430,34 +1535,20 @@ open class MainActivity : AppCompatActivity() {
      */
     private fun showCarReadings(chosen: MutableList<String>) {
         val all = com.obdreader.app.obd.CarReadings.CHOICES
-        val names = (1..com.obdreader.app.obd.CarReadings.COUNT).map { "Tile ${it + 2}" }
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.car_readings)
-            .setItems(names.mapIndexed { i, n -> "$n: ${com.obdreader.app.obd.CarReadings.label(chosen[i])}" }.toTypedArray()) { _, slot ->
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(names[slot])
-                    .setSingleChoiceItems(all.map { it.label }.toTypedArray(), all.indexOfFirst { it.key == chosen[slot] }) { d, i ->
-                        val pick = all[i].key
-                        val other = chosen.indexOf(pick)
-                        if (other >= 0 && other != slot) chosen[other] = chosen[slot] // swap rather than show one twice
-                        chosen[slot] = pick
-                        d.dismiss()
-                        showCarReadings(chosen)
-                    }
-                    .setNegativeButton("Back") { _, _ -> showCarReadings(chosen) }
-                    .show()
-            }
-            .setPositiveButton("Save") { _, _ ->
-                prefs.edit().putString(AppPrefs.CAR_READINGS, com.obdreader.app.obd.CarReadings.encode(chosen)).apply()
-                android.util.Log.i("OBD2Car", "car readings: " + chosen.joinToString(","))
+        placesSheet(
+            getString(R.string.car_readings), "Speed and engine speed always come first. Choose the four tiles after them.",
+            (1..com.obdreader.app.obd.CarReadings.COUNT).map { "Tile ${it + 2}" }, chosen,
+            { all.map { it.key to it.label } }, { com.obdreader.app.obd.CarReadings.label(it) },
+            save = { keys ->
+                prefs.edit().putString(AppPrefs.CAR_READINGS, com.obdreader.app.obd.CarReadings.encode(keys)).apply()
+                android.util.Log.i("OBD2Car", "car readings: " + keys.joinToString(","))
                 findViewById<TextView>(R.id.autoSetting).text = carReadingsLabel()
-            }
-            .setNeutralButton("Reset") { _, _ ->
+            },
+            reset = {
                 prefs.edit().remove(AppPrefs.CAR_READINGS).apply()
                 findViewById<TextView>(R.id.autoSetting).text = carReadingsLabel()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+            },
+        )
     }
 
     private fun widgetReadingsLabel(): String =
@@ -1471,40 +1562,25 @@ open class MainActivity : AppCompatActivity() {
     private fun showWidgetReadings(chosen: MutableList<String>) {
         val all = com.obdreader.app.obd.WidgetContent.READINGS
         fun name(k: String?) = k?.let { key -> all.firstOrNull { it.key == key }?.label } ?: "None"
-        val slots = listOf("Reading 1 (also the 2 × 1 widget)", "Reading 2", "Reading 3")
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.widget_readings)
-            .setItems(slots.mapIndexed { i, n -> "$n: ${name(chosen.getOrNull(i))}" }.toTypedArray()) { _, slot ->
-                // Reading 1 is always set; the others can be left empty.
-                val keys: List<String?> = (if (slot == 0) emptyList<String?>() else listOf(null)) + all.map { it.key }
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(slots[slot])
-                    .setSingleChoiceItems(keys.map { name(it) }.toTypedArray(), keys.indexOf(chosen.getOrNull(slot))) { d, i ->
-                        val pick = keys[i]
-                        val list = (0 until 3).map { chosen.getOrNull(it) }.toMutableList()
-                        val other = list.indexOf(pick)
-                        if (pick != null && other >= 0 && other != slot) list[other] = list[slot] // swap rather than show one twice
-                        list[slot] = pick
-                        chosen.clear(); chosen.addAll(list.filterNotNull())
-                        d.dismiss()
-                        showWidgetReadings(chosen)
-                    }
-                    .setNegativeButton("Back") { _, _ -> showWidgetReadings(chosen) }
-                    .show()
-            }
-            .setPositiveButton("Save") { _, _ ->
-                prefs.edit().putString(com.obdreader.app.widget.ObdWidget.PREF_READINGS, com.obdreader.app.obd.WidgetContent.encodeReadings(chosen)).apply()
-                android.util.Log.i("OBD2Widget", "widget readings: " + chosen.joinToString(","))
+        val places = listOf("Reading 1 (also the 2 × 1 widget)", "Reading 2", "Reading 3")
+        val slotsNow: MutableList<String?> = (0 until 3).map { chosen.getOrNull(it) }.toMutableList()
+        placesSheet(
+            getString(R.string.widget_readings), null, places, slotsNow,
+            // Reading 1 is always set; the others can be left empty.
+            { slot -> (if (slot == 0) emptyList() else listOf(null to "None")) + all.map { it.key to it.label } }, { name(it) },
+            save = { keys ->
+                val list = keys.filterNotNull()
+                prefs.edit().putString(com.obdreader.app.widget.ObdWidget.PREF_READINGS, com.obdreader.app.obd.WidgetContent.encodeReadings(list)).apply()
+                android.util.Log.i("OBD2Widget", "widget readings: " + list.joinToString(","))
                 findViewById<TextView>(R.id.widgetSetting).text = widgetReadingsLabel()
                 com.obdreader.app.widget.ObdWidget.refresh(this)
-            }
-            .setNeutralButton("Reset") { _, _ ->
+            },
+            reset = {
                 prefs.edit().remove(com.obdreader.app.widget.ObdWidget.PREF_READINGS).apply()
                 findViewById<TextView>(R.id.widgetSetting).text = widgetReadingsLabel()
                 com.obdreader.app.widget.ObdWidget.refresh(this)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+            },
+        )
     }
 
     /** Diagnostics → App icon: the Spark colourways, each shown as it looks on the home screen. */
@@ -1652,36 +1728,17 @@ open class MainActivity : AppCompatActivity() {
      * telemetry, three on the Digital cockpit and Cyberpunk. Picking one that's already used swaps them.
      */
     private fun showSlotPicker(chosen: MutableList<String>) {
-        val names = listOf("Readout 1", "Readout 2", "Readout 3 (Digital cockpit and Cyberpunk)")
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.slots)
-            .setItems(names.mapIndexed { i, n -> "$n: ${readout(chosen[i]).label}" }.toTypedArray()) { _, slot ->
-                val choices = readoutChoices
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(names[slot])
-                    .setSingleChoiceItems(choices.map { it.label }.toTypedArray(), choices.indexOfFirst { it.key == chosen[slot] }) { d, i ->
-                        val pick = choices[i].key
-                        val other = chosen.indexOf(pick)
-                        if (other >= 0 && other != slot) chosen[other] = chosen[slot] // swap rather than show one twice
-                        chosen[slot] = pick
-                        d.dismiss()
-                        showSlotPicker(chosen)
-                    }
-                    .setNegativeButton("Back") { _, _ -> showSlotPicker(chosen) }
-                    .show()
-            }
-            .setPositiveButton("Save") { _, _ ->
-                if (chosen != slots) {
-                    prefs.edit().putString(PREF_SLOTS, chosen.joinToString(",")).apply()
+        placesSheet(
+            getString(R.string.slots), null, listOf("Readout 1", "Readout 2", "Readout 3 (Digital cockpit and Cyberpunk)"), chosen,
+            { readoutChoices.map { it.key to it.label } }, { readout(it).label },
+            save = { keys ->
+                if (keys != slots) {
+                    prefs.edit().putString(PREF_SLOTS, keys.joinToString(",")).apply()
                     recreate() // rebuilds the Dashboard with the new readouts
                 }
-            }
-            .setNeutralButton("Reset") { _, _ ->
-                prefs.edit().remove(PREF_SLOTS).apply()
-                recreate()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+            },
+            reset = { prefs.edit().remove(PREF_SLOTS).apply(); recreate() },
+        )
     }
 
     // ---------- Performance timers ----------
@@ -4231,16 +4288,14 @@ open class MainActivity : AppCompatActivity() {
             ObdProtocols.ALL.map { it.code to "${it.name}\n${it.hint}" }
         val current = prefs.getString(PREF_PROTOCOL, ObdProtocols.AUTO)
         val checked = options.indexOfFirst { it.first == current }.coerceAtLeast(0)
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.protocol)
-            .setSingleChoiceItems(options.map { it.second }.toTypedArray(), checked) { dialog, which ->
+        choiceSheet(getString(R.string.protocol)) { body, sheet ->
+            sheetOptions(body, options.map { it.second }, checked) { which ->
                 prefs.edit().putString(PREF_PROTOCOL, options[which].first).apply()
                 updateProtocolSetting()
-                dialog.dismiss()
+                sheet.dismiss()
                 if (ObdSession.client != null) toast("Disconnect and connect again to use the new protocol")
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
     }
 
     /** The check-engine banner: [state] ON turns it amber, OK marks it green. */

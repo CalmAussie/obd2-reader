@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.3.1 (11 November 2026)
+- **Swipe down to close settings.** Units, Dashboard readouts, Widget readings, Android Auto readings, Where your car was sold and Protocol now open as sheets you can swipe down to close, like the rest of Diagnostics. When one opens another, each swipe closes one, so two swipes take you back to Diagnostics.
+
 ## 2.3.0 (11 November 2026)
 - **Module codes on older Fords and Mazdas.** Codes from other modules now works on 1996–2007 Fords and Mazdas that use J1850 PWM, such as the Tribute, Escape, Explorer and Ranger. It reads the ABS, instrument cluster and body modules straight away, and Search every address finds the rest. Many cheap clone adapters can't use J1850 PWM; a genuine ELM327 or OBDLink can.
 - **The second network.** On Fords and Mazdas, Search the second network reads the modules on pins 3 and 11 (cluster, body, climate, audio and doors) with adapters that can switch to it, such as OBDLink MX+ and EX. Other adapters are told plainly that they can't.
