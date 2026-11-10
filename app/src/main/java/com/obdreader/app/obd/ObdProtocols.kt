@@ -5,7 +5,7 @@ import java.util.Locale
 /**
  * The OBD2 protocols an ELM327 can speak, in the order the app tries them when
  * the adapter's own auto-search fails. The order favours Ford, Mazda and Honda:
- * CAN for 2008-on, J1850 PWM for 2000s Fords, ISO 9141-2 / KWP for 2000s Hondas and Mazdas.
+ * CAN for 2008-on, J1850 PWM for 1996–2007 Fords, ISO 9141-2 / KWP for most 1996–2007 European and Asian cars.
  */
 object ObdProtocols {
 
@@ -23,11 +23,11 @@ object ObdProtocols {
 
     val ALL: List<Protocol> = listOf(
         Protocol("6", "ISO 15765-4 CAN (11-bit, 500 kbaud)", "Most cars from 2008, including Ford, Mazda and Honda", 4000),
-        Protocol("1", "SAE J1850 PWM", "Fords and Ford-based Mazdas, about 2000–2007", 5000),
-        Protocol("3", "ISO 9141-2", "Hondas and Mazdas, about 2000–2007", 9000),
+        Protocol("1", "SAE J1850 PWM", "Fords and Ford-based Mazdas, about 1996–2007", 5000),
+        Protocol("3", "ISO 9141-2", "Most European and Asian cars, about 1996–2007 (Volvo, Honda, Mazda, Toyota)", 9000),
         Protocol("5", "ISO 14230-4 KWP (fast init)", "Some Mazdas and Hondas, about 2003–2008", 9000),
-        Protocol("4", "ISO 14230-4 KWP (5-baud init)", "Some early-2000s Asian and European cars", 9000),
-        Protocol("2", "SAE J1850 VPW", "Mainly GM, rarely needed for these makes", 5000),
+        Protocol("4", "ISO 14230-4 KWP (5-baud init)", "Some late-1990s and early-2000s Asian and European cars", 9000),
+        Protocol("2", "SAE J1850 VPW", "GM, Chrysler, Dodge and Jeep, about 1996–2007", 5000),
         Protocol("7", "ISO 15765-4 CAN (29-bit, 500 kbaud)", "Some newer models", 4000),
         Protocol("8", "ISO 15765-4 CAN (11-bit, 250 kbaud)", "Uncommon", 4000),
         Protocol("9", "ISO 15765-4 CAN (29-bit, 250 kbaud)", "Uncommon", 4000),

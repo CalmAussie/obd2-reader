@@ -87,6 +87,12 @@ object CarSupport {
             )
         }
 
+        // The first OBD2 cars report a smaller set of readings.
+        if (y < 2000) items += Item(
+            "Live readings", Level.LIMITED,
+            "The first OBD2 cars report fewer readings than later ones. Speed, engine speed, coolant, throttle, load and timing usually work; others often show N/A.",
+        )
+
         // VIN: mode 09 only became common in the mid-2000s.
         if (y < 2005) items += Item("VIN", Level.MAYBE, "Many cars from before about 2005 don't report their VIN over OBD2. Your chosen car is used instead.")
 

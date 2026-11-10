@@ -57,7 +57,7 @@ class CodeSupportDocTest {
         appendLine()
         appendLine("## The two kinds of code")
         appendLine()
-        appendLine("- **Generic codes** (P0, P2, P34, U0 and U3) mean the same thing on every car. The app explains $explained of them, with how urgent each is, common causes and what to check. They work on every petrol, diesel and hybrid car in the list, as long as its engine computer supports standard OBD2: most petrol cars from about 2001 and diesels from about 2004, depending on the country.")
+        appendLine("- **Generic codes** (P0, P2, P34, U0 and U3) mean the same thing on every car. The app explains $explained of them, with how urgent each is, common causes and what to check. They work on every petrol, diesel and hybrid car in the list, as long as its engine computer supports standard OBD2: cars sold in the US from 1996 (and a few from 1994), and elsewhere most petrol cars from about 2001 and diesels from about 2004, depending on the country.")
         appendLine("- **Manufacturer-specific codes** (such as P1 codes) mean different things on different cars. The app only explains one where the maker's own published documents give the definition and say which model years it covers. Every other manufacturer-specific code is shown with the maker's name and where to look it up.")
         appendLine()
         appendLine("Fully electric cars have no engine computer, so they report few or no standard trouble codes.")

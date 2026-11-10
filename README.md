@@ -103,13 +103,15 @@ Tap the palette button on the Dashboard. The first seven are colourways; the las
 | USB | No |
 
 **Cars**
-| Where | From |
-|---|---|
-| Australia | Petrol about 2006, diesel about 2007 |
-| United States | 1996 |
-| Europe | Petrol 2001, diesel 2004 |
+| Where | Required from | Earlier cars |
+|---|---|---|
+| United States | 1996 | A few 1994–1995 models |
+| Europe | Petrol 2001, diesel 2004 | Many from the mid-1990s, such as the Volvo 850 |
+| Australia | Petrol about 2006, diesel about 2007 | Many, especially imports |
 
-The app tries all nine OBD2 protocols for you. Many cheap clones can't talk to 2000s Fords or pre-2008 GM, Chrysler, Dodge or Jeep cars; use a genuine ELM327 or STN adapter for those. Electric cars give few or no standard readings. iPhones aren't supported.
+The car list goes back to 1994, so early OBD2 cars are covered too. If your car uses an older system that an OBD2 adapter can't read (such as pre-VX Commodores or EF and EL Falcons), the app says so when you choose it.
+
+The app tries all nine OBD2 protocols for you. Many cheap clones can't talk to 1990s and 2000s Fords or pre-2008 GM, Chrysler, Dodge or Jeep cars; use a genuine ELM327 or STN adapter for those. Electric cars give few or no standard readings. iPhones aren't supported.
 
 Cars only report some readings. Anything yours doesn't report shows **N/A**, never a guess. [Which cars get which codes](docs/CODE-SUPPORT.md) lists every model.
 

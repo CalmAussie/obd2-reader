@@ -10,7 +10,7 @@ import java.util.Locale
  */
 object VehicleCatalog {
 
-    const val FIRST_YEAR = 2000
+    const val FIRST_YEAR = 1994
     const val LAST_YEAR = 2026
     const val OTHER_MAKE = "Other make"
 
@@ -46,13 +46,21 @@ object VehicleCatalog {
 
     internal val BASE_MAKES: List<Make> = listOf(
         Make("Ford", listOf(
+            Model("Taurus", 1994, 2019, listOf(e("3.0 V6", 1994, 2007, 6000), e("3.8 V6", 1994, 1995, 5500), e("3.4 V8 (SHO)", 1996, 1999, 7000), e("3.5 V6", 2008, 2019, 6500))),
+            Model("Escort", 1994, 2002, listOf(e("1.9 I4", 1994, 2002, 6000), e("2.0 I4", 1997, 2002, 6500))),
+            Model("Probe", 1994, 1997, listOf(e("2.0 I4", 1994, 1997, 6500), e("2.5 V6", 1994, 1997, 6800))),
+            Model("Thunderbird", 1994, 1997, listOf(e("3.8 V6", 1994, 1997, 5500), e("4.6 V8", 1994, 1997, 5500))),
+            Model("Crown Victoria", 1994, 2011, listOf(e("4.6 V8", 1994, 2011, 5500))),
+            Model("Contour", 1995, 2000, listOf(e("2.0 I4", 1995, 2000, 6500), e("2.5 V6", 1995, 2000, 6800))),
+            Model("Windstar", 1995, 2003, listOf(e("3.0 V6", 1995, 2003, 6000), e("3.8 V6", 1995, 2003, 5500))),
+            Model("Expedition", 1997, 2026, listOf(e("4.6 V8", 1997, 2004, 5500), e("5.4 V8", 1997, 2014, 5500), e("3.5 EcoBoost", 2015, 2026, 6000))),
             Model("Escape", 2001, 2026, listOf(
                 e("2.0 I4", 2001, 2004, 6500), e("2.3 I4", 2005, 2008, 6500), e("3.0 V6", 2001, 2008, 6250),
                 e("2.5 I4", 2009, 2026, 6500), e("1.5 EcoBoost", 2013, 2026, 6500), e("2.0 EcoBoost", 2013, 2026, 6500),
             )), Model("EcoSport", 2013, 2020), Model("Everest", 2015, 2026),
-            Model("Explorer", 2000, 2026), Model("F-150", 2000, 2026), Model("Falcon", 2000, 2016, listOf(
-                e("4.0 I6", 2000, 2016, 6000), e("4.0 I6 turbo", 2002, 2016, 6000), e("4.0 I6 LPG", 2000, 2016, 6000, Fuel.LPG),
-                e("5.0 V8", 2000, 2002, 5500), e("5.4 V8", 2002, 2010, 6000), e("5.0 V8 supercharged", 2010, 2016, 6250),
+            Model("Explorer", 1994, 2026), Model("F-150", 1994, 2026), Model("Falcon", 1994, 2016, listOf(
+                e("4.0 I6", 1994, 2016, 6000), e("4.0 I6 turbo", 2002, 2016, 6000), e("4.0 I6 LPG", 2000, 2016, 6000, Fuel.LPG),
+                e("5.0 V8", 1994, 2002, 5500), e("5.4 V8", 2002, 2010, 6000), e("5.0 V8 supercharged", 2010, 2016, 6250),
                 e("2.0 EcoBoost", 2012, 2016, 6500),
             )),
             Model("Fiesta", 2004, 2019), Model("Focus", 2002, 2018, listOf(
@@ -60,11 +68,11 @@ object VehicleCatalog {
                 e("2.0 diesel", 2008, 2015, 4500, D), e("1.6 EcoBoost", 2011, 2015, 6500), e("2.0 EcoBoost (ST)", 2012, 2018, 6800),
                 e("1.5 EcoBoost", 2015, 2018, 6500), e("2.3 EcoBoost (RS)", 2016, 2018, 6800),
             )), Model("Kuga", 2012, 2020),
-            Model("Laser", 2000, 2002), Model("Mondeo", 2001, 2019), Model("Mustang", 2000, 2026, listOf(
-                e("3.8 V6", 2000, 2004, 6000), e("4.6 V8", 2000, 2010, 6000), e("4.0 V6", 2005, 2010, 6000),
+            Model("Laser", 1994, 2002), Model("Mondeo", 2001, 2019), Model("Mustang", 1994, 2026, listOf(
+                e("3.8 V6", 1994, 2004, 6000), e("4.6 V8", 1996, 2010, 6000), e("4.0 V6", 2005, 2010, 6000),
                 e("3.7 V6", 2011, 2014, 7000), e("5.0 V8", 2011, 2026, 7500), e("2.3 EcoBoost", 2015, 2026, 6500),
             )),
-            Model("Puma", 2020, 2026), Model("Ranger", 2000, 2026, listOf(
+            Model("Puma", 2020, 2026), Model("Ranger", 1994, 2026, listOf(
                 e("2.6 petrol", 2000, 2006, 5500), e("2.5 diesel", 2000, 2011, 4500, D), e("3.0 diesel", 2006, 2011, 4500, D),
                 e("2.2 diesel", 2011, 2022, 4500, D), e("3.2 diesel", 2011, 2022, 4500, D), e("2.0 bi-turbo diesel", 2018, 2026, 4500, D),
                 e("3.0 V6 diesel", 2022, 2026, 4500, D), e("3.0 V6 EcoBoost (Raptor)", 2023, 2026, 6000),
@@ -75,8 +83,11 @@ object VehicleCatalog {
             Model("Transit", 2000, 2026),
         )),
         Make("Mazda", listOf(
-            Model("121 / Mazda2", 2000, 2026), Model("323", 2000, 2003), Model("626", 2000, 2002),
-            Model("B-Series / Bravo", 2000, 2006), Model("BT-50", 2006, 2026, listOf(
+            Model("RX-7", 1994, 2002, listOf(e("1.3 twin-turbo rotary", 1994, 2002, 8000))),
+            Model("MX-6", 1994, 1997, listOf(e("2.0 I4", 1994, 1997, 6500), e("2.5 V6", 1994, 1997, 6800))),
+            Model("Millenia", 1995, 2002, listOf(e("2.5 V6", 1995, 2002, 6500), e("2.3 supercharged V6", 1995, 2002, 6200))),
+            Model("121 / Mazda2", 1994, 2026), Model("323", 1994, 2003), Model("626", 1994, 2002),
+            Model("B-Series / Bravo", 1994, 2006), Model("BT-50", 2006, 2026, listOf(
                 e("2.5 diesel", 2006, 2011, 4500, D), e("3.0 diesel", 2006, 2011, 4500, D), e("2.2 diesel", 2011, 2020, 4500, D),
                 e("3.2 diesel", 2011, 2020, 4500, D), e("3.0 diesel (2020 on)", 2020, 2026, 4500, D),
             )), Model("CX-3", 2015, 2026),
@@ -91,62 +102,65 @@ object VehicleCatalog {
                 e("2.3", 2002, 2007, 6500), e("2.3 turbo (MPS)", 2006, 2007, 6500), e("2.5", 2008, 2026, 6500),
                 e("2.2 diesel", 2009, 2021, 5000, D), e("2.5 turbo", 2018, 2026, 6000),
             )), Model("MPV", 2000, 2006),
-            Model("MX-5", 2000, 2026, listOf(e("1.8", 2000, 2005, 7000), e("2.0", 2005, 2026, 7000), e("1.5", 2015, 2026, 7500))), Model("Premacy", 2000, 2004), Model("RX-8", 2003, 2012, listOf(e("1.3 rotary", 2003, 2012, 9000))),
+            Model("MX-5", 1994, 2026, listOf(e("1.8", 1994, 2005, 7000), e("2.0", 2005, 2026, 7000), e("1.5", 2015, 2026, 7500))), Model("Premacy", 1999, 2004), Model("RX-8", 2003, 2012, listOf(e("1.3 rotary", 2003, 2012, 9000))),
             Model("Tribute", 2001, 2006, listOf(e("2.0 I4", 2001, 2004, 6500), e("2.3 I4", 2004, 2006, 6500), e("3.0 V6", 2001, 2006, 6250))),
         )),
         Make("Honda", listOf(
-            Model("Accord", 2000, 2026, listOf(
-                e("2.3", 2000, 2002, 6800), e("2.4", 2003, 2019, 6800), e("3.0 V6", 2003, 2007, 6800), e("3.5 V6", 2008, 2017, 6800),
+            Model("Accord", 1994, 2026, listOf(
+                e("2.3", 1998, 2002, 6800), e("2.4", 2003, 2019, 6800), e("3.0 V6", 2003, 2007, 6800), e("3.5 V6", 2008, 2017, 6800),
             )), Model("Accord Euro", 2003, 2015), Model("City", 2003, 2026),
-            Model("Civic", 2000, 2026, listOf(
+            Model("Civic", 1994, 2026, listOf(
                 e("1.7", 2000, 2005, 6800), e("2.0 Type R", 2002, 2005, 8000), e("1.3 hybrid", 2003, 2011, 6000, Fuel.HYBRID),
                 e("1.8", 2006, 2015, 6800), e("2.0", 2006, 2026, 6800), e("1.5 turbo", 2016, 2026, 6500),
             )),
-            Model("CR-V", 2000, 2026, listOf(
-                e("2.0", 2000, 2006, 6800), e("2.4", 2002, 2017, 6800), e("1.5 turbo", 2017, 2026, 6500),
+            Model("CR-V", 1997, 2026, listOf(
+                e("2.0", 1997, 2006, 6800), e("2.4", 2002, 2017, 6800), e("1.5 turbo", 2017, 2026, 6500),
             )), Model("CR-Z", 2011, 2016),
-            Model("HR-V", 2015, 2026), Model("Insight", 2000, 2014), Model("Integra", 2000, 2006),
-            Model("Jazz / Fit", 2001, 2020, listOf(e("1.3", 2001, 2008, 6500), e("1.5", 2001, 2020, 6800))), Model("Legend", 2000, 2012), Model("Odyssey", 2000, 2021),
-            Model("Pilot", 2003, 2026), Model("Prelude", 2000, 2001), Model("S2000", 2000, 2009, listOf(e("2.0", 2000, 2004, 9000), e("2.2", 2004, 2009, 8000))),
+            Model("HR-V", 2015, 2026), Model("Insight", 2000, 2014), Model("Integra", 1994, 2006),
+            Model("Jazz / Fit", 2001, 2020, listOf(e("1.3", 2001, 2008, 6500), e("1.5", 2001, 2020, 6800))), Model("Legend", 1994, 2012), Model("Odyssey", 1994, 2021),
+            Model("Pilot", 2003, 2026), Model("Prelude", 1994, 2001), Model("S2000", 1999, 2009, listOf(e("2.0", 1999, 2004, 9000), e("2.2", 2004, 2009, 8000))),
             Model("ZR-V", 2023, 2026),
         )),
         Make("Toyota", listOf(
+            Model("Supra (A80)", 1994, 2002, listOf(e("3.0 I6", 1994, 2002, 6800), e("3.0 twin-turbo I6", 1994, 2002, 6800))),
+            Model("4Runner", 1996, 2024, listOf(e("2.7 I4", 1996, 2000, 5200), e("3.4 V6", 1996, 2002, 5200), e("4.0 V6", 2003, 2024, 5500), e("4.7 V8", 2003, 2009, 5400))),
+            Model("Avalon", 1995, 2022, listOf(e("3.0 V6", 1995, 2004, 6000), e("3.5 V6", 2005, 2022, 6200))),
             Model("86 / GR86", 2012, 2026, listOf(e("2.0", 2012, 2021, 7400), e("2.4", 2022, 2026, 7500))),
-            Model("Aurion", 2006, 2017), Model("C-HR", 2017, 2026), Model("Celica", 2000, 2006),
-            Model("Camry", 2000, 2026, listOf(
-                e("2.2", 2000, 2001, 6000), e("2.4", 2002, 2011, 6000), e("2.5", 2011, 2026, 6200), e("3.0 V6", 2000, 2006, 6200),
+            Model("Aurion", 2006, 2017), Model("C-HR", 2017, 2026), Model("Celica", 1994, 2006),
+            Model("Camry", 1994, 2026, listOf(
+                e("2.2", 1994, 2001, 6000), e("2.4", 2002, 2011, 6000), e("2.5", 2011, 2026, 6200), e("3.0 V6", 1994, 2006, 6200),
                 e("3.5 V6", 2006, 2024, 6300), e("2.5 hybrid", 2010, 2026, 5500, Fuel.HYBRID),
             )),
-            Model("Corolla", 2000, 2026, listOf(
-                e("1.8", 2000, 2018, 6400), e("2.0", 2018, 2026, 6600), e("1.8 hybrid", 2019, 2026, 5200, Fuel.HYBRID),
+            Model("Corolla", 1994, 2026, listOf(
+                e("1.8", 1994, 2018, 6400), e("2.0", 2018, 2026, 6600), e("1.8 hybrid", 2019, 2026, 5200, Fuel.HYBRID),
             )),
-            Model("Echo / Yaris", 2000, 2026, listOf(e("1.3", 2000, 2011, 6400), e("1.5", 2000, 2026, 6400))),
-            Model("Fortuner", 2015, 2026), Model("HiAce", 2000, 2026),
-            Model("HiLux", 2000, 2026, listOf(
-                e("2.7 petrol", 2000, 2026, 5600), e("4.0 V6 petrol", 2005, 2015, 6000), e("2.5 diesel", 2005, 2015, 4400, D),
-                e("3.0 diesel", 2000, 2015, 4400, D), e("2.4 diesel", 2015, 2026, 4400, D), e("2.8 diesel", 2015, 2026, 4400, D),
+            Model("Echo / Yaris", 1999, 2026, listOf(e("1.3", 1999, 2011, 6400), e("1.5", 2000, 2026, 6400))),
+            Model("Fortuner", 2015, 2026), Model("HiAce", 1994, 2026),
+            Model("HiLux", 1994, 2026, listOf(
+                e("2.7 petrol", 1997, 2026, 5600), e("4.0 V6 petrol", 2005, 2015, 6000), e("2.5 diesel", 2005, 2015, 4400, D),
+                e("3.0 diesel", 1994, 2015, 4400, D), e("2.4 diesel", 2015, 2026, 4400, D), e("2.8 diesel", 2015, 2026, 4400, D),
             )),
             Model("Kluger / Highlander", 2003, 2026, listOf(
                 e("3.0 V6", 2003, 2007, 6200), e("3.5 V6", 2007, 2026, 6300), e("2.5 hybrid", 2021, 2026, 5500, Fuel.HYBRID),
             )),
-            Model("LandCruiser", 2000, 2026, listOf(
-                e("4.7 V8 petrol", 2000, 2011, 5400), e("4.2 diesel", 2000, 2007, 4000, D), e("4.5 V8 diesel", 2007, 2021, 4000, D),
+            Model("LandCruiser", 1994, 2026, listOf(
+                e("4.7 V8 petrol", 1998, 2011, 5400), e("4.2 diesel", 1994, 2007, 4000, D), e("4.5 V8 diesel", 2007, 2021, 4000, D),
                 e("4.6 V8 petrol", 2012, 2021, 5800), e("3.3 V6 diesel", 2021, 2026, 4400, D),
             )),
-            Model("LandCruiser Prado", 2000, 2026, listOf(
-                e("3.4 V6", 2000, 2002, 5200), e("4.0 V6", 2003, 2017, 6000), e("3.0 diesel", 2000, 2015, 4400, D),
+            Model("LandCruiser Prado", 1996, 2026, listOf(
+                e("3.4 V6", 1996, 2002, 5200), e("4.0 V6", 2003, 2017, 6000), e("3.0 diesel", 1996, 2015, 4400, D),
                 e("2.8 diesel", 2015, 2026, 4400, D),
             )),
             Model("Prius", 2001, 2026, listOf(
                 e("1.5 hybrid", 2001, 2009, 5000, Fuel.HYBRID), e("1.8 hybrid", 2009, 2022, 5200, Fuel.HYBRID),
                 e("2.0 hybrid", 2023, 2026, 5500, Fuel.HYBRID),
             )),
-            Model("RAV4", 2000, 2026, listOf(
-                e("2.0", 2000, 2018, 6400), e("2.4", 2005, 2012, 6000), e("2.5", 2012, 2026, 6200),
+            Model("RAV4", 1994, 2026, listOf(
+                e("2.0", 1994, 2018, 6400), e("2.4", 2005, 2012, 6000), e("2.5", 2012, 2026, 6200),
                 e("2.5 hybrid", 2016, 2026, 5500, Fuel.HYBRID),
             )),
             Model("Supra", 2019, 2026, listOf(e("2.0 turbo", 2019, 2026, 6500), e("3.0 I6 turbo", 2019, 2026, 6500))),
-            Model("Tacoma", 2000, 2026), Model("Tarago", 2000, 2019), Model("Tundra", 2000, 2026),
+            Model("Tacoma", 1995, 2026), Model("Tarago", 1994, 2019), Model("Tundra", 2000, 2026),
         )),
         Make("BMW", listOf(
             Model("1 Series", 2004, 2026, listOf(
@@ -154,21 +168,21 @@ object VehicleCatalog {
                 e("2.0 turbo", 2012, 2026, 6500), e("1.5 turbo", 2015, 2026, 6500),
             )),
             Model("2 Series", 2014, 2026),
-            Model("3 Series", 2000, 2026, listOf(
-                e("2.0", 2000, 2012, 6500), e("2.5 I6", 2000, 2007, 6500), e("3.0 I6", 2000, 2008, 7000),
+            Model("3 Series", 1994, 2026, listOf(
+                e("2.0", 1994, 2012, 6500), e("2.5 I6", 1994, 2007, 6500), e("3.0 I6", 2000, 2008, 7000),
                 e("3.0 I6 turbo", 2006, 2026, 7000), e("2.0 turbo", 2012, 2026, 6500), e("2.0 diesel", 2002, 2026, 4800, D),
             )),
             Model("4 Series", 2013, 2026),
-            Model("5 Series", 2000, 2026, listOf(
-                e("2.5 I6", 2000, 2005, 6500), e("3.0 I6", 2000, 2010, 6500), e("4.4 V8", 2000, 2010, 6500),
+            Model("5 Series", 1994, 2026, listOf(
+                e("2.5 I6", 1994, 2005, 6500), e("3.0 I6", 2000, 2010, 6500), e("4.4 V8", 1996, 2010, 6500),
                 e("3.0 I6 turbo", 2007, 2026, 7000), e("2.0 turbo", 2011, 2026, 6500), e("2.0 diesel", 2007, 2026, 4800, D),
                 e("3.0 diesel", 2000, 2026, 4800, D),
             )),
-            Model("6 Series", 2003, 2019), Model("7 Series", 2000, 2026),
-            Model("M3", 2000, 2026, listOf(
-                e("3.2 I6", 2000, 2006, 8000), e("4.0 V8", 2007, 2013, 8300), e("3.0 I6 twin-turbo", 2014, 2026, 7200),
+            Model("6 Series", 2003, 2019), Model("7 Series", 1994, 2026),
+            Model("M3", 1994, 2026, listOf(
+                e("3.2 I6", 1996, 2006, 8000), e("4.0 V8", 2007, 2013, 8300), e("3.0 I6 twin-turbo", 2014, 2026, 7200),
             )),
-            Model("M5", 2000, 2026), Model("X1", 2009, 2026),
+            Model("M5", 1998, 2026), Model("X1", 2009, 2026),
             Model("X3", 2003, 2026, listOf(
                 e("2.5 I6", 2003, 2006, 6500), e("3.0 I6", 2003, 2010, 6500), e("2.0 diesel", 2004, 2026, 4800, D),
                 e("3.0 diesel", 2004, 2026, 4800, D), e("2.0 turbo", 2011, 2026, 6500), e("3.0 I6 turbo", 2011, 2026, 7000),
@@ -177,50 +191,53 @@ object VehicleCatalog {
                 e("3.0 I6", 2000, 2010, 6500), e("4.4 V8", 2000, 2006, 6000), e("4.8 V8", 2004, 2010, 6500),
                 e("3.0 diesel", 2003, 2026, 4800, D), e("3.0 I6 turbo", 2010, 2026, 7000),
             )),
-            Model("X6", 2008, 2026), Model("Z3", 2000, 2002),
+            Model("X6", 2008, 2026), Model("Z3", 1996, 2002),
             Model("Z4", 2003, 2026, listOf(
                 e("2.5 I6", 2003, 2008, 6500), e("3.0 I6", 2003, 2016, 7000), e("3.0 I6 turbo", 2009, 2026, 7000),
                 e("2.0 turbo", 2011, 2026, 6500),
             )),
         )),
         Make("Mercedes-Benz", listOf(
-            Model("A-Class", 2000, 2026, listOf(
+            Model("A-Class", 1997, 2026, listOf(
                 e("2.0", 2005, 2012, 6200), e("1.6 turbo", 2012, 2018, 6000), e("2.0 turbo", 2012, 2026, 6500),
                 e("1.3 turbo", 2018, 2026, 6200),
             )),
             Model("B-Class", 2005, 2026),
-            Model("C-Class", 2000, 2026, listOf(
+            Model("C-Class", 1994, 2026, listOf(
                 e("2.6 V6", 2000, 2005, 6000), e("3.2 V6", 2000, 2005, 6000), e("1.8 supercharged", 2002, 2007, 6500),
                 e("2.1 diesel", 2000, 2018, 4600, D), e("3.5 V6", 2005, 2014, 6500), e("1.8 turbo", 2008, 2014, 6000),
                 e("6.2 V8 (AMG)", 2007, 2014, 7200), e("2.0 turbo", 2014, 2026, 6200), e("4.0 V8 twin-turbo (AMG)", 2015, 2021, 7000),
             )),
-            Model("CLA", 2013, 2026), Model("CLK", 2000, 2010), Model("CLS", 2004, 2026),
-            Model("E-Class", 2000, 2026, listOf(
-                e("2.6 V6", 2000, 2005, 6000), e("3.2 V6", 2000, 2005, 6000), e("5.0 V8", 2000, 2006, 6000),
+            Model("CLA", 2013, 2026), Model("CLK", 1997, 2010), Model("CLS", 2004, 2026),
+            Model("E-Class", 1994, 2026, listOf(
+                e("2.6 V6", 2000, 2005, 6000), e("3.2 V6", 1998, 2005, 6000), e("5.0 V8", 2000, 2006, 6000),
                 e("2.1 diesel", 2000, 2016, 4600, D), e("3.0 V6 diesel", 2005, 2018, 4600, D), e("3.5 V6", 2005, 2016, 6500),
                 e("5.5 V8", 2006, 2016, 6000), e("6.2 V8 (AMG)", 2006, 2011, 7200), e("2.0 turbo", 2013, 2026, 6200),
                 e("3.0 V6 turbo", 2016, 2026, 6200),
             )),
-            Model("G-Class", 2000, 2026), Model("GLA", 2014, 2026), Model("GLC", 2015, 2026),
-            Model("GLE / M-Class", 2000, 2026, listOf(
-                e("3.2 V6", 2000, 2005, 6000), e("5.0 V8", 2002, 2007, 6000), e("2.7 diesel", 2001, 2005, 4600, D),
+            Model("G-Class", 1994, 2026), Model("GLA", 2014, 2026), Model("GLC", 2015, 2026),
+            Model("GLE / M-Class", 1998, 2026, listOf(
+                e("3.2 V6", 1998, 2005, 6000), e("5.0 V8", 2002, 2007, 6000), e("2.7 diesel", 2001, 2005, 4600, D),
                 e("3.5 V6", 2005, 2015, 6500), e("3.0 V6 diesel", 2005, 2026, 4600, D), e("2.1 diesel", 2012, 2015, 4600, D),
             )),
             Model("GLS / GL", 2006, 2026),
-            Model("S-Class", 2000, 2026, listOf(
-                e("5.0 V8", 2000, 2006, 6000), e("5.5 V8", 2006, 2013, 6000), e("3.0 V6 diesel", 2006, 2017, 4600, D),
+            Model("S-Class", 1994, 2026, listOf(
+                e("5.0 V8", 1994, 2006, 6000), e("5.5 V8", 2006, 2013, 6000), e("3.0 V6 diesel", 2006, 2017, 4600, D),
                 e("4.7 V8 twin-turbo", 2013, 2020, 6200),
             )),
-            Model("SL", 2000, 2026), Model("SLK / SLC", 2000, 2020),
+            Model("SL", 1994, 2026), Model("SLK / SLC", 1996, 2020),
             Model("Sprinter", 2000, 2026, listOf(
                 e("2.2 diesel", 2000, 2006, 4200, D), e("2.1 diesel", 2006, 2026, 4200, D), e("3.0 V6 diesel", 2006, 2026, 4200, D),
             )),
             Model("Vito / Valente", 2000, 2026), Model("X-Class", 2017, 2020),
         )),
         Make("Holden", listOf(
-            Model("Acadia", 2018, 2020), Model("Astra", 2000, 2020), Model("Barina", 2000, 2018),
-            Model("Calais / Berlina", 2000, 2017, listOf(
-                e("3.8 V6", 2000, 2004, 5500), e("5.7 V8", 2000, 2006, 6000), e("3.6 V6", 2004, 2020, 6500),
+            Model("Jackaroo", 1994, 2004, listOf(e("3.2 V6", 1994, 2002, 5500), e("3.5 V6", 2002, 2004, 5800), e("3.0 diesel", 1998, 2004, 4200, D))),
+            Model("Apollo", 1994, 1997, listOf(e("2.2 I4", 1994, 1997, 6000), e("3.0 V6", 1994, 1997, 6200))),
+            Model("Nova", 1994, 1996, listOf(e("1.6 I4", 1994, 1996, 6400), e("1.8 I4", 1994, 1996, 6400))),
+            Model("Acadia", 2018, 2020), Model("Astra", 1996, 2020), Model("Barina", 1994, 2018),
+            Model("Calais / Berlina", 1994, 2017, listOf(
+                e("3.8 V6", 1994, 2004, 5500), e("5.7 V8", 1999, 2006, 6000), e("3.6 V6", 2004, 2020, 6500),
                 e("6.0 V8", 2006, 2017, 6000), e("3.0 V6", 2009, 2017, 6800), e("6.2 V8", 2013, 2017, 6000),
                 e("2.0 turbo", 2018, 2020, 6200),
             )),
@@ -231,97 +248,105 @@ object VehicleCatalog {
             Model("Colorado", 2008, 2020, listOf(
                 e("3.0 diesel", 2008, 2012, 4000, D), e("3.6 V6", 2008, 2012, 6000), e("2.8 diesel", 2012, 2020, 4200, D),
             )),
-            Model("Commodore", 2000, 2020, listOf(
-                e("3.8 V6", 2000, 2004, 5500), e("5.7 V8", 2000, 2006, 6000), e("3.6 V6", 2004, 2020, 6500),
+            Model("Commodore", 1994, 2020, listOf(
+                e("3.8 V6", 1994, 2004, 5500), e("5.7 V8", 1999, 2006, 6000), e("3.6 V6", 2004, 2020, 6500),
                 e("6.0 V8", 2006, 2017, 6000), e("3.0 V6", 2009, 2017, 6800), e("6.2 V8", 2013, 2017, 6000),
                 e("2.0 turbo", 2018, 2020, 6200),
             )),
             Model("Cruze", 2009, 2016, listOf(e("1.8", 2009, 2016, 6500), e("1.4 turbo", 2011, 2016, 6000), e("2.0 diesel", 2009, 2016, 4500, D))),
             Model("Epica", 2007, 2011), Model("Equinox", 2017, 2020),
             Model("Monaro", 2001, 2005, listOf(e("3.8 V6", 2001, 2004, 5500), e("5.7 V8", 2001, 2005, 6000))),
-            Model("Rodeo", 2000, 2008),
-            Model("Statesman / Caprice", 2000, 2017, listOf(
-                e("3.8 V6", 2000, 2004, 5500), e("5.7 V8", 2000, 2006, 6000), e("3.6 V6", 2004, 2017, 6500),
+            Model("Rodeo", 1994, 2008),
+            Model("Statesman / Caprice", 1994, 2017, listOf(
+                e("3.8 V6", 1994, 2004, 5500), e("5.7 V8", 1999, 2006, 6000), e("3.6 V6", 2004, 2017, 6500),
                 e("6.0 V8", 2006, 2017, 6000), e("6.2 V8", 2013, 2017, 6000),
             )),
             Model("Trailblazer", 2012, 2020), Model("Trax", 2013, 2020),
-            Model("Ute", 2000, 2017, listOf(
-                e("3.8 V6", 2000, 2004, 5500), e("5.7 V8", 2000, 2006, 6000), e("3.6 V6", 2004, 2020, 6500),
+            Model("Ute", 1994, 2017, listOf(
+                e("3.8 V6", 1994, 2004, 5500), e("5.7 V8", 1999, 2006, 6000), e("3.6 V6", 2004, 2020, 6500),
                 e("6.0 V8", 2006, 2017, 6000), e("3.0 V6", 2009, 2017, 6800), e("6.2 V8", 2013, 2017, 6000),
                 e("2.0 turbo", 2018, 2020, 6200),
             )),
-            Model("Vectra", 2000, 2006), Model("Viva", 2005, 2009), Model("Zafira", 2001, 2005),
+            Model("Vectra", 1997, 2006), Model("Viva", 2005, 2009), Model("Zafira", 2001, 2005),
         )),
         Make("Chevrolet", listOf(
-            Model("Aveo", 2004, 2011), Model("Blazer", 2000, 2026),
+            Model("Lumina", 1995, 2001, listOf(e("3.1 V6", 1995, 2001, 5000))),
+            Model("Cavalier", 1994, 2005, listOf(e("2.2 I4", 1994, 2005, 5500), e("2.4 I4", 1996, 2002, 6000))),
+            Model("Monte Carlo", 1995, 2007, listOf(e("3.1 V6", 1995, 1999, 5000), e("3.4 V6", 2000, 2005, 5500), e("3.8 V6", 2000, 2007, 5500))),
+            Model("S-10", 1994, 2004, listOf(e("2.2 I4", 1994, 2003, 5000), e("4.3 V6", 1994, 2004, 5000))),
+            Model("Astro", 1994, 2005, listOf(e("4.3 V6", 1994, 2005, 5000))),
+            Model("Camaro (to 2002)", 1994, 2002, listOf(e("3.4 V6", 1994, 1995, 5500), e("3.8 V6", 1995, 2002, 5500), e("5.7 V8", 1994, 2002, 6000))),
+            Model("Aveo", 2004, 2011), Model("Blazer", 1994, 2026),
             Model("Camaro", 2010, 2024, listOf(e("3.6 V6", 2010, 2024, 7000), e("6.2 V8", 2010, 2024, 6600), e("2.0 turbo", 2016, 2024, 6500))),
             Model("Cobalt", 2005, 2010), Model("Colorado", 2004, 2026),
-            Model("Corvette", 2000, 2026, listOf(
-                e("5.7 V8", 2000, 2004, 6000), e("6.0 V8", 2005, 2007, 6500), e("7.0 V8 (Z06)", 2006, 2013, 7000),
+            Model("Corvette", 1994, 2026, listOf(
+                e("5.7 V8", 1994, 2004, 6000), e("6.0 V8", 2005, 2007, 6500), e("7.0 V8 (Z06)", 2006, 2013, 7000),
                 e("6.2 V8", 2008, 2026, 6600),
             )),
-            Model("Cruze", 2011, 2019), Model("Equinox", 2005, 2026), Model("Express", 2000, 2026),
-            Model("Impala", 2000, 2020), Model("Malibu", 2000, 2026),
-            Model("Silverado", 2000, 2026, listOf(
-                e("4.3 V6", 2000, 2019, 5600), e("4.8 V8", 2000, 2013, 6000), e("5.3 V8", 2000, 2026, 6000),
+            Model("Cruze", 2011, 2019), Model("Equinox", 2005, 2026), Model("Express", 1996, 2026),
+            Model("Impala", 2000, 2020), Model("Malibu", 1997, 2026),
+            Model("Silverado", 1999, 2026, listOf(
+                e("4.3 V6", 1999, 2019, 5600), e("4.8 V8", 1999, 2013, 6000), e("5.3 V8", 1999, 2026, 6000),
                 e("6.0 V8", 2001, 2019, 6000), e("6.2 V8", 2009, 2026, 6000), e("6.6 diesel", 2001, 2026, 3600, D),
             )),
-            Model("Spark", 2013, 2022), Model("Suburban", 2000, 2026), Model("Tahoe", 2000, 2026),
+            Model("Spark", 2013, 2022), Model("Suburban", 1994, 2026), Model("Tahoe", 1995, 2026),
             Model("TrailBlazer", 2002, 2009), Model("Trax", 2015, 2026), Model("Volt", 2011, 2019),
         )),
         Make("GMC", listOf(
             Model("Acadia", 2007, 2026), Model("Canyon", 2004, 2026), Model("Envoy", 2000, 2009),
-            Model("Savana", 2000, 2026), Model("Sierra", 2000, 2026, listOf(
-                e("4.3 V6", 2000, 2019, 5600), e("4.8 V8", 2000, 2013, 6000), e("5.3 V8", 2000, 2026, 6000),
+            Model("Savana", 1996, 2026), Model("Sierra", 1994, 2026, listOf(
+                e("4.3 V6", 1994, 2019, 5600), e("4.8 V8", 1999, 2013, 6000), e("5.3 V8", 1999, 2026, 6000),
                 e("6.0 V8", 2001, 2019, 6000), e("6.2 V8", 2009, 2026, 6000), e("6.6 diesel", 2001, 2026, 3600, D),
             )),
-            Model("Terrain", 2010, 2026), Model("Yukon", 2000, 2026),
+            Model("Terrain", 2010, 2026), Model("Yukon", 1994, 2026),
         )),
         Make("Cadillac", listOf(
             Model("ATS", 2013, 2019), Model("CT4", 2020, 2026), Model("CT5", 2020, 2026), Model("CTS", 2003, 2019),
-            Model("DeVille / DTS", 2000, 2011), Model("Escalade", 2000, 2026), Model("Seville", 2000, 2004),
+            Model("DeVille / DTS", 1994, 2011), Model("Escalade", 1999, 2026), Model("Seville", 1994, 2004),
             Model("SRX", 2004, 2016), Model("STS", 2005, 2011), Model("XLR", 2004, 2009), Model("XT5", 2017, 2026),
         )),
         Make("Buick", listOf(
-            Model("Century", 2000, 2005), Model("Enclave", 2008, 2026), Model("Encore", 2013, 2026), Model("Envision", 2016, 2026),
-            Model("LaCrosse", 2005, 2019), Model("LeSabre", 2000, 2005), Model("Lucerne", 2006, 2011),
-            Model("Park Avenue", 2000, 2005), Model("Regal", 2000, 2020), Model("Rendezvous", 2002, 2007),
+            Model("Century", 1994, 2005), Model("Enclave", 2008, 2026), Model("Encore", 2013, 2026), Model("Envision", 2016, 2026),
+            Model("LaCrosse", 2005, 2019), Model("LeSabre", 1994, 2005), Model("Lucerne", 2006, 2011),
+            Model("Park Avenue", 1994, 2005), Model("Regal", 1994, 2020), Model("Rendezvous", 2002, 2007),
         )),
         Make("Pontiac", listOf(
-            Model("Aztek", 2001, 2005), Model("Bonneville", 2000, 2005), Model("Firebird", 2000, 2002), Model("G6", 2005, 2010),
-            Model("G8", 2008, 2009), Model("Grand Am", 2000, 2005), Model("Grand Prix", 2000, 2008),
+            Model("Aztek", 2001, 2005), Model("Bonneville", 1994, 2005), Model("Firebird", 1994, 2002), Model("G6", 2005, 2010),
+            Model("G8", 2008, 2009), Model("Grand Am", 1994, 2005), Model("Grand Prix", 1994, 2008),
             Model("GTO", 2004, 2006, listOf(e("5.7 V8", 2004, 2004, 6000), e("6.0 V8", 2005, 2006, 6500))),
-            Model("Solstice", 2006, 2010), Model("Sunfire", 2000, 2005), Model("Torrent", 2006, 2009), Model("Vibe", 2003, 2010),
+            Model("Solstice", 2006, 2010), Model("Sunfire", 1995, 2005), Model("Torrent", 2006, 2009), Model("Vibe", 2003, 2010),
         )),
         Make("Saturn", listOf(
             Model("Aura", 2007, 2009), Model("Ion", 2003, 2007), Model("L-Series", 2000, 2005), Model("Outlook", 2007, 2010),
-            Model("S-Series", 2000, 2002), Model("Sky", 2007, 2010), Model("Vue", 2002, 2010),
+            Model("S-Series", 1994, 2002), Model("Sky", 2007, 2010), Model("Vue", 2002, 2010),
         )),
-        Make("Hummer", listOf(Model("H1", 2000, 2006), Model("H2", 2003, 2009), Model("H3", 2006, 2010))),
+        Make("Hummer", listOf(Model("H1", 1994, 2006), Model("H2", 2003, 2009), Model("H3", 2006, 2010))),
         Make("Opel / Vauxhall", listOf(
-            Model("Antara", 2006, 2015), Model("Astra", 2000, 2026), Model("Combo", 2000, 2026), Model("Corsa", 2000, 2026),
-            Model("Insignia", 2008, 2022), Model("Meriva", 2003, 2017), Model("Mokka", 2012, 2026), Model("Omega", 2000, 2003),
-            Model("Signum", 2003, 2008), Model("Tigra", 2004, 2009), Model("Vectra", 2000, 2008), Model("Vivaro", 2001, 2026),
-            Model("Zafira", 2000, 2019),
+            Model("Antara", 2006, 2015), Model("Astra", 1994, 2026), Model("Combo", 1994, 2026), Model("Corsa", 1994, 2026),
+            Model("Insignia", 2008, 2022), Model("Meriva", 2003, 2017), Model("Mokka", 2012, 2026), Model("Omega", 1994, 2003),
+            Model("Signum", 2003, 2008), Model("Tigra", 2004, 2009), Model("Vectra", 1995, 2008), Model("Vivaro", 2001, 2026),
+            Model("Zafira", 1999, 2019),
         )),
-        Make("Saab", listOf(Model("9-2X", 2005, 2006), Model("9-3", 2000, 2014), Model("9-5", 2000, 2011), Model("9-7X", 2005, 2009))),
+        Make("Saab", listOf(
+            Model("900", 1994, 1998, listOf(e("2.0 turbo", 1994, 1998, 6000), e("2.3 I4", 1994, 1998, 6000), e("2.5 V6", 1994, 1997, 6500))),
+            Model("9000", 1994, 1998, listOf(e("2.3 turbo", 1994, 1998, 6000), e("3.0 V6", 1995, 1997, 6000))),Model("9-2X", 2005, 2006), Model("9-3", 1999, 2014), Model("9-5", 1998, 2011), Model("9-7X", 2005, 2009))),
         Make("Volkswagen", listOf(
             Model("Amarok", 2011, 2026, listOf(e("2.0 TDI diesel", 2011, 2026, 4500, D), e("3.0 V6 TDI diesel", 2016, 2026, 4500, D))),
-            Model("Arteon", 2017, 2026), Model("Atlas", 2017, 2026), Model("Beetle", 2000, 2019), Model("Bora", 2000, 2005),
+            Model("Arteon", 2017, 2026), Model("Atlas", 2017, 2026), Model("Beetle", 1998, 2019), Model("Bora", 1999, 2005),
             Model("Caddy", 2004, 2026), Model("CC", 2008, 2017), Model("Eos", 2006, 2015),
-            Model("Golf", 2000, 2026, listOf(
-                e("1.6", 2000, 2008, 6200), e("2.0", 2000, 2008, 6200), e("1.8 turbo", 2000, 2005, 6500),
-                e("1.9 TDI diesel", 2000, 2009, 4800, D), e("3.2 V6 (R32)", 2003, 2009, 6800), e("2.0 TDI diesel", 2004, 2026, 4800, D),
+            Model("Golf", 1994, 2026, listOf(
+                e("1.6", 1994, 2008, 6200), e("2.0", 1994, 2008, 6200), e("1.8 turbo", 1998, 2005, 6500),
+                e("1.9 TDI diesel", 1996, 2009, 4800, D), e("3.2 V6 (R32)", 2003, 2009, 6800), e("2.0 TDI diesel", 2004, 2026, 4800, D),
                 e("2.0 TSI turbo (GTI/R)", 2005, 2026, 6500), e("1.4 TSI", 2007, 2020, 6000), e("1.2 TSI", 2010, 2019, 6000),
                 e("1.5 TSI", 2019, 2026, 6000),
             )),
-            Model("Jetta", 2000, 2026), Model("Multivan", 2003, 2026),
-            Model("Passat", 2000, 2026, listOf(
-                e("1.8 turbo", 2000, 2005, 6500), e("2.8 V6", 2000, 2005, 6500), e("1.9 TDI diesel", 2000, 2005, 4800, D),
+            Model("Jetta", 1994, 2026), Model("Multivan", 2003, 2026),
+            Model("Passat", 1994, 2026, listOf(
+                e("1.8 turbo", 1997, 2005, 6500), e("2.8 V6", 1998, 2005, 6500), e("1.9 TDI diesel", 1996, 2005, 4800, D),
                 e("2.0 TSI turbo", 2005, 2026, 6500), e("2.0 TDI diesel", 2005, 2026, 4800, D), e("3.6 V6", 2006, 2017, 6500),
             )),
-            Model("Polo", 2000, 2026, listOf(
-                e("1.4", 2000, 2009, 6200), e("1.6", 2000, 2010, 6200), e("1.2 TSI", 2010, 2017, 6000),
+            Model("Polo", 1994, 2026, listOf(
+                e("1.4", 1994, 2009, 6200), e("1.6", 1994, 2010, 6200), e("1.2 TSI", 2010, 2017, 6000),
                 e("1.8 TSI (GTI)", 2010, 2017, 6500), e("1.0 TSI", 2017, 2026, 6000),
             )),
             Model("Scirocco", 2009, 2017), Model("T-Cross", 2019, 2026), Model("T-Roc", 2017, 2026),
@@ -330,48 +355,48 @@ object VehicleCatalog {
                 e("3.2 V6", 2003, 2006, 6500), e("2.5 TDI diesel", 2003, 2010, 4500, D), e("4.2 V8", 2004, 2010, 6500),
                 e("5.0 V10 TDI diesel", 2003, 2009, 4500, D), e("3.6 V6", 2006, 2018, 6500), e("3.0 V6 TDI diesel", 2007, 2026, 4800, D),
             )),
-            Model("Touran", 2003, 2026), Model("Transporter", 2000, 2026), Model("Up!", 2012, 2023),
+            Model("Touran", 2003, 2026), Model("Transporter", 1994, 2026), Model("Up!", 2012, 2023),
         )),
         Make("Audi", listOf(
             Model("A1", 2010, 2026),
-            Model("A3", 2000, 2026, listOf(
-                e("1.8 turbo", 2000, 2003, 6500), e("2.0 TFSI turbo", 2004, 2026, 6500), e("3.2 V6", 2004, 2009, 6800),
+            Model("A3", 1996, 2026, listOf(
+                e("1.8 turbo", 1996, 2003, 6500), e("2.0 TFSI turbo", 2004, 2026, 6500), e("3.2 V6", 2004, 2009, 6800),
                 e("2.0 TDI diesel", 2004, 2020, 4800, D), e("1.4 TFSI", 2008, 2020, 6000),
             )),
-            Model("A4", 2000, 2026, listOf(
-                e("1.8 turbo", 2000, 2006, 6500), e("3.0 V6", 2002, 2006, 6500), e("2.0 TFSI turbo", 2004, 2026, 6500),
+            Model("A4", 1995, 2026, listOf(
+                e("1.8 turbo", 1995, 2006, 6500), e("3.0 V6", 2002, 2006, 6500), e("2.0 TFSI turbo", 2004, 2026, 6500),
                 e("3.2 V6", 2004, 2012, 6800), e("2.0 TDI diesel", 2004, 2026, 4800, D),
             )),
-            Model("A5", 2007, 2026), Model("A6", 2000, 2026), Model("A8", 2000, 2026), Model("Q3", 2011, 2026),
+            Model("A5", 2007, 2026), Model("A6", 1994, 2026), Model("A8", 1994, 2026), Model("Q3", 2011, 2026),
             Model("Q5", 2008, 2026, listOf(e("2.0 TFSI turbo", 2008, 2026, 6500), e("3.2 V6", 2008, 2012, 6800), e("2.0 TDI diesel", 2008, 2026, 4800, D), e("3.0 TDI diesel", 2008, 2026, 4800, D))),
             Model("Q7", 2006, 2026, listOf(e("3.6 V6", 2006, 2010, 6500), e("4.2 V8", 2006, 2015, 6500), e("3.0 TDI diesel", 2006, 2026, 4800, D))),
             Model("R8", 2007, 2024, listOf(e("4.2 V8", 2007, 2015, 8250), e("5.2 V10", 2009, 2024, 8700))),
-            Model("RS3", 2011, 2026), Model("RS4", 2000, 2026), Model("RS6", 2002, 2026), Model("S3", 2000, 2026), Model("S4", 2000, 2026),
-            Model("TT", 2000, 2023, listOf(
-                e("1.8 turbo", 2000, 2006, 6500), e("3.2 V6", 2003, 2010, 6800), e("2.0 TFSI turbo", 2006, 2023, 6500),
+            Model("RS3", 2011, 2026), Model("RS4", 2000, 2026), Model("RS6", 2002, 2026), Model("S3", 1999, 2026), Model("S4", 1997, 2026),
+            Model("TT", 1998, 2023, listOf(
+                e("1.8 turbo", 1998, 2006, 6500), e("3.2 V6", 2003, 2010, 6800), e("2.0 TFSI turbo", 2006, 2023, 6500),
                 e("2.5 TFSI (TT RS)", 2009, 2023, 6800),
             )),
         )),
         Make("Skoda", listOf(
-            Model("Fabia", 2000, 2026), Model("Kamiq", 2019, 2026), Model("Karoq", 2017, 2026), Model("Kodiaq", 2016, 2026),
-            Model("Octavia", 2000, 2026, listOf(
-                e("1.6", 2000, 2013, 6200), e("1.8 turbo", 2000, 2004, 6500), e("1.9 TDI diesel", 2000, 2010, 4800, D),
+            Model("Fabia", 1999, 2026), Model("Kamiq", 2019, 2026), Model("Karoq", 2017, 2026), Model("Kodiaq", 2016, 2026),
+            Model("Octavia", 1996, 2026, listOf(
+                e("1.6", 1996, 2013, 6200), e("1.8 turbo", 1996, 2004, 6500), e("1.9 TDI diesel", 1996, 2010, 4800, D),
                 e("2.0 TFSI turbo (RS)", 2005, 2026, 6500), e("2.0 TDI diesel", 2004, 2026, 4800, D), e("1.4 TSI", 2008, 2020, 6000),
             )),
             Model("Rapid", 2012, 2019), Model("Roomster", 2006, 2015), Model("Scala", 2019, 2026), Model("Superb", 2002, 2026),
             Model("Yeti", 2009, 2017),
         )),
         Make("SEAT / Cupra", listOf(
-            Model("Alhambra", 2000, 2020), Model("Altea", 2004, 2015), Model("Arona", 2017, 2026), Model("Ateca", 2016, 2026),
-            Model("Formentor", 2020, 2026), Model("Ibiza", 2000, 2026), Model("Leon", 2000, 2026), Model("Tarraco", 2018, 2026),
-            Model("Toledo", 2000, 2019),
+            Model("Alhambra", 1996, 2020), Model("Altea", 2004, 2015), Model("Arona", 2017, 2026), Model("Ateca", 2016, 2026),
+            Model("Formentor", 2020, 2026), Model("Ibiza", 1994, 2026), Model("Leon", 1999, 2026), Model("Tarraco", 2018, 2026),
+            Model("Toledo", 1994, 2019),
         )),
         Make("Porsche", listOf(
-            Model("911", 2000, 2026, listOf(
-                e("3.4", 2000, 2001, 7300), e("3.6", 2002, 2008, 7300), e("3.8", 2005, 2016, 7400),
+            Model("911", 1994, 2026, listOf(
+                e("3.4", 1998, 2001, 7300), e("3.6", 2002, 2008, 7300), e("3.8", 2005, 2016, 7400),
                 e("3.0 turbo", 2016, 2026, 7500), e("4.0 (GT3)", 2015, 2026, 9000),
             )),
-            Model("Boxster", 2000, 2026, listOf(
+            Model("Boxster", 1997, 2026, listOf(
                 e("2.7", 2000, 2012, 7200), e("3.2", 2000, 2004, 7200), e("3.4", 2005, 2016, 7500), e("2.0 turbo", 2016, 2026, 7500),
             )),
             Model("Cayenne", 2003, 2026, listOf(
@@ -387,20 +412,20 @@ object VehicleCatalog {
             Model("Murciélago", 2001, 2010), Model("Urus", 2018, 2026),
         )),
         Make("Bentley", listOf(
-            Model("Arnage", 2000, 2009), Model("Bentayga", 2016, 2026), Model("Continental GT", 2003, 2026),
+            Model("Arnage", 1998, 2009), Model("Bentayga", 2016, 2026), Model("Continental GT", 2003, 2026),
             Model("Flying Spur", 2005, 2026),
         )),
         Make("Jeep", listOf(
-            Model("Cherokee / Liberty", 2000, 2026), Model("Commander", 2006, 2010), Model("Compass", 2007, 2026),
+            Model("Cherokee / Liberty", 1994, 2026), Model("Commander", 2006, 2010), Model("Compass", 2007, 2026),
             Model("Gladiator", 2020, 2026),
-            Model("Grand Cherokee", 2000, 2026, listOf(
-                e("4.0 I6", 2000, 2004, 5400), e("4.7 V8", 2000, 2009, 5800), e("3.7 V6", 2005, 2010, 6000),
+            Model("Grand Cherokee", 1994, 2026, listOf(
+                e("4.0 I6", 1994, 2004, 5400), e("4.7 V8", 1999, 2009, 5800), e("3.7 V6", 2005, 2010, 6000),
                 e("5.7 V8", 2005, 2026, 5800), e("3.0 V6 diesel", 2005, 2026, 4500, D), e("6.1 V8 (SRT8)", 2006, 2010, 6400),
                 e("3.6 V6", 2011, 2026, 6400), e("6.4 V8 (SRT)", 2012, 2026, 6400),
             )),
             Model("Patriot", 2007, 2017), Model("Renegade", 2015, 2026), Model("Wagoneer", 2022, 2026),
-            Model("Wrangler", 2000, 2026, listOf(
-                e("2.5 I4", 2000, 2002, 5500), e("4.0 I6", 2000, 2006, 5400), e("3.8 V6", 2007, 2011, 5800),
+            Model("Wrangler", 1997, 2026, listOf(
+                e("2.5 I4", 1997, 2002, 5500), e("4.0 I6", 1997, 2006, 5400), e("3.8 V6", 2007, 2011, 5800),
                 e("2.8 diesel", 2007, 2018, 4200, D), e("3.6 V6", 2012, 2026, 6600), e("2.0 turbo", 2018, 2026, 6000),
             )),
         )),
@@ -410,11 +435,13 @@ object VehicleCatalog {
                 e("3.0 V6 diesel", 2006, 2015, 4500, D), e("6.1 V8 (SRT8)", 2006, 2010, 6400), e("3.6 V6", 2011, 2023, 6400),
                 e("6.4 V8 (SRT)", 2012, 2023, 6400),
             )),
-            Model("Crossfire", 2004, 2008), Model("Neon", 2000, 2005), Model("Pacifica", 2004, 2026),
+            Model("Crossfire", 2004, 2008), Model("Neon", 1995, 2005), Model("Pacifica", 2004, 2026),
             Model("PT Cruiser", 2001, 2010), Model("Sebring", 2001, 2010),
-            Model("Voyager / Town & Country", 2000, 2016),
+            Model("Voyager / Town & Country", 1994, 2016),
         )),
         Make("Dodge", listOf(
+            Model("Intrepid", 1994, 2004, listOf(e("3.3 V6", 1994, 1997, 5500), e("3.5 V6", 1994, 2004, 6000), e("2.7 V6", 1998, 2004, 6500))),
+            Model("Stratus", 1995, 2006, listOf(e("2.0 I4", 1995, 2000, 6500), e("2.4 I4", 1995, 2006, 6000), e("2.5 V6", 1995, 2000, 6500))),
             Model("Avenger", 2008, 2014), Model("Caliber", 2006, 2012),
             Model("Challenger", 2008, 2023, listOf(
                 e("3.5 V6", 2006, 2010, 6400), e("3.6 V6", 2011, 2023, 6400), e("5.7 V8", 2006, 2023, 5800),
@@ -424,13 +451,13 @@ object VehicleCatalog {
                 e("3.5 V6", 2006, 2010, 6400), e("3.6 V6", 2011, 2023, 6400), e("5.7 V8", 2006, 2023, 5800),
                 e("6.1 V8 (SRT8)", 2006, 2010, 6400), e("6.4 V8", 2011, 2023, 6400), e("6.2 V8 supercharged", 2015, 2023, 6200),
             )),
-            Model("Dakota", 2000, 2011), Model("Durango", 2000, 2026), Model("Grand Caravan", 2000, 2020),
-            Model("Journey", 2009, 2020), Model("Neon", 2000, 2005), Model("Nitro", 2007, 2011),
-            Model("Ram (to 2009)", 2000, 2009, listOf(
-                e("4.7 V8", 2000, 2009, 5800), e("5.9 V8", 2000, 2003, 5200), e("5.7 V8", 2003, 2009, 5800),
-                e("5.9 diesel", 2000, 2007, 3200, D), e("6.7 diesel", 2007, 2009, 3200, D),
+            Model("Dakota", 1994, 2011), Model("Durango", 1998, 2026), Model("Grand Caravan", 1994, 2020),
+            Model("Journey", 2009, 2020), Model("Neon", 1995, 2005), Model("Nitro", 2007, 2011),
+            Model("Ram (to 2009)", 1994, 2009, listOf(
+                e("4.7 V8", 2000, 2009, 5800), e("5.9 V8", 1994, 2003, 5200), e("5.7 V8", 2003, 2009, 5800),
+                e("5.9 diesel", 1994, 2007, 3200, D), e("6.7 diesel", 2007, 2009, 3200, D),
             )),
-            Model("Viper", 2000, 2017, listOf(e("8.0 V10", 2000, 2007, 6000), e("8.4 V10", 2008, 2017, 6200))),
+            Model("Viper", 1994, 2017, listOf(e("8.0 V10", 1994, 2007, 6000), e("8.4 V10", 2008, 2017, 6200))),
         )),
         Make("Ram", listOf(
             Model("1500", 2010, 2026, listOf(
@@ -450,8 +477,8 @@ object VehicleCatalog {
             Model("Ducato", 2000, 2026, listOf(
                 e("2.8 diesel", 2000, 2006, 4200, D), e("2.3 diesel", 2006, 2026, 4500, D), e("3.0 diesel", 2006, 2026, 4200, D),
             )),
-            Model("Freemont", 2011, 2016), Model("Fullback", 2016, 2019), Model("Multipla", 2000, 2010),
-            Model("Panda", 2003, 2026), Model("Punto", 2000, 2018), Model("Stilo", 2001, 2007), Model("Tipo", 2016, 2026),
+            Model("Freemont", 2011, 2016), Model("Fullback", 2016, 2019), Model("Multipla", 1999, 2010),
+            Model("Panda", 2003, 2026), Model("Punto", 1994, 2018), Model("Stilo", 2001, 2007), Model("Tipo", 2016, 2026),
         )),
         Make("Abarth", listOf(
             Model("124 Spider", 2016, 2020),
@@ -459,26 +486,26 @@ object VehicleCatalog {
             Model("Punto", 2008, 2015),
         )),
         Make("Alfa Romeo", listOf(
-            Model("147", 2001, 2010), Model("156", 2000, 2006), Model("159", 2005, 2011), Model("166", 2000, 2007),
+            Model("147", 2001, 2010), Model("156", 1998, 2006), Model("159", 2005, 2011), Model("166", 1998, 2007),
             Model("4C", 2013, 2020), Model("Brera / Spider", 2006, 2010),
             Model("Giulia", 2016, 2026, listOf(
                 e("2.0 turbo", 2016, 2026, 6000), e("2.2 diesel", 2016, 2026, 4800, D), e("2.9 V6 twin-turbo (QV)", 2016, 2026, 7000),
             )),
-            Model("Giulietta", 2010, 2020), Model("GT", 2004, 2010), Model("GTV / Spider", 2000, 2005), Model("MiTo", 2008, 2018),
+            Model("Giulietta", 2010, 2020), Model("GT", 2004, 2010), Model("GTV / Spider", 1995, 2005), Model("MiTo", 2008, 2018),
             Model("Stelvio", 2017, 2026), Model("Tonale", 2022, 2026),
         )),
         Make("Maserati", listOf(
-            Model("3200 GT / Coupé / Spyder", 2000, 2007), Model("Ghibli", 2013, 2024), Model("GranTurismo", 2007, 2026),
-            Model("Grecale", 2022, 2026), Model("Levante", 2016, 2026), Model("MC20", 2021, 2026), Model("Quattroporte", 2000, 2026),
+            Model("3200 GT / Coupé / Spyder", 1998, 2007), Model("Ghibli", 2013, 2024), Model("GranTurismo", 2007, 2026),
+            Model("Grecale", 2022, 2026), Model("Levante", 2016, 2026), Model("MC20", 2021, 2026), Model("Quattroporte", 1994, 2026),
         )),
         Make("Lancia", listOf(
-            Model("Delta", 2008, 2014), Model("Lybra", 2000, 2005), Model("Musa", 2004, 2012), Model("Thesis", 2002, 2009),
+            Model("Delta", 2008, 2014), Model("Lybra", 1999, 2005), Model("Musa", 2004, 2012), Model("Thesis", 2002, 2009),
             Model("Ypsilon", 2003, 2026),
         )),
         Make("Peugeot", listOf(
             Model("107 / 108", 2005, 2021), Model("2008", 2013, 2026),
-            Model("206", 2000, 2010, listOf(e("1.4", 2000, 2010, 6200), e("1.6", 2000, 2010, 6200), e("2.0 (GTi/CC)", 2000, 2007, 6500))),
-            Model("207", 2006, 2014), Model("208", 2012, 2026), Model("306", 2000, 2002), Model("307", 2001, 2008),
+            Model("206", 1998, 2010, listOf(e("1.4", 1998, 2010, 6200), e("1.6", 1998, 2010, 6200), e("2.0 (GTi/CC)", 1999, 2007, 6500))),
+            Model("207", 2006, 2014), Model("208", 2012, 2026), Model("306", 1994, 2002), Model("307", 2001, 2008),
             Model("3008", 2009, 2026, listOf(
                 e("1.6 turbo", 2009, 2026, 6000), e("2.0 HDi diesel", 2009, 2026, 4500, D), e("1.2 turbo", 2017, 2026, 6000),
             )),
@@ -486,38 +513,41 @@ object VehicleCatalog {
                 e("1.6 turbo", 2007, 2021, 6000), e("1.6 HDi diesel", 2007, 2021, 4500, D), e("2.0 HDi diesel", 2007, 2021, 4500, D),
                 e("1.2 turbo", 2014, 2026, 6000),
             )),
-            Model("4007", 2007, 2012), Model("406", 2000, 2004), Model("407", 2004, 2011), Model("5008", 2009, 2026),
+            Model("4007", 2007, 2012), Model("406", 1995, 2004), Model("407", 2004, 2011), Model("5008", 2009, 2026),
             Model("508", 2011, 2026), Model("607", 2000, 2010), Model("Boxer", 2000, 2026), Model("Expert", 2000, 2026),
-            Model("Partner", 2000, 2026), Model("RCZ", 2010, 2015),
+            Model("Partner", 1996, 2026), Model("RCZ", 2010, 2015),
         )),
         Make("Citroën", listOf(
-            Model("Berlingo", 2000, 2026), Model("C-Crosser", 2007, 2012), Model("C1", 2005, 2022), Model("C3", 2002, 2026),
+            Model("Berlingo", 1996, 2026), Model("C-Crosser", 2007, 2012), Model("C1", 2005, 2022), Model("C3", 2002, 2026),
             Model("C4", 2004, 2026), Model("C4 Picasso", 2006, 2022), Model("C5", 2001, 2017), Model("C5 Aircross", 2019, 2026),
-            Model("Jumper", 2000, 2026), Model("Jumpy", 2000, 2026), Model("Saxo", 2000, 2003), Model("Xsara", 2000, 2006),
-            Model("Xsara Picasso", 2000, 2012),
+            Model("Jumper", 2000, 2026), Model("Jumpy", 2000, 2026), Model("Saxo", 1996, 2003), Model("Xsara", 1997, 2006),
+            Model("Xsara Picasso", 1999, 2012),
         )),
         Make("DS", listOf(Model("DS3", 2010, 2026), Model("DS4", 2011, 2026), Model("DS5", 2012, 2018), Model("DS7", 2017, 2026))),
 
         // Japan
         Make("Nissan", listOf(
-            Model("200SX / Silvia", 2000, 2002), Model("350Z", 2003, 2009, listOf(e("3.5 V6", 2003, 2009, 7000))),
-            Model("370Z", 2009, 2020, listOf(e("3.7 V6", 2009, 2020, 7500))), Model("Altima", 2000, 2026),
-            Model("Dualis / Qashqai", 2007, 2026), Model("Frontier", 2000, 2026),
+            Model("300ZX", 1994, 1996, listOf(e("3.0 V6", 1994, 1996, 6500), e("3.0 twin-turbo V6", 1994, 1996, 6500))),
+            Model("240SX", 1995, 1998, listOf(e("2.4 I4", 1995, 1998, 6500))),
+            Model("Quest", 1994, 2002, listOf(e("3.0 V6", 1994, 1998, 6000), e("3.3 V6", 1999, 2002, 5500))),
+            Model("200SX / Silvia", 1994, 2002), Model("350Z", 2003, 2009, listOf(e("3.5 V6", 2003, 2009, 7000))),
+            Model("370Z", 2009, 2020, listOf(e("3.7 V6", 2009, 2020, 7500))), Model("Altima", 1994, 2026),
+            Model("Dualis / Qashqai", 2007, 2026), Model("Frontier", 1998, 2026),
             Model("GT-R", 2008, 2026, listOf(e("3.8 V6 twin-turbo", 2008, 2026, 7000))), Model("Juke", 2010, 2026),
-            Model("Leaf", 2011, 2026), Model("Maxima", 2000, 2023), Model("Micra", 2000, 2017), Model("Murano", 2003, 2026),
-            Model("Navara", 2000, 2026, listOf(
-                e("2.4 petrol", 2000, 2015, 5500), e("3.3 V6 petrol", 2000, 2005, 5500), e("3.0 diesel", 2002, 2015, 4400, D),
+            Model("Leaf", 2011, 2026), Model("Maxima", 1994, 2023), Model("Micra", 1994, 2017), Model("Murano", 2003, 2026),
+            Model("Navara", 1994, 2026, listOf(
+                e("2.4 petrol", 1994, 2015, 5500), e("3.3 V6 petrol", 1999, 2005, 5500), e("3.0 diesel", 2002, 2015, 4400, D),
                 e("2.5 diesel", 2005, 2015, 4500, D), e("4.0 V6 petrol", 2005, 2015, 6000), e("3.0 V6 diesel", 2011, 2015, 4500, D),
                 e("2.3 diesel", 2015, 2026, 4500, D),
             )),
-            Model("Note", 2005, 2020), Model("Pathfinder", 2000, 2026),
-            Model("Patrol", 2000, 2026, listOf(
-                e("4.8 I6 petrol", 2001, 2016, 5800), e("3.0 diesel", 2000, 2016, 4400, D), e("4.2 diesel", 2000, 2016, 4000, D),
+            Model("Note", 2005, 2020), Model("Pathfinder", 1994, 2026),
+            Model("Patrol", 1994, 2026, listOf(
+                e("4.8 I6 petrol", 2001, 2016, 5800), e("3.0 diesel", 2000, 2016, 4400, D), e("4.2 diesel", 1994, 2016, 4000, D),
                 e("5.6 V8 petrol", 2013, 2026, 6000),
             )),
-            Model("Pulsar / Sentra", 2000, 2019), Model("Rogue", 2008, 2026),
-            Model("Skyline", 2000, 2007, listOf(
-                e("2.5 turbo (RB25)", 2000, 2002, 8000), e("2.6 twin-turbo GT-R (RB26)", 2000, 2002, 8000), e("3.5 V6", 2002, 2007, 6600),
+            Model("Pulsar / Sentra", 1994, 2019), Model("Rogue", 2008, 2026),
+            Model("Skyline", 1994, 2007, listOf(
+                e("2.5 turbo (RB25)", 1994, 2002, 8000), e("2.6 twin-turbo GT-R (RB26)", 1994, 2002, 8000), e("3.5 V6", 2002, 2007, 6600),
             )),
             Model("Tiida", 2006, 2013), Model("Titan", 2004, 2024),
             Model("X-Trail", 2001, 2026, listOf(
@@ -525,57 +555,59 @@ object VehicleCatalog {
             )),
         )),
         Make("Infiniti", listOf(
-            Model("FX / QX70", 2003, 2017), Model("G35 / G37", 2003, 2013), Model("I30 / I35", 2000, 2004), Model("M / Q70", 2003, 2019),
+            Model("FX / QX70", 2003, 2017), Model("G35 / G37", 2003, 2013), Model("I30 / I35", 1996, 2004), Model("M / Q70", 2003, 2019),
             Model("Q30", 2016, 2019), Model("Q50", 2014, 2026), Model("Q60", 2014, 2022), Model("QX30", 2017, 2019),
             Model("QX50 / EX", 2008, 2026), Model("QX56 / QX80", 2004, 2026), Model("QX60 / JX", 2013, 2026),
         )),
         Make("Subaru", listOf(
             Model("Ascent", 2019, 2026), Model("Baja", 2003, 2006), Model("BRZ", 2012, 2026, listOf(e("2.0", 2012, 2021, 7400), e("2.4", 2022, 2026, 7500))),
             Model("Crosstrek / XV", 2012, 2026),
-            Model("Forester", 2000, 2026, listOf(
-                e("2.0", 2000, 2026, 6500), e("2.5", 2000, 2026, 6500), e("2.5 turbo (XT)", 2004, 2013, 6500),
+            Model("Forester", 1997, 2026, listOf(
+                e("2.0", 1997, 2026, 6500), e("2.5", 1999, 2026, 6500), e("2.5 turbo (XT)", 2004, 2013, 6500),
                 e("2.0 turbo (XT)", 2013, 2018, 6500), e("2.0 diesel", 2013, 2018, 4500, D), e("2.0 hybrid", 2019, 2026, 6000, Fuel.HYBRID),
             )),
-            Model("Impreza", 2000, 2026, listOf(e("2.0", 2000, 2026, 6500), e("2.5", 2000, 2011, 6500))),
+            Model("Impreza", 1994, 2026, listOf(e("2.0", 1994, 2026, 6500), e("2.5", 1998, 2011, 6500))),
             Model("Levorg", 2016, 2026),
-            Model("Liberty / Legacy", 2000, 2026, listOf(
-                e("2.5", 2000, 2026, 6500), e("2.0 turbo (GT)", 2003, 2009, 7000), e("3.0 H6", 2001, 2009, 7000),
+            Model("Liberty / Legacy", 1994, 2026, listOf(
+                e("2.5", 1996, 2026, 6500), e("2.0 turbo (GT)", 2003, 2009, 7000), e("3.0 H6", 2001, 2009, 7000),
                 e("3.6 H6", 2009, 2019, 6500), e("2.0 diesel", 2009, 2014, 4500, D),
             )),
-            Model("Outback", 2000, 2026, listOf(
-                e("2.5", 2000, 2026, 6500), e("3.0 H6", 2001, 2009, 7000), e("3.6 H6", 2009, 2023, 6500),
+            Model("Outback", 1996, 2026, listOf(
+                e("2.5", 1996, 2026, 6500), e("3.0 H6", 2001, 2009, 7000), e("3.6 H6", 2009, 2023, 6500),
                 e("2.0 diesel", 2009, 2020, 4500, D), e("2.4 turbo", 2020, 2026, 6000),
             )),
             Model("Solterra", 2023, 2026), Model("Tribeca", 2006, 2014),
-            Model("WRX / STI", 2000, 2026, listOf(
-                e("2.0 turbo (WRX)", 2000, 2005, 7000), e("2.0 turbo (STI)", 2000, 2005, 8000), e("2.5 turbo (WRX)", 2006, 2014, 6500),
+            Model("WRX / STI", 1994, 2026, listOf(
+                e("2.0 turbo (WRX)", 1994, 2005, 7000), e("2.0 turbo (STI)", 1994, 2005, 8000), e("2.5 turbo (WRX)", 2006, 2014, 6500),
                 e("2.5 turbo (STI)", 2004, 2021, 7000), e("2.0 DIT turbo (WRX)", 2015, 2021, 6500), e("2.4 turbo", 2022, 2026, 6000),
             )),
         )),
         Make("Mitsubishi", listOf(
+            Model("3000GT", 1994, 1999, listOf(e("3.0 V6", 1994, 1999, 6500), e("3.0 twin-turbo V6", 1994, 1999, 7000))),
+            Model("Diamante", 1994, 2004, listOf(e("3.0 V6", 1994, 1996, 6000), e("3.5 V6", 1997, 2004, 6000))),
             Model("380", 2005, 2008), Model("ASX / Outlander Sport", 2010, 2026), Model("Colt", 2004, 2012),
-            Model("Eclipse", 2000, 2012), Model("Eclipse Cross", 2017, 2026), Model("Endeavor", 2004, 2011), Model("Galant", 2000, 2012),
-            Model("i-MiEV", 2009, 2016), Model("Lancer", 2000, 2017, listOf(e("2.0", 2000, 2017, 6500), e("2.4", 2003, 2017, 6500))),
+            Model("Eclipse", 1994, 2012), Model("Eclipse Cross", 2017, 2026), Model("Endeavor", 2004, 2011), Model("Galant", 1994, 2012),
+            Model("i-MiEV", 2009, 2016), Model("Lancer", 1994, 2017, listOf(e("2.0", 2000, 2017, 6500), e("2.4", 2003, 2017, 6500))),
             Model("Lancer Evolution", 2001, 2016, listOf(e("2.0 turbo", 2001, 2016, 7000))),
-            Model("Magna / Verada", 2000, 2005), Model("Mirage", 2012, 2026),
+            Model("Magna / Verada", 1994, 2005), Model("Mirage", 2012, 2026),
             Model("Outlander", 2003, 2026, listOf(
                 e("2.0", 2003, 2021, 6500), e("2.4", 2003, 2026, 6000), e("3.0 V6", 2007, 2021, 6000),
                 e("2.2 diesel", 2007, 2018, 4500, D), e("2.0 plug-in hybrid", 2014, 2018, 6000, Fuel.HYBRID),
                 e("2.4 plug-in hybrid", 2019, 2026, 6000, Fuel.HYBRID),
             )),
-            Model("Pajero / Montero", 2000, 2021, listOf(
-                e("3.5 V6", 2000, 2008, 6000), e("3.8 V6", 2006, 2015, 6000), e("3.2 diesel", 2000, 2021, 4400, D),
+            Model("Pajero / Montero", 1994, 2021, listOf(
+                e("3.5 V6", 1994, 2008, 6000), e("3.8 V6", 2006, 2015, 6000), e("3.2 diesel", 2000, 2021, 4400, D),
             )),
-            Model("Pajero Sport / Challenger", 2000, 2026),
-            Model("Triton / L200", 2000, 2026, listOf(
-                e("2.4 petrol", 2000, 2026, 6000), e("3.5 V6 petrol", 2006, 2009, 6000), e("2.5 diesel", 2000, 2015, 4500, D),
+            Model("Pajero Sport / Challenger", 1996, 2026),
+            Model("Triton / L200", 1994, 2026, listOf(
+                e("2.4 petrol", 1996, 2026, 6000), e("3.5 V6 petrol", 2006, 2009, 6000), e("2.5 diesel", 1996, 2015, 4500, D),
                 e("3.2 diesel", 2006, 2009, 4400, D), e("2.4 diesel", 2015, 2026, 4500, D),
             )),
         )),
         Make("Suzuki", listOf(
             Model("Alto", 2009, 2014), Model("Baleno", 2016, 2022), Model("Celerio", 2015, 2021), Model("Equator", 2009, 2012),
-            Model("Grand Vitara", 2000, 2019), Model("Ignis", 2017, 2026),
-            Model("Jimny", 2000, 2026, listOf(e("1.3", 2000, 2018, 6500), e("1.5", 2018, 2026, 6000))),
+            Model("Grand Vitara", 1998, 2019), Model("Ignis", 2017, 2026),
+            Model("Jimny", 1998, 2026, listOf(e("1.3", 1998, 2018, 6500), e("1.5", 2018, 2026, 6000))),
             Model("Kizashi", 2010, 2016), Model("Liana", 2002, 2007), Model("S-Cross / SX4", 2007, 2026),
             Model("Swift", 2005, 2026, listOf(
                 e("1.5", 2005, 2010, 6500), e("1.6 (Sport)", 2006, 2017, 7000), e("1.4", 2010, 2017, 6500),
@@ -587,32 +619,32 @@ object VehicleCatalog {
             Model("Ascender", 2003, 2008), Model("Axiom", 2002, 2004),
             Model("D-Max", 2008, 2026, listOf(e("3.0 diesel", 2008, 2026, 4000, D), e("1.9 diesel", 2017, 2026, 4500, D))),
             Model("i-Series", 2006, 2008), Model("MU-X", 2013, 2026, listOf(e("3.0 diesel", 2013, 2026, 4000, D), e("1.9 diesel", 2021, 2026, 4500, D))),
-            Model("Rodeo", 2000, 2004), Model("Trooper", 2000, 2002),
+            Model("Rodeo", 1994, 2004), Model("Trooper", 1994, 2002),
         )),
         Make("Lexus", listOf(
-            Model("CT", 2011, 2022), Model("ES", 2000, 2026), Model("GS", 2000, 2020), Model("GX", 2003, 2026),
-            Model("IS", 2000, 2026, listOf(
-                e("2.0 I6 (IS200)", 2000, 2005, 6800), e("3.0 I6 (IS300)", 2001, 2005, 6500), e("2.5 V6", 2006, 2015, 6500),
+            Model("CT", 2011, 2022), Model("ES", 1994, 2026), Model("GS", 1994, 2020), Model("GX", 2003, 2026),
+            Model("IS", 1999, 2026, listOf(
+                e("2.0 I6 (IS200)", 1999, 2005, 6800), e("3.0 I6 (IS300)", 2001, 2005, 6500), e("2.5 V6", 2006, 2015, 6500),
                 e("3.5 V6", 2006, 2026, 6600), e("5.0 V8 (IS F / IS 500)", 2008, 2026, 7000), e("2.0 turbo", 2016, 2021, 6000),
                 e("2.5 hybrid", 2014, 2026, 5500, Fuel.HYBRID),
             )),
-            Model("LC", 2017, 2026), Model("LS", 2000, 2026), Model("LX", 2000, 2026), Model("NX", 2015, 2026), Model("RC", 2015, 2026),
-            Model("RX", 2000, 2026, listOf(
-                e("3.0 V6", 2000, 2003, 6200), e("3.3 V6", 2004, 2008, 6200), e("3.5 V6", 2008, 2022, 6300),
+            Model("LC", 2017, 2026), Model("LS", 1994, 2026), Model("LX", 1996, 2026), Model("NX", 2015, 2026), Model("RC", 2015, 2026),
+            Model("RX", 1998, 2026, listOf(
+                e("3.0 V6", 1998, 2003, 6200), e("3.3 V6", 2004, 2008, 6200), e("3.5 V6", 2008, 2022, 6300),
                 e("3.5 V6 hybrid", 2006, 2026, 6000, Fuel.HYBRID), e("2.0 turbo", 2016, 2022, 6000), e("2.4 turbo", 2023, 2026, 6000),
             )),
             Model("RZ", 2023, 2026), Model("SC", 2002, 2010), Model("UX", 2019, 2026),
         )),
         Make("Acura", listOf(
             Model("CL", 2001, 2003), Model("ILX", 2013, 2022), Model("Integra", 2023, 2026), Model("MDX", 2001, 2026),
-            Model("NSX", 2000, 2022, listOf(e("3.2 V6", 2000, 2005, 8000), e("3.5 V6 twin-turbo hybrid", 2017, 2022, 7500, Fuel.HYBRID))),
-            Model("RDX", 2007, 2026), Model("RL / RLX", 2000, 2020),
+            Model("NSX", 1994, 2022, listOf(e("3.2 V6", 1997, 2005, 8000), e("3.5 V6 twin-turbo hybrid", 2017, 2022, 7500, Fuel.HYBRID))),
+            Model("RDX", 2007, 2026), Model("RL / RLX", 1996, 2020),
             Model("RSX", 2002, 2006, listOf(e("2.0", 2002, 2006, 6800), e("2.0 Type-S", 2002, 2006, 8000))),
-            Model("TL", 2000, 2014), Model("TLX", 2015, 2026), Model("TSX", 2004, 2014), Model("ZDX", 2010, 2026),
+            Model("TL", 1996, 2014), Model("TLX", 2015, 2026), Model("TSX", 2004, 2014), Model("ZDX", 2010, 2026),
         )),
         Make("Daihatsu", listOf(
-            Model("Charade", 2000, 2000), Model("Copen", 2003, 2006), Model("Cuore", 2000, 2003), Model("Pyzar", 2000, 2002),
-            Model("Sirion", 2000, 2005), Model("Terios", 2000, 2006), Model("YRV", 2001, 2005),
+            Model("Charade", 1994, 2000), Model("Copen", 2003, 2006), Model("Cuore", 2000, 2003), Model("Pyzar", 1996, 2002),
+            Model("Sirion", 1998, 2005), Model("Terios", 1997, 2006), Model("YRV", 2001, 2005),
         )),
         Make("Scion", listOf(
             Model("FR-S", 2013, 2016), Model("iA", 2016, 2016), Model("iM", 2016, 2016), Model("iQ", 2012, 2015), Model("tC", 2005, 2016),
@@ -621,20 +653,22 @@ object VehicleCatalog {
 
         // America
         Make("Lincoln", listOf(
-            Model("Aviator", 2003, 2026), Model("Blackwood", 2002, 2002), Model("Continental", 2000, 2020), Model("Corsair", 2020, 2026),
+            Model("Mark VIII", 1994, 1998, listOf(e("4.6 V8", 1994, 1998, 6000))),
+            Model("Aviator", 2003, 2026), Model("Blackwood", 2002, 2002), Model("Continental", 1994, 2020), Model("Corsair", 2020, 2026),
             Model("LS", 2000, 2006), Model("Mark LT", 2006, 2008), Model("MKC", 2015, 2019), Model("MKS", 2009, 2016), Model("MKT", 2010, 2019),
-            Model("MKX / Nautilus", 2007, 2026), Model("MKZ / Zephyr", 2006, 2020), Model("Navigator", 2000, 2026), Model("Town Car", 2000, 2011),
+            Model("MKX / Nautilus", 2007, 2026), Model("MKZ / Zephyr", 2006, 2020), Model("Navigator", 1998, 2026), Model("Town Car", 1994, 2011),
         )),
         Make("Mercury", listOf(
-            Model("Cougar", 2000, 2002), Model("Grand Marquis", 2000, 2011), Model("Mariner", 2005, 2011), Model("Milan", 2006, 2011),
-            Model("Montego", 2005, 2007), Model("Monterey", 2004, 2007), Model("Mountaineer", 2000, 2010), Model("Sable", 2000, 2009),
-            Model("Villager", 2000, 2002),
+            Model("Cougar", 1999, 2002), Model("Grand Marquis", 1994, 2011), Model("Mariner", 2005, 2011), Model("Milan", 2006, 2011),
+            Model("Montego", 2005, 2007), Model("Monterey", 2004, 2007), Model("Mountaineer", 1997, 2010), Model("Sable", 1994, 2009),
+            Model("Villager", 1994, 2002),
         )),
         Make("Oldsmobile", listOf(
-            Model("Alero", 2000, 2004), Model("Aurora", 2001, 2003), Model("Bravada", 2002, 2004), Model("Intrigue", 2000, 2002),
-            Model("Silhouette", 2000, 2004),
+            Model("Alero", 1999, 2004), Model("Aurora", 2001, 2003), Model("Bravada", 2002, 2004), Model("Intrigue", 1998, 2002),
+            Model("Silhouette", 1994, 2004),
         )),
-        Make("Plymouth", listOf(Model("Neon", 2000, 2001), Model("Prowler", 2001, 2001), Model("Voyager", 2000, 2000))),
+        Make("Plymouth", listOf(
+            Model("Breeze", 1996, 2000, listOf(e("2.0 I4", 1996, 2000, 6500), e("2.4 I4", 1998, 2000, 6000))),Model("Neon", 1995, 2001), Model("Prowler", 2001, 2001), Model("Voyager", 1994, 2000))),
         Make("Tesla", listOf(
             Model("Cybertruck", 2023, 2026), Model("Model 3", 2017, 2026), Model("Model S", 2012, 2026), Model("Model X", 2015, 2026),
             Model("Model Y", 2020, 2026), Model("Roadster", 2008, 2012),
@@ -655,10 +689,15 @@ object VehicleCatalog {
             Model("Cullinan", 2018, 2026), Model("Dawn", 2016, 2023), Model("Ghost", 2010, 2026), Model("Phantom", 2003, 2026),
             Model("Spectre", 2023, 2026), Model("Wraith", 2013, 2023),
         )),
-        Make("Smart", listOf(Model("ForFour", 2004, 2021), Model("ForTwo", 2000, 2024), Model("Roadster", 2003, 2005), Model("#1", 2023, 2026), Model("#3", 2024, 2026))),
+        Make("Smart", listOf(Model("ForFour", 2004, 2021), Model("ForTwo", 1998, 2024), Model("Roadster", 2003, 2005), Model("#1", 2023, 2026), Model("#3", 2024, 2026))),
         Make("Volvo", listOf(
-            Model("C30", 2007, 2013), Model("C40", 2022, 2025), Model("C70", 2000, 2013), Model("EX30", 2024, 2026), Model("S40 / V40", 2000, 2019),
-            Model("S60", 2000, 2026), Model("S80 / S90", 2000, 2026), Model("V50", 2004, 2012), Model("V60", 2011, 2026), Model("V70", 2000, 2016),
+            Model("850", 1994, 1997, listOf(e("2.4 I5", 1994, 1997, 6500), e("2.3 I5 turbo", 1994, 1997, 6000), e("2.0 I5", 1994, 1997, 6500), e("2.5 I5 diesel", 1996, 1997, 4500, D))),
+            Model("940", 1994, 1998, listOf(e("2.3 I4", 1994, 1998, 5800), e("2.3 I4 turbo", 1994, 1998, 5800))),
+            Model("960", 1994, 1996, listOf(e("2.9 I6", 1994, 1996, 6000), e("2.5 I6", 1995, 1996, 6000))),
+            Model("S70", 1997, 2000, listOf(e("2.4 I5", 1997, 2000, 6500), e("2.3 I5 turbo", 1997, 2000, 6000), e("2.4 I5 turbo", 1997, 2000, 6000))),
+            Model("V90", 1997, 1998, listOf(e("2.9 I6", 1997, 1998, 6000))),
+            Model("C30", 2007, 2013), Model("C40", 2022, 2025), Model("C70", 1997, 2013), Model("EX30", 2024, 2026), Model("S40 / V40", 1996, 2019),
+            Model("S60", 2000, 2026), Model("S80 / S90", 1997, 2026), Model("V50", 2004, 2012), Model("V60", 2011, 2026), Model("V70", 1997, 2016),
             Model("XC40", 2018, 2026), Model("XC60", 2008, 2026),
             Model("XC70", 2000, 2016), Model("XC90", 2003, 2026, listOf(
                 e("2.5 I5 turbo", 2003, 2010, 6000), e("2.9 I6 twin-turbo", 2003, 2006, 6000), e("3.2 I6", 2007, 2014, 6500),
@@ -669,36 +708,36 @@ object VehicleCatalog {
         Make("Polestar", listOf(Model("Polestar 1", 2019, 2021), Model("Polestar 2", 2020, 2026), Model("Polestar 3", 2024, 2026), Model("Polestar 4", 2024, 2026))),
         Make("Jaguar", listOf(
             Model("E-Pace", 2018, 2024), Model("F-Pace", 2016, 2026), Model("F-Type", 2013, 2024), Model("I-Pace", 2018, 2024),
-            Model("S-Type", 2000, 2008), Model("X-Type", 2001, 2009), Model("XE", 2015, 2024), Model("XF", 2008, 2024),
-            Model("XJ", 2000, 2019), Model("XK", 2000, 2014),
+            Model("S-Type", 1999, 2008), Model("X-Type", 2001, 2009), Model("XE", 2015, 2024), Model("XF", 2008, 2024),
+            Model("XJ", 1994, 2019), Model("XK", 1996, 2014),
         )),
         Make("Land Rover", listOf(
-            Model("Defender", 2000, 2026, listOf(
-                e("2.5 Td5 diesel", 2000, 2007, 4000, D), e("2.4 diesel", 2007, 2012, 4000, D), e("2.2 diesel", 2012, 2016, 4000, D),
+            Model("Defender", 1994, 2026, listOf(
+                e("2.5 Td5 diesel", 1998, 2007, 4000, D), e("2.4 diesel", 2007, 2012, 4000, D), e("2.2 diesel", 2012, 2016, 4000, D),
                 e("2.0 turbo", 2020, 2026, 6500), e("3.0 I6 diesel", 2020, 2026, 4500, D), e("3.0 I6 turbo", 2020, 2026, 6500),
                 e("5.0 V8 supercharged", 2021, 2026, 6500),
             )),
-            Model("Discovery", 2000, 2026, listOf(
-                e("2.5 Td5 diesel", 2000, 2004, 4000, D), e("4.0 V8", 2000, 2004, 5500), e("4.4 V8", 2005, 2009, 6500),
+            Model("Discovery", 1994, 2026, listOf(
+                e("2.5 Td5 diesel", 1998, 2004, 4000, D), e("4.0 V8", 1994, 2004, 5500), e("4.4 V8", 2005, 2009, 6500),
                 e("2.7 V6 diesel", 2005, 2009, 4400, D), e("3.0 V6 diesel", 2009, 2020, 4500, D), e("2.0 diesel", 2017, 2026, 4500, D),
                 e("3.0 I6 diesel", 2021, 2026, 4500, D),
             )),
-            Model("Discovery Sport", 2015, 2026), Model("Freelander", 2000, 2015),
-            Model("Range Rover", 2000, 2026), Model("Range Rover Evoque", 2011, 2026), Model("Range Rover Sport", 2005, 2026),
+            Model("Discovery Sport", 2015, 2026), Model("Freelander", 1997, 2015),
+            Model("Range Rover", 1994, 2026), Model("Range Rover Evoque", 2011, 2026), Model("Range Rover Sport", 2005, 2026),
             Model("Range Rover Velar", 2017, 2026),
         )),
         Make("Renault", listOf(
-            Model("Arkana", 2021, 2026), Model("Captur", 2013, 2026), Model("Clio", 2000, 2026, listOf(
+            Model("Arkana", 2021, 2026), Model("Captur", 2013, 2026), Model("Clio", 1994, 2026, listOf(
                 e("1.6", 2000, 2012, 6500), e("2.0 (RS)", 2000, 2012, 7500), e("1.6 turbo (RS)", 2013, 2019, 6500), e("0.9 turbo", 2013, 2026, 6000),
                 e("1.5 diesel", 2005, 2019, 4800, D),
             )),
-            Model("Kadjar", 2015, 2022), Model("Kangoo", 2000, 2026), Model("Koleos", 2008, 2026), Model("Laguna", 2000, 2015),
+            Model("Kadjar", 2015, 2022), Model("Kangoo", 1997, 2026), Model("Koleos", 2008, 2026), Model("Laguna", 1994, 2015),
             Model("Master", 2000, 2026),
-            Model("Mégane", 2000, 2026, listOf(
-                e("1.6", 2000, 2016, 6500), e("2.0", 2000, 2016, 6500), e("2.0 turbo (RS)", 2004, 2016, 6500),
+            Model("Mégane", 1996, 2026, listOf(
+                e("1.6", 1996, 2016, 6500), e("2.0", 1996, 2016, 6500), e("2.0 turbo (RS)", 2004, 2016, 6500),
                 e("1.8 turbo (RS)", 2018, 2023, 6800), e("1.5 diesel", 2003, 2020, 4800, D), e("1.9 diesel", 2002, 2009, 4500, D),
             )),
-            Model("Scénic", 2000, 2022), Model("Trafic", 2001, 2026), Model("Zoe", 2013, 2024),
+            Model("Scénic", 1997, 2022), Model("Trafic", 2001, 2026), Model("Zoe", 2013, 2024),
         )),
         Make("Dacia", listOf(
             Model("Duster", 2010, 2026), Model("Jogger", 2022, 2026), Model("Logan", 2004, 2026), Model("Sandero", 2008, 2026),
@@ -706,12 +745,12 @@ object VehicleCatalog {
         )),
         Make("Alpine", listOf(Model("A110", 2017, 2026, listOf(e("1.8 turbo", 2017, 2026, 6800))))),
         Make("Aston Martin", listOf(
-            Model("DB7", 2000, 2004), Model("DB9", 2004, 2016), Model("DB11", 2016, 2023), Model("DB12", 2023, 2026), Model("DBS", 2007, 2026),
+            Model("DB7", 1994, 2004), Model("DB9", 2004, 2016), Model("DB11", 2016, 2023), Model("DB12", 2023, 2026), Model("DBS", 2007, 2026),
             Model("DBX", 2020, 2026), Model("Rapide", 2010, 2020), Model("Vanquish", 2001, 2026), Model("Vantage", 2005, 2026),
         )),
         Make("Ferrari", listOf(
-            Model("360", 2000, 2005), Model("430", 2005, 2009), Model("458", 2010, 2015), Model("488", 2016, 2020),
-            Model("550 / 575M", 2000, 2006), Model("599", 2007, 2012), Model("612 Scaglietti", 2004, 2011), Model("812", 2017, 2024),
+            Model("360", 1999, 2005), Model("430", 2005, 2009), Model("458", 2010, 2015), Model("488", 2016, 2020),
+            Model("550 / 575M", 1996, 2006), Model("599", 2007, 2012), Model("612 Scaglietti", 2004, 2011), Model("812", 2017, 2024),
             Model("California / Portofino", 2009, 2026), Model("F8", 2020, 2023), Model("F12", 2013, 2017), Model("FF / GTC4Lusso", 2012, 2020),
             Model("Purosangue", 2023, 2026), Model("Roma", 2020, 2026), Model("SF90", 2020, 2026), Model("296", 2022, 2026),
         )),
@@ -720,11 +759,11 @@ object VehicleCatalog {
             Model("MP4-12C / 650S / 675LT", 2011, 2017),
         )),
         Make("Lotus", listOf(
-            Model("Eletre", 2023, 2026), Model("Elise", 2000, 2021), Model("Emira", 2022, 2026), Model("Evora", 2009, 2021),
+            Model("Eletre", 2023, 2026), Model("Elise", 1996, 2021), Model("Emira", 2022, 2026), Model("Evora", 2009, 2021),
             Model("Exige", 2000, 2021),
         )),
         Make("Bugatti", listOf(Model("Chiron", 2016, 2024), Model("Veyron", 2005, 2015))),
-        Make("Rover", listOf(Model("25", 2000, 2005), Model("45", 2000, 2005), Model("75", 2000, 2005), Model("Streetwise", 2003, 2005))),
+        Make("Rover", listOf(Model("25", 1999, 2005), Model("45", 1999, 2005), Model("75", 1999, 2005), Model("Streetwise", 2003, 2005))),
         Make("MG", listOf(
             Model("MG3", 2011, 2026), Model("MG4", 2022, 2026), Model("HS", 2018, 2026), Model("TF", 2002, 2011), Model("ZR", 2001, 2005),
             Model("ZS", 2017, 2026), Model("ZS (Rover era)", 2001, 2005), Model("ZT", 2001, 2005),
@@ -859,7 +898,11 @@ object VehicleCatalog {
                 listOf("6", "1")
             }
             car.make == "Ford" && model.startsWith("falcon") -> {
-                note = "AU Falcons only partly support standard OBD2, so some readings may be missing."
+                note = if (y <= 1998) {
+                    "EF and EL Falcons (to 1998) use Ford Australia's older EEC system, not standard OBD2, so an OBD2 adapter can't read them. AU Falcons (from late 1998) only partly support OBD2."
+                } else {
+                    "AU Falcons only partly support standard OBD2, so some readings may be missing."
+                }
                 listOf("1", "6", "3")
             }
             car.make == "Ford" && model.startsWith("territory") -> listOf("6")
@@ -949,6 +992,7 @@ object VehicleCatalog {
             // Holden Commodore family: VX/VY only partly OBD2, VZ (2004) fully, VE (2006) onwards CAN.
             car.make == "Holden" && isCommodoreFamily(model) -> {
                 note = when {
+                    y <= 1999 -> "Commodores before the VX (late 2000), including the VR, VS and VT, use Holden's older ALDL system, not OBD2, so an OBD2 adapter can't read them."
                     y <= 2004 -> "VX and VY models only partly support OBD2: expect live data, but trouble codes may not appear. VT models (to 2000) use Holden's older ALDL system instead."
                     else -> null
                 }
@@ -1007,8 +1051,8 @@ object VehicleCatalog {
                 else -> listOf("3", "5", "4", "1")
             }
             car.make in TOYOTA_GROUP -> when {
-                // The BMW-built GR Supra uses BMW electronics.
-                model.startsWith("supra") -> listOf("6", "7")
+                // The BMW-built GR Supra (2019 on) uses BMW electronics; the 1990s Supra is all Toyota.
+                model.startsWith("supra") && y >= 2019 -> listOf("6", "7")
                 y >= 2008 -> listOf("6", "7")
                 y >= 2005 -> listOf("6", "5", "3")
                 else -> listOf("3", "5", "4")
@@ -1088,6 +1132,11 @@ object VehicleCatalog {
         }
         if (note == null && y < 2006 && car.make !in NORTH_AMERICA_ONLY) {
             note = "Cars sold new in Australia before 2006 weren't required to have full OBD2."
+        }
+        // The first OBD2 cars: required in the US from the 1996 model year, earlier on a few.
+        if (y <= 1995 && !electric) {
+            val earlyNote = "OBD2 was required in the US from the 1996 model year. A few 1994 and 1995 cars already had it, but most use their maker's older system (OBD1), which an OBD2 adapter can't read, even with a similar-looking plug."
+            note = if (note == null) earlyNote else "$note $earlyNote"
         }
         val engine = engineFor(car) ?: engineLike(car)
         val isDiesel = engine?.fuel == Fuel.DIESEL || car.engine?.contains("diesel", ignoreCase = true) == true

@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.1.0 (10 November 2026)
+- **Older cars, back to 1994.** The car list now covers the first OBD2 cars: earlier years for over 200 models, earlier engines with their redlines, and models that ended in the 1990s, such as the Volvo 850, 940 and 960, Saab 900, Ford Taurus and Mazda RX-7.
+- If your car uses an older system that an OBD2 adapter can't read, the app now tells you when you choose it. This covers cars from before 1996 in the US, Commodores before the VX, and EF and EL Falcons.
+- The first OBD2 cars report fewer readings, and the car's "what may not work" list now says so.
+
 ## 2.0.1 (10 November 2026)
 - **Speeds of 100 and over fit every style.** Retro digital always shows three digit cells, like a real digital dash, and Hairline's big speed shrinks a little to stay clear of the dial's numbers. Every style, Android Auto, the widget and picture-in-picture were checked at 188 km/h.
 - **Recorded routes start in the right place.** When you started recording, the phone could hand over an old position it remembered from earlier (even somewhere else), which then began the route there. Only fresh positions are used now.
