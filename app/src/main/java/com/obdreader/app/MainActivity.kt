@@ -1060,15 +1060,18 @@ open class MainActivity : AppCompatActivity() {
                 heading(m.name)
                 when (a) {
                     is ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) line("No codes", true) else a.codes.forEach { c ->
-                        val info = DtcLibrary.lookup(c.code, make, year)
-                        line("${c.label}  ${info.title}" + if (c.pending && !c.confirmed) " (pending)" else " (stored)", false)
+                        line("${c.label}  ${c.text ?: DtcLibrary.lookup(c.code, make, year).title}" + if (c.pending && !c.confirmed) " (pending)" else " (stored)", false)
                     }
                     ModuleScan.Answer.Refused -> line("Answered, but doesn't share its codes this way.", true)
                     ModuleScan.Answer.Silent -> line("Didn't answer: not fitted, or on a part of the car's network the adapter can't reach.", true)
                 }
             }
             show(results)
-            if (found != null) {
+            if (ObdSession.isVolvoD3B0(this)) {
+                heading("About Volvo module codes")
+                line("Read with Volvo's own keyword D3 B0 protocol, which these 1996–2000 cars use. The airbag module is never asked. Code meanings come from Volvo owners' work (jonesrh.info) and aren't Volvo's official list.", true)
+                line("If no module answers, your adapter probably can't do Volvo's wake-up: many cheap clones can't. An OBDLink, BAFX or genuine ELM327 can. Turbo 850s with Motronic 4.3 don't answer for the engine, and some 1996–97 850s with a Yazaki cluster don't answer for the cluster.", true)
+            } else if (found != null) {
                 body.addView(TextView(this).apply {
                     text = "Found by searching"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
                     setPadding(0, dp(24f).toInt(), 0, 0)
@@ -1184,12 +1187,30 @@ open class MainActivity : AppCompatActivity() {
         val make = ObdSession.carMake(this)
         val tried = EnhancedReadings.forCar(make, car?.model, ObdSession.carYear(this))
         val first = ObdSession.readEnhanced(tried)
+        // A 1996–2000 Volvo: the instrument cluster's stored mileage (the true distance).
+        val volvo = ObdSession.isVolvoD3B0(this)
+        val volvoKm = if (volvo) ObdSession.readVolvoMileage() else null
+        if (volvo) android.util.Log.i("OBD2Deep", "volvo mileage: " + (volvoKm?.let { String.format(Locale.US, "%.0f km", it) } ?: "none"))
         val answered = tried.filter { first[it] != null }
         android.util.Log.i("OBD2Deep", "enhanced: tried ${tried.size}, answered " + answered.joinToString(", ") { "${it.name}=${first[it]?.let(it::format)}" }.ifEmpty { "none" })
         val values = mutableMapOf<EnhancedReadings.Reading, TextView>()
         infoSheet(getString(R.string.enhanced_title)) { heading, line, body ->
             heading("Manufacturer readings")
+            if (volvo) {
+                val odo = volvoKm?.let { km -> if (Units.mph) String.format(Locale.US, "%,.0f miles", km / 1.609344) else String.format(Locale.US, "%,.0f km", km) } ?: "N/A"
+                body.addView(LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(6f).toInt(), 0, 0)
+                    addView(LinearLayout(this@MainActivity).apply {
+                        orientation = LinearLayout.VERTICAL
+                        addView(TextView(this@MainActivity).apply { text = "Odometer (true mileage)"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdTextPrimary)) })
+                        addView(TextView(this@MainActivity).apply { text = "Instrument cluster (COMBI)"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+                    }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    addView(TextView(this@MainActivity).apply { text = odo; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f); setTextColor(themeColor(R.attr.obdAccent)) })
+                })
+                line(if (volvoKm == null) "The instrument cluster didn't answer. Some adapters can't wake Volvo's modules; an OBDLink or a genuine ELM327 can." else "The mileage the instrument cluster has stored, counted in 10-mile steps, so it's right to within 10 miles (16 km) even if the dashboard odometer has stopped. A replaced cluster shows its own mileage.", true)
+            }
             when {
+                volvo && tried.isEmpty() -> {}
                 tried.isEmpty() -> line("No manufacturer readings are known for ${make ?: "this make"} yet. Module information, below, works on every make.", true)
                 answered.isEmpty() -> line("Your car didn't answer any of the ${tried.size} readings known for ${make ?: "its make"}. Not every model has them.", true)
                 else -> answered.forEach { r ->

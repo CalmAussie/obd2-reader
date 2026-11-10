@@ -1,0 +1,327 @@
+# Volvo 850 / S70 / V70 / C70 / XC70 (1996-2000) module trouble codes, read with keyword D3 B0.
+# ECU address<TAB>raw code<TAB>Volvo code<TAB>meaning. Airbag (SRS, ECU 58) codes are left out on purpose.
+# Source: Richard H. Jones, jonesrh.info (public domain, CC0 1.0). Best attempts, not Volvo's own list.
+51	02	CI-221	Vehicle Speed Signal missing
+51	05	CI-113	Low Fuel / Fuel Level signal interrupted
+51	01	CI-222	Vehicle Speed Signal too high
+51	02	CI-221	Vehicle Speed Signal missing
+51	03	CI-114	Fuel Level sensor stuck / signal constant for 94 miles
+51	04	CI-112	Fuel Level signal short to ground
+51	05	CI-113	Low Fuel / Fuel Level signal interrupted
+51	06	CI-121	Engine Coolant Temperature signal faulty
+51	07	CI-123	48-pulse output Speed Signal short to supply
+51	08	CI-143	48-pulse output Speed Signal short to ground
+51	09	CI-131	12-pulse output Speed Signal short to supply
+51	0A	CI-141	12-pulse output Speed Signal short to ground
+51	0B	CI-132	Engine RPM signal missing
+51	0C	CI-124	Engine RPM signal faulty
+51	0D	CI-211	D+ alternator voltage signal missing (or too low) for >= 10 sec when > 1000 RPM
+51	0E	CI-133	Fuel Level Signal To Trip Computer short to supply
+51	0F	CI-142	Ambient Temperature signal missing
+51	10	CI-231	COMBI microprocessor internal fault
+51	11	CI-174	Wide Disparity in Fuel Levels and/or Fuel Consumption signal missing
+51	14	CI-174	Fuel Consumption signal
+51	15	CI-174	Fuel Consumption signal
+51	16	CI-174	Fuel Consumption signal
+51	17	CI-174	Fuel Consumption signal
+51	20	CI-232	COMBI is not yet programmed
+01	10	ABS-311	Left Front Wheel Sensor, open/short
+01	11	ABS-321	Left Front Wheel Sensor, irregular > 25 mph (ie, interference or excess oscillation > 40 km/h)
+01	12	ABS-?	Left Front Wheel Sensor,
+01	13	ABS-211	Left Front Wheel Sensor, wrong wheel speed (ie, signal absent yet circuit intact, or signal absent when moving off)
+01	14	ABS-221	Left Front Wheel Sensor, ABS control phase too long (ie, signal absent in ABS function, yet circuit intact)
+01	15	ABS-?	Left Front Wheel Sensor,
+01	20	ABS-312	Right Front Wheel Sensor, open/short
+01	21	ABS-322	Right Front Wheel Sensor, irregular > 25 mph (ie, interference or excess oscillation > 40 km/h)
+01	22	ABS-?	Right Front Wheel Sensor,
+01	23	ABS-212	Right Front Wheel Sensor, wrong wheel speed (ie, signal absent yet circuit intact, or signal absent when moving off)
+01	24	ABS-222	Right Front Wheel Sensor, ABS control phase too long (ie, signal absent in ABS function, yet circuit intact)
+01	25	ABS-?	Right Front Wheel Sensor,
+01	30	ABS-313	Left Rear Wheel Sensor, open/short
+01	31	ABS-323	Left Rear Wheel Sensor, irregular > 25 mph (ie, interference or excess oscillation > 40 km/h)
+01	32	ABS-?	Left Rear Wheel Sensor,
+01	33	ABS-213	Left Rear Wheel Sensor, wrong wheel speed (ie, signal absent yet circuit intact, or signal absent when moving off)
+01	34	ABS-223	Left Rear Wheel Sensor, ABS control phase too long (ie, signal absent in ABS function, yet circuit intact)
+01	35	ABS-?	Left Rear Wheel Sensor,
+01	40	ABS-314	Right Rear Wheel Sensor, open/short
+01	41	ABS-324	Right Rear Wheel Sensor, irregular > 25 mph (ie, interference or excess oscillation > 40 km/h)
+01	42	ABS-?	Right Rear Wheel Sensor,
+01	43	ABS-214	Right Rear Wheel Sensor, wrong wheel speed (ie, signal absent yet circuit intact, or signal absent when moving off)
+01	44	ABS-224	Right Rear Wheel Sensor, ABS control phase too long (ie, signal absent in ABS function, yet circuit intact)
+01	45	ABS-?	Right Rear Wheel Sensor,
+01	50	ABS-411	Left Front Wheel Inlet Valve, circuit open/short
+01	51	ABS-413	Right Front Wheel Inlet Valve, circuit open/short
+01	52	ABS-421	Rear Wheels Inlet Valve, circuit open/short
+01	54	ABS-412	Left Front Wheel Return Valve, circuit open/short
+01	55	ABS-414	Right Front Wheel Return Valve, circuit open/short
+01	56	ABS-422	Rear Wheels Return Valve, circuit open/short
+01	60	ABS-423	TRACS Valve, circuit open/short
+01	61	ABS-424	TRACS Pressure Switch, circuit open/short
+01	64	ABS-141	Brake Pedal Sensor, short
+01	65	ABS-142	Brake Light/Pedal Switch, open/short or adjustment
+01	66	ABS-144	TRACS Disengaged to Avoid Front Brake Discs Overheating
+01	67	ABS-143	Missing or Faulty Vehicle Speed Signal from ABS module
+01	70	ABS-443	Pump motor fault
+01	72	ABS-431	ABS Module, general hardware fault
+01	75	ABS-432	ABS Module, general interference fault
+01	77	ABS-433	Battery Voltage, ?too high?
+01	80	ABS-441	ABS Microprocessors, redundant calculations mismatch
+01	81	ABS-444	ABS Module, internal valve reference voltage error or no power to hydraulic valves
+01	82	ABS-442	ABS Module, leakage current or Hydraulic Modulator Pump Pressure, too low
+01	83	ABS-445	ABS Module, either inlet or return valve circuit fault
+6E	13	AT-?	Has been seen in 1 car when mechanic reported "bad torque converter lock-up solenoid" (and errors 666,332), and P0666 existed, so might be "AT-332 Lock-up solenoid SL, open-circuit Off5" or otherwise related to lock-up solenoid or its circuit
+6E	17	AT-?	Has been seen in 1 car with P0120, so might be AT-213, AT-223, or otherwise Throttle Position Sensor related
+6E	18	AT-?	Has been seen in 2 cars with P0120, so might be AT-213, AT-223, or otherwise Throttle Position Sensor related
+6E	35	AT-114	Mode Selector Switch, circuit malfunction
+6E	36	AT-121	Shift Solenoid S1 circuit, short to ground
+6E	37	AT-122	Shift Solenoid S1 circuit, open in either signal cable or power ground, or short to supply in signal cable
+6E	38	AT-123	Line Pressure Solenoid STH circuit, short to supply
+6E	39	AT-124	Mode Selector Switch, faulty or short circuit to ground
+6E	3A	AT-131	Line Pressure Solenoid STH circuit, open or short to ground
+6E	3B	AT-132	TCM Fault, amplifier STH short circuit
+6E	3C	AT-134	Engine Load signal
+6E	3D	AT-141	Oil Temp Sensor
+6E	3E	AT-142	Oil Temp Sensor
+6E	3F	AT-143	Kickdown switch circuit
+6E	40	AT-213	Throttle Position Sensor signal too high
+6E	41	AT-221	Shift solenoid S2 circuit, short to ground
+6E	42	AT-222	Shift solenoid S2 circuit, open in either signal cable or power ground, or short to supply in signal cable
+6E	43	AT-223	Throttle Position Sensor signal too low
+6E	44	AT-232/AT-233	Vehicle Speed Signal (VSS) from (ABS then) COMBI is missing or incorrect
+6E	45	AT-235	Oil Temperature
+6E	46	AT-245	Torque Limiting Circuit, open or short
+6E	47	AT-311/AT-312	Transmission RPM signal missing or incorrect
+6E	48	AT-313	Gear position sensor signal faulty / PNP switch fault
+6E	49	AT-412	Control Module ROM read fault
+6E	4A	AT-322	Gear 2, incorrect ratio / Alternatively, on earlier models: Gear Ratio Info Incorrect
+6E	4B	AT-323	Gear 3, incorrect ratio / Alternatively, on earlier models: Lock-Up Slips Or Is Not Engaged
+6E	4C	AT-324	Gear 4, incorrect ratio
+6E	4D	AT-331	Lock-up solenoid SL circuit, short to supply
+6E	4E	AT-332	Lock-up solenoid SL circuit, open
+6E	4F	AT-333	Lock-up solenoid SL circuit, short to ground
+6E	50	AT-411	Control Module EEPROM write fault
+6E	51	AT-421	Battery Volts too low
+6E	55	AT-511	Control Module Communication
+6E	60	AT-522	Control Module Communication
+6E	61	AT-523	Control Module Communication
+6E	62	AT-524	Control Module Communication
+6E	63	AT-525	Control Module Communication
+6E	64	AT-526	Control Module Communication
+6E	E0	AT-527	Control Module Communication
+2E	01	PSL-112	Legroom Motor 1 Pot signal too high
+2E	02	PSL-121	Backrest Motor 2 Pot signal too high
+2E	03	PSL-122	Seat Rear edge Motor 3 Pot signal too high
+2E	04	PSL-211	Seat front edge motor 4 Pot signal too high
+2E	05	PSL-212	Legroom Motor 1 Pot signal too low
+2E	06	PSL-222	Backrest Motor 2 Pot signal too low
+2E	07	PSL-223	Seat Rear edge Motor 3 Pot signal too low
+2E	08	PSL-312	Seat front edge motor 4 Pot signal too low
+2E	09	PSL-123	(Legroom) Motor 1 Running Even Though Its Button Not Operated
+2E	0A	PSL-131	Backrest Motor 2 Movement when not permitted
+2E	0B	PSL-132	Seat Rear edge Motor 3 Movement when not permitted
+2E	0C	PSL-133	Seat front edge motor 4 Movement when not permitted
+2E	0D	PSL-143	Legroom Motor 1 Moves in wrong direction
+2E	0E	PSL-144	Backrest Motor 2 Moves in wrong direction
+2E	0F	PSL-214	Seat Rear edge Motor 3 Moves in wrong direction
+2E	10	PSL-224	Seat front edge motor 4 Moves in wrong direction
+2E	11	PSL-323	Memory 1, Fault in stored memory position
+2E	12	PSL-322	Memory 2, Fault in stored memory position
+2E	13	PSL-321	Memory 3, Fault in stored memory position
+2E	14	PSL-424	Control Panel Not Connected
+2E	15	PSL-421	Fault in Control Module
+2E	16	PSL-422	Battery Voltage too low
+2E	17	PSL-423	Control button activated too long
+2E	18	PSL-411	Legroom motor 1 not calibrated
+2E	19	PSL-412	Backrest motor 2 not calibrated
+2E	1A	PSL-413	Seat Rear edge motor 3 not calibrated
+2E	1B	PSL-414	Seat front edge motor 4 not calibrated
+2E	1C	PSL-331	Entry Position not stored
+2E	1D	PSL-332	Original Position not stored
+2F	01	PSR-112	Legroom Motor 1 Pot signal too high
+2F	02	PSR-121	Backrest Motor 2 Pot signal too high
+2F	03	PSR-122	Seat Rear edge Motor 3 Pot signal too high
+2F	04	PSR-211	Seat front edge motor 4 Pot signal too high
+2F	05	PSR-212	Legroom Motor 1 Pot signal too low
+2F	06	PSR-222	Backrest Motor 2 Pot signal too low
+2F	07	PSR-223	Seat Rear edge Motor 3 Pot signal too low
+2F	08	PSR-312	Seat front edge motor 4 Pot signal too low
+2F	09	PSR-123	(Legroom) Motor 1 Running Even Though Its Button Not Operated
+2F	0A	PSR-131	Backrest Motor 2 Movement when not permitted
+2F	0B	PSR-132	Seat Rear edge Motor 3 Movement when not permitted
+2F	0C	PSR-133	Seat front edge motor 4 Movement when not permitted
+2F	0D	PSR-143	Legroom Motor 1 Moves in wrong direction
+2F	0E	PSR-144	Backrest Motor 2 Moves in wrong direction
+2F	0F	PSR-214	Seat Rear edge Motor 3 Moves in wrong direction
+2F	10	PSR-224	Seat front edge motor 4 Moves in wrong direction
+2F	11	PSR-323	Memory 1, Fault in stored memory position
+2F	12	PSR-322	Memory 2, Fault in stored memory position
+2F	13	PSR-321	Memory 3, Fault in stored memory position
+2F	14	PSR-424	Control Panel Not Connected
+2F	15	PSR-421	Fault in Control Module
+2F	16	PSR-422	Battery Voltage too low
+2F	17	PSR-423	Control button activated too long
+2F	18	PSR-411	Legroom motor 1 not calibrated
+2F	19	PSR-412	Backrest motor 2 not calibrated
+2F	1A	PSR-413	Seat Rear edge motor 3 not calibrated
+2F	1B	PSR-414	Seat front edge motor 4 not calibrated
+2F	1C	PSR-331	Entry Position not stored
+2F	1D	PSR-332	Original Position not stored
+7A	0A	EFI-212	HO2S sensor signal, front
+7A	0C	EFI-153	HO2S sensor signal, rear
+7A	0D	EFI-521	Front HO2S, preheating
+7A	0E	EFI-522	Rear HO2S, preheating malfunction
+7A	0F	EFI-435	Front HO2S slow response
+7A	10	EFI-436	Rear HO2S compensation
+7A	11	EFI-425	Rear HO2S, control (or possibly Temperature warning, level 1)
+7A	13	EFI-343	Fuel Pump Relay
+7A	18	EFI-211	CO Potentiometer
+7A	1A	EFI-231	Long term fuel trim, part load
+7A	1B	EFI-232	Long term fuel trim, idling
+7A	1D	EFI-666	DTC in transmission CM
+7A	28	EFI-443	TWC efficiency
+7A	31	EFI-542	Misfire, more than 1 cylinder
+7A	32	EFI-451	Misfire cylinder 1
+7A	33	EFI-452	Misfire cylinder 2
+7A	34	EFI-453	Misfire cylinder 3
+7A	35	EFI-454	Misfire cylinder 4
+7A	36	EFI-455	Misfire cylinder 5
+7A	37	EFI-445	Misfire cylinder 6
+7A	39	EFI-353	Immobilizer
+7A	3D	EFI-544	Misfire, more than 1 cylinder
+7A	3E	EFI-543	Misfire exhaust value of at least one cylinder
+7A	3F	EFI-551	Misfire, cylinder 1
+7A	40	EFI-552	Misfire, cylinder 2
+7A	41	EFI-553	Misfire, cylinder 3
+7A	42	EFI-554	Misfire, cylinder 4
+7A	43	EFI-555	Misfire, cylinder 5
+7A	44	EFI-556	Misfire, cylinder 6
+7A	4B	EFI-545	Misfire, at least 1 cylinder
+7A	4D	EFI-444	Accelerometer signal
+7A	50	EFI-442	Pulsed secondary air injection system flow fault
+7A	51	EFI-448	Pulsed secondary air injection system pump flow fault
+7A	53	EFI-446	Pulsed secondary air injection system valve leakage
+7A	54	EFI-445	Pulsed secondary air injection system pump signal
+7A	55	EFI-447	Pulsed secondary air injection system solenoid valve signal
+7A	56	EFI-241	EGR system
+7A	59	EFI-413	EGR temperature sensor signal
+7A	5D	EFI-315	Canister purge (CP) valve leakage
+7A	5E	EFI-611	Fuel Tank system, large leakage
+7A	5F	EFI-614	EVAP canister shut off valve flow fault
+7A	60	EFI-616	EVAP canister shut off valve signal
+7A	61	EFI-612	Fuel Tank system, small leakage
+7A	62	EFI-541	Canister purge (CP) valve signal
+7A	63	EFI-621	Fuel tank pressure sensor signal
+7A	65	EFI-112	MFI Control Module (CM) fault
+7A	67	EFI-112	Memory Fault (ROM) In Engine Control Module (ECM)
+7A	6B	EFI-132	Battery Voltage
+7A	6D	EFI-315	Canister purge (CP) valve leakage
+7A	6E	EFI-131	RPM sensor signal missing
+7A	6F	EFI-214	RPM sensor signal sporadic faulty
+7A	70	EFI-314	Camshaft Position sensor (CMP) signal
+7A	73	EFI-121	Mass Air Flow (MAF) sensor signal
+7A	75	EFI-411	Throttle Position (TP) sensor signal
+7A	77	EFI-422	Atmospheric pressure sensor signal
+7A	78	EFI-311	Engine RPM high for too long while no Vehicle Speed
+7A	79	EFI-355	Mass air flow (MAF) sensor, faulty signal
+7A	7A	EFI-112	Fault in Engine Control Module (ECM) NTC switch
+7A	7B	EFI-123	Engine Coolant Temperature (ECT) sensor
+7A	7C	EFI-251	Ambient Temperature sensor signal
+7A	7F	EFI-112	Fault in Engine Control Module (ECM) Temperature
+7A	80	EFI-432	Temperature warning, level 1
+7A	81	EFI-513	Temperature warning, level 2
+7A	82	EFI-225	A/C pressure sensor signal
+7A	96	EFI-115	Injector 1
+7A	97	EFI-125	Injector 2
+7A	98	EFI-135	Injector 3
+7A	99	EFI-145	Injector 4
+7A	9A	EFI-155	Injector 5
+7A	9B	EFI-165	Injector 6
+7A	A4	EFI-335	Request for MIL lighting from TCM
+7A	A8	EFI-223	Idle Air Control (IAC) valve opening signal
+7A	A9	EFI-245	IAC valve closing signal
+7A	AA	EFI-233	Adaptive idle air trim
+7A	B4	EFI-531	Power stage group A
+7A	B5	EFI-532	Power stage group B
+7A	B6	EFI-533	Power stage group C
+7A	B7	EFI-534	Power stage group D
+7A	B8	EFI-536	Power stage group E
+7A	B9	EFI-537	Power stage group F
+7A	D2	EFI-143	Front knock sensor (KS)
+7A	D3	EFI-433	Rear knock sensor (KS)
+7A	DE	EFI-112	Fault in Engine Control Module (ECM) Knock Control
+7A	E1	EFI-233	Long term idle air trim
+7A	E5	EFI-416	Boost pressure reduction from TCM
+7A	E6	EFI-414	Boost pressure regulation
+7A	ED	EFI-112	Fault in Engine Control Module (ECM) NTC switch
+7A	EE	EFI-432	Temperature warning, level 1
+7A	EF	EFI-513	Temperature warning, level 2
+7A	F1	EFI-154	EGR system leakage
+7A	F4	EFI-535	Turbocharger (TC) control valve signal
+7A	FD	EFI-514	Engine coolant fan, low speed
+7A	FE	EFI-621	Fuel tank pressure sensor signal
+11	00	EFI-131	Engine Speed (RPM) signal
+11	01	EFI-719	Secondary Engine Speed signal
+11	02	EFI-132	Battery Voltage
+11	03	EFI-711	Needle Lift sensor signal
+11	04	EFI-732	Accelerator Pedal Position sensor signal
+11	05	EFI-123	Engine Coolant Temp (ECT) sensor signal
+11	06	EFI-122	Intake Air Temp (IAT) sensor signal
+11	08	EFI-712	Fuel Temp sensor signal
+11	09	EFI-415	Boost Pressure sensor signal
+11	0A	EFI-112	Fault in Engine Control Module (ECM) Barometric Pressure signal
+11	0B	EFI-121	Mass Air Flow (MAF) sensor signal
+11	0C	EFI-743	Cruise Control switch signal
+11	0D	EFI-112	Fault in Engine Control Module (ECM) Reference Voltage
+11	0F	EFI-112	Fault in Engine Control Module (ECM)
+11	10	EFI-311	Engine RPM vs. Vehicle Speed signal discrepancy
+11	11	EFI-235	Exhaust gas recirculation (EGR) controller signal
+11	12	EFI-242	Turbocharger Control Valve (TCV) signal
+11	14	EFI-515	Engine Coolant Fan, high speed signal
+11	19	EFI-713	Injection Advance Control Valve signal
+11	1A	EFI-323	CHECK ENGINE light (CEL) / Malfunction indicator lamp (MIL)
+11	1B	EFI-721	Glowplug Indicator Light signal
+11	20	EFI-714	Fuel Shut-off Valve signal
+11	21	EFI-730	Brake Pedal Switch signal
+11	22	EFI-731	Clutch Switch signal
+11	23	EFI-724	Engine Coolant Heater Relay signal
+11	24	EFI-112	Memory Fault (ROM) In Engine Control Module (ECM)
+11	26	EFI-514	Engine Coolant Fan, low speed signal
+11	2A	EFI-725	Main Relay signal
+11	2B	EFI-715	Fuel Regulation
+11	2D	EFI-726	Terminal 15-supply to Engine Control Module (ECM)
+11	2E	EFI-716	Fuel Quantity Actuator signal
+11	2F	EFI-718	Ignition Timing Control
+11	30	EFI-335	Request for MIL lighting from TCM
+11	31	EFI-353	Comm Failure with Immobilizer
+11	32	EFI-742	Comm Failure between MSA 15.7 ECM and AW 50-42 TCM
+11	33	EFI-225	A/C Pressure sensor signal
+11	34	EFI-717	Fuel Quantity Regulator Position sensor signal
+11	36	EFI-732	Accelerator pedal position sensor signal
+11	FE	EFI-131	Engine Speed (RPM) signal
+41	01	IMM-112	Internal EEPROM memory fault
+41	02	IMM-211/IMM-213	Comm fault with engine ECU
+41	03	IMM-212/IMM-233	No Contact with Antenna
+41	04	IMM-221/IMM-234	No Response from Key Transponder
+41	05	IMM-222/IMM-235	Key Code not in memory
+41	06	IMM-223	Comm fault from Transponder to IMMO Control Module
+41	07	IMM-336	Control circuit to VGLA, fault in VGLA or LED circuit (P600)
+41	30	IMM-334/IMM-331	Control circuit to Indicator Lamp, fault in circuit
+41	31	IMM-335/IMM-332	Starter Motor Control circuit, fault in circuit
+41	32	IMM-324	VERLOG code missing
+41	33	IMM-325/IMM-323	Comm fault with coded starter module (CSM)
+41	34	IMM-121	PIN programming failed
+41	35	IMM-225	Key Code verification failed
+41	36	IMM-132	No Key Codes in EEPROM
+41	37	IMM-122	New replacement Immobilizer not yet programmed
+41	38	IMM-999	?EEPROM error?
+41	51	IMM-311	Comms with engine ECU, short to supply in comm link 2 or 4
+41	52	IMM-312	Comms with engine ECU, short to ground in comm link 2 or 4
+41	53	IMM-214	Comms from engine ECU, wrong MIN code (ie, Immobilizer is programmed for a different engine ECU)
+41	54	IMM-321	Initiating signal from ECM, missing
+41	55	IMM-326	Reply signal from engine control module
+41	F7	IMM-333	Control circuit to VGLA, fault in VGLA or LED circuit
+41	F8	IMM-336	Control circuit to VGLA, fault in VGLA or LED circuit (P600)
+29	35	ECC-412	Driver's (or passenger's) side interior temperature sensor inlet fan shorted to earth (or signal too low)
+29	36	ECC-413	Driver's (or passenger's) side interior temperature sensor inlet fan, no control voltage (or signal too high)
+29	37	ECC-414	Driver's (or passenger's) side interior temperature sensor inlet fan seized (or open/short circuit or faulty signal)
+29	38	ECC-411	Blower fan seized or drawing excess current

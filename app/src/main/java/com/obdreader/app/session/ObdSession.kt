@@ -570,6 +570,7 @@ object ObdSession {
     suspend fun scanModules(context: Context): List<Pair<ModuleScan.Module, ModuleScan.Answer>>? {
         val c = client ?: throw IOException("Not connected")
         if (ModuleScan.isFordPwm(carMake(context), _state.value.protocolCode)) return ModuleScan.Pwm.KNOWN.map { m -> m to readPwmModule(c, m) }
+        if (isVolvoD3B0(context)) return scanVolvo(c)
         if (!c.isCan) return null
         val modules = ModuleScan.modulesFor(carMake(context), AppPrefs.savedCar(AppPrefs.of(context))?.model, carIs29Bit())
         return modules.map { m -> m to readModule(c, m) }
@@ -640,6 +641,45 @@ object ObdSession {
             val m = ModuleScan.Module(ModuleScan.nameFor(make, req, bit29), req, reply)
             m to readModule(c, m)
         }
+    }
+
+    /** True for a 1996–2000 Volvo 850, S70, V70, C70 or XC70 on the K-line (ISO 9141), which speaks keyword D3 B0. */
+    fun isVolvoD3B0(context: Context): Boolean {
+        val car = AppPrefs.savedCar(AppPrefs.of(context))
+        return com.obdreader.app.obd.VolvoD3B0.appliesTo(car?.make, car?.model, car?.year) &&
+            _state.value.protocolCode?.trim()?.uppercase(java.util.Locale.US)?.removePrefix("A") == "3"
+    }
+
+    /**
+     * Every Volvo D3 B0 module's codes, in one go: each is woken on its own address and asked to
+     * read its codes, then the adapter goes back to ordinary OBD2. Live readings pause meanwhile
+     * (each module's wake-up takes a few seconds). The airbag module is never asked.
+     */
+    private suspend fun scanVolvo(c: ElmClient): List<Pair<ModuleScan.Module, ModuleScan.Answer>> {
+        val v = com.obdreader.app.obd.VolvoD3B0
+        appendLog("= Volvo keyword D3 B0: reading ${v.MODULES.size} modules' codes (the airbag module is left alone)")
+        val cmds = v.MODULES.flatMap { m -> v.pointAt(m).map { it to 2000L } + (v.READ_CODES to 8000L) }
+        val replies = c.sequence(cmds, v.POINT_BACK)
+        var i = 0
+        return v.MODULES.map { m ->
+            i += v.pointAt(m).size
+            val answer = v.parseCodes(replies[i], m.address)
+            i += 1
+            appendLog("= ${m.name} (${m.address}): " + when (answer) {
+                is ModuleScan.Answer.Codes -> if (answer.codes.isEmpty()) "no codes" else answer.codes.joinToString(", ") { it.label }
+                ModuleScan.Answer.Refused -> "doesn't offer its codes this way"
+                ModuleScan.Answer.Silent -> "didn't answer"
+            })
+            ModuleScan.Module(m.name, m.address, m.address) to answer
+        }
+    }
+
+    /** The Volvo instrument cluster's stored mileage in km (the true distance, to within 16 km), or null. */
+    suspend fun readVolvoMileage(): Double? {
+        val c = client ?: throw IOException("Not connected")
+        val v = com.obdreader.app.obd.VolvoD3B0
+        val lines = c.sequence(v.pointAt(v.COMBI).map { it to 2000L } + (v.READ_MILEAGE to 8000L), v.POINT_BACK).last()
+        return v.mileageKm(lines).also { appendLog("= Instrument cluster mileage: " + (it?.let { km -> String.format(java.util.Locale.US, "%.0f km", km) } ?: "no answer")) }
     }
 
     /**

@@ -20,7 +20,7 @@ object ModuleScan {
         val is29Bit: Boolean get() = request.length == 8
     }
 
-    data class Code(val code: String, val confirmed: Boolean, val pending: Boolean, val subtype: Int?) {
+    data class Code(val code: String, val confirmed: Boolean, val pending: Boolean, val subtype: Int?, val text: String? = null) {
         /** "C1145", or "C1145-1C" with Ford's failure type when there is one. */
         val label: String get() = if (subtype == null || subtype == 0) code else String.format(Locale.US, "%s-%02X", code, subtype)
     }

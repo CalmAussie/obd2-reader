@@ -68,7 +68,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 - **Freeze frame:** the engine's readings at the moment a code was stored.
 - **Code report:** save or share all your codes with your mechanic.
 - **Battery checks:** how far the battery dips when starting, and an optional overnight drain check.
-- **Deeper checks:** readiness monitors, self-test results, and codes from ABS, airbags and other modules (on CAN cars, and on 1996–2007 Fords and Mazdas). On Fords and Mazdas it can also read the second network on pins 3 and 11, with adapters that support it such as OBDLink MX+.
+- **Deeper checks:** readiness monitors, self-test results, and codes from ABS, airbags and other modules (on CAN cars, and on 1996–2007 Fords and Mazdas). On Fords and Mazdas it can also read the second network on pins 3 and 11, with adapters that support it such as OBDLink MX+. On 1996–2000 Volvo 850, S70, V70, C70 and XC70 it reads Volvo's own modules and the true mileage stored in the instrument cluster.
 - **VIN:** reads your car's VIN. You can enter the one on your plate if they differ.
 
 ## Styles
@@ -165,4 +165,5 @@ OBD2 Reader is open source under the [MIT licence](LICENSE).
 - The [Archivo](https://fonts.google.com/specimen/Archivo) typeface is under the SIL Open Font License ([`licenses/Archivo-OFL.txt`](licenses/Archivo-OFL.txt)).
 - Retro digital's numbers use the [DSEG7](https://github.com/keshikan/DSEG) font by keshikan, under the SIL Open Font License ([`licenses/DSEG-OFL.txt`](licenses/DSEG-OFL.txt)).
 - Approximate top speeds come from [autoevolution.com](https://www.autoevolution.com) via the [automobile-models-and-specs](https://github.com/ilyasozkurt/automobile-models-and-specs) dataset.
+- Volvo 850, S70, V70, C70 and XC70 module addresses, requests and code meanings come from Richard H. Jones's [Volvo 850 OBDII work](https://jonesrh.info/volvo850/), released into the public domain (CC0).
 - Trouble code names follow SAE J2012, cross-checked against [python-OBD](https://github.com/brendan-w/python-OBD), [AndrOBD](https://github.com/fr3ts0n/AndrOBD) and the [Wal33D DTC database](https://github.com/Wal33D/dtc-database). Ford definitions come from Ford's published *OBD System Operation Summary* documents.

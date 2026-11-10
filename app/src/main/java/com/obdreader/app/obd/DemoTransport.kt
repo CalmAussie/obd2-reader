@@ -45,8 +45,18 @@ class DemoTransport(
         val body = when {
             cmd == "ATZ" -> "\r\rELM327 v1.5"
             cmd == "ATI" -> "ELM327 v1.5"
-            cmd == "ATDPN" -> "A6"
-            cmd == "ATDP" -> "AUTO, ISO 15765-4 (CAN 11/500)"
+            cmd == "ATDPN" -> if (volvoP80) "A3" else "A6"
+            cmd == "ATDP" -> if (volvoP80) "AUTO, ISO 9141-2" else "AUTO, ISO 15765-4 (CAN 11/500)"
+            cmd.startsWith("ATIIA") -> { initAddress = cmd.substring(5); "OK" }
+            // A 1996–2000 Volvo answers keyword D3 B0 on the K-line: the instrument cluster has
+            // CI-221 stored and 123,400 miles; the ABS and transmission have no codes.
+            volvoP80 && cmd == "AE01" -> when (initAddress) {
+                "51" -> "841351EE0102D9"
+                "01" -> "831301EE01FF"
+                "6E" -> "83136EEE01FF"
+                else -> "NO DATA"
+            }
+            volvoP80 && cmd == "B903" -> if (initAddress == "51") "851351F903343049" else "NO DATA"
             cmd == "ATRV" -> String.format(Locale.US, "%.1fV", demoVoltage())
             cmd.startsWith("ATSH") -> { header = cmd.substring(4); "OK" }
             cmd == "ATH1" || cmd == "ATH0" -> { headers = cmd == "ATH1"; "OK" }
@@ -135,6 +145,9 @@ class DemoTransport(
     }
 
     private var header = "7DF"
+    /** A 1996–2000 Volvo (VIN from Volvo, model year 1996–2000): talks ISO 9141 and keyword D3 B0. */
+    private val volvoP80 = vin.startsWith("YV") && vin.getOrNull(9) in setOf('T', 'V', 'W', 'X', 'Y')
+    @Volatile private var initAddress = "33"
     /** On the second network (MS-CAN): only the cluster and body module answer there. */
     @Volatile private var msCan = false
     @Volatile private var headers = false
