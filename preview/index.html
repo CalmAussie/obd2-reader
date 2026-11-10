@@ -3947,6 +3947,56 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   document.head.appendChild(st);
 })();
 
+
+/* ===== 2.4.0: Diagnostics sections that open and close (mirrors MainActivity.setupGroups) ===== */
+(function () {
+  const car = $("carRow"); if (!car) return;
+  const list = car.parentElement, logRow = list.querySelector(".setting.log");
+  // Look every row up before any is moved: a row taken out of the page can't be found by its id.
+  const found = {};
+  const byId = id => id in found ? found[id] : (found[id] = id === "log" ? logRow : $(id));
+  const GROUPS = [
+    ["car", "Car and connection", ["carRow", "marketRow", "protocolRow", "reconnectRow", "log"]],
+    ["checks", "Deeper checks", ["scanRow", "readinessRow", "testsRow", "modulesRow", "enhancedRow", "customRow"]],
+    ["display", "Display and readings", ["unitsRow", "slotsRow", "widgetRow", "autoRow", "pipRow", "appIconRow"]],
+    ["help", "Help and feedback", ["helpRow", "reportRow", "ideaRow", "updatesRow"]],
+  ];
+  const heading = [...list.parentElement.querySelectorAll(".h2")].find(h => h.textContent.trim() === "Connection");
+  if (heading) heading.hidden = true;
+  const alerts = $("alertsRow");
+  const all = GROUPS.flatMap(g => g[2]).map(byId).concat(alerts).filter(Boolean);  // looks them all up first
+  all.forEach(el => el.remove());
+  const nameOf = el => { const s = el.querySelector(".r > span") || el.querySelector(".r > button") || el.querySelector(".r") || el; return s.textContent.trim().split("\n")[0].trim(); };
+  let hasCar = false; try { hasCar = !!localStorage.getItem("myCar"); } catch (e) {}
+  for (const [key, title, ids] of GROUPS) {
+    const rows = ids.map(byId).filter(Boolean);
+    let open = key === "car" && !hasCar;
+    try { const v = localStorage.getItem("group_" + key); if (v != null) open = v === "1"; } catch (e) {}
+    const head = document.createElement("button");
+    head.className = "grp-head"; head.setAttribute("aria-expanded", open);
+    head.innerHTML = `<span class="grp-t"><span class="grp-title xb">${title}</span><span class="grp-sub"></span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg>`;
+    head.querySelector(".grp-sub").textContent = rows.map(nameOf).join(" · ");
+    const box = document.createElement("div"); box.className = "grp-box"; box.hidden = !open;
+    rows.forEach(r => box.appendChild(r));
+    head.onclick = () => { const o = box.hidden; box.hidden = !o; head.setAttribute("aria-expanded", o); try { localStorage.setItem("group_" + key, o ? "1" : "0"); } catch (e) {} };
+    list.append(head, box);
+    const hr = document.createElement("div"); hr.className = "grp-rule"; list.append(hr);
+    if (key === "display" && alerts) list.append(alerts);
+  }
+  const st = document.createElement("style");
+  st.textContent = `.grp-head{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;color:var(--text);text-align:left;padding:14px 0 10px;cursor:pointer;font:inherit}
+.grp-head:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grp-t{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.grp-title{font-size:20px}
+.grp-sub{font-size:13px;color:var(--text2,var(--muted));overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.grp-head svg{width:28px;height:28px;fill:var(--accent);transform:rotate(90deg);transition:transform .18s ease;flex:none}
+.grp-head[aria-expanded="true"] svg{transform:rotate(270deg)}
+.grp-box{display:flex;flex-direction:column;gap:6px}
+.grp-rule{height:1px;background:currentColor;opacity:.15;margin:12px 0 4px}
+#alertsRow{margin:12px 0 4px}`;
+  document.head.appendChild(st);
+})();
+
 window.carReady = true;
 if (location.hash === "#car") showView(true);
 </script>

@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.4.0 (11 November 2026)
+- **A tidier Diagnostics tab.** Settings and checks are grouped into sections that open and close: Car and connection, Deeper checks, Display and readings, and Help and feedback. Each shows what's inside, and remembers whether you left it open. Alerts stays on its own, and your trouble codes, vehicle and battery check are still at the top.
+- Car and connection starts open until you've chosen your car.
+
 ## 2.3.1 (11 November 2026)
 - **Swipe down to close settings.** Units, Dashboard readouts, Widget readings, Android Auto readings, Where your car was sold and Protocol now open as sheets you can swipe down to close, like the rest of Diagnostics. When one opens another, each swipe closes one, so two swipes take you back to Diagnostics.
 

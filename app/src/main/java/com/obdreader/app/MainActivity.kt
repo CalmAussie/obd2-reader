@@ -470,6 +470,7 @@ open class MainActivity : AppCompatActivity() {
             background = panelBackground()
             setOnClickListener { showSlotPicker(slots.toMutableList()) }
         }
+        setupGroups()
         setupGraphs()
         setupScore()
         if (savedInstanceState == null) Exports.cleanUp(this) // shared reports and logs are temporary copies
@@ -1020,6 +1021,86 @@ open class MainActivity : AppCompatActivity() {
     }
 
     // ---------- Car scan ----------
+
+    // ---------- Diagnostics groups ----------
+
+    /**
+     * Diagnostics groups its settings and checks into sections that open and close, so the tab
+     * isn't one long list. Each remembers whether it was left open. The rows themselves are the
+     * same as ever; they're only moved under their section's header.
+     */
+    private fun setupGroups() {
+        val groups = listOf(
+            Triple("car", "Car and connection", listOf(R.id.carRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.logCard)),
+            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow)),
+            Triple("display", "Display and readings", listOf(R.id.unitsRow, R.id.slotsRow, R.id.widgetRow, R.id.autoRow, R.id.pipRow, R.id.appIconRow)),
+            Triple("help", "Help and feedback", listOf(R.id.helpRow, R.id.reportRow, R.id.ideaRow, R.id.updatesRow)),
+        )
+        val parent = findViewById<View>(R.id.carRow).parent as ViewGroup
+        // The old "Connection" heading sat above the first of these rows: the sections replace it.
+        (0 until parent.childCount).map { parent.getChildAt(it) }
+            .firstOrNull { it is TextView && it.text == getString(R.string.connection) }?.visibility = View.GONE
+        // Alerts is a section of its own (its switches), placed after the display settings.
+        val alerts = findViewById<View>(R.id.alertsRow)
+        // Everything moves under the sections, in this order, where the first row was.
+        var at = parent.indexOfChild(findViewById<View>(R.id.carRow))
+        (groups.flatMap { it.third } + R.id.alertsRow).mapNotNull { findViewById<View>(it) }.forEach { parent.removeView(it) }
+        for ((key, title, ids) in groups) {
+            val rows = ids.mapNotNull { findViewById<View>(it) }
+            val names = rows.mapNotNull { rowTitle(it) }
+            // Closed to start with, except Car and connection until a car is chosen (that's the first thing to set).
+            val open = prefs.getBoolean("group_$key", key == "car" && AppPrefs.savedCar(prefs) == null)
+            val box = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL; visibility = if (open) View.VISIBLE else View.GONE
+                rows.forEach { r -> addView(r, (r.layoutParams as? LinearLayout.LayoutParams ?: LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)).apply { topMargin = dp(6f).toInt() }) }
+            }
+            val chevron = android.widget.ImageView(this).apply {
+                setImageResource(R.drawable.ic_chevron_right); rotation = if (open) 270f else 90f
+                imageTintList = ColorStateList.valueOf(themeColor(R.attr.obdAccent)); importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }
+            val header = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                isClickable = true; isFocusable = true
+                background = android.util.TypedValue().let { tv -> theme.resolveAttribute(android.R.attr.selectableItemBackground, tv, true); androidx.core.content.ContextCompat.getDrawable(this@MainActivity, tv.resourceId) }
+                setPadding(0, dp(14f).toInt(), 0, dp(10f).toInt())
+                addView(LinearLayout(this@MainActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    addView(TextView(this@MainActivity).apply {
+                        text = title; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f); setTextColor(themeColor(R.attr.obdTextPrimary))
+                    })
+                    addView(TextView(this@MainActivity).apply {
+                        text = names.joinToString(" · "); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                        maxLines = 2; ellipsize = android.text.TextUtils.TruncateAt.END; setPadding(0, dp(2f).toInt(), 0, 0)
+                    })
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                addView(chevron, LinearLayout.LayoutParams(dp(28f).toInt(), dp(28f).toInt()))
+                fun describe(isOpen: Boolean) { contentDescription = "$title, " + if (isOpen) "expanded" else "collapsed" }
+                describe(open)
+                setOnClickListener {
+                    val nowOpen = box.visibility != View.VISIBLE
+                    box.visibility = if (nowOpen) View.VISIBLE else View.GONE
+                    chevron.animate().rotation(if (nowOpen) 270f else 90f).setDuration(180).start()
+                    describe(nowOpen)
+                    prefs.edit().putBoolean("group_$key", nowOpen).apply()
+                }
+            }
+            val lp = { top: Int -> LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(top.toFloat()).toInt() } }
+            parent.addView(header, at++, lp(if (key == "car") 20 else 10))
+            parent.addView(box, at++, lp(0))
+            parent.addView(View(this).apply { setBackgroundColor(themeColor(R.attr.obdTextSecondary)); alpha = 0.2f }, at++, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1).apply { topMargin = dp(12f).toInt() })
+            if (key == "display") parent.addView(alerts, at++, lp(16)) // Alerts sits just after the display settings, on its own.
+        }
+    }
+
+    /** The first line of a row (its name), for its section's summary. */
+    private fun rowTitle(row: View): String? {
+        fun first(v: View): String? = when (v) {
+            is TextView -> v.text?.toString()?.takeIf { it.isNotBlank() }
+            is ViewGroup -> (0 until v.childCount).firstNotNullOfOrNull { first(v.getChildAt(it)) }
+            else -> null
+        }
+        return first(row)
+    }
 
     // ---------- Deeper checks: readiness, self-tests, other modules, custom readings (all read-only) ----------
 

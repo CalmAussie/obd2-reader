@@ -338,7 +338,30 @@ PY
 # Scrolls down from where the page is, a little at a time, until a button with this label is on
 # screen, then taps it (labels come from the view's text or its spoken description).
 # Diagnostics, scrolled to the very top, so tap_scrolled can work down to any row.
-diag_top() { tap_tab Diagnostics; sleep 2; for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 700 540 2000 120; done; sleep 1; }
+diag_top() { tap_tab Diagnostics; sleep 2; for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 700 540 2000 120; done; sleep 1; [ -n "$GROUPS_OPEN" ] || open_groups; }
+# Diagnostics keeps its settings and checks in sections that start closed. Open every one once
+# (the app remembers), so later steps find their rows by scrolling, then go back to the top.
+open_groups() {
+  GROUPS_OPEN=1; local opened=0
+  for i in $(seq 1 30); do
+    adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-groups.xml" 2>/dev/null
+    local b=$(python3 - "$OUT/ui-groups.xml" <<'PY'
+import re, sys
+xml = open(sys.argv[1], encoding='utf-8', errors='ignore').read()
+for n in re.findall(r'<node [^>]*>', xml):
+    d = (re.search(r'content-desc="([^"]*)"', n) or [None, ''])[1]
+    if d.endswith(', collapsed'):
+        x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
+        print((x1 + x2) // 2, (y1 + y2) // 2); break
+PY
+)
+    if [ -n "$b" ]; then adb shell input tap $b; opened=$((opened+1)); sleep 1; continue; fi
+    grep -q 'Help and feedback, expanded' "$OUT/ui-groups.xml" && break
+    adb shell input swipe 540 1500 540 1000 300; sleep 1
+  done
+  log "diagnostics sections: opened $opened"
+  for k in 1 2 3 4 5 6 7 8 9 10; do adb shell input swipe 540 700 540 2000 120; done; sleep 1
+}
 tap_scrolled() {
   # Up to 30 steps of 500px: Diagnostics is over 10,000px long, with Help at the bottom.
   for i in $(seq 1 30); do tap_text "$1" > /dev/null && return 0; adb shell input swipe 540 1500 540 1000 300; sleep 1; done
