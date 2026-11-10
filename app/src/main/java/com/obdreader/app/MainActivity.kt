@@ -1042,11 +1042,13 @@ open class MainActivity : AppCompatActivity() {
             .firstOrNull { it is TextView && it.text == getString(R.string.connection) }?.visibility = View.GONE
         // Alerts is a section of its own (its switches), placed after the display settings.
         val alerts = findViewById<View>(R.id.alertsRow)
-        // Everything moves under the sections, in this order, where the first row was.
+        // Everything moves under the sections, in this order, where the first row was. Every row is
+        // looked up first: once a row is taken off the screen, findViewById can't find it any more.
         var at = parent.indexOfChild(findViewById<View>(R.id.carRow))
-        (groups.flatMap { it.third } + R.id.alertsRow).mapNotNull { findViewById<View>(it) }.forEach { parent.removeView(it) }
+        val found = (groups.flatMap { it.third } + R.id.alertsRow).associateWith { findViewById<View>(it) }
+        found.values.filterNotNull().forEach { parent.removeView(it) }
         for ((key, title, ids) in groups) {
-            val rows = ids.mapNotNull { findViewById<View>(it) }
+            val rows = ids.mapNotNull { found[it] }
             val names = rows.mapNotNull { rowTitle(it) }
             // Closed to start with, except Car and connection until a car is chosen (that's the first thing to set).
             val open = prefs.getBoolean("group_$key", key == "car" && AppPrefs.savedCar(prefs) == null)
