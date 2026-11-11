@@ -13,10 +13,10 @@ Fully electric cars have no engine computer, so they report few or no standard t
 
 | Code | Makes | Model years | Name | Source |
 |---|---|---|---|---|
-| P1336 | Ford, Lincoln | 2018–2023 | Noisy crankshaft position signal, or no camshaft/crankshaft sync | Ford OBD System Operation Summary for petrol (gasoline) engines |
+| P1336 | Ford, Lincoln | 2015–2023 | Noisy crankshaft position signal, or no camshaft/crankshaft sync | Ford OBD System Operation Summary for petrol (gasoline) engines |
 | P144A | Ford, Lincoln | 2020–2025 | EVAP purge vapour line restricted or blocked | Ford OBD System Operation Summary for petrol (gasoline) engines |
 | P144C | Ford, Lincoln | 2020–2025 | EVAP purge check valve performance | Ford OBD System Operation Summary for petrol (gasoline) engines |
-| P1450 | Ford, Lincoln | 2018–2025 | Unable to bleed up fuel tank vacuum (excessive vacuum) | Ford OBD System Operation Summary for petrol (gasoline) engines |
+| P1450 | Ford, Lincoln | 2015–2025 | Unable to bleed up fuel tank vacuum (excessive vacuum) | Ford OBD System Operation Summary for petrol (gasoline) engines |
 | P1646 | Ford, Lincoln | 2020–2025 | Linear oxygen sensor control chip (bank 1) | Ford OBD System Operation Summary for petrol (gasoline) engines |
 | P1647 | Ford, Lincoln | 2020–2025 | Linear oxygen sensor control chip (bank 2) | Ford OBD System Operation Summary for petrol (gasoline) engines |
 | P164A | Ford, Lincoln | 2020–2025 | Oxygen sensor positive current trim circuit performance (bank 1 sensor 1) | Ford OBD System Operation Summary for petrol (gasoline) engines |
@@ -278,30 +278,30 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Fiat | Uno | 1994–2021 | Yes | None yet |
 | Ford | Contour | 1995–2000 | Yes | None yet |
 | Ford | Crown Victoria | 1994–2011 | Yes | None yet |
-| Ford | EcoSport | 2013–2020 | Yes | 2018–2019: 2 codes · 2020: 8 codes (petrol) |
-| Ford | Escape | 2001–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
+| Ford | EcoSport | 2013–2020 | Yes | 2015–2019: 2 codes · 2020: 8 codes (petrol) |
+| Ford | Escape | 2001–2026 | Yes | 2015–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
 | Ford | Escort | 1994–2002 | Yes | None yet |
 | Ford | Everest | 2015–2026 | Yes | None yet (the maker's definitions are for petrol engines) |
-| Ford | Expedition | 1997–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
-| Ford | Explorer | 1994–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
-| Ford | F-150 | 1994–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
-| Ford | Falcon | 1994–2016 | Yes | None yet |
-| Ford | Fiesta | 2004–2019 | Yes | 2018–2019: 2 codes (petrol) |
-| Ford | Figo / Ka+ | 2010–2021 | Yes | 2018–2019: 2 codes · 2020–2021: 8 codes (petrol) |
-| Ford | Focus | 2002–2018 | Yes | 2018: 2 codes (petrol) |
+| Ford | Expedition | 1997–2026 | Yes | 2015–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
+| Ford | Explorer | 1994–2026 | Yes | 2015–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
+| Ford | F-150 | 1994–2026 | Yes | 2015–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
+| Ford | Falcon | 1994–2016 | Yes | 2015–2016: 2 codes (petrol) |
+| Ford | Fiesta | 2004–2019 | Yes | 2015–2019: 2 codes (petrol) |
+| Ford | Figo / Ka+ | 2010–2021 | Yes | 2015–2019: 2 codes · 2020–2021: 8 codes (petrol) |
+| Ford | Focus | 2002–2018 | Yes | 2015–2018: 2 codes (petrol) |
 | Ford | Ikon | 1999–2011 | Yes | None yet |
-| Ford | Ka | 1996–2021 | Yes | 2018–2019: 2 codes · 2020–2021: 8 codes (petrol) |
-| Ford | Kuga | 2012–2020 | Yes | 2018–2019: 2 codes · 2020: 8 codes (petrol) |
+| Ford | Ka | 1996–2021 | Yes | 2015–2019: 2 codes · 2020–2021: 8 codes (petrol) |
+| Ford | Kuga | 2012–2020 | Yes | 2015–2019: 2 codes · 2020: 8 codes (petrol) |
 | Ford | Laser | 1994–2002 | Yes | None yet |
-| Ford | Mondeo | 2001–2019 | Yes | 2018–2019: 2 codes (petrol) |
-| Ford | Mustang | 1994–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
+| Ford | Mondeo | 2001–2019 | Yes | 2015–2019: 2 codes (petrol) |
+| Ford | Mustang | 1994–2026 | Yes | 2015–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
 | Ford | Probe | 1994–1997 | Yes | None yet |
 | Ford | Puma | 2020–2026 | Yes | 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
 | Ford | Ranger | 1994–2026 | Yes | 2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
-| Ford | Taurus | 1994–2019 | Yes | 2018–2019: 2 codes (petrol) |
-| Ford | Territory | 2004–2016 | Yes | None yet |
+| Ford | Taurus | 1994–2019 | Yes | 2015–2019: 2 codes (petrol) |
+| Ford | Territory | 2004–2016 | Yes | 2015–2016: 2 codes (petrol) |
 | Ford | Thunderbird | 1994–1997 | Yes | None yet |
-| Ford | Transit | 2000–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
+| Ford | Transit | 2000–2026 | Yes | 2015–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
 | Ford | Windstar | 1995–2003 | Yes | None yet |
 | Geely | Atlas / Boyue | 2016–2026 | Yes | None yet |
 | Geely | CK / MK | 2005–2016 | Yes | None yet |
@@ -526,19 +526,19 @@ Makes with manufacturer-specific codes so far: Ford, Lincoln. Every other make: 
 | Lexus | RZ | 2023–2026 | Few or none (electric) | None |
 | Lexus | SC | 2002–2010 | Yes | None yet |
 | Lexus | UX | 2019–2026 | Yes | None yet |
-| Lincoln | Aviator | 2003–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
+| Lincoln | Aviator | 2003–2026 | Yes | 2015–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
 | Lincoln | Blackwood | 2002 | Yes | None yet |
-| Lincoln | Continental | 1994–2020 | Yes | 2018–2019: 2 codes · 2020: 8 codes (petrol) |
+| Lincoln | Continental | 1994–2020 | Yes | 2015–2019: 2 codes · 2020: 8 codes (petrol) |
 | Lincoln | Corsair | 2020–2026 | Yes | 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
 | Lincoln | LS | 2000–2006 | Yes | None yet |
 | Lincoln | Mark LT | 2006–2008 | Yes | None yet |
 | Lincoln | Mark VIII | 1994–1998 | Yes | None yet |
-| Lincoln | MKC | 2015–2019 | Yes | 2018–2019: 2 codes (petrol) |
-| Lincoln | MKS | 2009–2016 | Yes | None yet |
-| Lincoln | MKT | 2010–2019 | Yes | 2018–2019: 2 codes (petrol) |
-| Lincoln | MKX / Nautilus | 2007–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
-| Lincoln | MKZ / Zephyr | 2006–2020 | Yes | 2018–2019: 2 codes · 2020: 8 codes (petrol) |
-| Lincoln | Navigator | 1998–2026 | Yes | 2018–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
+| Lincoln | MKC | 2015–2019 | Yes | 2015–2019: 2 codes (petrol) |
+| Lincoln | MKS | 2009–2016 | Yes | 2015–2016: 2 codes (petrol) |
+| Lincoln | MKT | 2010–2019 | Yes | 2015–2019: 2 codes (petrol) |
+| Lincoln | MKX / Nautilus | 2007–2026 | Yes | 2015–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
+| Lincoln | MKZ / Zephyr | 2006–2020 | Yes | 2015–2019: 2 codes · 2020: 8 codes (petrol) |
+| Lincoln | Navigator | 1998–2026 | Yes | 2015–2019: 2 codes · 2020–2023: 8 codes · 2024–2025: 7 codes (petrol) |
 | Lincoln | Town Car | 1994–2011 | Yes | None yet |
 | Lotus | Eletre | 2023–2026 | Few or none (electric) | None |
 | Lotus | Elise | 1996–2021 | Yes | None yet |

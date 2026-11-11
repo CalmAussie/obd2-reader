@@ -26,7 +26,7 @@ class CodeSupportDocTest {
     private fun makerCell(make: String, model: VehicleCatalog.Model): String {
         if (VehicleCatalog.isElectric(VehicleCatalog.Car(make, model.to, model.name), model.name.lowercase(Locale.US))) return "None"
         val byYear = (model.from..model.to).associateWith { y ->
-            MakerCodes.coverage.count { make in it.makes && y in it.years }
+            MakerCodes.coverage.count { it.covers(make, model.name, y) }
         }.filterValues { it > 0 }
         if (byYear.isEmpty()) return "None yet"
         // Diesel-only years: the published definitions are for petrol engines.
@@ -66,7 +66,7 @@ class CodeSupportDocTest {
         appendLine()
         appendLine("| Code | Makes | Model years | Name | Source |")
         appendLine("|---|---|---|---|---|")
-        for (c in coverage) appendLine("| ${c.code} | ${c.makes.sorted().joinToString(", ")} | ${years(c.years)} | ${c.title} | ${c.source} |")
+        for (c in coverage) appendLine("| ${c.code} | ${c.makes.sorted().joinToString(", ")} | ${years(c.years)}${if (c.limited) " (some models and engines)" else ""} | ${c.title} | ${c.source} |")
         appendLine()
         appendLine("Makes with manufacturer-specific codes so far: ${makerMakes.joinToString(", ")}. Every other make: none yet.")
         appendLine()
