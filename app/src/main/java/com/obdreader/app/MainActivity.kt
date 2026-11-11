@@ -1032,7 +1032,7 @@ open class MainActivity : AppCompatActivity() {
     private fun setupGroups() {
         val groups = listOf(
             Triple("car", "Car and connection", listOf(R.id.carRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.logCard)),
-            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow)),
+            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
             Triple("display", "Display and readings", listOf(R.id.unitsRow, R.id.slotsRow, R.id.widgetRow, R.id.autoRow, R.id.pipRow, R.id.appIconRow)),
             Triple("help", "Help and feedback", listOf(R.id.helpRow, R.id.reportRow, R.id.ideaRow, R.id.updatesRow)),
         )
@@ -1040,15 +1040,15 @@ open class MainActivity : AppCompatActivity() {
         // The old "Connection" heading sat above the first of these rows: the sections replace it.
         (0 until parent.childCount).map { parent.getChildAt(it) }
             .firstOrNull { it is TextView && it.text == getString(R.string.connection) }?.visibility = View.GONE
-        // Alerts is a section of its own (its switches), placed after the display settings.
-        val alerts = findViewById<View>(R.id.alertsRow)
         // Everything moves under the sections, in this order, where the first row was. Every row is
         // looked up first: once a row is taken off the screen, findViewById can't find it any more.
         var at = parent.indexOfChild(findViewById<View>(R.id.carRow))
-        val found = (groups.flatMap { it.third } + R.id.alertsRow).associateWith { findViewById<View>(it) }
+        val found = groups.flatMap { it.third }.associateWith { findViewById<View>(it) }
         found.values.filterNotNull().forEach { parent.removeView(it) }
         for ((key, title, ids) in groups) {
-            val rows = ids.mapNotNull { found[it] }
+            // Each section's rows are in alphabetical order, by their names.
+            val collator = java.text.Collator.getInstance().apply { strength = java.text.Collator.PRIMARY }
+            val rows = ids.mapNotNull { found[it] }.sortedWith(compareBy(collator) { rowTitle(it).orEmpty() })
             val names = rows.mapNotNull { rowTitle(it) }
             // Closed to start with, except Car and connection until a car is chosen (that's the first thing to set).
             val open = prefs.getBoolean("group_$key", key == "car" && AppPrefs.savedCar(prefs) == null)
@@ -1090,7 +1090,6 @@ open class MainActivity : AppCompatActivity() {
             parent.addView(header, at++, lp(if (key == "car") 20 else 10))
             parent.addView(box, at++, lp(0))
             parent.addView(View(this).apply { setBackgroundColor(themeColor(R.attr.obdTextSecondary)); alpha = 0.2f }, at++, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1).apply { topMargin = dp(12f).toInt() })
-            if (key == "display") parent.addView(alerts, at++, lp(16)) // Alerts sits just after the display settings, on its own.
         }
     }
 
