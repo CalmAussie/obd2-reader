@@ -1044,9 +1044,8 @@ if adb shell pm list features 2>/dev/null | grep -q picture_in_picture; then
   if tap_scrolled "Picture-in-picture"; then PIPON=yes; sleep 1; shot 13c-pip-switch; else log "picture-in-picture: FAILED (switch not found)"; FAIL=1; fi
 fi
 # Dashboard readouts: swap fuel for intake air, and the Dashboard shows it.
-tap_tab Diagnostics; sleep 2
-for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done; sleep 1
-if tap_text "Dashboard readouts" && tap_contains "Readout 2" && tap_text "Intake air" && tap_text "Save"; then
+diag_top
+if tap_scrolled "Dashboard readouts" && tap_contains "Readout 2" && tap_text "Intake air" && tap_text "Save"; then
   sleep 4
   tap_tab Dashboard; sleep 3; scroll_top
   shot 11-custom-readouts
@@ -1058,12 +1057,8 @@ if tap_text "Dashboard readouts" && tap_contains "Readout 2" && tap_text "Intake
   done
   # Release builds: the Dashboard readouts row on Diagnostics (a still screen) lists what's in use.
   if [ $SEEN = 0 ]; then
-    tap_tab Diagnostics; sleep 2
-    for k in 1 2 3; do adb shell input swipe 540 2000 540 600 150; done
-    for i in 1 2 3 4; do
-      sleep 2; adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-slots-row.xml" 2>/dev/null
-      grep -q 'text="[^"]*, Intake air' "$OUT/ui-slots-row.xml" && alive && { SEEN=1; break; }
-    done
+    diag_top
+    find_scrolled 'text="[^"]*, Intake air' "$OUT/ui-slots-row.xml" && alive && SEEN=1
     tap_tab Dashboard; sleep 2
   fi
   # Newer Android can't always dump an animating screen; the saved choice and a running app also count.
