@@ -1238,6 +1238,7 @@ open class MainActivity : AppCompatActivity() {
     /** The modules sheet: the make's known modules, and after a search, any others that answered. */
     private fun moduleSheet(results: List<Pair<ModuleScan.Module, ModuleScan.Answer>>?, found: List<Pair<ModuleScan.Module, ModuleScan.Answer>>?) {
         val make = ObdSession.carMake(this); val year = ObdSession.carYear(this)
+        val model = ObdSession.carModel(this); val engine = ObdSession.carEngine(this)
         infoSheet(getString(R.string.modules_title)) { heading, line, body ->
             if (results == null) {
                 line("Other modules are read on CAN cars (most from 2008), and on Fords and Mazdas that use J1850. This car uses an older protocol, where only the engine computer can be reached with a standard adapter.", true)
@@ -1250,7 +1251,7 @@ open class MainActivity : AppCompatActivity() {
                 heading(m.name)
                 when (a) {
                     is ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) line("No codes", true) else a.codes.forEach { c ->
-                        line("${c.label}  ${c.text ?: DtcLibrary.lookup(c.code, make, year).title}" + if (c.pending && !c.confirmed) " (pending)" else " (stored)", false)
+                        line("${c.label}  ${c.text ?: DtcLibrary.lookup(c.code, make, year, model, engine).title}" + if (c.pending && !c.confirmed) " (pending)" else " (stored)", false)
                     }
                     ModuleScan.Answer.Refused -> line("Answered, but doesn't share its codes this way.", true)
                     ModuleScan.Answer.Silent -> line("Didn't answer: not fitted, or on a part of the car's network the adapter can't reach.", true)
@@ -1347,6 +1348,7 @@ open class MainActivity : AppCompatActivity() {
                 }
                 wait.dismiss()
                 val make = ObdSession.carMake(this@MainActivity); val year = ObdSession.carYear(this@MainActivity)
+                val model = ObdSession.carModel(this@MainActivity); val engine = ObdSession.carEngine(this@MainActivity)
                 when (result) {
                     ObdSession.SecondNetworkResult.AdapterCantReach -> {
                         android.util.Log.i("OBD2Deep", "second network: adapter can't reach it")
@@ -1368,7 +1370,7 @@ open class MainActivity : AppCompatActivity() {
                                 heading(m.name)
                                 when (a) {
                                     is ModuleScan.Answer.Codes -> if (a.codes.isEmpty()) line("No codes", true) else a.codes.forEach { c ->
-                                        line("${c.label}  ${DtcLibrary.lookup(c.code, make, year).title}" + if (c.pending && !c.confirmed) " (pending)" else " (stored)", false)
+                                        line("${c.label}  ${DtcLibrary.lookup(c.code, make, year, model, engine).title}" + if (c.pending && !c.confirmed) " (pending)" else " (stored)", false)
                                     }
                                     ModuleScan.Answer.Refused -> line("Answered, but doesn't share its codes this way.", true)
                                     ModuleScan.Answer.Silent -> line("Didn't answer when asked for its codes.", true)
@@ -4407,7 +4409,7 @@ open class MainActivity : AppCompatActivity() {
      * what you might notice, common causes and what to check first.
      */
     private fun addDtcRow(code: String, pending: Boolean) {
-        val info = DtcLibrary.lookup(code, ObdSession.carMake(this), ObdSession.carYear(this))
+        val info = DtcLibrary.lookup(code, ObdSession.carMake(this), ObdSession.carYear(this), ObdSession.carModel(this), ObdSession.carEngine(this))
         val pad = dp(14f).toInt()
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL

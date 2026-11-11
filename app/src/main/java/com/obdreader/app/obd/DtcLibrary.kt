@@ -524,7 +524,7 @@ object DtcLibrary {
 
     // ---------- Codes not in the catalogue: explained from their structure ----------
 
-    private fun systemOf(code: String): String {
+    internal fun systemOf(code: String): String {
         val c = code.uppercase(Locale.US)
         val system = when (c.firstOrNull()) {
             'P' -> "Engine and transmission (powertrain)"
@@ -563,11 +563,12 @@ object DtcLibrary {
      * Full explanation of [raw], from the catalogue or worked out from the code's structure.
      * [make] is the user's car (or the make read from the VIN): manufacturer-specific codes mean
      * different things on different brands, so they're explained for that make. With the model
-     * [year] too, a maker's own published definition is used where there is one for that car.
+     * [year] too, a maker's own published definition is used where there is one for that car; the
+     * chosen [model] and [engine] (car list names) decide it where the maker limits a code to some cars.
      */
-    fun lookup(raw: String, make: String? = null, year: Int? = null): DtcInfo {
+    fun lookup(raw: String, make: String? = null, year: Int? = null, model: String? = null, engine: String? = null): DtcInfo {
         val code = raw.trim().uppercase(Locale.US)
-        MakerCodes.lookup(code, make, year)?.let { return it }
+        MakerCodes.lookup(code, make, year, model, engine)?.let { return it }
         catalogue[code]?.let { return it.copy(system = systemOf(code)) }
         DtcGeneric.lookup(code, systemOf(code))?.let { return it }
         if (!CODE.matches(code)) {
@@ -614,11 +615,12 @@ object DtcLibrary {
     }
 
     /** Short name for [code], for lists and the car screen. */
-    fun title(code: String, make: String? = null, year: Int? = null): String = lookup(code, make, year).title
+    fun title(code: String, make: String? = null, year: Int? = null, model: String? = null, engine: String? = null): String =
+        lookup(code, make, year, model, engine).title
 
     /** One line for the adapter log: the code, what it is and how urgent it is. */
-    fun logLine(code: String, make: String? = null, year: Int? = null): String {
-        val d = lookup(code, make, year)
+    fun logLine(code: String, make: String? = null, year: Int? = null, model: String? = null, engine: String? = null): String {
+        val d = lookup(code, make, year, model, engine)
         val urgency = if (d.severity == Severity.UNKNOWN) "Urgency varies by car" else d.severity.label
         return "${d.code}: ${d.title}. $urgency."
     }

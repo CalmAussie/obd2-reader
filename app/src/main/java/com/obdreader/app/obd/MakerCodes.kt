@@ -2,22 +2,52 @@ package com.obdreader.app.obd
 
 import com.obdreader.app.obd.DtcLibrary.DtcInfo
 import com.obdreader.app.obd.DtcLibrary.Severity
+import java.util.Locale
 
 /**
  * Manufacturer-specific codes, only where the maker's own published documents give the definition
- * and say which cars and years it applies to. A code is used only for those makes and model years;
- * anything else keeps the "look it up for your make" explanation, because the same code means
- * different things on other cars.
+ * and say which cars and years it applies to. A code is used only for those makes and model years,
+ * and, where the maker limits it to some models or engines, only when the user's chosen car is one
+ * of them; anything else keeps the "look it up for your make" explanation, because the same code
+ * means different things on other cars.
  *
  * Ford: "OBD System Operation Summary for Gasoline Engines", published by Ford Motor Company for
- * each model year (fordservicecontent.com, Motorcraft service content). A code's years are the
- * model-year summaries it appears in with the same definition.
+ * each model year (fordservicecontent.com and fordtechservice.dealerconnection.com: OBDSM1505 for
+ * 2015, OBDSM1604 for 2016, OBDSM1704 for 2017, then the 2018 and 2020–2023 summaries). A code's
+ * years are the model-year summaries it appears in with the same definition.
+ *
+ * Other makes: the makers' own service bulletins and published diagnostic files, in
+ * [MakerCodeData]. The same code can have several definitions, for different makes or for
+ * different cars of one make, so each code holds a list and the chosen car picks the one that fits.
  */
 internal object MakerCodes {
 
-    private class Entry(
+    /**
+     * Which cars a definition is for: model [years], and when the maker names them, only these
+     * [models] and [engines]. Names are the car list's ([VehicleCatalog]); a model matches any of
+     * the names in "Cerato / Forte / K3". Empty means every model or engine of the make.
+     */
+    class Fit(val years: IntRange, val models: Set<String> = emptySet(), val engines: Set<String> = emptySet()) {
+        /** True if a car of this [year], [model] and [engine] is covered. An unknown model or engine never matches a limited fit. */
+        fun matches(year: Int?, model: String?, engine: String?): Boolean {
+            if (year == null || year !in years) return false
+            if (models.isNotEmpty() && (model == null || models.none { sameModel(it, model) })) return false
+            if (engines.isNotEmpty() && (engine == null || engines.none { it.equals(engine.trim(), ignoreCase = true) })) return false
+            return true
+        }
+
+        /** True if this fit covers some cars of [model] in [year], whatever the engine (for the support table). */
+        fun covers(year: Int, model: String): Boolean =
+            year in years && (models.isEmpty() || models.any { sameModel(it, model) })
+
+        private fun names(model: String) = model.split(" / ").map { it.trim().lowercase(Locale.US) }.toSet()
+        private fun sameModel(a: String, b: String) = names(a).intersect(names(b)).isNotEmpty()
+    }
+
+    /** One maker's definition of a code, for the cars in [fits]. */
+    class Entry(
         val makes: Set<String>,
-        val years: IntRange,
+        val fits: List<Fit>,
         val title: String,
         val meaning: String,
         val severity: Severity,
@@ -47,18 +77,18 @@ internal object MakerCodes {
         "Replace the sensor if the code returns with good wiring; if that doesn't fix it, have the engine computer checked",
     )
 
-    private val entries: Map<String, Entry> = buildMap {
+    private val fordEntries: List<Pair<String, Entry>> = buildList {
         fun e(code: String, years: IntRange, title: String, meaning: String, severity: Severity,
               causes: List<String>, symptoms: List<String>, checks: List<String>) {
-            put(code, Entry(FORD, years, title, meaning, severity, causes, symptoms, checks, FORD_SOURCE))
+            add(code to Entry(FORD, listOf(Fit(years)), title, meaning, severity, causes, symptoms, checks, FORD_SOURCE))
         }
-        e("P1336", 2018..2023, "Noisy crankshaft position signal, or no camshaft/crankshaft sync",
+        e("P1336", 2015..2023, "Noisy crankshaft position signal, or no camshaft/crankshaft sync",
             "Ford's definition: the crankshaft position sensor signal is noisy, or the engine computer can't line up the camshaft and crankshaft signals. While this is set, misfire checks can't run.",
             Severity.HIGH,
             listOf("A failing crankshaft or camshaft position sensor", "Damaged wiring or a loose connector", "A damaged reluctor (tone) ring", "Timing chain or belt problems"),
             listOf("Hard starting or stalling", "Misfires or rough running", "Other misfire codes not being set while this one is"),
             listOf("Check the crank and cam sensor connectors and wiring", "Check the sensors are fitted firmly with nothing stuck to their tips", "Replace the sensor; have the timing checked if the code returns"))
-        e("P1450", 2018..2025, "Unable to bleed up fuel tank vacuum (excessive vacuum)",
+        e("P1450", 2015..2025, "Unable to bleed up fuel tank vacuum (excessive vacuum)",
             "Ford's definition: during its evaporative emissions (EVAP) test, the fuel tank pulled more vacuum than it should, and it didn't bleed back up. Later Ford calibrations report this as P0496 instead.",
             Severity.LOW, EVAP_CAUSES,
             listOf("Usually nothing you'd notice", "Sometimes trouble filling the tank, or a whoosh when the fuel cap comes off"),
@@ -90,23 +120,47 @@ internal object MakerCodes {
         }
     }
 
+    /** Each code's definitions, in the order they're tried. */
+    private val entries: Map<String, List<Entry>> =
+        (fordEntries + MakerCodeData.entries).groupBy({ it.first }, { it.second })
+
     /** Every code with a maker's definition (for tests). */
     val codes: Set<String> get() = entries.keys
 
-    /** One maker-specific code: which makes and model years it's defined for, and its name. */
-    data class Coverage(val code: String, val makes: Set<String>, val years: IntRange, val title: String, val source: String)
+    /** One maker-specific code: which makes, cars and model years it's defined for, and its name. */
+    data class Coverage(val code: String, val makes: Set<String>, val fits: List<Fit>, val title: String, val source: String) {
+        /** First to last model year of every fit. */
+        val years: IntRange get() = fits.minOf { it.years.first }..fits.maxOf { it.years.last }
+
+        /** True if the definition covers some [model] cars of [make] in [year]. */
+        fun covers(make: String, model: String, year: Int): Boolean = make in makes && fits.any { it.covers(year, model) }
+
+        /** True if some fit is limited to particular models or engines. */
+        val limited: Boolean get() = fits.any { it.models.isNotEmpty() || it.engines.isNotEmpty() }
+    }
 
     /** Every maker-specific code, for the support table in the docs. */
-    val coverage: List<Coverage> get() = entries.map { (code, e) -> Coverage(code, e.makes, e.years, e.title, e.source) }
+    val coverage: List<Coverage> get() = entries.flatMap { (code, list) -> list.map { Coverage(code, it.makes, it.fits, it.title, it.source) } }
 
-    /** The maker's definition of [code] for this [make] and model [year], or null if there isn't one. */
-    fun lookup(code: String, make: String?, year: Int?): DtcInfo? {
-        val e = entries[code] ?: return null
+    /**
+     * The maker's definition of [code] for this [make], model [year], and (where the maker limits a
+     * code to some cars) [model] and [engine] as named in the car list; null if there isn't one.
+     */
+    fun lookup(code: String, make: String?, year: Int?, model: String? = null, engine: String? = null): DtcInfo? {
         val brand = make?.substringBefore(" (")?.substringBefore(" / ")?.trim() ?: return null
-        if (brand !in e.makes || year == null || year !in e.years) return null
-        return DtcInfo(
-            code, e.title, e.meaning, e.severity, e.causes, e.symptoms, e.checks,
-            system = "Engine and transmission (powertrain), manufacturer-specific code: $brand's definition for ${e.years.first}–${e.years.last} petrol engines (${e.source})",
-        )
+        for (e in entries[code].orEmpty()) {
+            if (brand !in e.makes) continue
+            val fit = e.fits.firstOrNull { it.matches(year, model, engine) } ?: continue
+            val cars = listOfNotNull(
+                fit.models.takeIf { it.isNotEmpty() }?.sorted()?.joinToString(", "),
+                fit.engines.takeIf { it.isNotEmpty() }?.sorted()?.joinToString(", ", postfix = " engines"),
+            ).joinToString(" with ").ifEmpty { "petrol engines" }
+            val years = if (fit.years.first == fit.years.last) "${fit.years.first}" else "${fit.years.first}–${fit.years.last}"
+            return DtcInfo(
+                code, e.title, e.meaning, e.severity, e.causes, e.symptoms, e.checks,
+                system = "${DtcLibrary.systemOf(code)}: $brand's definition for $years $cars (${e.source})",
+            )
+        }
+        return null
     }
 }

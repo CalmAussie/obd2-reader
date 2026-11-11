@@ -443,6 +443,12 @@ object ObdSession {
         context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.year }
             ?: vinFor(context)?.let { com.obdreader.app.obd.VinDecoder.decode(it).modelYear }
 
+    /** The chosen car's model (car list name), for maker codes limited to some models; the VIN doesn't give one. */
+    fun carModel(context: Context?): String? = context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.model }
+
+    /** The chosen car's engine (car list name), for maker codes limited to some engines. */
+    fun carEngine(context: Context?): String? = context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.engine }
+
     /** The VIN to go by: the one the user entered from their VIN plate, else the one the car sent. */
     fun vinFor(context: Context?): String? =
         context?.let { AppPrefs.userVin(AppPrefs.of(it)) } ?: _state.value.vin
@@ -1014,7 +1020,7 @@ object ObdSession {
     private fun logCodes(codes: List<String>, pending: Boolean): List<String> {
         val kind = if (pending) "pending" else "stored"
         val lines = if (codes.isEmpty()) listOf("= No $kind codes")
-        else listOf("= ${codes.size} $kind ${if (codes.size == 1) "code" else "codes"}:") + codes.map { "=   " + DtcLibrary.logLine(it, carMake(appContext), carYear(appContext)) }
+        else listOf("= ${codes.size} $kind ${if (codes.size == 1) "code" else "codes"}:") + codes.map { "=   " + DtcLibrary.logLine(it, carMake(appContext), carYear(appContext), carModel(appContext), carEngine(appContext)) }
         lines.forEach { appendLog(it) }
         return lines
     }

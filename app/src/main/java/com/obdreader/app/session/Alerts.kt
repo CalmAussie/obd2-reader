@@ -52,7 +52,9 @@ object Alerts {
                     lastCodes = codes
                     val make = ObdSession.carMake(app)
                     val year = ObdSession.carYear(app)
-                    rules.codes(codes.stored + codes.pending) { DtcLibrary.title(it, make, year) }.forEach { notify(app, it) }
+                    val model = ObdSession.carModel(app)
+                    val engine = ObdSession.carEngine(app)
+                    rules.codes(codes.stored + codes.pending) { DtcLibrary.title(it, make, year, model, engine) }.forEach { notify(app, it) }
                 }
                 // Readings arrive many times a second; once a second is plenty for these.
                 val now = SystemClock.elapsedRealtime()
