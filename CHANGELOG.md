@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.4.3 (12 November 2026)
+- **A notification when a new version is out.** About once a day, even when the app isn't open, it checks GitHub for a new version and, if there is one, shows a quiet notification with what's new. Tap it to open the Update window; nothing downloads until you tap Update. Each version is announced once, and not again if you tapped Later on it. It never checks while connected to your car, and you can turn it off under your phone's notification settings for OBD2 Reader (New versions).
+
 ## 2.4.1 (11 November 2026)
 - **Alerts is now under Deeper checks**, instead of on its own below Display and readings.
 - The settings and checks inside each Diagnostics section are in alphabetical order, with Your car kept first in Car and connection.

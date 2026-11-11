@@ -1129,6 +1129,19 @@ if adb shell run-as $PKG ls > /dev/null 2>&1; then
   shot 12c-new-code
   if [ $NC = yes ] && grep -q "New trouble code P0300" "$OUT/notifications-codes.txt"; then log "new code while driving: quiet notification (${IMP:-importance ?})"; else log "new code while driving: FAILED (logged: $NC, ${IMP:-no channel})"; FAIL=1; fi
 fi
+# New version available (debug builds): the once-a-day background check is scheduled with Android's
+# JobScheduler, and its notification (made-up version 9.9.9) is quiet and says which version is out.
+if adb shell run-as $PKG ls > /dev/null 2>&1; then
+  adb shell dumpsys jobscheduler > "$OUT/jobs.txt" 2>/dev/null
+  grep -q "$PKG/.session.UpdateCheckJob" "$OUT/jobs.txt" && JS=yes || JS=no
+  adb shell am start -n $PKG/.HomeActivity --ez update_notice_demo true > /dev/null 2>&1; sleep 3
+  adb shell dumpsys notification --noredact > "$OUT/notifications-update.txt" 2>/dev/null
+  UIMP=$(grep -A12 'NotificationChannel{mId=.new_versions' "$OUT/notifications-update.txt" | grep -o 'mImportance=[0-9]' | head -1)
+  adb shell cmd statusbar expand-notifications > /dev/null 2>&1; sleep 2
+  shot 12d-new-version
+  adb shell cmd statusbar collapse > /dev/null 2>&1; sleep 1
+  if [ $JS = yes ] && grep -q "Version 9.9.9 is available" "$OUT/notifications-update.txt"; then log "new version: quiet notification (${UIMP:-importance ?}), daily check scheduled"; else log "new version: FAILED (scheduled: $JS, ${UIMP:-no channel})"; FAIL=1; fi
+fi
 adb logcat -c
 adb shell input keyevent KEYCODE_HOME; sleep 15
 alive && log "minimised: still running" || { log "minimised: FAILED (app stopped)"; FAIL=1; }
