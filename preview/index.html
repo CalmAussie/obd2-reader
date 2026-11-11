@@ -3223,7 +3223,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "2.3.1", "date": "11 November 2026", "text": "• Swipe down to close settings. Units, Dashboard readouts, Widget readings, Android Auto readings, Where your car was sold and Protocol now open as sheets you can swipe down to close, like the rest of Diagnostics. When one opens another, each swipe closes one, so two swipes take you back to Diagnostics."};
+const CHANGES = {"version": "2.4.0", "date": "11 November 2026", "text": "• A tidier Diagnostics tab. Settings and checks are grouped into sections that open and close: Car and connection, Deeper checks, Display and readings, and Help and feedback. Each shows what's inside, and remembers whether you left it open. Alerts stays on its own, and your trouble codes, vehicle and battery check are still at the top.\n• Car and connection starts open until you've chosen your car."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
