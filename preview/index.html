@@ -3223,7 +3223,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "2.4.1", "date": "11 November 2026", "text": "• Alerts is now under Deeper checks, instead of on its own below Display and readings.\n• The settings and checks inside each Diagnostics section are in alphabetical order, with Your car kept first in Car and connection."};
+const CHANGES = {"version": "2.4.2", "date": "11 November 2026", "text": "• Airbag modules are left alone everywhere. Codes from other modules, Search every address and Module information no longer ask airbag modules on any make, as the J1850, second-network and Volvo searches already didn't. Reading codes can't set an airbag off, but the app now keeps its promise never to talk to them."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3292,7 +3292,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
   $("scanRow").insertAdjacentHTML("afterend",
     rowHtml("readinessRow", "Readiness monitors", "The engine computer's own emission checks: which have finished since the codes were last cleared. Also shows its software version.") +
     rowHtml("testsRow", "Self-test results", "The measurements behind those checks (oxygen sensors, catalyst, misfires and more), with the limits each must stay within.") +
-    rowHtml("modulesRow", "Codes from other modules", "Reads codes from modules beyond the engine, like ABS, airbags and transmission. Read-only: nothing is cleared.") +
+    rowHtml("modulesRow", "Codes from other modules", "Reads codes from modules beyond the engine, like ABS, transmission and power steering. Read-only: nothing is cleared, and airbag modules are never asked.") +
     rowHtml("enhancedRow", "Enhanced diagnostics", "Readings your car's maker added beyond standard OBD2, like transmission temperature and oil life, live, plus each module's part numbers and software versions.") +
     rowHtml("customRow", "Custom readings", "Add a reading by its request and formula, for ones the app doesn't list yet."));
   const line = (t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${t}</div>`;
@@ -3317,20 +3317,20 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
     sheet("Self-test results", `<p>All 8 tests within their limits.</p>` + groups.map(([g, ts]) => head(g) + ts.map(([t, v]) => line(`✓  Test ${t}: ${v}`, true)).join("")).join("") +
       head("What this means") + line("These are the engine computer's own measurements from the last time it ran each check, with the limits they must stay between. A result close to a limit can show a part wearing out before it sets a trouble code. The test numbers are the maker's own, so what each one measures isn't always published.", true));
   };
-  /* Each make's known modules (mirrors ModuleScan.modulesFor); the demo car answers at 760, 737, 7E0 and 7E1, and a search finds 7A0 */
+  /* Each make's known modules (mirrors ModuleScan.modulesFor, which never lists airbag modules); the demo car answers at 760, 7E0 and 7E1, and a search finds 7A0 */
   const FAMILIES = [
-    [["Ford", "Lincoln", "Mercury", "Mazda"], ["ABS and stability control:760", "Airbags (restraints):737", "Body / general electronics:726", "Instrument cluster:720", "Power steering:730", "Parking sensors:736", "All-wheel drive:703", "Climate control:733", "Adaptive cruise radar:764", "Front camera (lane keeping):706"]],
-    [["Toyota", "Lexus", "Scion"], ["Hybrid system:7E2", "ABS and stability control:7B0", "Airbags (SRS):780", "Power steering:7A1", "Climate control:7C4", "Radar cruise control:791"]],
+    [["Ford", "Lincoln", "Mercury", "Mazda"], ["ABS and stability control:760", "Body / general electronics:726", "Instrument cluster:720", "Power steering:730", "Parking sensors:736", "All-wheel drive:703", "Climate control:733", "Adaptive cruise radar:764", "Front camera (lane keeping):706"]],
+    [["Toyota", "Lexus", "Scion"], ["Hybrid system:7E2", "ABS and stability control:7B0", "Power steering:7A1", "Climate control:7C4", "Radar cruise control:791"]],
     [["Hyundai", "Kia"], ["ABS and stability control:7D1", "Power steering (MDPS):7D4", "Smart cruise radar:7D0", "Front camera (lane keeping):7C4", "Climate control:7B3", "Instrument cluster:7C6", "Parking assist:7B1"]],
     [["Nissan", "Infiniti"], ["ABS and stability control:740", "Power steering:742", "Instrument cluster:743", "Front camera (lane keeping):707"]],
     [["Subaru"], ["ABS and stability control:7B0", "Power steering:746", "EyeSight camera:787"]],
-    [["Volkswagen", "Audi", "Skoda", "SEAT / Cupra"], ["ABS and stability control:713", "Airbags:715", "Power steering:712", "Adaptive cruise radar:757", "Front camera (lane assist):74F"]],
-    [["Chrysler", "Dodge", "Jeep", "Ram"], ["Hybrid system:7E2", "ABS and stability control:747", "Airbags (occupant restraints):744", "Instrument cluster:742", "Power steering:75A", "Adaptive cruise radar:753"]],
+    [["Volkswagen", "Audi", "Skoda", "SEAT / Cupra"], ["ABS and stability control:713", "Power steering:712", "Adaptive cruise radar:757", "Front camera (lane assist):74F"]],
+    [["Chrysler", "Dodge", "Jeep", "Ram"], ["Hybrid system:7E2", "ABS and stability control:747", "Instrument cluster:742", "Power steering:75A", "Adaptive cruise radar:753"]],
     [["Chevrolet", "GMC", "Buick", "Cadillac", "Holden", "Pontiac", "Saturn", "Hummer", "Oldsmobile"], ["Front camera (lane keeping):24B"]],
-    [["Honda", "Acura"], ["Stability control (VSA):18DA28F1", "Airbags (SRS):18DA53F1", "Power steering (EPS):18DA30F1", "Instrument cluster:18DA60F1", "Gateway:18DAEFF1", "Adaptive cruise radar:18DAB0F1", "Front camera (lane keeping):18DAB5F1", "Electric gear selector:18DA0BF1", "Electric brake booster:18DA2BF1", "Engine computer (PGM-FI):18DA10F1", "Transmission:18DA1EF1"]],
+    [["Honda", "Acura"], ["Stability control (VSA):18DA28F1", "Power steering (EPS):18DA30F1", "Instrument cluster:18DA60F1", "Gateway:18DAEFF1", "Adaptive cruise radar:18DAB0F1", "Front camera (lane keeping):18DAB5F1", "Electric gear selector:18DA0BF1", "Electric brake booster:18DA2BF1", "Engine computer (PGM-FI):18DA10F1", "Transmission:18DA1EF1"]],
     [["MG"], ["Power steering:721", "Front camera (lane keeping):733", "Adaptive cruise radar:734"]],
   ];
-  const demoCodes = () => ({ "760": [`C1145-1C  ${myCar && myCar.make ? myCar.make + "-specific code" : "Manufacturer-specific code"} (stored)`], "737": [], "7E0": ["P0133  Oxygen sensor slow response (bank 1, sensor 1) (stored)", "P0171  Fuel mixture too lean (bank 1) (pending)"], "7E1": [], "7E2": [], "7A0": [] });
+  const demoCodes = () => ({ "760": [`C1145-1C  ${myCar && myCar.make ? myCar.make + "-specific code" : "Manufacturer-specific code"} (stored)`], "7E0": ["P0133  Oxygen sensor slow response (bank 1, sensor 1) (stored)", "P0171  Fuel mixture too lean (bank 1) (pending)"], "7E1": [], "7E2": [], "7A0": [] });
   const modulesForCar = () => {
     const make = myCar && myCar.make;
     const gm = FAMILIES[7][0].includes(make);
@@ -3339,7 +3339,7 @@ $("batteryWatch").onchange = e => { $("batteryNight").hidden = !e.target.checked
   };
   const modulesHtml = mods => mods.map(([n, a]) => { const c = demoCodes()[a]; return head(n) + (c == null ? line("Didn't answer: not fitted, or on a part of the car's network the adapter can't reach.", true) : c.length ? c.map(x => line(x)).join("") : line("No codes", true)); }).join("");
   const countCodes = mods => mods.reduce((s, [, a]) => s + (demoCodes()[a] ? demoCodes()[a].length : 0), 0);
-  const ABOUT = head("About this") + line("Read-only: the app asks each module for its codes and never clears them. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true);
+  const ABOUT = head("About this") + line("Read-only: the app asks each module for its codes and never clears them. Airbag modules are never asked. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true);
   const modulesSheet = found => {
     const mods = modulesForCar(), total = countCodes(mods);
     sheet("Codes from other modules", `<p>${total ? `${total} ${total === 1 ? "code" : "codes"} found.` : "No codes in the modules that answered."}</p>` + modulesHtml(mods) +

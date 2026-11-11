@@ -74,5 +74,57 @@ class OtherNetworksTest {
     @Test fun airbagModulesAreRecognised() {
         assertTrue(ModuleScan.isAirbag(ModuleScan.Module("Airbags (restraints)", "737", "73F")))
         assertFalse(ModuleScan.isAirbag(ModuleScan.Module("Instrument cluster", "720", "728")))
+        // By make: each family's own addresses, whatever the module is called.
+        assertTrue(ModuleScan.isAirbag("Toyota", ModuleScan.Module("Module at 780", "780", "788")))
+        assertTrue(ModuleScan.isAirbag("Kia", ModuleScan.Module("Module at 7D2", "7D2", "7DA")))
+        assertTrue(ModuleScan.isAirbag("Honda", ModuleScan.Module("Module at 18DA53F1", "18DA53F1", "18DAF153")))
+        assertTrue(ModuleScan.isAirbag("Peugeot", ModuleScan.Module("Module at 744", "744", "74C")))
+        // Another maker's airbag address is an ordinary module on a known make.
+        assertFalse(ModuleScan.isAirbag("Toyota", ModuleScan.Module("Module at 744", "744", "74C")))
+    }
+
+    /** The makes in each family, and the airbag addresses that family's modules use. */
+    private val airbagsByMake = mapOf(
+        "Ford" to setOf("737", "765"), "Mazda" to setOf("737", "765"), "Lincoln" to setOf("737", "765"),
+        "Toyota" to setOf("780"), "Lexus" to setOf("780"),
+        "Hyundai" to setOf("7D2"), "Kia" to setOf("7D2"), "Genesis" to setOf("7D2"),
+        "Nissan" to setOf("752"), "Infiniti" to setOf("752"),
+        "Volkswagen" to setOf("715"), "Audi" to setOf("715"), "Skoda" to setOf("715"), "SEAT / Cupra" to setOf("715"),
+        "Chrysler" to setOf("744"), "Dodge" to setOf("744"), "Jeep" to setOf("744"), "Ram" to setOf("744"),
+        "Chevrolet" to setOf("247"), "Holden" to setOf("247"), "Cadillac" to setOf("247"),
+        "Honda" to setOf("18DA53F1"), "Acura" to setOf("18DA53F1"),
+        // Makes whose own addresses aren't known skip every family's.
+        "Subaru" to setOf("737", "765", "780", "7D2", "752", "715", "744", "247"),
+        "MG" to setOf("737", "765", "780", "7D2", "752", "715", "744", "247"),
+        "Peugeot" to setOf("737", "765", "780", "7D2", "752", "715", "744", "247"),
+    )
+
+    @Test fun noScanListsAnAirbagModule() {
+        for ((make, airbags) in airbagsByMake) for (bit29 in listOf(false, true)) {
+            val modules = ModuleScan.modulesFor(make, null, bit29)
+            assertTrue("$make $bit29", modules.none { ModuleScan.isAirbag(make, it) })
+            assertTrue("$make $bit29", modules.none { it.request in airbags || it.request == "18DA53F1" })
+        }
+        // Every make in the catalogue, too.
+        for (make in VehicleCatalog.MAKES.map { it.name }) for (bit29 in listOf(false, true)) {
+            assertTrue(make, ModuleScan.modulesFor(make, null, bit29).none { ModuleScan.isAirbag(make, it) })
+        }
+    }
+
+    @Test fun noSearchAsksAnAirbagAddress() {
+        for ((make, airbags) in airbagsByMake) for (bit29 in listOf(false, true)) {
+            val asked = ModuleScan.sweepsFor(make, bit29).flatMap { it.requests }
+            assertTrue("$make $bit29", asked.isNotEmpty())
+            assertTrue("$make $bit29", asked.none { it in airbags })
+            assertTrue("$make $bit29", "18DA53F1" !in asked)
+        }
+        for (make in VehicleCatalog.MAKES.map { it.name }) for (bit29 in listOf(false, true)) {
+            val skip = ModuleScan.airbagAddresses(make)
+            assertTrue(make, ModuleScan.sweepsFor(make, bit29).flatMap { it.requests }.none { it in skip })
+        }
+        // The rest of each block is still searched.
+        assertTrue("7B0" in ModuleScan.sweepsFor("Toyota", false).single().requests)
+        assertTrue("713" in ModuleScan.sweepsFor("Audi", false).single().requests)
+        assertTrue("18DA28F1" in ModuleScan.sweepsFor("Honda", false).first { it.is29Bit }.requests)
     }
 }

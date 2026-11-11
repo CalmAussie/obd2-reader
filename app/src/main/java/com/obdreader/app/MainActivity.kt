@@ -1300,7 +1300,7 @@ open class MainActivity : AppCompatActivity() {
                 line(getString(R.string.modules_second_help), true)
             }
             heading("About this")
-            line("Read-only: the app asks each module for its codes and never clears them. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true)
+            line("Read-only: the app asks each module for its codes and never clears them. Airbag modules are never asked. Codes starting C (chassis), B (body) or U (network) with a 1 after the letter are the maker's own; look them up in your maker's service information.", true)
         }
     }
 
@@ -1475,7 +1475,7 @@ open class MainActivity : AppCompatActivity() {
             .setMessage("Asking each module for its part numbers and versions.").setCancelable(false).show()
         lifecycleScope.launch {
             val info = try {
-                ObdSession.readModuleInfo(modules) { done, total -> runOnUiThread { bar.setProgressCompat(done * 100 / total.coerceAtLeast(1), true) } }
+                ObdSession.readModuleInfo(ObdSession.carMake(this@MainActivity), modules) { done, total -> runOnUiThread { bar.setProgressCompat(done * 100 / total.coerceAtLeast(1), true) } }
             } catch (e: CancellationException) { throw e } catch (e: Exception) { null }
             wait.dismiss()
             if (info == null) { toast("The car stopped answering. Try again."); return@launch }

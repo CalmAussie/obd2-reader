@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.4.2 (11 November 2026)
+- **Airbag modules are left alone everywhere.** Codes from other modules, Search every address and Module information no longer ask airbag modules on any make, as the J1850, second-network and Volvo searches already didn't. Reading codes can't set an airbag off, but the app now keeps its promise never to talk to them.
+
 ## 2.4.1 (11 November 2026)
 - **Alerts is now under Deeper checks**, instead of on its own below Display and readings.
 - The settings and checks inside each Diagnostics section are in alphabetical order, with Your car kept first in Car and connection.
