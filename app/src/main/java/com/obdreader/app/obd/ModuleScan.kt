@@ -3,12 +3,13 @@ package com.obdreader.app.obd
 import java.util.Locale
 
 /**
- * Trouble codes from the car's other computers (ABS, airbags, transmission, body and so on),
+ * Trouble codes from the car's other computers (ABS, transmission, body and so on),
  * read with the standard "read trouble codes" services: UDS ReadDTCInformation (service 19) or,
  * on older modules, KWP2000 readDTCByStatus (service 18). Both only read; clearing (service 14)
  * is never sent. Each module is reached by its own CAN address, so this works on CAN cars, and
  * only for modules on the same bus as the OBD2 port's CAN pins. Some modules sit on another bus
- * an ELM327 adapter can't reach, and those simply don't answer.
+ * an ELM327 adapter can't reach, and those simply don't answer. Airbag modules are never asked,
+ * by any scan or search (see [airbagAddresses]).
  */
 object ModuleScan {
 
@@ -80,6 +81,7 @@ object ModuleScan {
     /**
      * The modules to ask for [make]: the engine and transmission computers, plus the other modules
      * that make's cars are known to have. [carIs29Bit] when the car talks OBD2 on 29-bit addresses.
+     * Airbag modules are never in the list.
      */
     fun modulesFor(make: String?, model: String?, carIs29Bit: Boolean = false): List<Module> {
         val f = Family.of(make)
@@ -87,7 +89,6 @@ object ModuleScan {
         val extra = when (f) {
             Family.FORD -> listOf(
                 m("ABS and stability control", 0x760),
-                m("Airbags (restraints)", 0x737),
                 m("Body / general electronics", 0x726),
                 m("Instrument cluster", 0x720),
                 m("Power steering", 0x730),
@@ -100,7 +101,6 @@ object ModuleScan {
             Family.TOYOTA -> listOf(
                 m("Hybrid system", 0x7E2),
                 m("ABS and stability control", 0x7B0),
-                m("Airbags (SRS)", 0x780),
                 m("Power steering", 0x7A1),
                 m("Climate control", 0x7C4),
                 m("Radar cruise control", 0x791),
@@ -127,7 +127,6 @@ object ModuleScan {
             )
             Family.VW -> listOf(
                 m("ABS and stability control", 0x713, o),
-                m("Airbags", 0x715, o),
                 m("Power steering", 0x712, o),
                 m("Adaptive cruise radar", 0x757, o),
                 m("Front camera (lane assist)", 0x74F, o),
@@ -135,7 +134,6 @@ object ModuleScan {
             Family.CHRYSLER -> listOf(
                 m("Hybrid system", 0x7E2),
                 m("ABS and stability control", 0x747, o),
-                m("Airbags (occupant restraints)", 0x744, o),
                 m("Instrument cluster", 0x742, o),
                 m("Power steering", 0x75A, o),
                 m("Adaptive cruise radar", 0x753, o),
@@ -143,7 +141,6 @@ object ModuleScan {
             Family.GM -> listOf(m("Front camera (lane keeping)", 0x24B, o))
             Family.HONDA -> listOf(
                 h("Stability control (VSA)", 0x28),
-                h("Airbags (SRS)", 0x53),
                 h("Power steering (EPS)", 0x30),
                 h("Instrument cluster", 0x60),
                 h("Gateway", 0xEF),
@@ -159,7 +156,7 @@ object ModuleScan {
             )
             Family.OTHER -> emptyList()
         }
-        return (standard(f, carIs29Bit) + extra).distinctBy { it.request }
+        return (standard(f, carIs29Bit) + extra).distinctBy { it.request }.filter { !isAirbag(make, it) }
     }
 
     /**
@@ -174,13 +171,13 @@ object ModuleScan {
      * The addresses to search for [make]. Most makers' modules sit at 700–7F7 and answer at
      * 708–7FF; GM's at 240–25F (answering at 640–65F); Chrysler's at 740–77F (answering at
      * 4C0–4FF). Honda's, and every module on a car that talks OBD2 on 29-bit addresses, are
-     * 18DA00F1–18DAFFF1, answering from 18DAF1xx. The OBD2 broadcast address 7DF and the engine
-     * computers' answer addresses are never asked.
+     * 18DA00F1–18DAFFF1, answering from 18DAF1xx. The OBD2 broadcast address 7DF, the engine
+     * computers' answer addresses and the make's airbag modules ([airbagAddresses]) are never asked.
      */
     fun sweepsFor(make: String?, carIs29Bit: Boolean): List<Sweep> {
         val f = Family.of(make)
         val bit29 = Sweep((0x00..0xFF).filter { it != 0xF1 }.map { String.format(Locale.US, "18DA%02XF1", it) }, "18DAF100", "1FFFFF00")
-        if (carIs29Bit) return listOf(bit29)
+        if (carIs29Bit) return listOf(withoutAirbags(bit29, make))
         val sweeps = mutableListOf<Sweep>()
         when (f) {
             Family.GM -> sweeps += Sweep((0x240..0x25F).map(::hex3), "640", "7E0")
@@ -193,7 +190,12 @@ object ModuleScan {
             sweeps += Sweep((0x700..0x7F7).filter { it != 0x7DF && it !in 0x7E8..0x7EF }.map(::hex3), "700", "700")
         }
         if (f == Family.HONDA) sweeps += bit29
-        return sweeps
+        return sweeps.map { withoutAirbags(it, make) }
+    }
+
+    private fun withoutAirbags(sweep: Sweep, make: String?): Sweep {
+        val skip = airbagAddresses(make)
+        return sweep.copy(requests = sweep.requests.filter { it !in skip })
     }
 
     /** Commands that set the adapter up for [sweep] (headers on so each answer's address shows) and back. */
@@ -229,16 +231,49 @@ object ModuleScan {
     fun nameFor(make: String?, request: String, carIs29Bit: Boolean): String =
         modulesFor(make, null, carIs29Bit).firstOrNull { it.request == request }?.name ?: "Module at $request"
 
-    // ---- Airbags: never asked by the newer searches ----
+    // ---- Airbags: never asked by any scan or search ----
 
     /**
-     * Ford's airbag (restraint) module addresses. The J1850 search and the second-network search skip
-     * them, and never ask anything of a module whose name says it's an airbag module. (Reading
-     * codes can't set an airbag off, but these modules are left alone all the same.)
+     * Ford's airbag (restraint) module addresses: the restraints computer and the occupant
+     * classification module. The second-network search skips them too.
      */
     private val AIRBAG_CAN = setOf("737", "765")
+
+    /**
+     * Honda's airbag module on its 29-bit address. Every 29-bit search skips it, whatever the
+     * make, since no other maker's address there is known for sure.
+     */
+    private const val AIRBAG_29BIT = "18DA53F1"
+
+    /** Every family's known airbag addresses, for makes whose own aren't known. */
+    private val AIRBAG_ANY: Set<String> = AIRBAG_CAN + setOf("780", "7D2", "752", "715", "744", "247") + AIRBAG_29BIT
+
+    /**
+     * The airbag module addresses never asked for [make]: the ones that make's family uses (Ford
+     * 737 and 765, Toyota 780, Hyundai and Kia 7D2, Nissan 752, the Volkswagen group 715, Chrysler's
+     * group 744, GM 247, Honda 18DA53F1), always Honda's 29-bit one, and for makes whose addresses
+     * aren't known (Subaru, MG and the rest) every one of those. Reading codes can't set an airbag
+     * off, but the app leaves these modules alone all the same: it's a promise the app makes.
+     */
+    fun airbagAddresses(make: String?): Set<String> = when (Family.of(make)) {
+        Family.FORD -> AIRBAG_CAN
+        Family.TOYOTA -> setOf("780")
+        Family.HYUNDAI -> setOf("7D2")
+        Family.NISSAN -> setOf("752")
+        Family.VW -> setOf("715")
+        Family.CHRYSLER -> setOf("744")
+        Family.GM -> setOf("247")
+        Family.HONDA -> emptySet()
+        Family.SUBARU, Family.MG, Family.OTHER -> AIRBAG_ANY
+    } + AIRBAG_29BIT
+
+    /** True for a module whose name says it's an airbag module, or one at Ford's airbag addresses. */
     fun isAirbag(m: Module): Boolean =
         m.request in AIRBAG_CAN || m.name.contains("airbag", ignoreCase = true) || m.name.contains("restraint", ignoreCase = true) || m.name.contains("SRS")
+
+    /** True for an airbag module of [make]'s: by its name, or at one of [airbagAddresses]. */
+    fun isAirbag(make: String?, m: Module): Boolean =
+        m.request in airbagAddresses(make) || m.name.contains("airbag", ignoreCase = true) || m.name.contains("restraint", ignoreCase = true) || m.name.contains("SRS")
 
     // ---- Older Fords and Mazdas: J1850 PWM (protocol 1) ----
 
