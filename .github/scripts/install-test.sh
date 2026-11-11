@@ -2,6 +2,7 @@
 # Installs the published APK on a fresh emulator exactly as a user would get it, opens it,
 # starts the demo car, visits every tab and checks nothing crashed. Saves screenshots.
 set -u
+GROUPS_OPEN=
 API=$1; OUT=reports/api-$API; mkdir -p "$OUT"
 PKG=com.obdreader.app
 log() { echo "$*" | tee -a "$OUT/result.txt"; }
@@ -338,7 +339,7 @@ PY
 # Scrolls down from where the page is, a little at a time, until a button with this label is on
 # screen, then taps it (labels come from the view's text or its spoken description).
 # Diagnostics, scrolled to the very top, so tap_scrolled can work down to any row.
-diag_top() { tap_tab Diagnostics; sleep 2; for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 700 540 2000 120; done; sleep 1; [ -n "$GROUPS_OPEN" ] || open_groups; }
+diag_top() { tap_tab Diagnostics; sleep 2; for k in 1 2 3 4 5 6 7 8; do adb shell input swipe 540 700 540 2000 120; done; sleep 1; [ -n "${GROUPS_OPEN:-}" ] || open_groups; }
 # Diagnostics keeps its settings and checks in sections that start closed. Open every one once
 # (the app remembers), so later steps find their rows by scrolling, then go back to the top.
 open_groups() {
