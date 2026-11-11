@@ -1046,9 +1046,11 @@ open class MainActivity : AppCompatActivity() {
         val found = groups.flatMap { it.third }.associateWith { findViewById<View>(it) }
         found.values.filterNotNull().forEach { parent.removeView(it) }
         for ((key, title, ids) in groups) {
-            // Each section's rows are in alphabetical order, by their names.
+            // Each section's rows are in alphabetical order, by their names, except Your car, which
+            // stays first in its section (choosing the car is the first thing to do).
             val collator = java.text.Collator.getInstance().apply { strength = java.text.Collator.PRIMARY }
-            val rows = ids.mapNotNull { found[it] }.sortedWith(compareBy(collator) { rowTitle(it).orEmpty() })
+            val rows = ids.mapNotNull { found[it] }
+                .sortedWith(compareBy<View> { it.id != R.id.carRow }.then(compareBy(collator) { rowTitle(it).orEmpty() }))
             val names = rows.mapNotNull { rowTitle(it) }
             // Closed to start with, except Car and connection until a car is chosen (that's the first thing to set).
             val open = prefs.getBoolean("group_$key", key == "car" && AppPrefs.savedCar(prefs) == null)

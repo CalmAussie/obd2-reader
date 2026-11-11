@@ -362,7 +362,9 @@ PY
   done
   log "diagnostics sections: opened $opened"
   for k in 1 2 3 4 5 6 7 8 9 10; do adb shell input swipe 540 700 540 2000 120; done; sleep 1
-  # Each section lists its rows in alphabetical order, and Alerts is under Deeper checks.
+  # Each section lists its rows in alphabetical order (Your car stays first), and Alerts is under Deeper checks. Top section first: find_scrolled only scrolls down.
+  if find_scrolled 'Your car · Adapter log · Protocol · Reconnect automatically' "$OUT/ui-order.xml"; then log "diagnostics sections: Your car first"
+  else log "diagnostics sections: FAILED (Your car not first, or Car and connection not in order)"; FAIL=1; fi
   if find_scrolled 'Alerts · Codes from other modules · Custom readings · Enhanced diagnostics' "$OUT/ui-order.xml"; then log "diagnostics sections: in alphabetical order, Alerts under Deeper checks"
   else log "diagnostics sections: FAILED (Deeper checks not in order, or Alerts not in it)"; FAIL=1; fi
   for k in 1 2 3 4 5 6 7 8 9 10; do adb shell input swipe 540 700 540 2000 120; done; sleep 1

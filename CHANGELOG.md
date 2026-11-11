@@ -4,7 +4,7 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 
 ## 2.4.1 (11 November 2026)
 - **Alerts is now under Deeper checks**, instead of on its own below Display and readings.
-- The settings and checks inside each Diagnostics section are in alphabetical order.
+- The settings and checks inside each Diagnostics section are in alphabetical order, with Your car kept first in Car and connection.
 
 ## 2.4.0 (11 November 2026)
 - **A tidier Diagnostics tab.** Settings and checks are grouped into sections that open and close: Car and connection, Deeper checks, Display and readings, and Help and feedback. Each shows what's inside, and remembers whether you left it open. Alerts stays on its own, and your trouble codes, vehicle and battery check are still at the top.

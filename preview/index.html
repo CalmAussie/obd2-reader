@@ -3223,7 +3223,7 @@ setInterval(() => { $("noChargeBtn").hidden = $("ignBtn").hidden; if ($("ignBtn"
 
 /* ===== App updates (mirrors MainActivity.checkForUpdate and showChangesSince). The browser preview
    can't install an APK, so it is always on the latest release. ===== */
-const CHANGES = {"version": "2.4.1", "date": "11 November 2026", "text": "• Alerts is now under Deeper checks, instead of on its own below Display and readings.\n• The settings and checks inside each Diagnostics section are in alphabetical order."};
+const CHANGES = {"version": "2.4.1", "date": "11 November 2026", "text": "• Alerts is now under Deeper checks, instead of on its own below Display and readings.\n• The settings and checks inside each Diagnostics section are in alphabetical order, with Your car kept first in Car and connection."};
 (() => { const row = document.getElementById("updatesRow"), btn = document.getElementById("updatesCheck"); if (!row) return;
   btn.onclick = e => { e.stopPropagation(); toast("Checking for updates…"); setTimeout(() => toast(`You're on the latest version (${CHANGES.version}).`), 1200); };
   row.onclick = () => {
@@ -3968,7 +3968,8 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   const nameOf = el => { const s = el.querySelector(".r > span") || el.querySelector(".r > button") || el.querySelector(".r") || el; return s.textContent.trim().split("\n")[0].trim(); };
   let hasCar = false; try { hasCar = !!localStorage.getItem("myCar"); } catch (e) {}
   for (const [key, title, ids] of GROUPS) {
-    const rows = ids.map(byId).filter(Boolean).sort((a, b) => nameOf(a).localeCompare(nameOf(b), undefined, { sensitivity: "base" }));
+    // A to Z by name, except Your car, which stays first (choosing the car comes first).
+    const rows = ids.map(byId).filter(Boolean).sort((a, b) => (b.id === "carRow") - (a.id === "carRow") || nameOf(a).localeCompare(nameOf(b), undefined, { sensitivity: "base" }));
     let open = key === "car" && !hasCar;
     try { const v = localStorage.getItem("group_" + key); if (v != null) open = v === "1"; } catch (e) {}
     const head = document.createElement("button");
