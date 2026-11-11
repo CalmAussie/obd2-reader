@@ -15,6 +15,10 @@ import java.util.Locale
  * each model year (fordservicecontent.com and fordtechservice.dealerconnection.com: OBDSM1505 for
  * 2015, OBDSM1604 for 2016, OBDSM1704 for 2017, then the 2018 and 2020–2023 summaries). A code's
  * years are the model-year summaries it appears in with the same definition.
+ *
+ * Other makes: the makers' own service bulletins and published diagnostic files, in
+ * [MakerCodeData]. The same code can have several definitions, for different makes or for
+ * different cars of one make, so each code holds a list and the chosen car picks the one that fits.
  */
 internal object MakerCodes {
 
@@ -40,7 +44,8 @@ internal object MakerCodes {
         private fun sameModel(a: String, b: String) = names(a).intersect(names(b)).isNotEmpty()
     }
 
-    private class Entry(
+    /** One maker's definition of a code, for the cars in [fits]. */
+    class Entry(
         val makes: Set<String>,
         val fits: List<Fit>,
         val title: String,
@@ -72,10 +77,10 @@ internal object MakerCodes {
         "Replace the sensor if the code returns with good wiring; if that doesn't fix it, have the engine computer checked",
     )
 
-    private val entries: Map<String, Entry> = buildMap {
+    private val fordEntries: List<Pair<String, Entry>> = buildList {
         fun e(code: String, years: IntRange, title: String, meaning: String, severity: Severity,
               causes: List<String>, symptoms: List<String>, checks: List<String>) {
-            put(code, Entry(FORD, listOf(Fit(years)), title, meaning, severity, causes, symptoms, checks, FORD_SOURCE))
+            add(code to Entry(FORD, listOf(Fit(years)), title, meaning, severity, causes, symptoms, checks, FORD_SOURCE))
         }
         e("P1336", 2015..2023, "Noisy crankshaft position signal, or no camshaft/crankshaft sync",
             "Ford's definition: the crankshaft position sensor signal is noisy, or the engine computer can't line up the camshaft and crankshaft signals. While this is set, misfire checks can't run.",
@@ -115,6 +120,10 @@ internal object MakerCodes {
         }
     }
 
+    /** Each code's definitions, in the order they're tried. */
+    private val entries: Map<String, List<Entry>> =
+        (fordEntries + MakerCodeData.entries).groupBy({ it.first }, { it.second })
+
     /** Every code with a maker's definition (for tests). */
     val codes: Set<String> get() = entries.keys
 
@@ -131,24 +140,27 @@ internal object MakerCodes {
     }
 
     /** Every maker-specific code, for the support table in the docs. */
-    val coverage: List<Coverage> get() = entries.map { (code, e) -> Coverage(code, e.makes, e.fits, e.title, e.source) }
+    val coverage: List<Coverage> get() = entries.flatMap { (code, list) -> list.map { Coverage(code, it.makes, it.fits, it.title, it.source) } }
 
     /**
      * The maker's definition of [code] for this [make], model [year], and (where the maker limits a
      * code to some cars) [model] and [engine] as named in the car list; null if there isn't one.
      */
     fun lookup(code: String, make: String?, year: Int?, model: String? = null, engine: String? = null): DtcInfo? {
-        val e = entries[code] ?: return null
         val brand = make?.substringBefore(" (")?.substringBefore(" / ")?.trim() ?: return null
-        if (brand !in e.makes) return null
-        val fit = e.fits.firstOrNull { it.matches(year, model, engine) } ?: return null
-        val cars = listOfNotNull(
-            fit.models.takeIf { it.isNotEmpty() }?.sorted()?.joinToString(", "),
-            fit.engines.takeIf { it.isNotEmpty() }?.sorted()?.joinToString(", ", postfix = " engines"),
-        ).joinToString(" with ").ifEmpty { "petrol engines" }
-        return DtcInfo(
-            code, e.title, e.meaning, e.severity, e.causes, e.symptoms, e.checks,
-            system = "Engine and transmission (powertrain), manufacturer-specific code: $brand's definition for ${fit.years.first}–${fit.years.last} $cars (${e.source})",
-        )
+        for (e in entries[code].orEmpty()) {
+            if (brand !in e.makes) continue
+            val fit = e.fits.firstOrNull { it.matches(year, model, engine) } ?: continue
+            val cars = listOfNotNull(
+                fit.models.takeIf { it.isNotEmpty() }?.sorted()?.joinToString(", "),
+                fit.engines.takeIf { it.isNotEmpty() }?.sorted()?.joinToString(", ", postfix = " engines"),
+            ).joinToString(" with ").ifEmpty { "petrol engines" }
+            val years = if (fit.years.first == fit.years.last) "${fit.years.first}" else "${fit.years.first}–${fit.years.last}"
+            return DtcInfo(
+                code, e.title, e.meaning, e.severity, e.causes, e.symptoms, e.checks,
+                system = "${DtcLibrary.systemOf(code)}: $brand's definition for $years $cars (${e.source})",
+            )
+        }
+        return null
     }
 }

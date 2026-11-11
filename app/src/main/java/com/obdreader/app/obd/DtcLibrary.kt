@@ -524,7 +524,7 @@ object DtcLibrary {
 
     // ---------- Codes not in the catalogue: explained from their structure ----------
 
-    private fun systemOf(code: String): String {
+    internal fun systemOf(code: String): String {
         val c = code.uppercase(Locale.US)
         val system = when (c.firstOrNull()) {
             'P' -> "Engine and transmission (powertrain)"
