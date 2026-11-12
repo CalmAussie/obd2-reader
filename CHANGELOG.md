@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.4.4 (12 November 2026)
+- **30 more maker-specific codes, for Volkswagen and Holden.** Volkswagen gains 29: the glow plug pressure sensor codes on the 2009–2014 2.0 TDI Jetta, Golf, Passat and Beetle, "cylinder switched off after misfires" and "fuel level too low" on 2008–2017 petrol models, three fuel and fuel vapour codes on the 2020–2022 Jetta and Taos, and eight charging codes on the 2023 ID.4. Holden gets its first: P1101 on the 2018–2020 Equinox 1.5 turbo. As before, each one is explained only for the models, years and engines the maker's own bulletin names, and [Which codes are covered](https://github.com/CalmAussie/obd2-reader/blob/main/docs/CODE-SUPPORT.md) lists them with their sources.
+- **Car list.** Adds the Volkswagen ID.4 and Taos, and the Jetta's 1.4 turbo now runs to 2021.
+
 ## 2.4.3 (12 November 2026)
 - **A notification when a new version is out.** About once a day, even when the app isn't open, it checks GitHub for a new version and, if there is one, shows a quiet notification with what's new. Tap it to open the Update window; nothing downloads until you tap Update. Each version is announced once, and not again if you tapped Later on it. It never checks while connected to your car, and you can turn it off under your phone's notification settings for OBD2 Reader (New versions).
 
