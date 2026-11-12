@@ -124,8 +124,12 @@ class DemoTransport(
         val drive = (0.5 + 0.5 * sin(t / 2.5)).pow(2)   // 0..1 "accelerator"
         val rpm = 850 + 2400 * drive
         return when (number) {
-            0x00, 0x20 -> "FFFFFFFF"
-            0x40 -> "FFFFFFFE"
+            // What a 4-cylinder petrol turbo with direct injection lists: bank 1 fuel trims, a wide-band
+            // first oxygen sensor and a narrow-band second one, fuel rail pressure, two catalyst
+            // temperatures, the since-cleared counters and the usual dashboard readings.
+            0x00 -> "BE3FA813"
+            0x20 -> "B007E015"
+            0x40 -> "FEDCC014"
             0x0C -> two((rpm * 4).toInt())
             0x0D -> one(DemoTestHooks.fixedSpeed?.toDouble() ?: (drive * 95))
             0x11 -> one(pct(12 + drive * 70))
@@ -140,6 +144,46 @@ class DemoTransport(
             0x2F -> one(pct(62.0))
             0x46 -> one(24.0 + 40)
             0x5C -> one(min(102.0, 40 + t * 1.2) + 40)
+            else -> more(number, t, drive)
+        }
+    }
+
+    /**
+     * The demo's other standard readings: a petrol direct-injection turbo, warmed up and in closed
+     * loop after a few seconds, trims a little positive, a lively first oxygen sensor and a steady
+     * second one. Its counters say the codes were cleared 18 km and 3 warm-ups ago (and two came back).
+     */
+    private fun more(number: Int, t: Double, drive: Double): String? {
+        val warm = t > 15
+        fun trim(p: Double) = one(128 + p * 1.28)
+        fun lambda(l: Double) = two((l * 32768).toInt()) + two((l * 0.8 * 8192).toInt())
+        // A first oxygen sensor switches rich and lean about once a second; the second stays steady.
+        val flick = 0.5 + 0.4 * sin(t * 6.0)
+        return when (number) {
+            0x03 -> if (warm) "0200" else "0100"
+            0x06 -> trim(2.0 + 3.0 * sin(t * 1.7))
+            0x07 -> trim(4.7)
+            0x08 -> trim(1.5 + 3.0 * sin(t * 1.5 + 1))
+            0x09 -> trim(3.9)
+            0x0A -> one(380 / 3.0)
+            in 0x14..0x1B -> one((if ((number - 0x14) % 4 == 0) flick else 0.66) * 200) + "80"
+            0x1F -> two(t.toInt())
+            0x21 -> two(6)
+            0x22 -> two((300 / 0.079).toInt())
+            0x23, 0x59 -> two(((5_000 + drive * 10_000) / 10).toInt())
+            in 0x24..0x2B -> lambda(if ((number - 0x24) % 4 == 0) 1.0 + 0.02 * sin(t * 6.0) else 1.0)
+            0x2C -> one(pct(8 * drive))
+            0x2D -> trim(1.0 * sin(t))
+            0x30 -> one(3.0)
+            0x31 -> two(18)
+            0x32 -> two(0x10000 - 200) // -50 Pa
+            in 0x3C..0x3F -> two(((min(620.0, 300 + t * 6) + (number - 0x3C) * -40 + 40) * 10).toInt())
+            0x42 -> two((demoVoltage() * 1000).toInt())
+            0x4D -> two(9)
+            0x4E -> two(41)
+            0x51 -> "01"
+            0x52 -> one(pct(10.0))
+            0x5E -> two(((0.8 + drive * 12) * 20).toInt())
             else -> null
         }
     }

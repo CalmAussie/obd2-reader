@@ -48,6 +48,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 
 **On the road**
 - **Live data:** speed, revs, coolant, fuel, throttle, boost, battery and more, gliding smoothly. Readings past their limit turn red. Units in km/h or mph, °C or °F, and kPa, psi or bar.
+- **More readings to graph:** fuel trims, oxygen sensors, fuel and fuel rail pressure, EGR, catalyst and exhaust temperatures, fuel rate, ethanol, torque and more, whichever your car reports. Fuel trims and oxygen sensors say what they tell you. Graphs sorts every reading into tabs by part of the car, up to six at once.
 - **13 styles:** from racing liveries to an 80s digital dash. Every style works in landscape too.
 - **Android Auto:** your readings and trouble codes on the car's screen, drawn in your style. You choose which readings it shows.
 - **Picture-in-picture (optional):** keep your readings in a small window over other apps.
@@ -66,6 +67,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 **Diagnostics**
 - **Trouble codes explained:** about 2,860 codes, with what they mean, how urgent they are and what to check.
 - **Freeze frame:** the engine's readings at the moment a code was stored.
+- **Codes recently cleared?** A used-car check: how far the car has gone, and how many warm-ups, since its codes were last cleared, with the readiness monitors. Small numbers can mean a fault was hidden before a sale.
 - **Code report:** save or share all your codes with your mechanic.
 - **Battery checks:** how far the battery dips when starting, and an optional overnight drain check.
 - **Deeper checks:** readiness monitors, self-test results, and codes from ABS, power steering and other modules (on CAN cars, and on 1996–2007 Fords and Mazdas). Airbag modules are never asked. On Fords and Mazdas it can also read the second network on pins 3 and 11, with adapters that support it such as OBDLink MX+. On 1996–2000 Volvo 850, S70, V70, C70 and XC70 it reads Volvo's own modules and the true mileage stored in the instrument cluster.

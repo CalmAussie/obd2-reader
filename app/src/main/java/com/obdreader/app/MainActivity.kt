@@ -208,6 +208,15 @@ open class MainActivity : AppCompatActivity() {
     private val teleLabels = mutableMapOf<String, String>()
     private val glassUnits = mutableMapOf<String, TextView>()
     private var lastStandIns: Map<String, String> = emptyMap()
+    private var lastSupported: Set<Int>? = null
+    private var lastRelabels: Map<String, String> = emptyMap()
+    private var lastGraphUnsupported: Set<String> = emptySet()
+    private var lastFuelStatus: Double? = null
+    private var lastGraphConnected = false
+    private var lastCleared: com.obdreader.app.obd.ClearedCheck? = null
+
+    /** The line under "Codes recently cleared?" on Diagnostics. */
+    private fun clearedHelp(): TextView? = (findViewById<ViewGroup>(R.id.clearedRow)?.getChildAt(1) as? TextView)
     private var lastCharging: ChargingStatus.State? = null
     private val glassLabels = mutableMapOf<String, TextView>()
 
@@ -215,7 +224,7 @@ open class MainActivity : AppCompatActivity() {
     private data class Readout(val key: String, val label: String, val unit: String, val decimals: Int, val min: Double, val max: Double, val warn: Double?)
 
     private fun readout(key: String): Readout =
-        (Pids.dashboard.firstOrNull { it.hex == key }?.let { Readout(it.hex, it.label, it.unit, it.decimals, it.min, it.max, it.warnAbove) }
+        (Pids.byHex(key)?.let { Readout(it.hex, it.label, it.unit, it.decimals, it.min, it.max, it.warnAbove) }
             ?: if (key == Boost.KEY) Readout(Boost.KEY, Boost.LABEL, "kPa", 0, Boost.MIN, Boost.MAX, null)
             else Readout(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0, null)).inUnits()
 
@@ -227,7 +236,9 @@ open class MainActivity : AppCompatActivity() {
 
     /** Every reading that can go in a main readout (not engine speed or speed, which have their own). */
     private val readoutChoices: List<Readout> by lazy {
-        Pids.dashboard.filter { it.hex != RPM_KEY && it.hex != SPEED_KEY }.map { readout(it.hex) } + readout(Boost.KEY) + readout(VOLTAGE_KEY)
+        Pids.dashboard.filter { it.hex != RPM_KEY && it.hex != SPEED_KEY }.map { readout(it.hex) } + readout(Boost.KEY) + readout(VOLTAGE_KEY) +
+            // More standard readings, for cars that report them (N/A on the rest).
+            Pids.extraNumbers.map { readout(it.hex) }
     }
 
     /** What the main readouts show, chosen under Diagnostics → Dashboard readouts. Coolant, fuel and battery to start with. */
@@ -409,7 +420,13 @@ open class MainActivity : AppCompatActivity() {
         }
         shareReportBtn = findViewById(R.id.shareReportButton)
         shareReportBtn.setOnClickListener {
-            offerFile(Exports.codeReport(this, ObdSession.state.value, savedCar()?.label), "OBD2 Reader trouble code report")
+            lifecycleScope.launch {
+                // The report says whether the codes look recently cleared, so read that first if it hasn't been.
+                if (ObdSession.state.value.isConnected && ObdSession.state.value.cleared == null) {
+                    try { ObdSession.readClearedCheck() } catch (e: CancellationException) { throw e } catch (ignored: Exception) { }
+                }
+                offerFile(Exports.codeReport(this@MainActivity, ObdSession.state.value, savedCar()?.label), "OBD2 Reader trouble code report")
+            }
         }
         findViewById<MaterialSwitch>(R.id.reconnectSwitch).apply {
             isChecked = AppPrefs.autoReconnect(prefs)
@@ -1035,7 +1052,7 @@ open class MainActivity : AppCompatActivity() {
     private fun setupGroups() {
         val groups = listOf(
             Triple("car", "Car and connection", listOf(R.id.carRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.logCard)),
-            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
+            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.clearedRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
             Triple("display", "Display and readings", listOf(R.id.unitsRow, R.id.slotsRow, R.id.widgetRow, R.id.autoRow, R.id.pipRow, R.id.appIconRow)),
             Triple("help", "Help and feedback", listOf(R.id.helpRow, R.id.reportRow, R.id.ideaRow, R.id.updatesRow)),
         )
@@ -1141,6 +1158,7 @@ open class MainActivity : AppCompatActivity() {
             }
             parent.addView(r, at++, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4f).toInt() })
         }
+        row(R.id.clearedRow, getString(R.string.cleared_title), getString(R.string.cleared_help)) { runCheck(getString(R.string.cleared_title)) { showClearedCheck() } }
         row(R.id.readinessRow, getString(R.string.readiness_title), getString(R.string.readiness_help)) { runCheck(getString(R.string.readiness_title)) { showReadiness() } }
         row(R.id.testsRow, getString(R.string.tests_title), getString(R.string.tests_help)) { runCheck(getString(R.string.tests_title)) { showTestResults() } }
         row(R.id.modulesRow, getString(R.string.modules_title), getString(R.string.modules_help)) { runCheck(getString(R.string.modules_title), "Asking each module in turn. This can take half a minute.") { showModules() } }
@@ -1186,6 +1204,22 @@ open class MainActivity : AppCompatActivity() {
 
     /** The deeper-check sheet on screen, so a search can close it before showing its results. */
     private var currentSheet: BottomSheetDialog? = null
+
+    /** "Codes recently cleared?": the verdict, each counter (N/A where the car doesn't say) and what it means. */
+    private suspend fun showClearedCheck() {
+        val check = ObdSession.readClearedCheck()
+        android.util.Log.i("OBD2Deep", "cleared: ${check.verdict}")
+        infoSheet(getString(R.string.cleared_title)) { heading, line, _ ->
+            line(check.headline(), false)
+            check.notes().forEach { line(it, false) }
+            heading("What the car counts")
+            check.lines().forEach { (k, v) -> line("$k: $v", v == com.obdreader.app.obd.ClearedCheck.NA) }
+            heading("What this means")
+            line("When trouble codes are cleared, the engine computer starts these counts again from zero. Very small numbers on a car for sale can mean a fault was cleared to hide the warning light until it comes back.", true)
+            line(com.obdreader.app.obd.ClearedCheck.CAVEAT, true)
+            line("It's also in the code report when you share it.", true)
+        }
+    }
 
     private suspend fun showReadiness() {
         val r = ObdSession.readReadiness()
@@ -1751,7 +1785,7 @@ open class MainActivity : AppCompatActivity() {
             text = "What your car reports"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
         })
         val readings = scan.supported.filter { it % 0x20 != 0 }.sorted()
-        line("${readings.size} standard readings. Ones marked ✓ are on the app's Dashboard or live-data list.")
+        line("${readings.size} standard readings. Ones marked ✓ are on the app's Dashboard, live-data list or Graphs.")
         heading("Standard readings")
         readings.forEach { n -> line(String.format(Locale.US, "%s  %02X  %s", if (CarCoverage.shownByApp(n)) "✓" else "·", n, CarCoverage.name(n)), secondary = !CarCoverage.shownByApp(n)) }
         val missing = Pids.dashboard.filter { it.number !in scan.supported }
@@ -2137,8 +2171,15 @@ open class MainActivity : AppCompatActivity() {
     private val channels: List<Channel> by lazy {
         Pids.dashboard.map { Channel(it.hex, if (it.number == Pids.RPM) "RPM" else it.label, Units.unit(it.hex, it.unit), Units.decimals(it.hex, it.decimals), Units.value(it.hex, it.min), Units.value(it.hex, it.max)) } +
             Channel(Boost.KEY, Boost.LABEL, Units.unit(Boost.KEY, "kPa"), Units.decimals(Boost.KEY, 0), Units.value(Boost.KEY, Boost.MIN), Units.value(Boost.KEY, Boost.MAX)) +
-            Channel(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0)
+            Channel(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0) +
+            // More standard readings, read only when the car lists them.
+            Pids.extraNumbers.map { Channel(it.hex, it.label, Units.unit(it.hex, it.unit), Units.decimals(it.hex, it.decimals), Units.value(it.hex, it.min), Units.value(it.hex, it.max)) }
     }
+
+    /** The graphs shown, in order: a newly added reading goes to the bottom, and Change order moves them. */
+    private val graphChosen = mutableListOf<String>()
+    private lateinit var graphChipGroup: ChipGroup
+    private lateinit var graphCount: TextView
 
     private fun setupGraphs() {
         graphList = findViewById(R.id.graphList)
@@ -2147,28 +2188,36 @@ open class MainActivity : AppCompatActivity() {
         recordStatus = findViewById(R.id.recordStatus)
         LiveHistory.start()
 
-        val chips = findViewById<ChipGroup>(R.id.graphChips)
-        // In the order they're shown: a newly picked reading goes to the bottom, and Change order moves them.
-        val chosen = (prefs.getString(PREF_GRAPHS, null) ?: "0C,0D,11").split(",").filter { k -> k.isNotEmpty() && channels.any { it.key == k } }.distinct().toMutableList()
-        graphOrderBtn = findViewById(R.id.graphOrder)
-        graphOrderBtn.setOnClickListener { showGraphOrder(chosen) }
-        for (ch in channels) {
-            chips.addView(Chip(this).apply {
-                text = ch.label
-                isCheckable = true
-                isChecked = ch.key in chosen
-                setOnCheckedChangeListener { button, on ->
-                    if (on && chosen.size >= MAX_GRAPHS) {
-                        button.isChecked = false
-                        toast("Up to $MAX_GRAPHS graphs at once, so each one stays fast")
-                        return@setOnCheckedChangeListener
-                    }
-                    if (on) { if (ch.key !in chosen) chosen += ch.key } else chosen -= ch.key
-                    prefs.edit().putString(PREF_GRAPHS, chosen.joinToString(",")).apply()
-                    buildGraphs(chosen)
-                }
-            })
+        // Only the chosen graphs show as chips; the rest wait in the "Add a graph" sheet, grouped by
+        // what part of the car they come from, so the tab stays tidy however many readings a car reports.
+        graphChipGroup = findViewById(R.id.graphChips)
+        // Tabs over the chips: All shows the chosen graphs and "+ Add a graph"; each part of the
+        // car shows its own readings as chips to tap on or off.
+        graphTab = prefs.getString(PREF_GRAPH_TAB, null)?.let { n -> com.obdreader.app.obd.ReadingGroups.Group.entries.firstOrNull { it.name == n } }
+        graphTabs = com.google.android.material.tabs.TabLayout(this).apply {
+            tabMode = com.google.android.material.tabs.TabLayout.MODE_SCROLLABLE
+            tabGravity = com.google.android.material.tabs.TabLayout.GRAVITY_START
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            setTabTextColors(themeColor(R.attr.obdTextSecondary), themeColor(R.attr.obdTextPrimary))
+            setSelectedTabIndicatorColor(themeColor(R.attr.obdAccent))
+            tabRippleColor = null
         }
+        (graphChipGroup.parent as ViewGroup).let { parent ->
+            parent.addView(graphTabs, parent.indexOfChild(graphChipGroup),
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10f).toInt() })
+        }
+        (graphChipGroup.layoutParams as ViewGroup.MarginLayoutParams).topMargin = dp(10f).toInt()
+        graphCount = TextView(this).apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+        }
+        (graphChipGroup.parent as ViewGroup).let { parent ->
+            parent.addView(graphCount, parent.indexOfChild(graphChipGroup) + 1,
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2f).toInt() })
+        }
+        graphChosen += (prefs.getString(PREF_GRAPHS, null) ?: "0C,0D,11").split(",").filter { k -> k.isNotEmpty() && channels.any { it.key == k } }.distinct()
+        if (graphChosen.isEmpty()) graphChosen += RPM_KEY
+        graphOrderBtn = findViewById(R.id.graphOrder)
+        graphOrderBtn.setOnClickListener { showGraphOrder(graphChosen) }
         findViewById<MaterialButtonToggleGroup>(R.id.graphWindow).apply {
             check(R.id.window30)
             addOnButtonCheckedListener { _, id, checked ->
@@ -2188,10 +2237,197 @@ open class MainActivity : AppCompatActivity() {
             if (LogRecorder.active.value != null) LogRecorder.stop() else startRecording()
         }
         findViewById<View>(R.id.savedLogsButton).setOnClickListener { showSavedDrives() }
-        buildGraphs(chosen)
+        buildGraphs(graphChosen)
     }
 
     private lateinit var graphOrderBtn: MaterialButton
+
+    private fun graphLabel(key: String): String =
+        ObdSession.state.value.relabels[key] ?: channels.firstOrNull { it.key == key }?.label ?: key
+
+    private fun graphColour(key: String): Int = when (key) {
+        RPM_KEY -> Channels.RPM
+        SPEED_KEY -> Channels.SPEED
+        else -> Channels.forKey(key, themeColor(R.attr.obdAccent))
+    }
+
+    /**
+     * What can be graphed: once the car has said which readings it supports, only the extra readings
+     * it reports (and any already chosen, which say N/A). Until then, or if the car won't say, all.
+     */
+    private fun graphChoices(supported: Set<Int>?): List<Channel> {
+        val extraKeys = Pids.extraNumbers.map { it.hex }.toSet()
+        return channels.filter { ch -> ch.key !in extraKeys || supported == null || ch.key.toInt(16) in supported || ch.key in graphChosen }
+    }
+
+    /** The Graphs tab's reading tabs: null is All. */
+    private var graphTab: com.obdreader.app.obd.ReadingGroups.Group? = null
+    private lateinit var graphTabs: com.google.android.material.tabs.TabLayout
+
+    /** All, then each part of the car this car has readings for. Kept selected across visits. */
+    private fun showGraphTabs(groups: List<com.obdreader.app.obd.ReadingGroups.Group>) {
+        val names = listOf<com.obdreader.app.obd.ReadingGroups.Group?>(null) + groups
+        val same = graphTabs.tabCount == names.size && names.indices.all { graphTabs.getTabAt(it)?.tag == names[it] }
+        if (graphTab !in groups) graphTab = null
+        if (!same) {
+            graphTabs.clearOnTabSelectedListeners()
+            graphTabs.removeAllTabs()
+            for (g in names) graphTabs.addTab(graphTabs.newTab().apply {
+                tag = g; text = g?.short ?: getString(R.string.graphs_all)
+            }, g == graphTab)
+            graphTabs.getTabAt(names.indexOf(graphTab))?.select()
+            graphTabs.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                    graphTab = tab.tag as com.obdreader.app.obd.ReadingGroups.Group?
+                    prefs.edit().putString(PREF_GRAPH_TAB, graphTab?.name).apply()
+                    showGraphChips()
+                }
+                override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
+                override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
+            })
+        }
+    }
+
+    /**
+     * Under the tabs. All: the chosen graphs as chips with a remove cross, then "+ Add a graph".
+     * A part of the car: its readings as chips, the graphed ones ticked. Then how many of how many.
+     */
+    private fun showGraphChips() {
+        val choices = graphChoices(ObdSession.state.value.supported)
+        val groups = com.obdreader.app.obd.ReadingGroups.sort(choices.map { it.key })
+        showGraphTabs(groups.map { it.first })
+        graphChipGroup.removeAllViews()
+        graphCount.text = getString(R.string.graphs_count, graphChosen.size, MAX_GRAPHS, choices.size)
+        val tab = graphTab
+        if (tab != null) {
+            for (k in groups.firstOrNull { it.first == tab }?.second.orEmpty()) {
+                graphChipGroup.addView(Chip(this).apply {
+                    text = graphLabel(k)
+                    isCheckable = true
+                    isChecked = k in graphChosen
+                    chipStrokeColor = android.content.res.ColorStateList.valueOf(if (isChecked) graphColour(k) else themeColor(R.attr.obdOutline))
+                    setOnClickListener { if (!toggleGraph(k)) isChecked = k in graphChosen }
+                })
+            }
+            return
+        }
+        for (k in graphChosen) {
+            val label = graphLabel(k)
+            graphChipGroup.addView(Chip(this).apply {
+                text = label
+                isCloseIconVisible = true
+                closeIconContentDescription = getString(R.string.graphs_remove, label)
+                setOnCloseIconClickListener { toggleGraph(k) }
+                setOnClickListener { showAddGraph() }
+            })
+        }
+        graphChipGroup.addView(Chip(this).apply {
+            text = getString(R.string.graphs_add)
+            setTextColor(themeColor(R.attr.obdAccent))
+            chipStrokeColor = android.content.res.ColorStateList.valueOf(themeColor(R.attr.obdAccent))
+            setOnClickListener { showAddGraph() }
+        })
+    }
+
+    /** Adds or removes one graph, up to [MAX_GRAPHS] and at least one. Returns whether it changed. */
+    private fun toggleGraph(key: String): Boolean {
+        if (key in graphChosen) {
+            if (graphChosen.size == 1) { toast(getString(R.string.graphs_keep_one)); return false }
+            graphChosen -= key
+        } else {
+            if (graphChosen.size >= MAX_GRAPHS) { toast(getString(R.string.graphs_max, MAX_GRAPHS)); return false }
+            graphChosen += key
+        }
+        prefs.edit().putString(PREF_GRAPHS, graphChosen.joinToString(",")).apply()
+        buildGraphs(graphChosen)
+        return true
+    }
+
+    /** A reading's value now, in the user's units, for the Add a graph sheet. */
+    private fun graphValueText(ch: Channel): String {
+        val s = ObdSession.state.value
+        if (!s.isConnected) return ""
+        if (ch.key in s.unsupported) return com.obdreader.app.obd.ClearedCheck.NA
+        val v = s.readings[ch.key]?.let { Units.value(ch.key, it) } ?: return "–"
+        return String.format(Locale.US, "%.${ch.decimals}f", v) + (if (ch.unit.isEmpty()) "" else " ${ch.unit}")
+    }
+
+    /**
+     * "Add a graph": every reading the car reports, grouped by what part of the car it comes from,
+     * with its value now. Tapping a row adds or removes its graph straight away.
+     */
+    private fun showAddGraph() {
+        val values = mutableListOf<Pair<Channel, TextView>>()
+        val ticker = object : Runnable {
+            override fun run() {
+                values.forEach { (ch, v) -> v.text = graphValueText(ch) }
+                graphChipGroup.postDelayed(this, 1000)
+            }
+        }
+        val sheet = choiceSheet(getString(R.string.graphs_add_title)) { body, open ->
+            sheetNote(body, getString(R.string.graphs_add_sub, MAX_GRAPHS))
+            val byKey = graphChoices(ObdSession.state.value.supported).associateBy { it.key }
+            for ((group, keys) in com.obdreader.app.obd.ReadingGroups.sort(byKey.keys)) {
+                sheetHeading(body, group.label)
+                for (k in keys) {
+                    val ch = byKey.getValue(k)
+                    val label = graphLabel(k)
+                    val check = com.google.android.material.checkbox.MaterialCheckBox(this).apply {
+                        isChecked = k in graphChosen; isClickable = false; isFocusable = false
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    }
+                    val value = TextView(this).apply {
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                        text = graphValueText(ch)
+                    }
+                    values += ch to value
+                    body.addView(LinearLayout(this).apply {
+                        orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                        minimumHeight = dp(48f).toInt()
+                        setPadding(dp(4f).toInt(), 0, 0, 0)
+                        isClickable = true; isFocusable = true
+                        background = android.util.TypedValue().let { tv -> theme.resolveAttribute(android.R.attr.selectableItemBackground, tv, true); androidx.core.content.ContextCompat.getDrawable(context, tv.resourceId) }
+                        setAccessibilityDelegate(object : View.AccessibilityDelegate() {
+                            override fun onInitializeAccessibilityNodeInfo(host: View, info: android.view.accessibility.AccessibilityNodeInfo) {
+                                super.onInitializeAccessibilityNodeInfo(host, info)
+                                info.isCheckable = true; info.isChecked = check.isChecked
+                                info.className = android.widget.CheckBox::class.java.name
+                            }
+                        })
+                        contentDescription = label
+                        addView(View(this@MainActivity).apply {
+                            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(graphColour(k)) }
+                        }, LinearLayout.LayoutParams(dp(10f).toInt(), dp(10f).toInt()).apply { marginEnd = dp(12f).toInt() })
+                        addView(TextView(this@MainActivity).apply {
+                            text = label; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary))
+                        }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                        addView(value, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(8f).toInt() })
+                        addView(check)
+                        setOnClickListener { if (toggleGraph(k)) check.isChecked = k in graphChosen }
+                    })
+                }
+            }
+            sheetButtons(body, getString(R.string.done) to { open.dismiss() })
+        }
+        ticker.run()
+        sheet.setOnDismissListener { graphChipGroup.removeCallbacks(ticker) }
+    }
+
+    /** The graphs' names, hints and N/A for this car: oxygen sensor names, fuel system status under the fuel trims. */
+    private fun refreshGraphNotes(s: ObdSession.State) {
+        val status = s.readings["03"]?.let { com.obdreader.app.obd.FuelInfo.status(it.toInt()) }
+        graphStrips.forEach { g ->
+            channels.firstOrNull { it.key == g.key }?.let { ch -> g.label = s.relabels[g.key] ?: ch.label }
+            val about = Pids.about(g.key)
+            val isTrim = g.key in setOf("06", "07", "08", "09")
+            g.hint = when {
+                about == null -> null
+                isTrim && status != null -> "$about Now: ${status.replaceFirstChar { it.lowercase() }}."
+                else -> about
+            }
+            g.notReported = s.isConnected && g.key in s.unsupported
+        }
+    }
 
     /** Lets the user move the chosen graphs up and down; saved straight away. */
     private fun showGraphOrder(chosen: MutableList<String>) {
@@ -2322,6 +2558,7 @@ open class MainActivity : AppCompatActivity() {
         graphList.removeAllViews()
         graphStrips.clear()
         if (::graphOrderBtn.isInitialized) graphOrderBtn.visibility = if (keys.size >= 2) View.VISIBLE else View.GONE
+        if (::graphCount.isInitialized) showGraphChips()
         android.util.Log.i("OBD2Graphs", "order: ${keys.joinToString(",")}")
         val fallback = themeColor(R.attr.obdAccent)
         for (ch in keys.mapNotNull { k -> channels.firstOrNull { it.key == k } }) {
@@ -2341,6 +2578,7 @@ open class MainActivity : AppCompatActivity() {
             graphStrips += strip
             if (keys is MutableList<String>) enableGraphDrag(strip, keys, ch.label)
         }
+        refreshGraphNotes(ObdSession.state.value)
         updateFocus()
     }
 
@@ -2350,7 +2588,8 @@ open class MainActivity : AppCompatActivity() {
             pageGraphs.visibility == View.VISIBLE -> graphStrips.map { it.key }.toSet()
             // The Dashboard's moving readings, in one request per cycle (six is a CAN car's limit),
             // so the dials update as often as the graphs do.
-            pageDashboard.visibility == View.VISIBLE -> DASHBOARD_FOCUS
+            // An extra reading picked for a readout joins them, since it isn't otherwise read every turn.
+            pageDashboard.visibility == View.VISIBLE -> DASHBOARD_FOCUS + slots.filter { k -> Pids.extra.any { it.hex == k } }
             else -> emptySet()
         }
     }
@@ -3454,6 +3693,18 @@ open class MainActivity : AppCompatActivity() {
                 }
             }
             lastReadings = s.readings
+        }
+        // Graphs: names, notes (fuel system status under fuel trims) and N/A for this car.
+        if (s.supported != lastSupported || s.relabels != lastRelabels || s.unsupported != lastGraphUnsupported || s.readings["03"] != lastFuelStatus || s.isConnected != lastGraphConnected) {
+            if ((s.supported != lastSupported || s.relabels != lastRelabels) && ::graphCount.isInitialized) showGraphChips()
+            refreshGraphNotes(s)
+            lastSupported = s.supported; lastRelabels = s.relabels; lastGraphUnsupported = s.unsupported
+            lastFuelStatus = s.readings["03"]; lastGraphConnected = s.isConnected
+        }
+        // "Codes recently cleared?": its row shows the verdict once it's been read.
+        if (s.cleared != lastCleared) {
+            clearedHelp()?.text = s.cleared?.headline() ?: getString(R.string.cleared_help)
+            lastCleared = s.cleared
         }
         // A stand-in reading is labelled for what it really is.
         if (s.standIns != lastStandIns) {
@@ -4807,7 +5058,8 @@ open class MainActivity : AppCompatActivity() {
         private const val COOLANT_KEY = "05"
         private const val THROTTLE_KEY = "11"
         private const val PREF_GRAPHS = "graph_channels"
-        private const val MAX_GRAPHS = 4
+        private const val PREF_GRAPH_TAB = "graph_tab"
+        private const val MAX_GRAPHS = 6  // six is what a CAN car answers in one request (ElmClient.MAX_MULTI_PIDS)
         private const val FUEL_KEY = "2F"
         private const val BLE_SCAN_MS = 12_000L
         private const val LOG_REFRESH_MS = 250L

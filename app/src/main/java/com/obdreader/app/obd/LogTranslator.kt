@@ -9,8 +9,8 @@ import java.util.Locale
  */
 object LogTranslator {
 
-    private val pidsByNumber = Pids.dashboard.associateBy { it.number }
-    private val lengths = Pids.dashboard.associate { it.number to it.bytes }
+    private val pidsByNumber = Pids.all.associateBy { it.number }
+    private val lengths = Pids.all.associate { it.number to it.bytes }
 
     private val SETUP = mapOf(
         "ATE0" to "Turned off echo",
@@ -66,6 +66,11 @@ object LogTranslator {
     }
 
     fun format(pid: Pid, value: Double): String {
+        if (value.isNaN()) return "not fitted"
+        when (pid.hex) {
+            "03" -> return FuelInfo.status(value.toInt()) ?: "code ${value.toInt()}"
+            "51" -> return FuelInfo.type(value.toInt()) ?: "not given"
+        }
         val number = String.format(Locale.US, "%,.${pid.decimals}f", value)
         val tight = pid.unit.startsWith("%") || pid.unit.startsWith("°")
         return if (tight) number + pid.unit else "$number ${pid.unit}"

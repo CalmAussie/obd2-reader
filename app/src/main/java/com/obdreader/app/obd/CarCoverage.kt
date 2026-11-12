@@ -114,5 +114,5 @@ object CarCoverage {
     fun name(pid: Int): String = NAMES[pid] ?: String.format(Locale.US, "Reading %02X", pid)
 
     /** Whether the app shows this reading (directly or through a stand-in). */
-    fun shownByApp(pid: Int): Boolean = Pids.dashboard.any { it.number == pid } || STAND_INS.any { it.pid.number == pid }
+    fun shownByApp(pid: Int): Boolean = Pids.all.any { it.number == pid } || STAND_INS.any { it.pid.number == pid }
 }
