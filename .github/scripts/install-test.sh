@@ -804,12 +804,17 @@ tap_tab Graphs; sleep 2
 XY=$(view_center_bottom savedLogsButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8b-saved-drives
 if tap_contains " KB" && tap_text "Make a video overlay" && tap_contains "720p" && tap_text "Make video"; then
-  READY=0
-  for i in $(seq 1 60); do
+  READY=0; PCT=; LASTPCT=; STILL=0
+  # Slow emulators (Android 10 encodes in software) can need more than 3 minutes for the video: after
+  # 3 minutes, keep waiting while the percentage still moves, up to 7.5 minutes in all.
+  for i in $(seq 1 150); do
     sleep 3
     adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-video.xml"
     grep -q "Video ready" "$OUT/ui-video.xml" && { READY=1; break; }
     grep -q "make the video" "$OUT/ui-video.xml" && break
+    PCT=$(grep -o 'text="[0-9]\+%' "$OUT/ui-video.xml" | grep -o '[0-9]\+' | head -1)
+    if [ -n "$PCT" ] && [ "$PCT" != "$LASTPCT" ]; then LASTPCT=$PCT; STILL=0; else STILL=$((STILL + 1)); fi
+    [ $i -ge 60 ] && [ $STILL -ge 10 ] && break
   done
   shot 8-video-ready
   if [ $READY = 1 ]; then
@@ -857,7 +862,7 @@ PY
     # The video stays in the reports, so a frame can be checked.
     tap_text "Done" > /dev/null || true
   else
-    log "video overlay: FAILED (not ready)"; FAIL=1
+    log "video overlay: FAILED (not ready${LASTPCT:+, stopped at $LASTPCT%})"; FAIL=1
   fi
 else
   log "video overlay: FAILED (couldn't open the options)"; FAIL=1
