@@ -7,6 +7,8 @@
 
 **Updating:** the app checks for new versions itself and installs them when you tap **Update**. Your settings and drives are kept.
 
+**Coming from 2.4.4 or older?** Uninstall the old app first, then install this one. 2.5.0 moved to a new signing key, so this is needed once.
+
 **Using it**
 - Plug an ELM327 adapter (Bluetooth, Bluetooth LE such as the Veepeak OBDCheck BLE+, or Wi-Fi) into the car's OBD2 port, turn the ignition on, open the app and tap **Connect**.
 - No adapter? Tap **Demo car** to try it with a simulated car.

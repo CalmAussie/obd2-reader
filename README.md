@@ -31,6 +31,8 @@ You only need the APK. Nothing else to install, and it works offline. It runs on
 
 **Updates:** the app checks for a new version once a day, even when it isn't open, and shows a notification when one is out. It installs it when you tap **Update**. Your settings and drives are kept. To stop the notification, turn off **New versions** in your phone's notification settings for the app.
 
+**Coming from 2.4.4 or older?** 2.5.0 is signed with a new key, so it can't install over an older version: the update says "Android couldn't replace the installed app". Uninstall OBD2 Reader once, then install 2.5.0 from the [latest release](https://github.com/CalmAussie/obd2-reader/releases/latest). Settings and trip history start fresh; videos, pictures and files you saved to Downloads stay. Updates after that install normally again.
+
 **Samsung phones:** Auto Blocker (**Settings → Security and privacy**) stops installs from outside the Galaxy Store and Play Store. Turn it off to install or update, then turn it back on if you like.
 
 ## Use it
@@ -145,7 +147,7 @@ Videos are saved to **Movies → OBD2 Reader**.
 - **Read-only:** the app never clears codes or changes anything in your car. Anything that isn't a read is blocked.
 - **No account, no tracking:** nothing is sent to the developer. The only internet use is the update check, from GitHub (about once a day, in the background too while notifications are on).
 - **Your location stays on your phone:** it's only saved inside a drive you choose to record with its route.
-- **Check your download is genuine:** every release is signed with the same certificate. Its SHA-256 fingerprint is `77ad52081183e8001d6235e096dbaae6a8728c283341402bdb60852b49602714`. To check an APK on a computer with the Android SDK, run `apksigner verify --print-certs OBD2Reader.apk` and compare the "certificate SHA-256 digest" line. Android also refuses any update signed with a different certificate.
+- **Check your download is genuine:** every release from 2.5.0 on is signed with the same certificate. Its SHA-256 fingerprint is `67eb2dd363dd994f7fe4b3a747564d2c2ccb52e5ad4953c3391bd24e412d04c2`. Releases up to 2.4.4 used an earlier certificate (`77ad52081183e8001d6235e096dbaae6a8728c283341402bdb60852b49602714`), whose key was lost, which is why 2.5.0 needs a one-time reinstall. To check an APK on a computer with the Android SDK, run `apksigner verify --print-certs OBD2Reader.apk` and compare the "certificate SHA-256 digest" line. Android also refuses any update signed with a different certificate.
 
 ## Feedback
 
