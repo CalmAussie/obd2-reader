@@ -2,6 +2,11 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.4.5 (12 November 2026)
+- **More readings, for cars that report them.** Fuel trims, oxygen sensors (voltage and wide-range), fuel and fuel rail pressure, EGR, catalyst and exhaust gas temperatures, fuel rate, ethanol, driver demand and actual torque, evaporative system pressure, module voltage, run time and more. The app asks only for the ones your car says it has, and they don't slow the Dashboard down. Fuel trims and oxygen sensors say in plain words what they tell you, and the fuel trims show whether the engine is using its oxygen sensors right now. You can also put them in a Dashboard readout.
+- **Graphs sorted into tabs.** All shows the graphs you've chosen, with a × to remove one and Add a graph to pick from everything your car reports, grouped by part of the car with each value now. Engine, Fuel, Air, Exhaust and Electrical show just their own readings to tap on or off. Up to six graphs at once (it was four).
+- **Codes recently cleared?** A used-car check under Deeper checks: how far the car has gone, how many times it has warmed up and how long the engine has run since its trouble codes were last cleared, with the time and distance driven with the check-engine light on and the readiness monitors. Very small numbers can mean a fault was cleared to hide it before a sale. Anything your car doesn't report shows N/A, and the result is in the code report too.
+
 ## 2.4.4 (12 November 2026)
 - **30 more maker-specific codes, for Volkswagen and Holden.** Volkswagen gains 29: the glow plug pressure sensor codes on the 2009–2014 2.0 TDI Jetta, Golf, Passat and Beetle, "cylinder switched off after misfires" and "fuel level too low" on 2008–2017 petrol models, three fuel and fuel vapour codes on the 2020–2022 Jetta and Taos, and eight charging codes on the 2023 ID.4. Holden gets its first: P1101 on the 2018–2020 Equinox 1.5 turbo. As before, each one is explained only for the models, years and engines the maker's own bulletin names, and [Which codes are covered](https://github.com/CalmAussie/obd2-reader/blob/main/docs/CODE-SUPPORT.md) lists them with their sources.
 - **Car list.** Adds the Volkswagen ID.4 and Taos, and the Jetta's 1.4 turbo now runs to 2021.

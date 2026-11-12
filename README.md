@@ -48,7 +48,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 
 **On the road**
 - **Live data:** speed, revs, coolant, fuel, throttle, boost, battery and more, gliding smoothly. Readings past their limit turn red. Units in km/h or mph, °C or °F, and kPa, psi or bar.
-- **More readings to graph:** fuel trims, oxygen sensors, fuel and fuel rail pressure, EGR, catalyst and exhaust temperatures, fuel rate, ethanol, torque and more, whichever your car reports. Fuel trims and oxygen sensors say what they tell you.
+- **More readings to graph:** fuel trims, oxygen sensors, fuel and fuel rail pressure, EGR, catalyst and exhaust temperatures, fuel rate, ethanol, torque and more, whichever your car reports. Fuel trims and oxygen sensors say what they tell you. Graphs sorts every reading into tabs by part of the car, up to six at once.
 - **13 styles:** from racing liveries to an 80s digital dash. Every style works in landscape too.
 - **Android Auto:** your readings and trouble codes on the car's screen, drawn in your style. You choose which readings it shows.
 - **Picture-in-picture (optional):** keep your readings in a small window over other apps.
