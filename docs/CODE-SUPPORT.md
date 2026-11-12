@@ -17,9 +17,9 @@ Every manufacturer has its own section below, with its manufacturer-specific cod
 - On GitHub, open the outline (the list button at the top right of this page) and type the manufacturer's name into its filter box.
 - Use your browser's find (Ctrl+F, or Find in page on a phone) for a manufacturer, a model or a code such as P1326.
 
-**With manufacturer-specific codes** (26 makes, 189 codes, 213 definitions, because makers reuse code numbers for different faults):
+**With manufacturer-specific codes** (27 makes, 217 codes, 243 definitions, because makers reuse code numbers for different faults):
 
-[Acura](#acura) (2) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [GMC](#gmc) (3) · [Honda](#honda) (2) · [Hyundai](#hyundai) (7) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (13) · [Land Rover](#land-rover) (2) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (1) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (4) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (5) · [Toyota](#toyota) (12) · [Volkswagen](#volkswagen) (1)
+[Acura](#acura) (2) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [GMC](#gmc) (3) · [Holden](#holden) (1) · [Honda](#honda) (2) · [Hyundai](#hyundai) (7) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (13) · [Land Rover](#land-rover) (2) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (1) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (4) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (5) · [Toyota](#toyota) (12) · [Volkswagen](#volkswagen) (30)
 
 **All 87 manufacturers, A to Z:**
 
@@ -45,7 +45,7 @@ Every manufacturer has its own section below, with its manufacturer-specific cod
 
 ## Codes and cars by manufacturer
 
-87 makes, 959 models. In each model table, **Generic codes** says whether the 2,863 generic codes apply, and **Manufacturer-specific codes** says how many maker definitions apply, by model year.
+87 makes, 961 models. In each model table, **Generic codes** says whether the 2,863 generic codes apply, and **Manufacturer-specific codes** says how many maker definitions apply, by model year.
 
 ### Abarth
 
@@ -693,7 +693,11 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 
 ### Holden
 
-Manufacturer-specific codes: none yet. A manufacturer-specific code on these cars is shown with the maker's name and where to look it up.
+Manufacturer-specific codes: 1. Each is explained only on the cars listed beside it.
+
+| Code | Name | Cars | Source |
+|---|---|---|---|
+| P1101 | Intake air flow system performance | Equinox 2018–2020 (1.5 turbo) | GM PIP5651F (wording from GM 22-NA-224): the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
@@ -707,7 +711,7 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 | Commodore | 1994–2020 | Yes | None yet |
 | Cruze | 2009–2016 | Yes | None yet |
 | Epica | 2007–2011 | Yes | None yet |
-| Equinox | 2017–2020 | Yes | None yet |
+| Equinox | 2017–2020 | Yes | 2018–2020: 1 code (depending on the engine) |
 | Jackaroo | 1994–2004 | Yes | None yet |
 | Monaro | 2001–2005 | Yes | None yet |
 | Nova | 1994–1996 | Yes | None yet |
@@ -2023,36 +2027,67 @@ Manufacturer-specific codes: 12. Each is explained only on the cars listed besid
 
 ### Volkswagen
 
-Manufacturer-specific codes: 1. Each is explained only on the cars listed beside it.
+Manufacturer-specific codes: 30. Each is explained only on the cars listed beside it.
 
 | Code | Name | Cars | Source |
 |---|---|---|---|
+| P1250 | Fuel level too low | Beetle 2008–2017 (1.2 turbo, 1.4 turbo, 1.6 I4, 1.8 TSI, 2.0 I4, 2.0 turbo, 2.5 I5)<br>CC 2008–2017 (1.8 turbo, 2.0 turbo, 3.6 V6)<br>Eos 2008–2015 (1.4 turbo, 2.0 turbo, 3.2 VR6, 3.6 V6)<br>Golf 2008–2017 (1.0 TSI, 1.2 TSI, 1.4, 1.4 TSI, 1.4 TSI plug-in hybrid (GTE), 1.6, 2.0, 2.0 TSI turbo (GTI/R), 2.5 I5, 3.2 V6 (R32))<br>Jetta 2008–2017 (1.4 turbo, 1.4 turbo hybrid, 1.8 TSI, 2.0 I4, 2.0 turbo, 2.5 I5)<br>Passat 2008–2017 (1.4 TSI, 1.4 TSI plug-in hybrid (GTE), 1.8 TSI, 2.0, 2.0 TSI turbo, 2.5 I5, 3.2 VR6, 3.6 V6)<br>Tiguan 2008–2017 (1.4 TSI, 2.0 TSI turbo)<br>Touareg 2008–2017 (3.0 V6 TSI, 3.0 V6 hybrid, 3.6 V6, 4.2 V8, 6.0 W12) | VW technical bulletin 01 16 13: the maker's own service bulletin, filed with NHTSA |
+| P130A | Cylinder switched off after misfires | Beetle 2008–2017 (1.2 turbo, 1.4 turbo, 1.6 I4, 1.8 TSI, 2.0 I4, 2.0 turbo, 2.5 I5)<br>CC 2008–2017 (1.8 turbo, 2.0 turbo, 3.6 V6)<br>Eos 2008–2015 (1.4 turbo, 2.0 turbo, 3.2 VR6, 3.6 V6)<br>Golf 2008–2017 (1.0 TSI, 1.2 TSI, 1.4, 1.4 TSI, 1.4 TSI plug-in hybrid (GTE), 1.6, 2.0, 2.0 TSI turbo (GTI/R), 2.5 I5, 3.2 V6 (R32))<br>Jetta 2008–2017 (1.4 turbo, 1.4 turbo hybrid, 1.8 TSI, 2.0 I4, 2.0 turbo, 2.5 I5)<br>Passat 2008–2017 (1.4 TSI, 1.4 TSI plug-in hybrid (GTE), 1.8 TSI, 2.0, 2.0 TSI turbo, 2.5 I5, 3.2 VR6, 3.6 V6)<br>Tiguan 2008–2017 (1.4 TSI, 2.0 TSI turbo)<br>Touareg 2008–2017 (3.0 V6 TSI, 3.0 V6 hybrid, 3.6 V6, 4.2 V8, 6.0 W12) | VW technical bulletin 01 16 13: the maker's own service bulletin, filed with NHTSA |
+| P13CE | Cylinder pressure sensor: electrical fault | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13CF | Cylinder pressure sensor: short circuit to ground | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D0 | Cylinder pressure sensor: implausible signal | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D1 | Cylinder pressure sensor: electrical fault | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D2 | Cylinder pressure sensor: short circuit to ground | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D3 | Cylinder pressure sensor: implausible signal | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D4 | Cylinder pressure sensor: electrical fault | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D5 | Cylinder pressure sensor: short circuit to ground | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D6 | Cylinder pressure sensor: implausible signal | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D7 | Cylinder pressure sensor: electrical fault | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D8 | Cylinder pressure sensor: short circuit to ground | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13D9 | Cylinder pressure sensor: implausible signal | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13E0 | Cylinder pressure sensor: malfunction | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13E1 | Cylinder pressure sensor: malfunction | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13E2 | Cylinder pressure sensor: malfunction | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P13E3 | Cylinder pressure sensor: malfunction | Beetle 2012–2014 (2.0 diesel)<br>Golf 2010–2014 (2.0 TDI diesel)<br>Jetta 2009–2014 (2.0 diesel)<br>Passat 2012–2014 (2.0 TDI diesel) | VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA |
+| P148D | EVAP leak detection pump: implausible frequency | Jetta 2020–2021 (1.4 turbo) | VW technical bulletin 01-22-03: the maker's own service bulletin, filed with NHTSA |
+| P1CB5 | Plug and Charge: vehicle certificate could not be installed | ID.4 2023 | VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA |
+| P1CC3 | External charger malfunction | ID.4 2023 | VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA |
+| P1CF4 | Charging connector lock blocked (socket A) | ID.4 2023 | VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA |
+| P1DCB | External charger not ready (charging socket A) | ID.4 2023 | VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA |
+| P1DCF | Charging socket B: emergency charging function active | ID.4 2023 | VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA |
+| P1DD1 | Charging socket temperature: emergency charging function active | ID.4 2023 | VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA |
+| P1DD2 | Charging socket temperature: emergency charging function active | ID.4 2023 | VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA |
 | P3081 | Engine temperature too low | Jetta 2016–2017 (1.4 turbo) | VW technical bulletin 2045384: the maker's own service bulletin, filed with NHTSA |
+| P30C0 | Poor fuel quality | Jetta 2022<br>Taos 2022 | VW software update 24iR: the maker's own service bulletin, filed with NHTSA |
+| P30DC | Fuel tank pressure can't be released for refuelling | Jetta 2020–2021 (1.4 turbo) | VW technical bulletin 01-22-03: the maker's own service bulletin, filed with NHTSA |
+| P31DD | Charging connector lock: electrical fault (socket A) | ID.4 2023 | VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
 | Amarok | 2011–2026 | Yes | None yet |
 | Arteon | 2017–2026 | Yes | None yet |
 | Atlas | 2017–2026 | Yes | None yet |
-| Beetle | 1998–2019 | Yes | None yet |
+| Beetle | 1998–2019 | Yes | 2008–2011: 2 codes · 2012–2014: 18 codes · 2015–2017: 2 codes (depending on the engine) |
 | Bora | 1999–2005 | Yes | None yet |
 | Caddy | 2004–2026 | Yes | None yet |
-| CC | 2008–2017 | Yes | None yet |
-| Eos | 2006–2015 | Yes | None yet |
+| CC | 2008–2017 | Yes | 2008–2017: 2 codes (depending on the engine) |
+| Eos | 2006–2015 | Yes | 2008–2015: 2 codes (depending on the engine) |
 | Fox | 2003–2021 | Yes | None yet |
 | Gol | 1994–2023 | Yes | None yet |
-| Golf | 1994–2026 | Yes | None yet |
-| Jetta | 1994–2026 | Yes | 2016–2017: 1 code (depending on the engine) |
+| Golf | 1994–2026 | Yes | 2008–2009: 2 codes · 2010–2014: 18 codes · 2015–2017: 2 codes (depending on the engine) |
+| ID.4 | 2021–2026 | Few or none (electric) | 2023: 8 codes |
+| Jetta | 1994–2026 | Yes | 2008: 2 codes · 2009–2014: 18 codes · 2015: 2 codes · 2016–2017: 3 codes · 2020–2021: 2 codes · 2022: 1 code (depending on the engine) |
 | Multivan | 2003–2026 | Yes | None yet |
-| Passat | 1994–2026 | Yes | None yet |
+| Passat | 1994–2026 | Yes | 2008–2011: 2 codes · 2012–2014: 18 codes · 2015–2017: 2 codes (depending on the engine) |
 | Polo | 1994–2026 | Yes | None yet |
 | Santana | 1994–2022 | Yes | None yet |
 | Saveiro | 1994–2023 | Yes | None yet |
 | Scirocco | 2009–2017 | Yes | None yet |
 | T-Cross | 2019–2026 | Yes | None yet |
 | T-Roc | 2017–2026 | Yes | None yet |
-| Tiguan | 2007–2026 | Yes | None yet |
-| Touareg | 2003–2026 | Yes | None yet |
+| Taos | 2021–2026 | Yes | 2022: 1 code |
+| Tiguan | 2007–2026 | Yes | 2008–2017: 2 codes (depending on the engine) |
+| Touareg | 2003–2026 | Yes | 2008–2017: 2 codes (depending on the engine) |
 | Touran | 2003–2026 | Yes | None yet |
 | Transporter | 1994–2026 | Yes | None yet |
 | Up! | 2012–2023 | Yes | None yet |

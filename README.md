@@ -29,7 +29,7 @@ You only need the APK. Nothing else to install, and it works offline. It runs on
 2. Open the file. If asked, allow **install unknown apps**, then tap **Install**.
 3. If Play Protect warns you, tap **More details → Install anyway**. Every app from outside the Play Store gets this warning.
 
-**Updates:** the app checks for a new version once a day and installs it when you tap **Update**. Your settings and drives are kept.
+**Updates:** the app checks for a new version once a day, even when it isn't open, and shows a notification when one is out. It installs it when you tap **Update**. Your settings and drives are kept. To stop the notification, turn off **New versions** in your phone's notification settings for the app.
 
 **Samsung phones:** Auto Blocker (**Settings → Security and privacy**) stops installs from outside the Galaxy Store and Play Store. Turn it off to install or update, then turn it back on if you like.
 
@@ -143,7 +143,7 @@ Videos are saved to **Movies → OBD2 Reader**.
 ## Privacy and safety
 
 - **Read-only:** the app never clears codes or changes anything in your car. Anything that isn't a read is blocked.
-- **No account, no tracking:** nothing is sent to the developer. The only internet use is the update check, from GitHub.
+- **No account, no tracking:** nothing is sent to the developer. The only internet use is the update check, from GitHub (about once a day, in the background too while notifications are on).
 - **Your location stays on your phone:** it's only saved inside a drive you choose to record with its route.
 
 ## Feedback

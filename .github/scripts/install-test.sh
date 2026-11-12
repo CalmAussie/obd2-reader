@@ -804,12 +804,17 @@ tap_tab Graphs; sleep 2
 XY=$(view_center_bottom savedLogsButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8b-saved-drives
 if tap_contains " KB" && tap_text "Make a video overlay" && tap_contains "720p" && tap_text "Make video"; then
-  READY=0
-  for i in $(seq 1 60); do
+  READY=0; PCT=; LASTPCT=; STILL=0
+  # Slow emulators (Android 10 encodes in software) can need more than 3 minutes for the video: after
+  # 3 minutes, keep waiting while the percentage still moves, up to 7.5 minutes in all.
+  for i in $(seq 1 150); do
     sleep 3
     adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-video.xml"
     grep -q "Video ready" "$OUT/ui-video.xml" && { READY=1; break; }
     grep -q "make the video" "$OUT/ui-video.xml" && break
+    PCT=$(grep -o 'text="[0-9]\+%' "$OUT/ui-video.xml" | grep -o '[0-9]\+' | head -1)
+    if [ -n "$PCT" ] && [ "$PCT" != "$LASTPCT" ]; then LASTPCT=$PCT; STILL=0; else STILL=$((STILL + 1)); fi
+    [ $i -ge 60 ] && [ $STILL -ge 10 ] && break
   done
   shot 8-video-ready
   if [ $READY = 1 ]; then
@@ -857,7 +862,7 @@ PY
     # The video stays in the reports, so a frame can be checked.
     tap_text "Done" > /dev/null || true
   else
-    log "video overlay: FAILED (not ready)"; FAIL=1
+    log "video overlay: FAILED (not ready${LASTPCT:+, stopped at $LASTPCT%})"; FAIL=1
   fi
 else
   log "video overlay: FAILED (couldn't open the options)"; FAIL=1
@@ -1128,6 +1133,19 @@ if adb shell run-as $PKG ls > /dev/null 2>&1; then
   IMP=$(grep -A12 'mId=new_codes\|NotificationChannel{mId=.new_codes' "$OUT/notifications-codes.txt" | grep -o 'mImportance=[0-9]' | head -1)
   shot 12c-new-code
   if [ $NC = yes ] && grep -q "New trouble code P0300" "$OUT/notifications-codes.txt"; then log "new code while driving: quiet notification (${IMP:-importance ?})"; else log "new code while driving: FAILED (logged: $NC, ${IMP:-no channel})"; FAIL=1; fi
+fi
+# New version available (debug builds): the once-a-day background check is scheduled with Android's
+# JobScheduler, and its notification (made-up version 9.9.9) is quiet and says which version is out.
+if adb shell run-as $PKG ls > /dev/null 2>&1; then
+  adb shell dumpsys jobscheduler > "$OUT/jobs.txt" 2>/dev/null
+  grep -q "$PKG/.session.UpdateCheckJob" "$OUT/jobs.txt" && JS=yes || JS=no
+  adb shell am start -n $PKG/.HomeActivity --ez update_notice_demo true > /dev/null 2>&1; sleep 3
+  adb shell dumpsys notification --noredact > "$OUT/notifications-update.txt" 2>/dev/null
+  UIMP=$(grep -A12 'NotificationChannel{mId=.new_versions' "$OUT/notifications-update.txt" | grep -o 'mImportance=[0-9]' | head -1)
+  adb shell cmd statusbar expand-notifications > /dev/null 2>&1; sleep 2
+  shot 12d-new-version
+  adb shell cmd statusbar collapse > /dev/null 2>&1; sleep 1
+  if [ $JS = yes ] && grep -q "Version 9.9.9 is available" "$OUT/notifications-update.txt"; then log "new version: quiet notification (${UIMP:-importance ?}), daily check scheduled"; else log "new version: FAILED (scheduled: $JS, ${UIMP:-no channel})"; FAIL=1; fi
 fi
 adb logcat -c
 adb shell input keyevent KEYCODE_HOME; sleep 15

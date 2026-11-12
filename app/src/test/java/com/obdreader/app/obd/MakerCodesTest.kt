@@ -133,6 +133,37 @@ class MakerCodesTest {
     }
 
     @Test
+    fun dieselPetrolAndElectricCodesStayWithTheirCars() {
+        // Volkswagen's glow plug pressure sensor codes: the 2.0 TDI only, cylinder by cylinder.
+        assertEquals("Cylinder pressure sensor: electrical fault", DtcLibrary.title("P13CE", "Volkswagen", 2012, "Golf", "2.0 TDI diesel"))
+        assertEquals("Cylinder pressure sensor: malfunction", DtcLibrary.title("P13E3", "Volkswagen", 2013, "Passat", "2.0 TDI diesel"))
+        assertTrue(DtcLibrary.lookup("P13D5", "Volkswagen", 2010, "Jetta", "2.0 diesel").known)
+        assertFalse(DtcLibrary.lookup("P13CE", "Volkswagen", 2012, "Golf", "1.4 TSI").known)
+        assertFalse(DtcLibrary.lookup("P13CE", "Volkswagen", 2009, "Golf", "2.0 TDI diesel").known)
+        // Volkswagen's misfire bulletin: petrol engines of the US model lines, 2008 to 2017.
+        assertEquals("Cylinder switched off after misfires", DtcLibrary.title("P130A", "Volkswagen", 2012, "Jetta", "2.5 I5"))
+        assertEquals("Fuel level too low", DtcLibrary.title("P1250", "Volkswagen", 2016, "Tiguan", "2.0 TSI turbo"))
+        assertFalse(DtcLibrary.lookup("P130A", "Volkswagen", 2012, "Jetta", "2.0 diesel").known)
+        assertFalse(DtcLibrary.lookup("P130A", "Volkswagen", 2019, "Jetta", "1.4 turbo").known)
+        assertFalse(DtcLibrary.lookup("P130A", "Volkswagen", 2012, "Polo", "1.2 TSI").known)
+        // One software bulletin, one engine and two model years.
+        assertTrue(DtcLibrary.lookup("P30DC", "Volkswagen", 2021, "Jetta", "1.4 turbo").known)
+        assertFalse(DtcLibrary.lookup("P30DC", "Volkswagen", 2021, "Jetta", "2.0 turbo").known)
+        assertTrue(DtcLibrary.lookup("P30C0", "Volkswagen", 2022, "Taos", null).known)
+        // The electric ID.4: the 2023 cars the bulletin covers, and the text says which ones.
+        val id4 = DtcLibrary.lookup("P1CC3", "Volkswagen", 2023, "ID.4", null)
+        assertEquals("External charger malfunction", id4.title)
+        assertTrue(id4.meaning, id4.meaning.contains("built in Chattanooga"))
+        assertFalse(DtcLibrary.lookup("P1CC3", "Volkswagen", 2022, "ID.4", null).known)
+        // Holden: GM names the Equinox 1.5 turbo in one bulletin and words the code in another.
+        val equinox = DtcLibrary.lookup("P1101", "Holden", 2019, "Equinox", "1.5 turbo")
+        assertEquals("Intake air flow system performance", equinox.title)
+        assertTrue(equinox.meaning.startsWith("GM's definition"))
+        assertFalse(DtcLibrary.lookup("P1101", "Holden", 2019, "Equinox", "2.0 turbo").known)
+        assertFalse(DtcLibrary.lookup("P1101", "Holden", 2019, "Acadia", null).known)
+    }
+
+    @Test
     fun chassisBodyAndNetworkCodesKeepTheirOwnSystem() {
         val net = DtcLibrary.lookup("U1400", "Chrysler", 2017, "Pacifica", "3.6 V6")
         assertTrue(net.known)
