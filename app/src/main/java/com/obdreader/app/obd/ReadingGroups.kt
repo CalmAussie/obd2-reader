@@ -9,13 +9,14 @@ package com.obdreader.app.obd
  */
 object ReadingGroups {
 
-    enum class Group(val label: String) {
-        ENGINE("Engine"),
-        FUEL("Fuel and mixture"),
-        AIR("Air and boost"),
-        EXHAUST("Exhaust"),
-        ELECTRICAL("Electrical"),
-        OTHER("Other"),
+    /** [label] heads a list; [short] names the group's tab on the Graphs tab. */
+    enum class Group(val label: String, val short: String) {
+        ENGINE("Engine", "Engine"),
+        FUEL("Fuel and mixture", "Fuel"),
+        AIR("Air and boost", "Air"),
+        EXHAUST("Exhaust", "Exhaust"),
+        ELECTRICAL("Electrical", "Electrical"),
+        OTHER("Other", "Other"),
     }
 
     private val o2Voltage = (0x14..0x1B).map { hex(it) }

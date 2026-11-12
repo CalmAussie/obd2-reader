@@ -4072,12 +4072,17 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   sample = (key, v, t) => { if (v != null) baseSample(key, v, t); };
 
   /* Only the chosen graphs as chips, plus "+ Add a graph": a sheet of every reading the car reports, grouped by part of the car, with live values (mirrors MainActivity.showGraphChips / showAddGraph and ReadingGroups.kt) */
+  $("graphChips").insertAdjacentHTML("beforebegin", `<div class="g-tabs" id="graphTabs" role="tablist" aria-label="Readings by part of the car"></div>`);
   $("graphChips").insertAdjacentHTML("afterend", `<div class="g-count" id="graphCount"></div>`);
   const st = document.createElement("style");
   st.textContent = `.g-count{font-size:13px;color:var(--fg-2);margin-top:6px}.strip.has-hint{height:206px}
 .chip.rm{background:var(--panel-2);color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--c);padding-right:8px}.chip.rm::before{opacity:1}
 .chip.rm .x{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;color:var(--fg-2);font-size:15px;line-height:1;margin-left:-2px}
 .chip.add{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}.chip.add::before{display:none}
+.g-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:10px 0 0;border-bottom:1px solid var(--line)}.g-tabs::-webkit-scrollbar{display:none}
+.g-tabs button{flex:none;padding:10px 12px 9px;font-size:14px;font-weight:600;color:var(--fg-2);border-bottom:3px solid transparent;margin-bottom:-1px}
+.g-tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+#graphTabs + #graphChips{margin-top:12px}
 .gsheet-h{font-size:14px;font-weight:600;color:var(--fg);margin:16px 0 2px}
 .grow{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:0 2px 0 4px;text-align:left;font-size:15px;color:var(--fg)}
 .grow .d{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}.grow .l{flex:1}
@@ -4101,15 +4106,27 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     save(); buildStrips(); return true;
   };
   const valText = c => { if (!known()) return ""; const v = chVal(c); return v == null || Number.isNaN(v) ? "–" : `${v.toFixed(c.dec)}${c.unit ? " " + c.unit : ""}`; };
+  let gTab = null; try { gTab = localStorage.getItem("graphTab") || null; } catch (e) {}
+  const groupsNow = () => { const have = new Set(choices().map(c => c.key)); return ORDER.map(([g, ks]) => [g, ks.filter(k => have.has(k))]).filter(([, ks]) => ks.length); };
+  const SHORT = { "Fuel and mixture": "Fuel", "Air and boost": "Air" };
   buildChips = function () {
-    $("graphChips").innerHTML = gChannels.map(k => `<button class="chip rm" data-k="${k}" style="--c:${col(k)}">${lab(k)}<span class="x" data-rm="${k}" role="button" aria-label="Remove ${lab(k)} graph">×</span></button>`).join("") + `<button class="chip add" id="graphAdd">+ Add a graph</button>`;
+    const groups = groupsNow();
+    if (gTab && !groups.some(([g]) => g === gTab)) gTab = null;
+    $("graphTabs").innerHTML = [[null], ...groups].map(([g]) => `<button role="tab" aria-selected="${g === gTab}" data-g="${g || ""}">${g ? SHORT[g] || g : "All"}</button>`).join("");
+    $("graphTabs").querySelectorAll("button").forEach(b => b.onclick = () => { gTab = b.dataset.g || null; try { localStorage.setItem("graphTab", gTab || ""); } catch (e) {} buildChips(); });
     $("graphCount").textContent = `${gChannels.length} of 4 graphs · ${choices().length} readings available`;
+    if (gTab) {
+      const ks = groups.find(([g]) => g === gTab)[1];
+      $("graphChips").innerHTML = ks.map(k => `<button class="chip" role="checkbox" aria-checked="${gChannels.includes(k)}" data-k="${k}" style="--c:${col(k)}">${lab(k)}</button>`).join("");
+      $("graphChips").querySelectorAll(".chip").forEach(b => b.onclick = () => toggle(b.dataset.k));
+      return;
+    }
+    $("graphChips").innerHTML = gChannels.map(k => `<button class="chip rm" data-k="${k}" style="--c:${col(k)}">${lab(k)}<span class="x" data-rm="${k}" role="button" aria-label="Remove ${lab(k)} graph">×</span></button>`).join("") + `<button class="chip add" id="graphAdd">+ Add a graph</button>`;
     $("graphChips").querySelectorAll(".chip.rm").forEach(b => b.onclick = e => { if (e.target.dataset.rm) toggle(e.target.dataset.rm); else showAddGraph(); });
     $("graphAdd").onclick = showAddGraph;
   };
   function showAddGraph() {
-    const have = new Set(choices().map(c => c.key));
-    const rows = ORDER.map(([g, ks]) => [g, ks.filter(k => have.has(k))]).filter(([, ks]) => ks.length);
+    const rows = groupsNow();
     const s = overlay(`<div class="handle"></div><h2>Add a graph</h2><p>Readings your car reports, with their value now. Tap one to add or remove its graph; up to 4 at once.</p>` +
       rows.map(([g, ks]) => `<div class="gsheet-h">${g}</div>` + ks.map(k => `<button class="grow" role="checkbox" aria-checked="${gChannels.includes(k)}" data-k="${k}" style="--c:${col(k)}"><span class="d"></span><span class="l">${lab(k)}</span><span class="v"></span><span class="ck"></span></button>`).join("")).join("") +
       `<div class="sheet-actions"><button class="primary" id="graphDone">Done</button></div>`, { sheet: true });

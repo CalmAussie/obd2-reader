@@ -2188,6 +2188,22 @@ open class MainActivity : AppCompatActivity() {
         // Only the chosen graphs show as chips; the rest wait in the "Add a graph" sheet, grouped by
         // what part of the car they come from, so the tab stays tidy however many readings a car reports.
         graphChipGroup = findViewById(R.id.graphChips)
+        // Tabs over the chips: All shows the chosen graphs and "+ Add a graph"; each part of the
+        // car shows its own readings as chips to tap on or off.
+        graphTab = prefs.getString(PREF_GRAPH_TAB, null)?.let { n -> com.obdreader.app.obd.ReadingGroups.Group.entries.firstOrNull { it.name == n } }
+        graphTabs = com.google.android.material.tabs.TabLayout(this).apply {
+            tabMode = com.google.android.material.tabs.TabLayout.MODE_SCROLLABLE
+            tabGravity = com.google.android.material.tabs.TabLayout.GRAVITY_START
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            setTabTextColors(themeColor(R.attr.obdTextSecondary), themeColor(R.attr.obdTextPrimary))
+            setSelectedTabIndicatorColor(themeColor(R.attr.obdAccent))
+            tabRippleColor = null
+        }
+        (graphChipGroup.parent as ViewGroup).let { parent ->
+            parent.addView(graphTabs, parent.indexOfChild(graphChipGroup),
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10f).toInt() })
+        }
+        (graphChipGroup.layoutParams as ViewGroup.MarginLayoutParams).topMargin = dp(10f).toInt()
         graphCount = TextView(this).apply {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
         }
@@ -2241,9 +2257,57 @@ open class MainActivity : AppCompatActivity() {
         return channels.filter { ch -> ch.key !in extraKeys || supported == null || ch.key.toInt(16) in supported || ch.key in graphChosen }
     }
 
-    /** The chosen graphs as chips with a remove cross, then "+ Add a graph", then how many of how many. */
+    /** The Graphs tab's reading tabs: null is All. */
+    private var graphTab: com.obdreader.app.obd.ReadingGroups.Group? = null
+    private lateinit var graphTabs: com.google.android.material.tabs.TabLayout
+
+    /** All, then each part of the car this car has readings for. Kept selected across visits. */
+    private fun showGraphTabs(groups: List<com.obdreader.app.obd.ReadingGroups.Group>) {
+        val names = listOf<com.obdreader.app.obd.ReadingGroups.Group?>(null) + groups
+        val same = graphTabs.tabCount == names.size && names.indices.all { graphTabs.getTabAt(it)?.tag == names[it] }
+        if (graphTab !in groups) graphTab = null
+        if (!same) {
+            graphTabs.clearOnTabSelectedListeners()
+            graphTabs.removeAllTabs()
+            for (g in names) graphTabs.addTab(graphTabs.newTab().apply {
+                tag = g; text = g?.short ?: getString(R.string.graphs_all)
+            }, g == graphTab)
+            graphTabs.getTabAt(names.indexOf(graphTab))?.select()
+            graphTabs.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                    graphTab = tab.tag as com.obdreader.app.obd.ReadingGroups.Group?
+                    prefs.edit().putString(PREF_GRAPH_TAB, graphTab?.name).apply()
+                    showGraphChips()
+                }
+                override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
+                override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
+            })
+        }
+    }
+
+    /**
+     * Under the tabs. All: the chosen graphs as chips with a remove cross, then "+ Add a graph".
+     * A part of the car: its readings as chips, the graphed ones ticked. Then how many of how many.
+     */
     private fun showGraphChips() {
+        val choices = graphChoices(ObdSession.state.value.supported)
+        val groups = com.obdreader.app.obd.ReadingGroups.sort(choices.map { it.key })
+        showGraphTabs(groups.map { it.first })
         graphChipGroup.removeAllViews()
+        graphCount.text = getString(R.string.graphs_count, graphChosen.size, MAX_GRAPHS, choices.size)
+        val tab = graphTab
+        if (tab != null) {
+            for (k in groups.firstOrNull { it.first == tab }?.second.orEmpty()) {
+                graphChipGroup.addView(Chip(this).apply {
+                    text = graphLabel(k)
+                    isCheckable = true
+                    isChecked = k in graphChosen
+                    chipStrokeColor = android.content.res.ColorStateList.valueOf(if (isChecked) graphColour(k) else themeColor(R.attr.obdOutline))
+                    setOnClickListener { if (!toggleGraph(k)) isChecked = k in graphChosen }
+                })
+            }
+            return
+        }
         for (k in graphChosen) {
             val label = graphLabel(k)
             graphChipGroup.addView(Chip(this).apply {
@@ -2260,7 +2324,6 @@ open class MainActivity : AppCompatActivity() {
             chipStrokeColor = android.content.res.ColorStateList.valueOf(themeColor(R.attr.obdAccent))
             setOnClickListener { showAddGraph() }
         })
-        graphCount.text = getString(R.string.graphs_count, graphChosen.size, MAX_GRAPHS, graphChoices(ObdSession.state.value.supported).size)
     }
 
     /** Adds or removes one graph, up to [MAX_GRAPHS] and at least one. Returns whether it changed. */
@@ -2492,7 +2555,7 @@ open class MainActivity : AppCompatActivity() {
         graphList.removeAllViews()
         graphStrips.clear()
         if (::graphOrderBtn.isInitialized) graphOrderBtn.visibility = if (keys.size >= 2) View.VISIBLE else View.GONE
-        if (::graphChipGroup.isInitialized) showGraphChips()
+        if (::graphCount.isInitialized) showGraphChips()
         android.util.Log.i("OBD2Graphs", "order: ${keys.joinToString(",")}")
         val fallback = themeColor(R.attr.obdAccent)
         for (ch in keys.mapNotNull { k -> channels.firstOrNull { it.key == k } }) {
@@ -3611,7 +3674,7 @@ open class MainActivity : AppCompatActivity() {
         }
         // Graphs: names, notes (fuel system status under fuel trims) and N/A for this car.
         if (s.supported != lastSupported || s.relabels != lastRelabels || s.unsupported != lastGraphUnsupported || s.readings["03"] != lastFuelStatus || s.isConnected != lastGraphConnected) {
-            if (s.supported != lastSupported || s.relabels != lastRelabels) showGraphChips()
+            if ((s.supported != lastSupported || s.relabels != lastRelabels) && ::graphCount.isInitialized) showGraphChips()
             refreshGraphNotes(s)
             lastSupported = s.supported; lastRelabels = s.relabels; lastGraphUnsupported = s.unsupported
             lastFuelStatus = s.readings["03"]; lastGraphConnected = s.isConnected
@@ -4965,6 +5028,7 @@ open class MainActivity : AppCompatActivity() {
         private const val COOLANT_KEY = "05"
         private const val THROTTLE_KEY = "11"
         private const val PREF_GRAPHS = "graph_channels"
+        private const val PREF_GRAPH_TAB = "graph_tab"
         private const val MAX_GRAPHS = 4
         private const val FUEL_KEY = "2F"
         private const val BLE_SCAN_MS = 12_000L
