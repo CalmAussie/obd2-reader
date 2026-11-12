@@ -16,8 +16,8 @@ object VinPrivacy {
         HIDDEN("hidden", "Hide it completely", "No VIN on screen or in anything you share."),
     }
 
-    /** Hidden serial number unless the user chooses otherwise, so a shared report or log doesn't identify the car. */
-    val DEFAULT = Mode.PARTIAL
+    /** Hidden unless the user chooses otherwise (George, 2026-11-12), so nothing on screen or shared identifies the car. */
+    val DEFAULT = Mode.HIDDEN
 
     fun of(key: String?): Mode = Mode.entries.firstOrNull { it.key == key } ?: DEFAULT
 

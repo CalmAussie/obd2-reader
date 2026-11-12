@@ -4232,11 +4232,11 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
 .opt-r{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;text-align:left;font-size:15px}.opt-r .o{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--fg-2);flex:none}.opt-r[aria-checked="true"] .o{box-shadow:inset 0 0 0 6px var(--accent)}`;
   document.head.appendChild(st);
 
-  /* Hide VIN (VinPrivacy): full, last 6 hidden (default), or hidden */
+  /* Hide VIN (VinPrivacy): full, last 6 hidden, or hidden (the default) */
   const MODES = [["full", "Show it in full", "The whole VIN, on screen and in what you share."],
     ["partial", "Hide the last 6 characters", "The last 6, your car's serial number, are hidden. The rest still says the maker, model year and factory."],
     ["hidden", "Hide it completely", "No VIN on screen or in anything you share."]];
-  let vinMode = "partial"; try { vinMode = localStorage.getItem("vinPrivacy") || "partial"; } catch (e) {}
+  let vinMode = "hidden"; try { vinMode = localStorage.getItem("vinPrivacy") || "hidden"; } catch (e) {}
   const mask = v => vinMode === "full" ? v : vinMode === "hidden" ? "hidden" : v.length > 6 ? v.slice(0, -6) + "******" : "******";
   const baseShowVin = showVin;
   showVin = function (vin) { baseShowVin(vin); if (vin) $("vin").textContent = vinMode === "hidden" ? "Hidden (Hide VIN is on)" : mask(vin); };

@@ -10,9 +10,10 @@ class VinPrivacyTest {
     // The well-known sample VIN from VIN documentation, not any real car of ours.
     private val vin = "1HGBH41JXMN109186"
 
-    @Test fun masksTheSerialByDefault() {
-        assertEquals(VinPrivacy.Mode.PARTIAL, VinPrivacy.of(null))
-        assertEquals(VinPrivacy.Mode.PARTIAL, VinPrivacy.of("nonsense"))
+    @Test fun hiddenByDefault() {
+        assertEquals(VinPrivacy.Mode.HIDDEN, VinPrivacy.of(null))
+        assertEquals(VinPrivacy.Mode.HIDDEN, VinPrivacy.of("nonsense"))
+        assertEquals(VinPrivacy.Mode.PARTIAL, VinPrivacy.of("partial"))
         assertEquals("1HGBH41JXMN******", VinPrivacy.mask(vin, VinPrivacy.Mode.PARTIAL))
         assertEquals(vin, VinPrivacy.mask(vin, VinPrivacy.Mode.FULL))
         assertEquals("hidden", VinPrivacy.mask(vin, VinPrivacy.Mode.HIDDEN))
