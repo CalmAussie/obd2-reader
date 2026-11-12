@@ -401,6 +401,8 @@ open class MainActivity : AppCompatActivity() {
         showUpdateRow(null)
         // Once a day, a quiet look at GitHub for a newer release.
         lifecycleScope.launch { kotlinx.coroutines.delay(4000); checkForUpdate(manual = false) }
+        // And about once a day in the background, so a new version is announced even when the app isn't open.
+        com.obdreader.app.session.UpdateCheckJob.schedule(applicationContext)
         findViewById<View>(R.id.themeButton).setOnClickListener { showThemePicker() }
         findViewById<View>(R.id.logShare).setOnClickListener {
             offerFile(Exports.adapterLog(this, ObdSession.fullLog(), ObdSession.state.value), "OBD2 Reader adapter log")
@@ -537,6 +539,7 @@ open class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) handleWidgetConnect(intent)
         drawCarTilesIfAsked(intent)
         if (savedInstanceState == null) showCodesIfAsked(intent)
+        if (savedInstanceState == null) showUpdateIfAsked(intent)
         com.obdreader.app.widget.ObdWidget.Feed.start(this)
         com.obdreader.app.widget.ObdWidget.refresh(this)
         // The car comes first: it decides how fault codes are explained, the redline and the protocol.
@@ -3143,7 +3146,26 @@ open class MainActivity : AppCompatActivity() {
         setIntent(intent)
         drawCarTilesIfAsked(intent)
         showCodesIfAsked(intent)
+        showUpdateIfAsked(intent)
         handleWidgetConnect(intent)
+    }
+
+    /** The "new version available" notification opens the Update window, with what's new. */
+    private fun showUpdateIfAsked(intent: Intent?) {
+        // Debug builds: the install test asks for the notification with a made-up version, to check it shows.
+        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0 && intent?.getBooleanExtra("update_notice_demo", false) == true) {
+            intent.removeExtra("update_notice_demo")
+            val build = Updater.installedBuild(this).toInt() + 1
+            com.obdreader.app.session.UpdateCheckJob.post(applicationContext, com.obdreader.app.obd.UpdateCheck.Release(
+                "v9.9.9-build$build", "9.9.9", build, "• A sample of what's new.", Updater.RELEASES_PAGE, 0L, Updater.RELEASES_PAGE))
+            return
+        }
+        if (intent?.getBooleanExtra(com.obdreader.app.session.UpdateCheckJob.EXTRA_SHOW_UPDATE, false) != true) return
+        intent.removeExtra(com.obdreader.app.session.UpdateCheckJob.EXTRA_SHOW_UPDATE)
+        android.util.Log.i("OBD2Updater", "opened from the new version notification")
+        com.obdreader.app.session.UpdateCheckJob.dismiss(this)
+        if (updateBusy) return // already checking, or the Update window is already open
+        availableUpdate?.let { offerUpdate(it) } ?: checkForUpdate(manual = true)
     }
 
     /** The widget's Connect button: connects to the last adapter, or offers the adapters if there isn't one. */
@@ -3790,6 +3812,8 @@ open class MainActivity : AppCompatActivity() {
     // ---------- App updates (from the GitHub releases) ----------
 
     private var availableUpdate: com.obdreader.app.obd.UpdateCheck.Release? = null
+    /** A check is under way or the Update window is up, so the daily check doesn't open a second one. */
+    private var updateBusy = false
 
     private fun showUpdateRow(release: com.obdreader.app.obd.UpdateCheck.Release?) {
         val sub = findViewById<TextView>(R.id.updatesSub)
@@ -3807,12 +3831,14 @@ open class MainActivity : AppCompatActivity() {
      */
     private fun checkForUpdate(manual: Boolean) {
         val now = System.currentTimeMillis()
-        if (!manual && !com.obdreader.app.obd.UpdateCheck.dueForCheck(prefs.getLong(Updater.LAST_CHECK, 0L), now)) {
+        if (!manual && (updateBusy || !com.obdreader.app.obd.UpdateCheck.dueForCheck(prefs.getLong(Updater.LAST_CHECK, 0L), now))) {
             return
         }
         if (manual) toast(getString(R.string.updates_checking))
+        updateBusy = true
         lifecycleScope.launch {
             val release = try { Updater.latest() } catch (e: Exception) { android.util.Log.i("OBD2Updater", "check failed: ${e.message}"); null }
+            updateBusy = false
             if (release == null) { if (manual) toast(getString(R.string.updates_failed)); return@launch }
             android.util.Log.i("OBD2Updater", "latest build ${release.build}, installed ${Updater.installedBuild(this@MainActivity)}")
             prefs.edit().putLong(Updater.LAST_CHECK, now).apply()
@@ -3922,11 +3948,15 @@ open class MainActivity : AppCompatActivity() {
                 })
             }
         }
+        // Seen here, so the notification about it isn't needed any more.
+        com.obdreader.app.session.UpdateCheckJob.dismiss(this)
+        updateBusy = true
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.updates_available_title, release.version))
             .setView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
             .setPositiveButton(R.string.updates_update) { _, _ -> downloadAndInstall(release) }
             .setNegativeButton(R.string.updates_later) { _, _ -> prefs.edit().putInt(Updater.SNOOZED_BUILD, release.build).apply() }
+            .setOnDismissListener { updateBusy = false }
             .show()
     }
 

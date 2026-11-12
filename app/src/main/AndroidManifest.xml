@@ -37,6 +37,9 @@
          and newer, later updates the app installs itself may go through without asking. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
+    <!-- Keeps the once-a-day "new version available" check scheduled after the phone restarts.
+         Nothing runs at start-up: Android just keeps the job. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-feature
         android:name="android.hardware.bluetooth"
@@ -83,6 +86,12 @@
             android:name=".session.ObdConnectionService"
             android:exported="false"
             android:foregroundServiceType="connectedDevice|location" />
+
+        <!-- The once-a-day check for a new version, run by Android's JobScheduler. Only the system can start it. -->
+        <service
+            android:name=".session.UpdateCheckJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <!-- Shares recorded drives and reports with other apps -->
         <receiver

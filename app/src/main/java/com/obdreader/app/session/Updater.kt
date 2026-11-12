@@ -296,7 +296,11 @@ class UpdateReceiver : BroadcastReceiver() {
 /** After the app updates itself: clear the downloaded file. */
 class UpdatedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) { Updater.cleanUp(context); Updater.updated(context) }
+        if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+            Updater.cleanUp(context); Updater.updated(context)
+            UpdateCheckJob.dismiss(context) // the version it announced is the one now installed
+            UpdateCheckJob.schedule(context)
+        }
     }
 }
 
