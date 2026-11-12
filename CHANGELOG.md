@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.4.3 (12 November 2026)
+- **A notification when a new version is out.** About once a day, even when the app isn't open, it checks GitHub for a new version and, if there is one, shows a quiet notification with what's new. Tap it to open the Update window; nothing downloads until you tap Update. Each version is announced once, and not again if you tapped Later on it. It never checks while connected to your car, and you can turn it off under your phone's notification settings for OBD2 Reader (New versions).
+
 ## 2.4.2 (11 November 2026)
 - **Maker-specific codes explained for your car.** About 180 codes that only mean something on certain makes now get the full explanation (what it means, what you might notice, common causes and what to check) when your chosen car is one the maker's own documents name. They cover 24 makes, including Toyota, Kia, Hyundai, Chrysler, Dodge, Jeep, Ram, Porsche, Subaru, Nissan, Mitsubishi, Honda, GM and more, and come from the makers' service bulletins and GM's engine diagnostic files. Choose your model and engine for the best match; codes your car isn't covered for still show what kind of fault they are. [Which codes are covered](https://github.com/CalmAussie/obd2-reader/blob/main/docs/CODE-SUPPORT.md) lists every one with its source, now with a section for each manufacturer.
 - **Airbag modules are left alone everywhere.** Codes from other modules, Search every address and Module information no longer ask airbag modules on any make, as the J1850, second-network and Volvo searches already didn't. Reading codes can't set an airbag off, but the app now keeps its promise never to talk to them.

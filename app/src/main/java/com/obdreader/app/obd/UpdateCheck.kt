@@ -38,6 +38,24 @@ object UpdateCheck {
     fun dueForCheck(lastCheckMs: Long, nowMs: Long): Boolean = lastCheckMs <= 0 || nowMs - lastCheckMs >= CHECK_EVERY_MS || nowMs < lastCheckMs
 
     /**
+     * Whether the background check should post a "new version" notification for [release]: it's
+     * newer than the installed build, and it isn't one already notified about ([notifiedBuild]) or
+     * one the person tapped Later on in the app ([snoozedBuild]). So each new version gets one
+     * notification at most, and a version that's been put off isn't brought up again.
+     */
+    fun shouldNotify(release: Release, installedBuild: Long, notifiedBuild: Int, snoozedBuild: Int): Boolean =
+        isNewer(release, installedBuild) && release.build != notifiedBuild && release.build != snoozedBuild
+
+    /** The first few lines of a release's notes, short enough for a notification. */
+    fun noticeNotes(notes: String, maxChars: Int = 300): String {
+        val text = notes.trim()
+        if (text.length <= maxChars) return text
+        val cut = text.take(maxChars)
+        val end = cut.lastIndexOf('\n').takeIf { it > maxChars / 2 } ?: cut.lastIndexOf(' ').takeIf { it > 0 } ?: maxChars
+        return cut.take(end).trimEnd() + "…"
+    }
+
+    /**
      * The "What's new" part of a release's notes (the changelog entry), as plain text: the
      * install instructions after it are left out, and Markdown is turned into plain words.
      */

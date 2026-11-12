@@ -57,4 +57,31 @@ class UpdateCheckTest {
         assertEquals("• Preview before you share a drive. See the docs for more.\n• Fixed a thing.", UpdateCheck.notes(body))
         assertEquals("", UpdateCheck.notes(null))
     }
+
+    @Test
+    fun eachNewVersionIsAnnouncedOnce() {
+        // Newer than installed, not announced yet, not put off: announce it.
+        assertTrue(UpdateCheck.shouldNotify(release(95), 94, notifiedBuild = 0, snoozedBuild = 0))
+        // Already announced, or the person tapped Later on it in the app: stay quiet.
+        assertFalse(UpdateCheck.shouldNotify(release(95), 94, notifiedBuild = 95, snoozedBuild = 0))
+        assertFalse(UpdateCheck.shouldNotify(release(95), 94, notifiedBuild = 0, snoozedBuild = 95))
+        // A later version is announced even after an earlier one was announced or put off.
+        assertTrue(UpdateCheck.shouldNotify(release(96), 94, notifiedBuild = 95, snoozedBuild = 95))
+        // Up to date (or a newer build installed by hand): nothing to announce.
+        assertFalse(UpdateCheck.shouldNotify(release(95), 95, notifiedBuild = 0, snoozedBuild = 0))
+        assertFalse(UpdateCheck.shouldNotify(release(95), 97, notifiedBuild = 0, snoozedBuild = 0))
+    }
+
+    @Test
+    fun notificationNotesAreShort() {
+        assertEquals("• Short note", UpdateCheck.noticeNotes("  • Short note \n"))
+        val long = (1..40).joinToString("\n") { "• Line number $it of the notes" }
+        val short = UpdateCheck.noticeNotes(long)
+        assertTrue(short.length <= 301)
+        assertTrue(short.endsWith("…"))
+        assertTrue(short.startsWith("• Line number 1 of the notes"))
+        // Cut at the end of a line, not mid-word.
+        assertTrue(short.removeSuffix("…").endsWith("of the notes"))
+        assertEquals("", UpdateCheck.noticeNotes(""))
+    }
 }
