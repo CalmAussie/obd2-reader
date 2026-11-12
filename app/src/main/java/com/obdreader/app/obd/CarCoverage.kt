@@ -111,6 +111,9 @@ object CarCoverage {
         0x9A to "Hybrid/EV battery system data", 0x9D to "Engine fuel rate (multiple)", 0x9E to "Engine exhaust flow rate", 0xA4 to "Transmission gear", 0xA6 to "Odometer",
     )
 
+    /** Every standard reading the scan has a name for. */
+    val named: Set<Int> get() = NAMES.keys
+
     fun name(pid: Int): String = NAMES[pid] ?: String.format(Locale.US, "Reading %02X", pid)
 
     /** Whether the app shows this reading (directly or through a stand-in). */

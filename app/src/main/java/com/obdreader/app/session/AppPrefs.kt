@@ -39,6 +39,10 @@ object AppPrefs {
     const val BATTERY_NIGHT = "battery_night"
     const val BATTERY_NIGHT_OFF = "battery_night_off"
     const val USER_VIN_CAR = "user_vin_car"
+    /** Every trouble code seen, per car ([com.obdreader.app.obd.CodeHistory]). */
+    const val CODE_HISTORY = "code_history"
+    /** How much of the VIN to show and share ([com.obdreader.app.obd.VinPrivacy]). */
+    const val VIN_PRIVACY = "vin_privacy"
 
     const val TYPE_CLASSIC = "classic"
     const val TYPE_BLE = "ble"
@@ -92,6 +96,9 @@ object AppPrefs {
         val car = savedCar(prefs)?.label
         return if (car == prefs.getString(USER_VIN_CAR, null)) vin else null
     }
+
+    fun vinPrivacy(prefs: SharedPreferences): com.obdreader.app.obd.VinPrivacy.Mode =
+        com.obdreader.app.obd.VinPrivacy.of(prefs.getString(VIN_PRIVACY, null))
 
     fun setUserVin(prefs: SharedPreferences, vin: String?) {
         if (vin == null) prefs.edit().remove(USER_VIN).remove(USER_VIN_CAR).apply()

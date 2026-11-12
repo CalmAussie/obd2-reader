@@ -202,6 +202,17 @@ class ElmClient(
         return ElmParser.parseDtcs(command(cmd, 6000), header, isCan)
     }
 
+    /**
+     * Permanent codes (service 0A): codes the engine computer keeps until its own test confirms the
+     * fault is fixed; no scan tool can clear them. Null when the car doesn't answer (cars before
+     * about 2010 don't have them), so "none" and "not reported" aren't mixed up.
+     */
+    suspend fun readPermanentDtcs(): List<String>? {
+        val lines = command("0A", 6000)
+        if (ElmParser.extractAll(lines, "4A").isEmpty()) return null
+        return ElmParser.parseDtcs(lines, "4A", isCan)
+    }
+
     suspend fun readVin(): String? = ElmParser.parseVin(command("0902", 6000))
 
     /**

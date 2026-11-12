@@ -69,7 +69,13 @@ object ObdSession {
 
     enum class Phase { IDLE, CONNECTING, CONNECTED, WAITING, ERROR }
 
-    data class Codes(val stored: List<String>, val pending: List<String>, val freezeFrame: com.obdreader.app.obd.FreezeFrame? = null) {
+    data class Codes(
+        val stored: List<String>,
+        val pending: List<String>,
+        val freezeFrame: com.obdreader.app.obd.FreezeFrame? = null,
+        /** Permanent codes (service 0A); null when the car doesn't report them. Not counted in [total]: they stay after a repair until the car's own test passes. */
+        val permanent: List<String>? = null,
+    ) {
         val total: Int get() = stored.size + pending.size
     }
 
@@ -483,11 +489,19 @@ object ObdSession {
         val pendingLines = logCodes(pending, pending = true)
         // The freeze frame only exists once a code has been stored.
         val frame = if (stored.isEmpty()) null else try { c.readFreezeFrame() } catch (e: AdapterTimeoutException) { null }
+        val permanent = try { c.readPermanentDtcs() } catch (e: AdapterTimeoutException) { null }
+        val permanentLines = when {
+            permanent == null -> listOf("= The car doesn't report permanent codes")
+            permanent.isEmpty() -> listOf("= No permanent codes")
+            else -> listOf("= ${permanent.size} permanent ${if (permanent.size == 1) "code" else "codes"}: ${permanent.joinToString(", ")}")
+        }
+        permanentLines.forEach { appendLog(it) }
         val time = SimpleDateFormat("h:mm:ss a", Locale.getDefault()).format(Date())
-        _codeLog.value = listOf("Trouble codes read at $time") + storedLines + pendingLines +
+        _codeLog.value = listOf("Trouble codes read at $time") + storedLines + pendingLines + permanentLines +
             listOfNotNull(frame?.let { "Freeze frame stored with ${it.code}: ${it.lines().joinToString("; ")}" })
-        val codes = Codes(stored, pending, frame)
+        val codes = Codes(stored, pending, frame, permanent)
         _state.update { it.copy(codes = codes) }
+        recordHistory(codes, permanentRead = true)
         // Once per connection, so the code report can say whether the codes look recently cleared.
         if (_state.value.cleared == null) try { readClearedCheck() } catch (ignored: AdapterTimeoutException) { }
         return codes
@@ -1050,8 +1064,9 @@ object ObdSession {
                 try {
                     val stored = c.readDtcs(pending = false)
                     // Keep the freeze frame read earlier while its code is still stored.
-                    val codes = Codes(stored, c.readDtcs(pending = true), _state.value.codes?.freezeFrame?.takeIf { it.code in stored })
+                    val codes = Codes(stored, c.readDtcs(pending = true), _state.value.codes?.freezeFrame?.takeIf { it.code in stored }, _state.value.codes?.permanent)
                     _state.update { it.copy(codes = codes) }
+                    recordHistory(codes, permanentRead = false)
                 } catch (ignored: AdapterTimeoutException) {
                 }
             }
@@ -1069,6 +1084,27 @@ object ObdSession {
             delay(if (focused.isNotEmpty()) 10 else 40)
         }
     }
+
+    /**
+     * Adds a code read to the phone's code history (not for the demo car, so it doesn't fill the
+     * real history). Permanent codes count only when they were read this time.
+     */
+    private fun recordHistory(codes: Codes, permanentRead: Boolean) {
+        if (_state.value.isDemo) return
+        val ctx = appContext ?: return
+        val prefs = AppPrefs.of(ctx)
+        val seen = mapOf(
+            com.obdreader.app.obd.CodeHistory.Kind.STORED to codes.stored,
+            com.obdreader.app.obd.CodeHistory.Kind.PENDING to codes.pending,
+            com.obdreader.app.obd.CodeHistory.Kind.PERMANENT to codes.permanent.takeIf { permanentRead },
+        )
+        val history = com.obdreader.app.obd.CodeHistory.parse(prefs.getString(AppPrefs.CODE_HISTORY, null))
+        val updated = com.obdreader.app.obd.CodeHistory.record(history, historyCar(ctx), seen, System.currentTimeMillis())
+        prefs.edit().putString(AppPrefs.CODE_HISTORY, com.obdreader.app.obd.CodeHistory.encode(updated)).apply()
+    }
+
+    /** The car a code history entry belongs to: the car chosen in the app, else "Your car". */
+    fun historyCar(context: Context): String = AppPrefs.savedCar(AppPrefs.of(context))?.label ?: "Your car"
 
     /** Writes each decoded trouble code and its meaning under the raw reply, so the log reads on its own. */
     private fun logCodes(codes: List<String>, pending: Boolean): List<String> {

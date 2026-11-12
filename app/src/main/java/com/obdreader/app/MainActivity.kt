@@ -519,7 +519,9 @@ open class MainActivity : AppCompatActivity() {
                 launch {
                     // Live polling adds dozens of lines a second; redraw the log at most four
                     // times a second, and only while it's open.
-                    combine(ObdSession.codeLog, ObdSession.log, logShown) { codes, lines, shown -> if (shown) ObdSession.fullLog(codes, lines) else null }
+                    combine(ObdSession.codeLog, ObdSession.log, logShown) { codes, lines, shown ->
+                        if (shown) com.obdreader.app.obd.VinPrivacy.scrubLog(ObdSession.fullLog(codes, lines), vinMode(), Exports.knownVins(this@MainActivity, ObdSession.state.value.vin)) else null
+                    }
                         .conflate()
                         .collect { lines ->
                             if (lines != null) logText.text = styledLog(lines)
@@ -1051,8 +1053,8 @@ open class MainActivity : AppCompatActivity() {
      */
     private fun setupGroups() {
         val groups = listOf(
-            Triple("car", "Car and connection", listOf(R.id.carRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.logCard)),
-            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.clearedRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
+            Triple("car", "Car and connection", listOf(R.id.carRow, R.id.vinPrivacyRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.logCard)),
+            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.clearedRow, R.id.historyRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
             Triple("display", "Display and readings", listOf(R.id.unitsRow, R.id.slotsRow, R.id.widgetRow, R.id.autoRow, R.id.pipRow, R.id.appIconRow)),
             Triple("help", "Help and feedback", listOf(R.id.helpRow, R.id.reportRow, R.id.ideaRow, R.id.updatesRow)),
         )
@@ -1164,6 +1166,66 @@ open class MainActivity : AppCompatActivity() {
         row(R.id.modulesRow, getString(R.string.modules_title), getString(R.string.modules_help)) { runCheck(getString(R.string.modules_title), "Asking each module in turn. This can take half a minute.") { showModules() } }
         row(R.id.enhancedRow, getString(R.string.enhanced_title), getString(R.string.enhanced_help)) { runCheck(getString(R.string.enhanced_title)) { showEnhanced() } }
         row(R.id.customRow, getString(R.string.custom_title), getString(R.string.custom_help)) { showCustomReadings() }
+        row(R.id.historyRow, getString(R.string.history_codes_title), getString(R.string.history_codes_help)) { showCodeHistory() }
+        row(R.id.vinPrivacyRow, getString(R.string.vin_privacy_title), vinMode().label) { showVinPrivacy() }
+    }
+
+    private fun vinMode() = AppPrefs.vinPrivacy(prefs)
+
+    /** Hide VIN: show it in full, hide the serial number (last 6) or hide it completely, on screen and in shares. */
+    private fun showVinPrivacy() {
+        val modes = com.obdreader.app.obd.VinPrivacy.Mode.entries
+        choiceSheet(getString(R.string.vin_privacy_title)) { body, sheet ->
+            sheetNote(body, getString(R.string.vin_privacy_note))
+            sheetOptions(body, modes.map { it.label }, modes.indexOf(vinMode())) { i ->
+                prefs.edit().putString(AppPrefs.VIN_PRIVACY, modes[i].key).apply()
+                findViewById<View>(R.id.vinPrivacyRow)?.let { r -> rowHelp(r)?.text = modes[i].label }
+                showVin(ObdSession.state.value.vin)
+                sheet.dismiss()
+            }
+            modes.forEach { sheetNote(body, "${it.label}: ${it.help}") }
+        }
+    }
+
+    /** A Diagnostics row's second line (its help text). */
+    private fun rowHelp(row: View): TextView? = ((row as? ViewGroup)?.getChildAt(1) as? TextView)
+
+    /** Code history: every code seen on each car, with dates; a button clears the phone's list (never the car's codes). */
+    private fun showCodeHistory() {
+        val all = com.obdreader.app.obd.CodeHistory.parse(prefs.getString(AppPrefs.CODE_HISTORY, null))
+        val day = java.text.SimpleDateFormat("d MMM yyyy", Locale.getDefault())
+        val make = ObdSession.carMake(this); val year = ObdSession.carYear(this); val model = ObdSession.carModel(this); val engine = ObdSession.carEngine(this)
+        val current = ObdSession.historyCar(this)
+        infoSheet(getString(R.string.history_codes_title)) { heading, line, body ->
+            if (all.isEmpty()) {
+                line(getString(R.string.history_codes_empty), true)
+                return@infoSheet
+            }
+            line(getString(R.string.history_codes_intro), true)
+            for (car in com.obdreader.app.obd.CodeHistory.cars(all, current)) {
+                heading(car)
+                for (e in com.obdreader.app.obd.CodeHistory.forCar(all, car)) {
+                    // Maker codes are explained for the chosen car only, so other cars' codes get the generic title.
+                    val title = if (car == current) DtcLibrary.lookup(e.code, make, year, model, engine).title else DtcLibrary.lookup(e.code, null, null, null, null).title
+                    line("${e.code}  $title", !e.active)
+                    line(com.obdreader.app.obd.CodeHistory.describe(e) { day.format(java.util.Date(it)) }, true)
+                }
+            }
+            body.addView(MaterialButton(this, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
+                text = getString(R.string.history_codes_clear); setTextColor(themeColor(R.attr.obdAccent))
+                setOnClickListener {
+                    MaterialAlertDialogBuilder(this@MainActivity)
+                        .setTitle(R.string.history_codes_clear_title)
+                        .setMessage(R.string.history_codes_clear_text)
+                        .setPositiveButton(R.string.history_codes_clear) { _, _ ->
+                            prefs.edit().remove(AppPrefs.CODE_HISTORY).apply()
+                            currentSheet?.dismiss()
+                            toast(getString(R.string.history_codes_cleared))
+                        }
+                        .setNegativeButton(android.R.string.cancel, null).show()
+                }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(12f).toInt() })
+        }
     }
 
     /** Shows a "please wait" while [work] asks the car, then its sheet; says so if the car stops answering. */
@@ -1518,7 +1580,7 @@ open class MainActivity : AppCompatActivity() {
             } catch (e: CancellationException) { throw e } catch (e: Exception) { null }
             wait.dismiss()
             if (info == null) { toast("The car stopped answering. Try again."); return@launch }
-            android.util.Log.i("OBD2Deep", "module info: " + info.joinToString("; ") { (m, f) -> "${m.name}: " + f.joinToString(", ") { "${it.first}=${it.second}" } }.ifEmpty { "none" })
+            android.util.Log.i("OBD2Deep", com.obdreader.app.obd.VinPrivacy.scrub("module info: " + info.joinToString("; ") { (m, f) -> "${m.name}: " + f.joinToString(", ") { "${it.first}=${it.second}" } }.ifEmpty { "none" }, vinMode()))
             infoSheet(getString(R.string.enhanced_module_info)) { heading, line, _ ->
                 if (info.isEmpty()) { line("No module answered with its identifiers. Older modules don't have them.", true); return@infoSheet }
                 val carVin = ObdSession.state.value.vin
@@ -1527,7 +1589,7 @@ open class MainActivity : AppCompatActivity() {
                     if (fields.isEmpty()) line("Answered, but gave none of the standard identifiers.", true)
                     fields.forEach { (k, v) ->
                         val vinNote = if (k.startsWith("VIN") && carVin != null && v != carVin) "  (not the VIN the engine computer reports)" else ""
-                        line("$k: $v$vinNote", false)
+                        line("$k: ${if (k.startsWith("VIN")) com.obdreader.app.obd.VinPrivacy.mask(v, vinMode()) else v}$vinNote", false)
                     }
                 }
                 heading("About this")
@@ -1785,9 +1847,56 @@ open class MainActivity : AppCompatActivity() {
             text = "What your car reports"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
         })
         val readings = scan.supported.filter { it % 0x20 != 0 }.sorted()
-        line("${readings.size} standard readings. Ones marked ✓ are on the app's Dashboard, live-data list or Graphs.")
-        heading("Standard readings")
-        readings.forEach { n -> line(String.format(Locale.US, "%s  %02X  %s", if (CarCoverage.shownByApp(n)) "✓" else "·", n, CarCoverage.name(n)), secondary = !CarCoverage.shownByApp(n)) }
+        line("${readings.size} standard readings, by part of the car, with their value now. Ones without a value aren't read by the app yet.")
+        // Grouped like the Graphs tabs; each value updates every second while the sheet is open.
+        val values = mutableListOf<Pair<Int, TextView>>()
+        val hex = { n: Int -> String.format(Locale.US, "%02X", n) }
+        for ((group, keys) in com.obdreader.app.obd.ReadingGroups.sort(readings.map(hex))) {
+            heading(group.label)
+            for (k in keys) {
+                val n = k.toInt(16)
+                val value = TextView(this).apply {
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextPrimary)); gravity = Gravity.END
+                    // A value in words (fuel system status) wraps rather than squeezing the name.
+                    maxWidth = (resources.displayMetrics.widthPixels * 0.42f).toInt()
+                    text = scanValueText(n).orEmpty()
+                }
+                values += n to value
+                body.addView(LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                    setPadding(0, dp(3f).toInt(), 0, 0)
+                    addView(TextView(this@MainActivity).apply {
+                        text = String.format(Locale.US, "%02X  %s", n, ObdSession.state.value.relabels[k]?.let { "$it" } ?: CarCoverage.name(n))
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setLineSpacing(0f, 1.1f)
+                        setTextColor(themeColor(if (CarCoverage.shownByApp(n)) R.attr.obdTextPrimary else R.attr.obdTextSecondary))
+                    }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    addView(value, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(10f).toInt() })
+                })
+            }
+        }
+        // Every other standard reading, folded away: the ones this car doesn't report.
+        val notReported = CarCoverage.named.filter { it % 0x20 != 0 && it !in scan.supported }
+        if (notReported.isNotEmpty()) {
+            val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; visibility = View.GONE }
+            com.obdreader.app.obd.ReadingGroups.sort(notReported.map(hex)).forEach { (_, keys) ->
+                keys.forEach { k -> list.addView(TextView(this).apply {
+                    text = String.format(Locale.US, "%s  %s", k, CarCoverage.name(k.toInt(16)))
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary)); setPadding(0, dp(3f).toInt(), 0, 0)
+                }) }
+            }
+            val title = "Not reported by your car (${notReported.size})"
+            body.addView(TextView(this).apply {
+                text = "$title  ▸"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdAccent))
+                setPadding(0, dp(16f).toInt(), 0, dp(4f).toInt()); minHeight = dp(48f).toInt(); gravity = Gravity.CENTER_VERTICAL
+                isClickable = true; isFocusable = true; contentDescription = "$title, collapsed"
+                setOnClickListener {
+                    val open = list.visibility != View.VISIBLE
+                    list.visibility = if (open) View.VISIBLE else View.GONE
+                    text = "$title  ${if (open) "▾" else "▸"}"; contentDescription = "$title, ${if (open) "expanded" else "collapsed"}"
+                }
+            })
+            body.addView(list)
+        }
         val missing = Pids.dashboard.filter { it.number !in scan.supported }
         if (missing.isNotEmpty()) {
             heading("Not reported by your car")
@@ -1825,7 +1934,47 @@ open class MainActivity : AppCompatActivity() {
         sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(body) })
         sheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
         sheet.behavior.skipCollapsed = true
+        val ticker = object : Runnable {
+            override fun run() {
+                values.forEach { (n, v) -> v.text = scanValueText(n).orEmpty() }
+                body.postDelayed(this, 1000)
+            }
+        }
+        body.postDelayed(ticker, 1000)
+        sheet.setOnDismissListener { body.removeCallbacks(ticker) }
         sheet.show()
+    }
+
+    /**
+     * A standard reading's value now, for What your car reports: from the live readings, the
+     * counters since the codes were cleared, or the readiness monitors. "–" while the app hasn't
+     * got one yet; null for readings the app doesn't read.
+     */
+    private fun scanValueText(n: Int): String? {
+        val s = ObdSession.state.value
+        val k = String.format(Locale.US, "%02X", n)
+        if (k in Pids.TEXT_ONLY) return s.readings[k]?.toInt()?.let { v -> if (k == "03") com.obdreader.app.obd.FuelInfo.status(v) else com.obdreader.app.obd.FuelInfo.type(v) } ?: "–"
+        Pids.byHex(k)?.let { p ->
+            val v = s.readings[k] ?: return if (k in s.unsupported) "N/A" else "–"
+            return String.format(Locale.US, "%.${Units.decimals(k, p.decimals)}f", Units.value(k, v)) + Units.unit(k, p.unit).let { if (it.isEmpty()) "" else " $it" }
+        }
+        // A stand-in arrives under the reading it stands in for.
+        CarCoverage.STAND_INS.firstOrNull { it.pid.number == n }?.let { si ->
+            if (s.standIns[si.forHex] == null) return null
+            val v = s.readings[si.forHex] ?: return "–"
+            return String.format(Locale.US, "%.${Units.decimals(si.forHex, si.pid.decimals)}f", Units.value(si.forHex, v)) + Units.unit(si.forHex, si.pid.unit).let { if (it.isEmpty()) "" else " $it" }
+        }
+        val c = s.cleared ?: return null
+        val na = com.obdreader.app.obd.ClearedCheck.NA
+        return when (n) {
+            0x31 -> c.distanceKm?.let { com.obdreader.app.obd.ClearedCheck.distanceText(it) } ?: na
+            0x30 -> c.warmUps?.let { com.obdreader.app.obd.ClearedCheck.warmUpText(it) } ?: na
+            0x4E -> c.minutes?.let { com.obdreader.app.obd.ClearedCheck.durationText(it) } ?: na
+            0x21 -> c.milDistanceKm?.let { com.obdreader.app.obd.ClearedCheck.distanceText(it) } ?: na
+            0x4D -> c.milMinutes?.let { com.obdreader.app.obd.ClearedCheck.durationText(it) } ?: na
+            0x01 -> c.readiness?.summary() ?: na
+            else -> null
+        }
     }
 
     /** What the scan found about the battery, as (text, found) lines. */
@@ -3774,6 +3923,13 @@ open class MainActivity : AppCompatActivity() {
             codes.stored.forEach { addDtcRow(it, pending = false) }
             codes.pending.forEach { addDtcRow(it, pending = true) }
         }
+        codes.permanent?.takeIf { it.isNotEmpty() }?.let { p ->
+            dtcContainer.addView(TextView(this).apply {
+                text = getString(R.string.permanent_codes, p.joinToString(", "))
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setLineSpacing(0f, 1.15f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                setPadding(0, dp(10f).toInt(), 0, 0)
+            })
+        }
     }
 
     private fun readVin() {
@@ -3853,7 +4009,12 @@ open class MainActivity : AppCompatActivity() {
         val userVin = AppPrefs.userVin(prefs)
         val vin = userVin ?: carVin
         val checked = vin == null || vin.length < 17 || VinDecoder.isValid(vin)
-        vinText.text = vin ?: "Not reported"
+        val mode = vinMode()
+        vinText.text = when {
+            vin == null -> "Not reported"
+            mode == com.obdreader.app.obd.VinPrivacy.Mode.HIDDEN -> getString(R.string.vin_hidden)
+            else -> com.obdreader.app.obd.VinPrivacy.mask(vin, mode)
+        }
         findViewById<TextView>(R.id.vinLabel).setText(if (userVin != null) R.string.vin_entered else R.string.vin)
         findViewById<MaterialButton>(R.id.vinEnter).apply {
             setText(if (userVin != null) R.string.vin_change else R.string.vin_enter)
@@ -3862,7 +4023,7 @@ open class MainActivity : AppCompatActivity() {
         val note = findViewById<TextView>(R.id.vinNote)
         note.text = when {
             userVin != null && carVin != null && carVin != userVin ->
-                "Your car's engine computer reports $carVin, which doesn't match your VIN plate. That happens on some cars: the VIN stored in the computer can have a typo from when it was programmed, or come from another car if the computer was replaced. It doesn't affect live data or trouble codes."
+                "Your car's engine computer reports ${if (mode == com.obdreader.app.obd.VinPrivacy.Mode.HIDDEN) "a different VIN" else com.obdreader.app.obd.VinPrivacy.mask(carVin, mode)}, which doesn't match your VIN plate. That happens on some cars: the VIN stored in the computer can have a typo from when it was programmed, or come from another car if the computer was replaced. It doesn't affect live data or trouble codes."
             userVin == null && carVin != null && !checked ->
                 "This VIN fails its check digit, so it may not be your car's. If it doesn't match your VIN plate, enter the right one below."
             else -> null
@@ -3883,7 +4044,8 @@ open class MainActivity : AppCompatActivity() {
     /** Lets the user type their VIN from the plate, or go back to the one the car sends. */
     private fun askForVin(carVin: String?) {
         val input = com.google.android.material.textfield.TextInputEditText(this).apply {
-            setText(AppPrefs.userVin(prefs) ?: carVin ?: "")
+            // Filled in only when Hide VIN lets the whole VIN show.
+            setText(if (vinMode() == com.obdreader.app.obd.VinPrivacy.Mode.FULL) AppPrefs.userVin(prefs) ?: carVin ?: "" else "")
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS or android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
             filters = arrayOf(android.text.InputFilter.AllCaps(), android.text.InputFilter.LengthFilter(20))
             typeface = uiTypeface(500)

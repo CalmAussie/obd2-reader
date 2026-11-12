@@ -77,6 +77,8 @@ class DemoTransport(
             cmd == "090A" -> "490A01" + "ECM-EngineControl".padEnd(20, '\u0000').map { String.format(Locale.US, "%02X", it.code) }.joinToString("")
             cmd == "03" -> "430201330420"
             cmd == "07" -> DemoTestHooks.newPendingCode?.let { "470201710" + it.removePrefix("P0").padStart(3, '0') } ?: "47010171"
+            // Permanent codes: the catalyst code stays until the car's own test passes.
+            cmd == "0A" -> "4A010420"
             cmd == "0902" -> vinFrames(vin)
             // Freeze frame: stored with P0133 on a warm engine at a steady 64 km/h, a little lean.
             cmd.length == 6 && cmd.startsWith("02") && cmd.endsWith("00") -> freeze(cmd.substring(2, 4))?.let { "42${cmd.substring(2, 4)}00$it" } ?: "NO DATA"
