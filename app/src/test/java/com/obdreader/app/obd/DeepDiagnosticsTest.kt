@@ -52,10 +52,10 @@ class DeepDiagnosticsTest {
     fun everyMakesModulesAnswerWhereTheyShould() {
         fun mod(make: String, req: String, is29: Boolean = false) = ModuleScan.modulesFor(make, null, is29).first { it.request == req }
         assertEquals("7B8", mod("Toyota", "7B0").reply)        // + 8
-        assertEquals("788", mod("Lexus", "780").reply)
+        assertEquals("7A9", mod("Lexus", "7A1").reply)
         assertEquals("760", mod("Nissan", "740").reply)        // + 0x20
         assertEquals("77D", mod("Volkswagen", "713").reply)    // + 0x6A
-        assertEquals("77F", mod("SEAT / Cupra", "715").reply)
+        assertEquals("77C", mod("SEAT / Cupra", "712").reply)
         assertEquals("4C7", mod("Jeep", "747").reply)          // - 0x280
         assertEquals("64B", mod("Holden", "24B").reply)        // + 0x400
         assertEquals("7EA", mod("Chevrolet", "7E2").reply)     // GM's transmission computer

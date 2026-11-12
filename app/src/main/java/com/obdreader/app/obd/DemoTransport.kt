@@ -69,7 +69,7 @@ class DemoTransport(
             cmd == "0101" -> "410182076504"
             cmd == "0904" -> "490401" + "1L8A-14C204-AAA".padEnd(16, '\u0000').map { String.format(Locale.US, "%02X", it.code) }.joinToString("")
             cmd.length == 4 && cmd.startsWith("06") -> mode06(cmd.substring(2).toInt(16))?.let { "46$it" } ?: "NO DATA"
-            // Other modules: the ABS has a stored code, the airbag module has none, the rest don't answer.
+            // Other modules: the ABS has a stored code, the transmission has none, the rest don't answer.
             // With headers on (the module search), each answer comes as CAN frames from its address.
             cmd == "1902FF" -> moduleCodes(header)?.let { if (headers) frames(header, it) else it } ?: "NO DATA"
             // Enhanced readings and module information, as a Ford's modules answer them.
@@ -153,7 +153,7 @@ class DemoTransport(
     @Volatile private var headers = false
 
     /**
-     * Other modules: the ABS has a stored code, the airbag module and the transmission have none,
+     * Other modules: the ABS has a stored code, the transmission has none,
      * and one module the car's make isn't known for (at 7A0) answers the search with none. On the
      * second network, the instrument cluster has a stored code and the body module none.
      */
@@ -163,7 +163,7 @@ class DemoTransport(
         else -> null
     } else when (h) {
         "760" -> "5902FF51451C0A"
-        "737", "7E1", "7A0" -> "5902FF"
+        "7E1", "7A0" -> "5902FF"
         "7E0", "7DF" -> "5902FF0133000801710004"
         else -> null
     }

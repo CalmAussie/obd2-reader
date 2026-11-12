@@ -443,6 +443,12 @@ object ObdSession {
         context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.year }
             ?: vinFor(context)?.let { com.obdreader.app.obd.VinDecoder.decode(it).modelYear }
 
+    /** The chosen car's model (car list name), for maker codes limited to some models; the VIN doesn't give one. */
+    fun carModel(context: Context?): String? = context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.model }
+
+    /** The chosen car's engine (car list name), for maker codes limited to some engines. */
+    fun carEngine(context: Context?): String? = context?.let { AppPrefs.savedCar(AppPrefs.of(it))?.engine }
+
     /** The VIN to go by: the one the user entered from their VIN plate, else the one the car sent. */
     fun vinFor(context: Context?): String? =
         context?.let { AppPrefs.userVin(AppPrefs.of(it)) } ?: _state.value.vin
@@ -603,7 +609,7 @@ object ObdSession {
     /**
      * "Search every address": asks every module address the car's make could use, a block at a
      * time, with a read-only request, and reads the codes of each module that answers and isn't in
-     * [already]. [progress] gets (asked so far, total). Null on non-CAN cars.
+     * [already]. Airbag modules are never asked. [progress] gets (asked so far, total). Null on non-CAN cars.
      */
     suspend fun searchModules(
         context: Context,
@@ -637,10 +643,10 @@ object ObdSession {
             }
         }
         appendLog("= Found ${found.size} answering: " + found.entries.joinToString(", ") { "${it.key}→${it.value}" }.ifEmpty { "none" })
-        return found.filterKeys { it !in already }.map { (req, reply) ->
-            val m = ModuleScan.Module(ModuleScan.nameFor(make, req, bit29), req, reply)
-            m to readModule(c, m)
-        }
+        return found.filterKeys { it !in already }
+            .map { (req, reply) -> ModuleScan.Module(ModuleScan.nameFor(make, req, bit29), req, reply) }
+            .filter { !ModuleScan.isAirbag(make, it) }
+            .map { m -> m to readModule(c, m) }
     }
 
     /** True for a 1996–2000 Volvo 850, S70, V70, C70 or XC70 on the K-line (ISO 9141), which speaks keyword D3 B0. */
@@ -808,13 +814,15 @@ object ObdSession {
      * Module information for each of [modules]: the standard identifiers it answers (system, part
      * number, supplier, hardware, software, serial, VIN). A module that doesn't answer the first two
      * is skipped, so this stays quick. The engine computer's OBD2 name (service 09) is added too.
+     * Airbag modules of [make]'s are never asked, even if they're in [modules].
      */
-    suspend fun readModuleInfo(modules: List<ModuleScan.Module>, progress: (Int, Int) -> Unit): List<Pair<ModuleScan.Module, List<Pair<String, String>>>> {
+    suspend fun readModuleInfo(make: String?, modules: List<ModuleScan.Module>, progress: (Int, Int) -> Unit): List<Pair<ModuleScan.Module, List<Pair<String, String>>>> {
         val c = client ?: throw IOException("Not connected")
         if (!c.isCan) return emptyList()
+        val asked = modules.filter { !ModuleScan.isAirbag(make, it) }
         val ids = com.obdreader.app.obd.EnhancedReadings.IDENTIFIERS
         val out = mutableListOf<Pair<ModuleScan.Module, List<Pair<String, String>>>>()
-        modules.forEachIndexed { i, m ->
+        asked.forEachIndexed { i, m ->
             val switch = if (m.is29Bit && !carIs29Bit()) ModuleScan.protocolSwitch(_state.value.protocolCode) else null
             if (!(m.is29Bit && !carIs29Bit() && switch == null)) {
                 val point = (listOfNotNull(switch?.first) + ModuleScan.pointAt(m)).map { it to 1500L }
@@ -834,7 +842,7 @@ object ObdSession {
                     out += m to fields
                 }
             }
-            progress(i + 1, modules.size)
+            progress(i + 1, asked.size)
         }
         return out
     }
@@ -1012,7 +1020,7 @@ object ObdSession {
     private fun logCodes(codes: List<String>, pending: Boolean): List<String> {
         val kind = if (pending) "pending" else "stored"
         val lines = if (codes.isEmpty()) listOf("= No $kind codes")
-        else listOf("= ${codes.size} $kind ${if (codes.size == 1) "code" else "codes"}:") + codes.map { "=   " + DtcLibrary.logLine(it, carMake(appContext), carYear(appContext)) }
+        else listOf("= ${codes.size} $kind ${if (codes.size == 1) "code" else "codes"}:") + codes.map { "=   " + DtcLibrary.logLine(it, carMake(appContext), carYear(appContext), carModel(appContext), carEngine(appContext)) }
         lines.forEach { appendLog(it) }
         return lines
     }
