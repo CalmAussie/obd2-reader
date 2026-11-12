@@ -1049,7 +1049,7 @@ open class MainActivity : AppCompatActivity() {
     private fun setupGroups() {
         val groups = listOf(
             Triple("car", "Car and connection", listOf(R.id.carRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.logCard)),
-            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
+            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.clearedRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
             Triple("display", "Display and readings", listOf(R.id.unitsRow, R.id.slotsRow, R.id.widgetRow, R.id.autoRow, R.id.pipRow, R.id.appIconRow)),
             Triple("help", "Help and feedback", listOf(R.id.helpRow, R.id.reportRow, R.id.ideaRow, R.id.updatesRow)),
         )
