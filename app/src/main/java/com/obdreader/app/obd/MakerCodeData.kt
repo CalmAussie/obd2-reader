@@ -567,6 +567,15 @@ internal object MakerCodeData {
             listOf("Check-engine light on", "Reduced power in some cases", "Often appears after drive unit or control module work"),
             listOf("Note whether the code appeared after recent repairs", "Have a GM dealer or hybrid-trained technician repeat the position learn", "Have the sensor and wiring tested if the learn won't complete"),
             "GM PIP4871C: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2021/MC-10201319-9999.pdf; https://static.nhtsa.gov/odi/tsbs/2023/MC-10230607-0001.pdf
+        e("P1101", "Holden", listOf(f(2018, 2020, "Equinox", "1.5 turbo")),
+            "Intake air flow system performance",
+            "GM's definition: the engine computer compares its air flow, intake pressure, boost and throttle readings with each other, and they don't agree.",
+            M,
+            listOf("The hose from the charge air cooler (intercooler) has come off the throttle body, the cause GM names for these cars", "A dirty or failing mass air flow sensor", "An air leak in the intake after the air flow sensor", "A blocked air filter"),
+            listOf("Reduced engine power", "Hesitation", "A rough idle"),
+            listOf("Check the large hose from the intercooler is firmly clamped onto the throttle body", "Look for other loose or split intake and turbo hoses", "Have the air flow sensor readings checked if the hoses are sound"),
+            "GM PIP5651F (wording from GM 22-NA-224): the maker's own service bulletin, filed with NHTSA")
     }
 
     private fun honda(sink: Sink) = with(sink) {
@@ -745,6 +754,188 @@ internal object MakerCodeData {
             listOf("Hard starting", "Hesitation or reduced power", "Stalling in some cases"),
             listOf("Check the sensor's connector and wiring on the fuel rail", "Have the fuel pressure measured to see whether the sensor or the pressure is wrong", "Replace the sensor if the pressure is good"),
             "Audi TSB 2027306: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2014/MC-10239837-9999.pdf
+        e("P13CE P13D1 P13D4 P13D7", "Volkswagen", listOf(
+                f(2012, 2014, "Beetle", "2.0 diesel"),
+                f(2010, 2014, "Golf", "2.0 TDI diesel"),
+                f(2009, 2014, "Jetta", "2.0 diesel"),
+                f(2012, 2014, "Passat", "2.0 TDI diesel"),
+            ),
+            "Cylinder pressure sensor: electrical fault",
+            "Volkswagen's definition: the pressure sensor inside the glow plug, which measures pressure in the cylinder, has an electrical fault. The four codes are for cylinders 1 to 4 in order.",
+            M,
+            listOf("A loose connector on that cylinder's glow plug, the most likely cause in Volkswagen's bulletin", "A failed glow plug (the pressure sensor is built into it)", "Damaged wiring to the glow plug"),
+            listOf("Check-engine light on", "Harder cold starts or a rough idle when cold in some cases", "Often no change in how the car drives"),
+            listOf("Check that the glow plug connector is fully pushed home and doesn't pull off easily", "Have a workshop swap that glow plug with the one next to it and see whether the code moves with it", "Replace the glow plug only if the code follows it to the other cylinder"),
+            "VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2014/MC-10239837-9999.pdf
+        e("P13CF P13D2 P13D5 P13D8", "Volkswagen", listOf(
+                f(2012, 2014, "Beetle", "2.0 diesel"),
+                f(2010, 2014, "Golf", "2.0 TDI diesel"),
+                f(2009, 2014, "Jetta", "2.0 diesel"),
+                f(2012, 2014, "Passat", "2.0 TDI diesel"),
+            ),
+            "Cylinder pressure sensor: short circuit to ground",
+            "Volkswagen's definition: the pressure sensor inside the glow plug, which measures pressure in the cylinder, is shorted to ground. The four codes are for cylinders 1 to 4 in order.",
+            M,
+            listOf("A loose connector on that cylinder's glow plug, the most likely cause in Volkswagen's bulletin", "A failed glow plug (the pressure sensor is built into it)", "Damaged wiring to the glow plug"),
+            listOf("Check-engine light on", "Harder cold starts or a rough idle when cold in some cases", "Often no change in how the car drives"),
+            listOf("Check that the glow plug connector is fully pushed home and doesn't pull off easily", "Have a workshop swap that glow plug with the one next to it and see whether the code moves with it", "Replace the glow plug only if the code follows it to the other cylinder"),
+            "VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2014/MC-10239837-9999.pdf
+        e("P13D0 P13D3 P13D6 P13D9", "Volkswagen", listOf(
+                f(2012, 2014, "Beetle", "2.0 diesel"),
+                f(2010, 2014, "Golf", "2.0 TDI diesel"),
+                f(2009, 2014, "Jetta", "2.0 diesel"),
+                f(2012, 2014, "Passat", "2.0 TDI diesel"),
+            ),
+            "Cylinder pressure sensor: implausible signal",
+            "Volkswagen's definition: the pressure sensor inside the glow plug, which measures pressure in the cylinder, is sending a reading that doesn't make sense. The four codes are for cylinders 1 to 4 in order.",
+            M,
+            listOf("A loose connector on that cylinder's glow plug, the most likely cause in Volkswagen's bulletin", "A failed glow plug (the pressure sensor is built into it)", "Damaged wiring to the glow plug"),
+            listOf("Check-engine light on", "Harder cold starts or a rough idle when cold in some cases", "Often no change in how the car drives"),
+            listOf("Check that the glow plug connector is fully pushed home and doesn't pull off easily", "Have a workshop swap that glow plug with the one next to it and see whether the code moves with it", "Replace the glow plug only if the code follows it to the other cylinder"),
+            "VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2014/MC-10239837-9999.pdf
+        e("P13E0 P13E1 P13E2 P13E3", "Volkswagen", listOf(
+                f(2012, 2014, "Beetle", "2.0 diesel"),
+                f(2010, 2014, "Golf", "2.0 TDI diesel"),
+                f(2009, 2014, "Jetta", "2.0 diesel"),
+                f(2012, 2014, "Passat", "2.0 TDI diesel"),
+            ),
+            "Cylinder pressure sensor: malfunction",
+            "Volkswagen's definition: the pressure sensor inside the glow plug, which measures pressure in the cylinder, isn't working properly. The four codes are for cylinders 1 to 4 in order.",
+            M,
+            listOf("A loose connector on that cylinder's glow plug, the most likely cause in Volkswagen's bulletin", "A failed glow plug (the pressure sensor is built into it)", "Damaged wiring to the glow plug"),
+            listOf("Check-engine light on", "Harder cold starts or a rough idle when cold in some cases", "Often no change in how the car drives"),
+            listOf("Check that the glow plug connector is fully pushed home and doesn't pull off easily", "Have a workshop swap that glow plug with the one next to it and see whether the code moves with it", "Replace the glow plug only if the code follows it to the other cylinder"),
+            "VW technical bulletin 2037386: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2016/MC-10107504-9430.pdf
+        e("P130A", "Volkswagen", listOf(
+                f(2008, 2017, "Beetle", "1.6 I4|2.0 I4|2.5 I5|1.2 turbo|1.4 turbo|1.8 TSI|2.0 turbo"),
+                f(2008, 2017, "CC", "1.8 turbo|2.0 turbo|3.6 V6"),
+                f(2008, 2015, "Eos", "1.4 turbo|2.0 turbo|3.2 VR6|3.6 V6"),
+                f(2008, 2017, "Golf", "1.6|2.0|3.2 V6 (R32)|2.0 TSI turbo (GTI/R)|1.4 TSI|1.2 TSI|1.4|2.5 I5|1.0 TSI|1.4 TSI plug-in hybrid (GTE)"),
+                f(2008, 2017, "Jetta", "2.0 I4|2.5 I5|2.0 turbo|1.4 turbo|1.8 TSI|1.4 turbo hybrid"),
+                f(2008, 2017, "Passat", "2.0 TSI turbo|3.6 V6|2.0|3.2 VR6|1.8 TSI|1.4 TSI|2.5 I5|1.4 TSI plug-in hybrid (GTE)"),
+                f(2008, 2017, "Tiguan", "1.4 TSI|2.0 TSI turbo"),
+                f(2008, 2017, "Touareg", "4.2 V8|3.6 V6|6.0 W12|3.0 V6 TSI|3.0 V6 hybrid"),
+            ),
+            "Cylinder switched off after misfires",
+            "Volkswagen's definition: the engine computer has switched a cylinder off (\"hidden\" it) because it was misfiring. Volkswagen treats misfire codes with this one as a real fault, not just poor fuel.",
+            H,
+            listOf("A failed ignition coil or spark plug", "A faulty fuel injector", "Loose or damaged wiring or a poor engine ground", "Poor quality fuel"),
+            listOf("A flashing or steady check-engine light", "The engine running roughly or on fewer cylinders", "Reduced power"),
+            listOf("Ease off and avoid hard driving while the light is flashing", "Note which cylinder's misfire code (P0301 to P0308) came with it", "Have the coil, plug and injector on that cylinder checked"),
+            "VW technical bulletin 01 16 13: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2016/MC-10107504-9430.pdf
+        e("P1250", "Volkswagen", listOf(
+                f(2008, 2017, "Beetle", "1.6 I4|2.0 I4|2.5 I5|1.2 turbo|1.4 turbo|1.8 TSI|2.0 turbo"),
+                f(2008, 2017, "CC", "1.8 turbo|2.0 turbo|3.6 V6"),
+                f(2008, 2015, "Eos", "1.4 turbo|2.0 turbo|3.2 VR6|3.6 V6"),
+                f(2008, 2017, "Golf", "1.6|2.0|3.2 V6 (R32)|2.0 TSI turbo (GTI/R)|1.4 TSI|1.2 TSI|1.4|2.5 I5|1.0 TSI|1.4 TSI plug-in hybrid (GTE)"),
+                f(2008, 2017, "Jetta", "2.0 I4|2.5 I5|2.0 turbo|1.4 turbo|1.8 TSI|1.4 turbo hybrid"),
+                f(2008, 2017, "Passat", "2.0 TSI turbo|3.6 V6|2.0|3.2 VR6|1.8 TSI|1.4 TSI|2.5 I5|1.4 TSI plug-in hybrid (GTE)"),
+                f(2008, 2017, "Tiguan", "1.4 TSI|2.0 TSI turbo"),
+                f(2008, 2017, "Touareg", "4.2 V8|3.6 V6|6.0 W12|3.0 V6 TSI|3.0 V6 hybrid"),
+            ),
+            "Fuel level too low",
+            "Volkswagen's definition: the engine computer recorded that the fuel level was too low. Volkswagen says misfire codes stored with this one most likely came from running low on fuel, not from a failed part.",
+            L,
+            listOf("Running the tank very low", "Less often, a fuel gauge sender reading wrongly"),
+            listOf("Often nothing once the car has been refuelled", "Stumbling or misfires when the tank was nearly empty"),
+            listOf("Fill up and see whether the misfire codes come back", "If they return with plenty of fuel in the tank, have the misfire diagnosed as usual"),
+            "VW technical bulletin 01 16 13: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10226218-0001.pdf
+        e("P30C0", "Volkswagen", listOf(f(2022, 2022, "Jetta|Taos")),
+            "Poor fuel quality",
+            "Volkswagen's definition: the engine computer judged the fuel to be of poor quality. Volkswagen covers this code in an engine software update for these cars.",
+            L,
+            listOf("Poor quality or stale fuel", "Engine software from before Volkswagen's update 24iR"),
+            listOf("Uneven pulling power at low revs, about 1,200 to 2,000 rpm", "Check-engine light on", "Often no other symptom"),
+            listOf("Fill up with fresh fuel from a busy station", "Ask a Volkswagen dealer whether software update 24iR has been done on your car"),
+            "VW software update 24iR: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10209417-0001.pdf
+        e("P148D", "Volkswagen", listOf(f(2020, 2021, "Jetta", "1.4 turbo")),
+            "EVAP leak detection pump: implausible frequency",
+            "Volkswagen's definition: the signal from the pump that tests the fuel vapour system for leaks doesn't make sense. Volkswagen says not to replace parts for this code on these cars until the engine software has been updated.",
+            L,
+            listOf("Engine software from before Volkswagen's update, the cause named in the bulletin", "Less often, a faulty leak detection pump or its wiring"),
+            listOf("Check-engine light on", "Usually no change in how the car drives"),
+            listOf("Ask a Volkswagen dealer whether the engine software update in bulletin 01-22-03 has been done", "Check that the fuel cap clicks shut and its seal is intact", "If the code returns after the update, have the leak detection pump and wiring tested"),
+            "VW technical bulletin 01-22-03: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10209417-0001.pdf
+        e("P30DC", "Volkswagen", listOf(f(2020, 2021, "Jetta", "1.4 turbo")),
+            "Fuel tank pressure can't be released for refuelling",
+            "Volkswagen's definition: the car couldn't release the pressure in the fuel tank ready for refuelling. Volkswagen says not to replace parts for this code on these cars until the engine software has been updated.",
+            M,
+            listOf("Engine software from before Volkswagen's update, the cause named in the bulletin", "Less often, a stuck vent valve or a blocked vapour line"),
+            listOf("Check-engine light on", "A fuel pump nozzle that keeps clicking off, in some cases"),
+            listOf("Ask a Volkswagen dealer whether the engine software update in bulletin 01-22-03 has been done", "If the code returns after the update, have the tank vent valve and vapour lines checked"),
+            "VW technical bulletin 01-22-03: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233278-0001.pdf
+        e("P1CC3", "Volkswagen", listOf(f(2023, 2023, "ID.4")),
+            "External charger malfunction",
+            "Volkswagen's definition: the car detected a fault in the charging station or cable it was plugged into, not in the car itself. Volkswagen's bulletin covers 2023 ID.4s built in Chattanooga, USA, and says that on those cars this code can be stored with no real fault, when it comes with a particular Volkswagen symptom code that a basic reader can't show.",
+            L,
+            listOf("A faulty or incompatible public charger or wallbox", "A damaged charging cable", "A dropout in the charger's power supply"),
+            listOf("Often nothing at all", "A charging session that didn't start or stopped early, in some cases"),
+            listOf("Try a different charger or cable and see whether it charges normally", "If charging keeps failing on more than one charger, ask a Volkswagen dealer to read the code's symptom code"),
+            "VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233278-0001.pdf
+        e("P1DCB", "Volkswagen", listOf(f(2023, 2023, "ID.4")),
+            "External charger not ready (charging socket A)",
+            "Volkswagen's definition: the charging station plugged into the car's main charging socket didn't signal that it was ready to charge. Volkswagen's bulletin covers 2023 ID.4s built in Chattanooga, USA, and says that on those cars this code can be stored with no real fault, when it comes with a particular Volkswagen symptom code that a basic reader can't show.",
+            L,
+            listOf("A charger that wasn't started, authorised or switched on", "A faulty charger or cable", "A plug that wasn't pushed fully home"),
+            listOf("Often nothing at all", "A charging session that didn't start or stopped early, in some cases"),
+            listOf("Try a different charger or cable and see whether it charges normally", "If charging keeps failing on more than one charger, ask a Volkswagen dealer to read the code's symptom code"),
+            "VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233278-0001.pdf
+        e("P1DCF", "Volkswagen", listOf(f(2023, 2023, "ID.4")),
+            "Charging socket B: emergency charging function active",
+            "Volkswagen's definition: the car's second charging socket has dropped into its fallback charging mode. Volkswagen's bulletin covers 2023 ID.4s built in Chattanooga, USA, and says that on those cars this code can be stored with no real fault, when it comes with a particular Volkswagen symptom code that a basic reader can't show.",
+            L,
+            listOf("A temperature reading at the charging socket that the car couldn't trust", "A software quirk on these cars, as described in the bulletin"),
+            listOf("Often nothing at all", "Slower charging than usual, in some cases"),
+            listOf("Try a different charger or cable and see whether it charges normally", "If charging keeps failing on more than one charger, ask a Volkswagen dealer to read the code's symptom code"),
+            "VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233278-0001.pdf
+        e("P1DD1 P1DD2", "Volkswagen", listOf(f(2023, 2023, "ID.4")),
+            "Charging socket temperature: emergency charging function active",
+            "Volkswagen's definition: the car is using its fallback charging mode because of the temperature reading at a charging socket. The first code is for socket A and the second for socket B. Volkswagen's bulletin covers 2023 ID.4s built in Chattanooga, USA, and says that on those cars this code can be stored with no real fault, when it comes with a particular Volkswagen symptom code that a basic reader can't show.",
+            L,
+            listOf("A hot or dirty charging plug or socket", "A temperature sensor reading at the socket that the car couldn't trust", "A software quirk on these cars, as described in the bulletin"),
+            listOf("Often nothing at all", "Slower charging than usual, in some cases"),
+            listOf("Check the charging socket and plug for dirt, damage or signs of heat", "Try a different charger or cable", "If charging stays slow on more than one charger, ask a Volkswagen dealer to read the code's symptom code"),
+            "VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233278-0001.pdf
+        e("P1CF4", "Volkswagen", listOf(f(2023, 2023, "ID.4")),
+            "Charging connector lock blocked (socket A)",
+            "Volkswagen's definition: the lock that holds the charging plug in the socket couldn't move. Volkswagen's bulletin covers 2023 ID.4s built in Chattanooga, USA, and says that on those cars this code can be stored with no real fault, when it comes with a particular Volkswagen symptom code that a basic reader can't show.",
+            L,
+            listOf("A plug that wasn't pushed fully home", "Dirt or ice in the charging socket", "A sticking lock actuator"),
+            listOf("Often nothing at all", "A charging plug that won't lock in or won't release, in some cases"),
+            listOf("Push the plug in firmly and try again", "Check the socket for dirt, ice or damage", "If the plug won't release, use the emergency release described in the owner's manual and have the lock checked"),
+            "VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233278-0001.pdf
+        e("P31DD", "Volkswagen", listOf(f(2023, 2023, "ID.4")),
+            "Charging connector lock: electrical fault (socket A)",
+            "Volkswagen's definition: the circuit that drives the lock for the charging plug has an electrical fault. Volkswagen's bulletin covers 2023 ID.4s built in Chattanooga, USA, and says that on those cars this code can be stored with no real fault, when it comes with a particular Volkswagen symptom code that a basic reader can't show.",
+            L,
+            listOf("A software quirk on these cars, as described in the bulletin", "A faulty lock actuator or its wiring"),
+            listOf("Often nothing at all", "A charging plug that won't lock in or won't release, in some cases"),
+            listOf("See whether the plug still locks and releases normally", "If it doesn't, ask a Volkswagen dealer to test the lock actuator and read the code's symptom code"),
+            "VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233278-0001.pdf
+        e("P1CB5", "Volkswagen", listOf(f(2023, 2023, "ID.4")),
+            "Plug and Charge: vehicle certificate could not be installed",
+            "Volkswagen's definition: the car had a communication error while installing the digital certificate it uses to identify itself to chargers for Plug and Charge. Volkswagen's bulletin covers 2023 ID.4s built in Chattanooga, USA, and says that on those cars this code can be stored with no real fault, when it comes with a particular Volkswagen symptom code that a basic reader can't show.",
+            L,
+            listOf("A dropped data connection while the certificate was being installed", "A software quirk on these cars, as described in the bulletin"),
+            listOf("Often nothing at all", "Plug and Charge not working, so the charger asks for an app or card instead"),
+            listOf("Start the charge with the app or a card instead", "If Plug and Charge never works, ask a Volkswagen dealer to check the car's software and certificate"),
+            "VW technical bulletin 01-23-05: the maker's own service bulletin, filed with NHTSA")
     }
 
     private fun subaru(sink: Sink) = with(sink) {

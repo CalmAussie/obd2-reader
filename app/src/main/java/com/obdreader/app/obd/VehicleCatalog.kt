@@ -339,6 +339,7 @@ object VehicleCatalog {
             Model("Amarok", 2011, 2026, listOf(e("2.0 TDI diesel", 2011, 2026, 4500, D), e("3.0 V6 TDI diesel", 2016, 2026, 4500, D))),
             Model("Arteon", 2017, 2026), Model("Atlas", 2017, 2026), Model("Beetle", 1998, 2019), Model("Bora", 1999, 2005),
             Model("Caddy", 2004, 2026), Model("CC", 2008, 2017), Model("Eos", 2006, 2015),
+            Model("ID.4", 2021, 2026),
             Model("Golf", 1994, 2026, listOf(
                 e("1.6", 1994, 2008, 6200), e("2.0", 1994, 2008, 6200), e("1.8 turbo", 1998, 2005, 6500),
                 e("1.9 TDI diesel", 1996, 2009, 4800, D), e("3.2 V6 (R32)", 2003, 2009, 6800), e("2.0 TDI diesel", 2004, 2026, 4800, D),
@@ -354,7 +355,7 @@ object VehicleCatalog {
                 e("1.4", 1994, 2009, 6200), e("1.6", 1994, 2010, 6200), e("1.2 TSI", 2010, 2017, 6000),
                 e("1.8 TSI (GTI)", 2010, 2017, 6500), e("1.0 TSI", 2017, 2026, 6000),
             )),
-            Model("Scirocco", 2009, 2017), Model("T-Cross", 2019, 2026), Model("T-Roc", 2017, 2026),
+            Model("Scirocco", 2009, 2017), Model("T-Cross", 2019, 2026), Model("T-Roc", 2017, 2026), Model("Taos", 2021, 2026),
             Model("Tiguan", 2007, 2026, listOf(e("1.4 TSI", 2007, 2020, 6000), e("2.0 TSI turbo", 2007, 2026, 6500), e("2.0 TDI diesel", 2007, 2026, 4800, D))),
             Model("Touareg", 2003, 2026, listOf(
                 e("3.2 V6", 2003, 2006, 6500), e("2.5 TDI diesel", 2003, 2010, 4500, D), e("4.2 V8", 2004, 2010, 6500),
@@ -919,7 +920,7 @@ object VehicleCatalog {
     private val EV_MODELS = listOf(
         "Nissan" to "leaf", "Mitsubishi" to "i-miev", "Subaru" to "solterra", "Lexus" to "rz", "Jaguar" to "i-pace",
         "Renault" to "zoe", "Dacia" to "spring", "MG" to "mg4", "Smart" to "#", "Volvo" to "ex30", "Volvo" to "c40",
-        "Lotus" to "eletre", "Rolls-Royce" to "spectre",
+        "Lotus" to "eletre", "Rolls-Royce" to "spectre", "Volkswagen" to "id.",
         "Hyundai" to "ioniq 5", "Hyundai" to "ioniq 6", "Hyundai" to "kona electric", "Kia" to "ev", "Kia" to "niro ev",
         "Genesis" to "gv60", "BYD" to "atto", "BYD" to "dolphin", "BYD" to "han", "BYD" to "seal",
     )
