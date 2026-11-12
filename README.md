@@ -145,6 +145,7 @@ Videos are saved to **Movies → OBD2 Reader**.
 - **Read-only:** the app never clears codes or changes anything in your car. Anything that isn't a read is blocked.
 - **No account, no tracking:** nothing is sent to the developer. The only internet use is the update check, from GitHub (about once a day, in the background too while notifications are on).
 - **Your location stays on your phone:** it's only saved inside a drive you choose to record with its route.
+- **Check your download is genuine:** every release is signed with the same certificate. Its SHA-256 fingerprint is `77ad52081183e8001d6235e096dbaae6a8728c283341402bdb60852b49602714`. To check an APK on a computer with the Android SDK, run `apksigner verify --print-certs OBD2Reader.apk` and compare the "certificate SHA-256 digest" line. Android also refuses any update signed with a different certificate.
 
 ## Feedback
 
@@ -152,11 +153,11 @@ Found a problem or have an idea? Use **Diagnostics → Report a problem** or **S
 
 ## For developers
 
-- **Build:** every push to `main` runs the unit tests, builds a signed APK and publishes a release. To build locally, use Android Studio (JDK 17) or `gradle assembleRelease` with Gradle 8.7.
+- **Build:** every push and pull request runs the unit tests and a test build, without the signing key. On `main`, a second job signs and publishes the release, but only after the maintainer approves it on the run's page (the `release` environment). To build locally, use Android Studio (JDK 17) or `gradle assembleRelease` with Gradle 8.7.
 - **Release:** bump `obdVersion` in `gradle.properties` and add a [`CHANGELOG.md`](CHANGELOG.md) entry, which becomes the release notes.
 - **Install test:** each release is installed on Android 10, 13, 15 and 16 emulators (17 experimental), run with the demo car and checked for crashes.
 - **Preview:** [`preview/index.html`](preview/index.html) is a web mock-up of the app. Check changes in the real app too.
-- **Signing:** the key lives in repository secrets (`OBD_KEYSTORE_BASE64`, `OBD_KEYSTORE_PASSWORD`, `OBD_KEY_ALIAS`, `OBD_KEY_PASSWORD`). Never commit a keystore.
+- **Signing:** the key lives only in the `release` environment's secrets (`OBD_KEYSTORE_BASE64`, `OBD_KEYSTORE_PASSWORD`, `OBD_KEY_ALIAS`, `OBD_KEY_PASSWORD`), never in repository secrets. Never commit a keystore. Third-party GitHub Actions are pinned to full commits, and Dependabot offers updates.
 
 Code lives under `app/src/main/java/com/obdreader/app/`: `obd/` (adapters, parsing, codes, car data), `session/` (the shared connection, recording, alerts), `ui/` (styles and dashboard views), `car/` (Android Auto) and `MainActivity.kt` (the three tabs).
 
