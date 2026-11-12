@@ -28,11 +28,11 @@ object Units {
     fun defaultFahrenheit(country: String?) = country?.uppercase() in FAHRENHEIT
     fun defaultPressure(country: String?): Pressure = if (country?.uppercase() in FAHRENHEIT) Pressure.PSI else Pressure.KPA
 
-    /** Readings that are pressures: manifold pressure and boost. */
-    private val PRESSURES = setOf("0B", Boost.KEY)
+    /** Readings that are pressures in kPa: manifold pressure, boost, fuel pressure and fuel rail pressure. */
+    private val PRESSURES = setOf("0B", Boost.KEY, "0A", "22", "23", "59")
 
-    /** Readings that are temperatures: coolant, intake air, ambient air and oil. */
-    private val TEMPERATURES = setOf("05", "0F", "46", "5C")
+    /** Readings that are temperatures: coolant, intake air, ambient air, oil, catalyst and exhaust gas. */
+    private val TEMPERATURES = setOf("05", "0F", "46", "5C", "3C", "3D", "3E", "3F", "78", "79")
     private const val SPEED_KEY = "0D"
 
     fun isTemperature(key: String) = key in TEMPERATURES

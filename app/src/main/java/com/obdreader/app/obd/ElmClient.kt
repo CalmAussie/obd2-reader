@@ -175,7 +175,7 @@ class ElmClient(
     suspend fun readPid(pid: Pid): Double? {
         val bytes = ElmParser.extractData(command("01" + pid.hex), "41" + pid.hex) ?: return null
         if (bytes.size < pid.bytes) return null
-        return pid.decode(bytes)
+        return pid.decode(bytes).takeIf { !it.isNaN() }
     }
 
     /**
@@ -186,7 +186,8 @@ class ElmClient(
         require(pids.size in 1..MAX_MULTI_PIDS)
         val lines = command("01" + pids.joinToString("") { it.hex })
         val raw = ElmParser.parseMultiPid(lines, pids.associate { it.number to it.bytes })
-        return pids.mapNotNull { p -> raw[p.number]?.let { p to p.decode(it) } }.toMap()
+        // NaN means the answer says the reading isn't there (an exhaust bank with no sensor fitted).
+        return pids.mapNotNull { p -> raw[p.number]?.let { p to p.decode(it) }?.takeIf { !it.second.isNaN() } }.toMap()
     }
 
     suspend fun readVoltage(): Double? =

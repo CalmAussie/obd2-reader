@@ -24,13 +24,28 @@ import kotlin.math.min
 class GraphStripView(
     context: Context,
     val key: String,
-    private val label: String,
+    label: String,
     private val unit: String,
     private val decimals: Int,
     private val rangeMin: Double,
     private val rangeMax: Double,
     private val colour: Int,
 ) : View(context) {
+
+    /** The reading's name; changed for a car that names it differently (oxygen sensors on four-bank engines). */
+    var label: String = label
+        set(value) { if (field != value) { field = value; contentDescription = "$value graph"; invalidate() } }
+
+    /**
+     * A short line under the name on what the reading tells you (fuel trims, oxygen sensors). The
+     * chart is a little taller when there is one.
+     */
+    var hint: String? = null
+        set(value) { if (field != value) { val grow = (field == null) != (value == null); field = value; if (grow) requestLayout(); invalidate() } }
+
+    /** The car doesn't report this reading, so the chart says so instead of waiting for it. */
+    var notReported = false
+        set(value) { if (field != value) { field = value; invalidate() } }
 
     /** How much time the chart shows. */
     var windowMs = 30_000L
@@ -60,6 +75,10 @@ class GraphStripView(
     private val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.displayTypeface(); textSize = 26 * d; color = text; textAlign = Paint.Align.RIGHT; fontFeatureSettings = "tnum" }
     private val smallPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.uiTypeface(400); textSize = 11 * d; color = muted; fontFeatureSettings = "tnum" }
     private val unitPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.uiTypeface(500); textSize = 12 * d; color = muted; textAlign = Paint.Align.RIGHT }
+    private val hintPaint = android.text.TextPaint(Paint.ANTI_ALIAS_FLAG).apply { typeface = context.uiTypeface(400); textSize = 11.5f * d; color = muted }
+    private var hintLayout: android.text.StaticLayout? = null
+    private var hintFor: String? = null
+    private var hintWidth = 0
     private val rect = RectF()
     private val path = Path()
     private val area = Path()
@@ -76,10 +95,23 @@ class GraphStripView(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), (150 * d).toInt())
+        val w = MeasureSpec.getSize(widthMeasureSpec)
+        setMeasuredDimension(w, (150 * d).toInt() + hintHeight(w))
     }
 
     private fun fmt(v: Double) = String.format(Locale.US, "%.${decimals}f", v)
+
+    /** The hint laid out for the strip's width (at most three lines), and the height it adds. */
+    private fun hintHeight(w: Int): Int {
+        val text = hint ?: return 0
+        val inner = (w - 28 * d).toInt().coerceAtLeast(1)
+        if (hintLayout == null || hintFor != text || hintWidth != inner) {
+            hintLayout = android.text.StaticLayout.Builder.obtain(text, 0, text.length, hintPaint, inner)
+                .setMaxLines(3).setEllipsize(android.text.TextUtils.TruncateAt.END).build()
+            hintFor = text; hintWidth = inner
+        }
+        return hintLayout!!.height + (6 * d).toInt()
+    }
 
     override fun onDraw(canvas: Canvas) {
         val w = width.toFloat()
@@ -112,8 +144,9 @@ class GraphStripView(
             for (i in series.times.indices) {
                 val t = series.times[i]
                 if (t in from..now) {
-                    val v = series.values[i]
-                    times[n] = t; values[n] = com.obdreader.app.obd.Units.value(key, v); n++
+                    // Min and max in the units shown (°F, psi), like the current value.
+                    val v = com.obdreader.app.obd.Units.value(key, series.values[i])
+                    times[n] = t; values[n] = v; n++
                     if (v < vMin) vMin = v
                     if (v > vMax) vMax = v
                 }
@@ -130,7 +163,11 @@ class GraphStripView(
             canvas.drawText("Min ${fmt(vMin)}   Max ${fmt(vMax)}", pad, pad + 30 * d, smallPaint)
         }
 
-        val top = pad + 42 * d
+        val extra = hintHeight(width).toFloat()
+        hintLayout?.takeIf { hint != null }?.let { l ->
+            canvas.save(); canvas.translate(pad, pad + 38 * d); l.draw(canvas); canvas.restore()
+        }
+        val top = pad + 42 * d + extra
         val bottom = h - 22 * d
         val left = pad
         val right = w - pad
@@ -177,7 +214,7 @@ class GraphStripView(
             canvas.drawPath(path, line)
         } else {
             smallPaint.textAlign = Paint.Align.CENTER
-            canvas.drawText("Waiting for readings…", w / 2, (top + bottom) / 2, smallPaint)
+            canvas.drawText(if (notReported) "N/A: your car doesn't report this" else "Waiting for readings…", w / 2, (top + bottom) / 2, smallPaint)
             smallPaint.textAlign = Paint.Align.LEFT
         }
         // Keep scrolling smoothly while the chart is on screen and has data; with nothing to show,

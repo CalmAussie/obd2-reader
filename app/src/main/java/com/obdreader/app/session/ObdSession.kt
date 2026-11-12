@@ -95,6 +95,12 @@ object ObdSession {
         val codes: Codes? = null,
         /** Readings per second over the last few seconds, for the Graphs tab. */
         val rate: Double = 0.0,
+        /** The standard readings (service 01 PIDs) the car says it supports; null until known, or if the car won't say. */
+        val supported: Set<Int>? = null,
+        /** Names to use instead of a reading's usual one on this car (oxygen sensors on four-bank engines), by key. */
+        val relabels: Map<String, String> = emptyMap(),
+        /** The "codes recently cleared?" check, once read on this connection. */
+        val cleared: com.obdreader.app.obd.ClearedCheck? = null,
     ) {
         val isConnected: Boolean get() = phase == Phase.CONNECTED
     }
@@ -324,11 +330,19 @@ object ObdSession {
         val pids = base + standIns.map { it.pid } + listOfNotNull(Boost.BAROMETRIC.takeIf { hasBaro })
         val covered = base.map { it.hex }.toSet() + standIns.map { it.forHex }
         val boostMissing = if ("0B" in covered) emptySet() else setOf(Boost.KEY)
-        _state.update { s -> s.copy(unsupported = Pids.dashboard.map { it.hex }.filter { it !in covered }.toSet() + boostMissing) }
+        // More standard readings, only the ones the car lists (none if it won't say): the rest say N/A.
+        val extras = if (supported == null) emptyList() else Pids.extra.filter { it.number in supported }
+        val extrasMissing = Pids.extra.map { it.hex }.toSet() - extras.map { it.hex }.toSet()
+        _state.update { s ->
+            s.copy(
+                unsupported = Pids.dashboard.map { it.hex }.filter { it !in covered }.toSet() + boostMissing + extrasMissing,
+                supported = supported, relabels = Pids.o2Relabels(supported),
+            )
+        }
 
         while (currentCoroutineContext().isActive) {
             try {
-                pollLoop(c, pids)
+                pollLoop(c, pids, extras)
             } catch (e: IgnitionOffException) {
                 // The adapter is still there; the car has gone to sleep. Read the battery from the
                 // adapter every second (that doesn't involve the car), ask the car every few seconds
@@ -474,7 +488,34 @@ object ObdSession {
             listOfNotNull(frame?.let { "Freeze frame stored with ${it.code}: ${it.lines().joinToString("; ")}" })
         val codes = Codes(stored, pending, frame)
         _state.update { it.copy(codes = codes) }
+        // Once per connection, so the code report can say whether the codes look recently cleared.
+        if (_state.value.cleared == null) try { readClearedCheck() } catch (ignored: AdapterTimeoutException) { }
         return codes
+    }
+
+    /**
+     * "Codes recently cleared?": the counters since the codes were last cleared, and with the
+     * check-engine light on, plus the readiness monitors. Only the counters the car lists are asked
+     * for (all of them if it won't say); each one it doesn't answer is N/A.
+     */
+    suspend fun readClearedCheck(): com.obdreader.app.obd.ClearedCheck {
+        val c = client ?: throw IOException("Not connected")
+        val supported = _state.value.supported
+        val counters = com.obdreader.app.obd.ClearedCheck.PIDS.associateWith { pid ->
+            if (supported != null && pid !in supported) null else {
+                val req = String.format(Locale.US, "01%02X", pid)
+                val bytes = try { ElmParser.extractData(c.command(req, 3000), "41" + req.substring(2)) } catch (e: AdapterTimeoutException) { null }
+                com.obdreader.app.obd.ClearedCheck.counter(pid, bytes)
+            }
+        }
+        val readiness = try { readReadiness() } catch (e: AdapterTimeoutException) { null }
+        val check = com.obdreader.app.obd.ClearedCheck(
+            distanceKm = counters[0x31], warmUps = counters[0x30], minutes = counters[0x4E],
+            milDistanceKm = counters[0x21], milMinutes = counters[0x4D], readiness = readiness,
+        )
+        appendLog("= Codes recently cleared? ${check.headline()}")
+        _state.update { it.copy(cleared = check) }
+        return check
     }
 
     /** Readings arriving under one key that stand in for another (accelerator pedal for throttle, say). */
@@ -884,10 +925,16 @@ object ObdSession {
      * ([IgnitionOffException]). On CAN cars it asks for up to six PIDs per request, which is
      * several times faster; if the car doesn't support that, it falls back to one at a time.
      */
-    private suspend fun pollLoop(c: ElmClient, pids: List<Pid>) {
+    /**
+     * Reads [pids] over and over until cancelled. [extras] (more standard readings the car lists)
+     * aren't read every cycle: the ones in [focus] (graphed, or in a Dashboard readout) are, and the
+     * rest take turns, a request's worth on every slow turn, so they don't slow the Dashboard down.
+     */
+    private suspend fun pollLoop(c: ElmClient, pids: List<Pid>, extras: List<Pid> = emptyList()) {
         val watch = IgnitionWatch()
         var multi = c.isCan
         var cycle = 0
+        var nextExtra = 0
         var timeouts = 0
         val rateWindow = ArrayDeque<Long>()
         // Trouble codes are checked shortly after connecting and then every two minutes, so a code
@@ -897,12 +944,17 @@ object ObdSession {
         while (currentCoroutineContext().isActive) {
             val focused = focus
             val slowTurn = cycle % 5 == 0
+            val extraTurn = if (focused.isNotEmpty()) cycle % 10 == 0 else slowTurn
+            val turnTaking = if (extras.isEmpty() || !extraTurn) emptyList() else {
+                val n = minOf(if (multi) ElmClient.MAX_MULTI_PIDS else 1, extras.size)
+                (0 until n).map { extras[(nextExtra + it) % extras.size] }.also { nextExtra = (nextExtra + n) % extras.size }
+            }
             val wanted = pids.filter { p ->
                 when {
                     focused.isNotEmpty() -> p.hex in focused || cycle % 10 == 0
                     else -> p.fast || slowTurn
                 }
-            }
+            } + extras.filter { it.hex in focused } + turnTaking.filter { it.hex !in focused }
             var answered = 0
             val now = { SystemClock.elapsedRealtime() }
             val values = mutableMapOf<String, Double?>()
@@ -965,7 +1017,9 @@ object ObdSession {
             val rate = rateWindow.size / 3.0
             if (values.isNotEmpty()) _state.update { it.copy(readings = it.readings + values, rate = rate) }
 
-            if (watch.cycle(answered, asked)) throw IgnitionOffException()
+            // A cycle that only asked for extra readings doesn't count: a car can list one it then
+            // never answers, and that mustn't look like the ignition going off.
+            if (wanted.any { it !in extras } && watch.cycle(answered, asked)) throw IgnitionOffException()
 
             // Charging status from the latest voltage and engine speed (held steady by the watch).
             _state.value.let { st ->

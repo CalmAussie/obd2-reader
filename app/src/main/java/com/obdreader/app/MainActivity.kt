@@ -208,6 +208,15 @@ open class MainActivity : AppCompatActivity() {
     private val teleLabels = mutableMapOf<String, String>()
     private val glassUnits = mutableMapOf<String, TextView>()
     private var lastStandIns: Map<String, String> = emptyMap()
+    private var lastSupported: Set<Int>? = null
+    private var lastRelabels: Map<String, String> = emptyMap()
+    private var lastGraphUnsupported: Set<String> = emptySet()
+    private var lastFuelStatus: Double? = null
+    private var lastGraphConnected = false
+    private var lastCleared: com.obdreader.app.obd.ClearedCheck? = null
+
+    /** The line under "Codes recently cleared?" on Diagnostics. */
+    private fun clearedHelp(): TextView? = (findViewById<ViewGroup>(R.id.clearedRow)?.getChildAt(1) as? TextView)
     private var lastCharging: ChargingStatus.State? = null
     private val glassLabels = mutableMapOf<String, TextView>()
 
@@ -215,7 +224,7 @@ open class MainActivity : AppCompatActivity() {
     private data class Readout(val key: String, val label: String, val unit: String, val decimals: Int, val min: Double, val max: Double, val warn: Double?)
 
     private fun readout(key: String): Readout =
-        (Pids.dashboard.firstOrNull { it.hex == key }?.let { Readout(it.hex, it.label, it.unit, it.decimals, it.min, it.max, it.warnAbove) }
+        (Pids.byHex(key)?.let { Readout(it.hex, it.label, it.unit, it.decimals, it.min, it.max, it.warnAbove) }
             ?: if (key == Boost.KEY) Readout(Boost.KEY, Boost.LABEL, "kPa", 0, Boost.MIN, Boost.MAX, null)
             else Readout(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0, null)).inUnits()
 
@@ -227,7 +236,9 @@ open class MainActivity : AppCompatActivity() {
 
     /** Every reading that can go in a main readout (not engine speed or speed, which have their own). */
     private val readoutChoices: List<Readout> by lazy {
-        Pids.dashboard.filter { it.hex != RPM_KEY && it.hex != SPEED_KEY }.map { readout(it.hex) } + readout(Boost.KEY) + readout(VOLTAGE_KEY)
+        Pids.dashboard.filter { it.hex != RPM_KEY && it.hex != SPEED_KEY }.map { readout(it.hex) } + readout(Boost.KEY) + readout(VOLTAGE_KEY) +
+            // More standard readings, for cars that report them (N/A on the rest).
+            Pids.extraNumbers.map { readout(it.hex) }
     }
 
     /** What the main readouts show, chosen under Diagnostics → Dashboard readouts. Coolant, fuel and battery to start with. */
@@ -407,7 +418,13 @@ open class MainActivity : AppCompatActivity() {
         }
         shareReportBtn = findViewById(R.id.shareReportButton)
         shareReportBtn.setOnClickListener {
-            offerFile(Exports.codeReport(this, ObdSession.state.value, savedCar()?.label), "OBD2 Reader trouble code report")
+            lifecycleScope.launch {
+                // The report says whether the codes look recently cleared, so read that first if it hasn't been.
+                if (ObdSession.state.value.isConnected && ObdSession.state.value.cleared == null) {
+                    try { ObdSession.readClearedCheck() } catch (e: CancellationException) { throw e } catch (ignored: Exception) { }
+                }
+                offerFile(Exports.codeReport(this@MainActivity, ObdSession.state.value, savedCar()?.label), "OBD2 Reader trouble code report")
+            }
         }
         findViewById<MaterialSwitch>(R.id.reconnectSwitch).apply {
             isChecked = AppPrefs.autoReconnect(prefs)
@@ -1138,6 +1155,7 @@ open class MainActivity : AppCompatActivity() {
             }
             parent.addView(r, at++, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4f).toInt() })
         }
+        row(R.id.clearedRow, getString(R.string.cleared_title), getString(R.string.cleared_help)) { runCheck(getString(R.string.cleared_title)) { showClearedCheck() } }
         row(R.id.readinessRow, getString(R.string.readiness_title), getString(R.string.readiness_help)) { runCheck(getString(R.string.readiness_title)) { showReadiness() } }
         row(R.id.testsRow, getString(R.string.tests_title), getString(R.string.tests_help)) { runCheck(getString(R.string.tests_title)) { showTestResults() } }
         row(R.id.modulesRow, getString(R.string.modules_title), getString(R.string.modules_help)) { runCheck(getString(R.string.modules_title), "Asking each module in turn. This can take half a minute.") { showModules() } }
@@ -1183,6 +1201,22 @@ open class MainActivity : AppCompatActivity() {
 
     /** The deeper-check sheet on screen, so a search can close it before showing its results. */
     private var currentSheet: BottomSheetDialog? = null
+
+    /** "Codes recently cleared?": the verdict, each counter (N/A where the car doesn't say) and what it means. */
+    private suspend fun showClearedCheck() {
+        val check = ObdSession.readClearedCheck()
+        android.util.Log.i("OBD2Deep", "cleared: ${check.verdict}")
+        infoSheet(getString(R.string.cleared_title)) { heading, line, _ ->
+            line(check.headline(), false)
+            check.notes().forEach { line(it, false) }
+            heading("What the car counts")
+            check.lines().forEach { (k, v) -> line("$k: $v", v == com.obdreader.app.obd.ClearedCheck.NA) }
+            heading("What this means")
+            line("When trouble codes are cleared, the engine computer starts these counts again from zero. Very small numbers on a car for sale can mean a fault was cleared to hide the warning light until it comes back.", true)
+            line(com.obdreader.app.obd.ClearedCheck.CAVEAT, true)
+            line("It's also in the code report when you share it.", true)
+        }
+    }
 
     private suspend fun showReadiness() {
         val r = ObdSession.readReadiness()
@@ -1748,7 +1782,7 @@ open class MainActivity : AppCompatActivity() {
             text = "What your car reports"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = titleTypeface(); setTextColor(themeColor(R.attr.obdTextPrimary))
         })
         val readings = scan.supported.filter { it % 0x20 != 0 }.sorted()
-        line("${readings.size} standard readings. Ones marked ✓ are on the app's Dashboard or live-data list.")
+        line("${readings.size} standard readings. Ones marked ✓ are on the app's Dashboard, live-data list or Graphs.")
         heading("Standard readings")
         readings.forEach { n -> line(String.format(Locale.US, "%s  %02X  %s", if (CarCoverage.shownByApp(n)) "✓" else "·", n, CarCoverage.name(n)), secondary = !CarCoverage.shownByApp(n)) }
         val missing = Pids.dashboard.filter { it.number !in scan.supported }
@@ -2134,8 +2168,14 @@ open class MainActivity : AppCompatActivity() {
     private val channels: List<Channel> by lazy {
         Pids.dashboard.map { Channel(it.hex, if (it.number == Pids.RPM) "RPM" else it.label, Units.unit(it.hex, it.unit), Units.decimals(it.hex, it.decimals), Units.value(it.hex, it.min), Units.value(it.hex, it.max)) } +
             Channel(Boost.KEY, Boost.LABEL, Units.unit(Boost.KEY, "kPa"), Units.decimals(Boost.KEY, 0), Units.value(Boost.KEY, Boost.MIN), Units.value(Boost.KEY, Boost.MAX)) +
-            Channel(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0)
+            Channel(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0) +
+            // More standard readings, read only when the car lists them.
+            Pids.extraNumbers.map { Channel(it.hex, it.label, Units.unit(it.hex, it.unit), Units.decimals(it.hex, it.decimals), Units.value(it.hex, it.min), Units.value(it.hex, it.max)) }
     }
+
+    /** The chips for the extra readings, by key, so the ones the car doesn't report can be tucked away. */
+    private val extraChips = mutableMapOf<String, Chip>()
+    private lateinit var extraChipsTitle: TextView
 
     private fun setupGraphs() {
         graphList = findViewById(R.id.graphList)
@@ -2144,13 +2184,26 @@ open class MainActivity : AppCompatActivity() {
         recordStatus = findViewById(R.id.recordStatus)
         LiveHistory.start()
 
-        val chips = findViewById<ChipGroup>(R.id.graphChips)
+        val mainChips = findViewById<ChipGroup>(R.id.graphChips)
+        // The extra readings get their own group under the usual ones, so the familiar chips stay put.
+        val moreChips = ChipGroup(this)
+        (mainChips.parent as ViewGroup).let { parent ->
+            var at = parent.indexOfChild(mainChips) + 1
+            extraChipsTitle = TextView(this).apply {
+                text = getString(R.string.graphs_more_title)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextSecondary))
+            }
+            parent.addView(extraChipsTitle, at++, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(14f).toInt() })
+            parent.addView(moreChips, at, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6f).toInt() })
+        }
+        val extraKeys = Pids.extraNumbers.map { it.hex }.toSet()
         // In the order they're shown: a newly picked reading goes to the bottom, and Change order moves them.
         val chosen = (prefs.getString(PREF_GRAPHS, null) ?: "0C,0D,11").split(",").filter { k -> k.isNotEmpty() && channels.any { it.key == k } }.distinct().toMutableList()
         graphOrderBtn = findViewById(R.id.graphOrder)
         graphOrderBtn.setOnClickListener { showGraphOrder(chosen) }
         for (ch in channels) {
-            chips.addView(Chip(this).apply {
+            (if (ch.key in extraKeys) moreChips else mainChips).addView(Chip(this).apply {
+                if (ch.key in extraKeys) extraChips[ch.key] = this
                 text = ch.label
                 isCheckable = true
                 isChecked = ch.key in chosen
@@ -2166,6 +2219,7 @@ open class MainActivity : AppCompatActivity() {
                 }
             })
         }
+        showReportedChips(ObdSession.state.value.supported)
         findViewById<MaterialButtonToggleGroup>(R.id.graphWindow).apply {
             check(R.id.window30)
             addOnButtonCheckedListener { _, id, checked ->
@@ -2189,6 +2243,40 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var graphOrderBtn: MaterialButton
+
+    /**
+     * Once the car has said which readings it supports, only the extra readings it reports are
+     * offered (and any already chosen, which say N/A). Until then, or if the car won't say, all are.
+     */
+    private fun showReportedChips(supported: Set<Int>?) {
+        if (extraChips.isEmpty()) return
+        var shown = 0
+        extraChips.forEach { (k, chip) ->
+            val show = supported == null || k.toInt(16) in supported || chip.isChecked
+            chip.visibility = if (show) View.VISIBLE else View.GONE
+            if (show) shown++
+        }
+        extraChipsTitle.text = if (supported == null) getString(R.string.graphs_more_title)
+            else getString(R.string.graphs_more_reported, shown)
+        extraChipsTitle.visibility = if (shown == 0) View.GONE else View.VISIBLE
+        (extraChips.values.first().parent as? View)?.visibility = if (shown == 0) View.GONE else View.VISIBLE
+    }
+
+    /** The graphs' names, hints and N/A for this car: oxygen sensor names, fuel system status under the fuel trims. */
+    private fun refreshGraphNotes(s: ObdSession.State) {
+        val status = s.readings["03"]?.let { com.obdreader.app.obd.FuelInfo.status(it.toInt()) }
+        graphStrips.forEach { g ->
+            channels.firstOrNull { it.key == g.key }?.let { ch -> g.label = s.relabels[g.key] ?: ch.label }
+            val about = Pids.about(g.key)
+            val isTrim = g.key in setOf("06", "07", "08", "09")
+            g.hint = when {
+                about == null -> null
+                isTrim && status != null -> "$about Now: $status."
+                else -> about
+            }
+            g.notReported = s.isConnected && g.key in s.unsupported
+        }
+    }
 
     /** Lets the user move the chosen graphs up and down; saved straight away. */
     private fun showGraphOrder(chosen: MutableList<String>) {
@@ -2338,6 +2426,7 @@ open class MainActivity : AppCompatActivity() {
             graphStrips += strip
             if (keys is MutableList<String>) enableGraphDrag(strip, keys, ch.label)
         }
+        refreshGraphNotes(ObdSession.state.value)
         updateFocus()
     }
 
@@ -2347,7 +2436,8 @@ open class MainActivity : AppCompatActivity() {
             pageGraphs.visibility == View.VISIBLE -> graphStrips.map { it.key }.toSet()
             // The Dashboard's moving readings, in one request per cycle (six is a CAN car's limit),
             // so the dials update as often as the graphs do.
-            pageDashboard.visibility == View.VISIBLE -> DASHBOARD_FOCUS
+            // An extra reading picked for a readout joins them, since it isn't otherwise read every turn.
+            pageDashboard.visibility == View.VISIBLE -> DASHBOARD_FOCUS + slots.filter { k -> Pids.extra.any { it.hex == k } }
             else -> emptySet()
         }
     }
@@ -3432,6 +3522,18 @@ open class MainActivity : AppCompatActivity() {
                 }
             }
             lastReadings = s.readings
+        }
+        // Graphs: names, notes (fuel system status under fuel trims) and N/A for this car.
+        if (s.supported != lastSupported || s.relabels != lastRelabels || s.unsupported != lastGraphUnsupported || s.readings["03"] != lastFuelStatus || s.isConnected != lastGraphConnected) {
+            if (s.supported != lastSupported) showReportedChips(s.supported)
+            refreshGraphNotes(s)
+            lastSupported = s.supported; lastRelabels = s.relabels; lastGraphUnsupported = s.unsupported
+            lastFuelStatus = s.readings["03"]; lastGraphConnected = s.isConnected
+        }
+        // "Codes recently cleared?": its row shows the verdict once it's been read.
+        if (s.cleared != lastCleared) {
+            clearedHelp()?.text = s.cleared?.headline() ?: getString(R.string.cleared_help)
+            lastCleared = s.cleared
         }
         // A stand-in reading is labelled for what it really is.
         if (s.standIns != lastStandIns) {

@@ -249,6 +249,11 @@ object Exports {
             com.obdreader.app.obd.BatteryCheck.parseHistory(AppPrefs.of(context).getString(AppPrefs.BATTERY_CHECKS, null)).firstOrNull()?.let {
                 appendLine("Battery check: ${it.rating.label}. ${it.summary()}, ${SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date(it.atMs))}")
             }
+            // A used-car check: whether the codes look recently cleared (read with the codes).
+            s.cleared?.let { c ->
+                appendLine()
+                c.reportLines().forEach { appendLine(it) }
+            }
             appendLine()
             if (codes == null || codes.total == 0) {
                 appendLine("No trouble codes stored or pending.")
