@@ -4071,29 +4071,57 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   const baseSample = sample;
   sample = (key, v, t) => { if (v != null) baseSample(key, v, t); };
 
-  /* Two chip groups: the usual readings, then the extra ones the car reports (mirrors MainActivity.setupGraphs / showReportedChips) */
-  $("graphChips").insertAdjacentHTML("afterend", `<div class="more-title" id="moreTitle"></div><div class="chips more" id="moreChips" role="group" aria-label="More readings to graph"></div>`);
+  /* Only the chosen graphs as chips, plus "+ Add a graph": a sheet of every reading the car reports, grouped by part of the car, with live values (mirrors MainActivity.showGraphChips / showAddGraph and ReadingGroups.kt) */
+  $("graphChips").insertAdjacentHTML("afterend", `<div class="g-count" id="graphCount"></div>`);
   const st = document.createElement("style");
-  st.textContent = `.more-title{font-size:13px;font-weight:600;color:var(--fg-2);margin-top:14px}.chips.more{margin-top:6px}.strip.has-hint{height:206px}`;
+  st.textContent = `.g-count{font-size:13px;color:var(--fg-2);margin-top:6px}.strip.has-hint{height:206px}
+.chip.rm{background:var(--panel-2);color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--c);padding-right:8px}.chip.rm::before{opacity:1}
+.chip.rm .x{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;color:var(--fg-2);font-size:15px;line-height:1;margin-left:-2px}
+.chip.add{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}.chip.add::before{display:none}
+.gsheet-h{font-size:14px;font-weight:600;color:var(--fg);margin:16px 0 2px}
+.grow{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:0 2px 0 4px;text-align:left;font-size:15px;color:var(--fg)}
+.grow .d{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}.grow .l{flex:1}
+.grow .v{font-size:13px;color:var(--fg-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.grow .ck{width:20px;height:20px;border-radius:4px;box-shadow:inset 0 0 0 2px var(--fg-2);flex:none;display:grid;place-items:center;margin:0 6px}
+.grow[aria-checked="true"] .ck{background:var(--accent);box-shadow:none}.grow[aria-checked="true"] .ck::after{content:"";width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}`;
   document.head.appendChild(st);
-  const chip = c => `<button class="chip" role="checkbox" aria-checked="${gChannels.includes(c.key)}" data-k="${c.key}" style="--c:${GCOL[c.key] || "var(--accent)"}">${c.label}</button>`;
-  buildChips = function () {
-    const known = state === "connected";
-    $("graphChips").innerHTML = CHANNELS.filter(c => !c.extra).map(chip).join("");
-    const shown = EXTRA.filter(c => !known || reported(c.n) || gChannels.includes(c.key));
-    $("moreChips").innerHTML = shown.map(chip).join("");
-    $("moreTitle").textContent = known ? `More readings your car reports (${shown.length})` : "More readings, for cars that report them";
-    document.querySelectorAll("#graphChips .chip, #moreChips .chip").forEach(b => b.onclick = () => {
-      const k = b.dataset.k, on = gChannels.includes(k);
-      if (!on && gChannels.length >= 4) return toast("Up to 4 graphs at once, so each one stays fast");
-      if (on && gChannels.length === 1) return;
-      gChannels = on ? gChannels.filter(x => x !== k) : gChannels.concat(k);
-      try { localStorage.setItem("graphChannels", JSON.stringify(gChannels)); } catch (e) {}
-      buildChips(); buildStrips();
-    });
+  const ORDER = [["Engine", ["0C", "0D", "11", "04", "0E", "05", "5C", "61", "62", "63", "1F", "7F"]],
+    ["Fuel and mixture", ["2F", "06", "07", "08", "09", "24", "25", "26", "27", "28", "29", "2A", "2B", "14", "15", "16", "17", "18", "19", "1A", "1B", "0A", "22", "23", "59", "5E", "52"]],
+    ["Air and boost", ["0F", "46", "0B", "10", "BOOST"]],
+    ["Exhaust", ["3C", "3E", "3D", "3F", "78", "79", "2C", "2D", "32"]],
+    ["Electrical", ["VOLT", "42"]]];
+  const known = () => state === "connected";
+  const choices = () => CHANNELS.filter(c => !c.extra || !known() || reported(c.n) || gChannels.includes(c.key));
+  const lab = k => CHANNELS.find(c => c.key === k).label;
+  const col = k => GCOL[k] || "var(--accent)";
+  const save = () => { try { localStorage.setItem("graphChannels", JSON.stringify(gChannels)); } catch (e) {} };
+  const toggle = k => {
+    if (gChannels.includes(k)) { if (gChannels.length === 1) { toast("Keep at least one graph"); return false; } gChannels = gChannels.filter(x => x !== k); }
+    else { if (gChannels.length >= 4) { toast("Up to 4 graphs at once, so each one stays fast"); return false; } gChannels = gChannels.concat(k); }
+    save(); buildStrips(); return true;
   };
+  const valText = c => { if (!known()) return ""; const v = chVal(c); return v == null || Number.isNaN(v) ? "–" : `${v.toFixed(c.dec)}${c.unit ? " " + c.unit : ""}`; };
+  buildChips = function () {
+    $("graphChips").innerHTML = gChannels.map(k => `<button class="chip rm" data-k="${k}" style="--c:${col(k)}">${lab(k)}<span class="x" data-rm="${k}" role="button" aria-label="Remove ${lab(k)} graph">×</span></button>`).join("") + `<button class="chip add" id="graphAdd">+ Add a graph</button>`;
+    $("graphCount").textContent = `${gChannels.length} of 4 graphs · ${choices().length} readings available`;
+    $("graphChips").querySelectorAll(".chip.rm").forEach(b => b.onclick = e => { if (e.target.dataset.rm) toggle(e.target.dataset.rm); else showAddGraph(); });
+    $("graphAdd").onclick = showAddGraph;
+  };
+  function showAddGraph() {
+    const have = new Set(choices().map(c => c.key));
+    const rows = ORDER.map(([g, ks]) => [g, ks.filter(k => have.has(k))]).filter(([, ks]) => ks.length);
+    const s = overlay(`<div class="handle"></div><h2>Add a graph</h2><p>Readings your car reports, with their value now. Tap one to add or remove its graph; up to 4 at once.</p>` +
+      rows.map(([g, ks]) => `<div class="gsheet-h">${g}</div>` + ks.map(k => `<button class="grow" role="checkbox" aria-checked="${gChannels.includes(k)}" data-k="${k}" style="--c:${col(k)}"><span class="d"></span><span class="l">${lab(k)}</span><span class="v"></span><span class="ck"></span></button>`).join("")).join("") +
+      `<div class="sheet-actions"><button class="primary" id="graphDone">Done</button></div>`, { sheet: true });
+    s.querySelector(".sheet").classList.add("tall");
+    const tick = () => s.querySelectorAll(".grow").forEach(b => { b.querySelector(".v").textContent = valText(CHANNELS.find(c => c.key === b.dataset.k)); });
+    tick(); const iv = setInterval(tick, 1000);
+    s.addEventListener("closed", () => clearInterval(iv));
+    s.querySelectorAll(".grow").forEach(b => b.onclick = () => { if (toggle(b.dataset.k)) b.setAttribute("aria-checked", gChannels.includes(b.dataset.k)); });
+    $("graphDone").onclick = closeOverlay;
+  }
   const baseStrips = buildStrips;
-  buildStrips = function () { baseStrips(); document.querySelectorAll("#graphList .strip").forEach(el => el.classList.toggle("has-hint", !!ABOUT(el.dataset.k))); };
+  buildStrips = function () { baseStrips(); buildChips(); document.querySelectorAll("#graphList .strip").forEach(el => el.classList.toggle("has-hint", !!ABOUT(el.dataset.k))); };
   let wasState = state;
   setInterval(() => { if (state !== wasState) { wasState = state; buildChips(); } }, 500);
 

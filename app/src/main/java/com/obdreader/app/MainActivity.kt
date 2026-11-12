@@ -2173,9 +2173,10 @@ open class MainActivity : AppCompatActivity() {
             Pids.extraNumbers.map { Channel(it.hex, it.label, Units.unit(it.hex, it.unit), Units.decimals(it.hex, it.decimals), Units.value(it.hex, it.min), Units.value(it.hex, it.max)) }
     }
 
-    /** The chips for the extra readings, by key, so the ones the car doesn't report can be tucked away. */
-    private val extraChips = mutableMapOf<String, Chip>()
-    private lateinit var extraChipsTitle: TextView
+    /** The graphs shown, in order: a newly added reading goes to the bottom, and Change order moves them. */
+    private val graphChosen = mutableListOf<String>()
+    private lateinit var graphChipGroup: ChipGroup
+    private lateinit var graphCount: TextView
 
     private fun setupGraphs() {
         graphList = findViewById(R.id.graphList)
@@ -2184,42 +2185,20 @@ open class MainActivity : AppCompatActivity() {
         recordStatus = findViewById(R.id.recordStatus)
         LiveHistory.start()
 
-        val mainChips = findViewById<ChipGroup>(R.id.graphChips)
-        // The extra readings get their own group under the usual ones, so the familiar chips stay put.
-        val moreChips = ChipGroup(this)
-        (mainChips.parent as ViewGroup).let { parent ->
-            var at = parent.indexOfChild(mainChips) + 1
-            extraChipsTitle = TextView(this).apply {
-                text = getString(R.string.graphs_more_title)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextSecondary))
-            }
-            parent.addView(extraChipsTitle, at++, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(14f).toInt() })
-            parent.addView(moreChips, at, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6f).toInt() })
+        // Only the chosen graphs show as chips; the rest wait in the "Add a graph" sheet, grouped by
+        // what part of the car they come from, so the tab stays tidy however many readings a car reports.
+        graphChipGroup = findViewById(R.id.graphChips)
+        graphCount = TextView(this).apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
         }
-        val extraKeys = Pids.extraNumbers.map { it.hex }.toSet()
-        // In the order they're shown: a newly picked reading goes to the bottom, and Change order moves them.
-        val chosen = (prefs.getString(PREF_GRAPHS, null) ?: "0C,0D,11").split(",").filter { k -> k.isNotEmpty() && channels.any { it.key == k } }.distinct().toMutableList()
+        (graphChipGroup.parent as ViewGroup).let { parent ->
+            parent.addView(graphCount, parent.indexOfChild(graphChipGroup) + 1,
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2f).toInt() })
+        }
+        graphChosen += (prefs.getString(PREF_GRAPHS, null) ?: "0C,0D,11").split(",").filter { k -> k.isNotEmpty() && channels.any { it.key == k } }.distinct()
+        if (graphChosen.isEmpty()) graphChosen += RPM_KEY
         graphOrderBtn = findViewById(R.id.graphOrder)
-        graphOrderBtn.setOnClickListener { showGraphOrder(chosen) }
-        for (ch in channels) {
-            (if (ch.key in extraKeys) moreChips else mainChips).addView(Chip(this).apply {
-                if (ch.key in extraKeys) extraChips[ch.key] = this
-                text = ch.label
-                isCheckable = true
-                isChecked = ch.key in chosen
-                setOnCheckedChangeListener { button, on ->
-                    if (on && chosen.size >= MAX_GRAPHS) {
-                        button.isChecked = false
-                        toast("Up to $MAX_GRAPHS graphs at once, so each one stays fast")
-                        return@setOnCheckedChangeListener
-                    }
-                    if (on) { if (ch.key !in chosen) chosen += ch.key } else chosen -= ch.key
-                    prefs.edit().putString(PREF_GRAPHS, chosen.joinToString(",")).apply()
-                    buildGraphs(chosen)
-                }
-            })
-        }
-        showReportedChips(ObdSession.state.value.supported)
+        graphOrderBtn.setOnClickListener { showGraphOrder(graphChosen) }
         findViewById<MaterialButtonToggleGroup>(R.id.graphWindow).apply {
             check(R.id.window30)
             addOnButtonCheckedListener { _, id, checked ->
@@ -2239,27 +2218,133 @@ open class MainActivity : AppCompatActivity() {
             if (LogRecorder.active.value != null) LogRecorder.stop() else startRecording()
         }
         findViewById<View>(R.id.savedLogsButton).setOnClickListener { showSavedDrives() }
-        buildGraphs(chosen)
+        buildGraphs(graphChosen)
     }
 
     private lateinit var graphOrderBtn: MaterialButton
 
+    private fun graphLabel(key: String): String =
+        ObdSession.state.value.relabels[key] ?: channels.firstOrNull { it.key == key }?.label ?: key
+
+    private fun graphColour(key: String): Int = when (key) {
+        RPM_KEY -> Channels.RPM
+        SPEED_KEY -> Channels.SPEED
+        else -> Channels.forKey(key, themeColor(R.attr.obdAccent))
+    }
+
     /**
-     * Once the car has said which readings it supports, only the extra readings it reports are
-     * offered (and any already chosen, which say N/A). Until then, or if the car won't say, all are.
+     * What can be graphed: once the car has said which readings it supports, only the extra readings
+     * it reports (and any already chosen, which say N/A). Until then, or if the car won't say, all.
      */
-    private fun showReportedChips(supported: Set<Int>?) {
-        if (extraChips.isEmpty()) return
-        var shown = 0
-        extraChips.forEach { (k, chip) ->
-            val show = supported == null || k.toInt(16) in supported || chip.isChecked
-            chip.visibility = if (show) View.VISIBLE else View.GONE
-            if (show) shown++
+    private fun graphChoices(supported: Set<Int>?): List<Channel> {
+        val extraKeys = Pids.extraNumbers.map { it.hex }.toSet()
+        return channels.filter { ch -> ch.key !in extraKeys || supported == null || ch.key.toInt(16) in supported || ch.key in graphChosen }
+    }
+
+    /** The chosen graphs as chips with a remove cross, then "+ Add a graph", then how many of how many. */
+    private fun showGraphChips() {
+        graphChipGroup.removeAllViews()
+        for (k in graphChosen) {
+            val label = graphLabel(k)
+            graphChipGroup.addView(Chip(this).apply {
+                text = label
+                isCloseIconVisible = true
+                closeIconContentDescription = getString(R.string.graphs_remove, label)
+                setOnCloseIconClickListener { toggleGraph(k) }
+                setOnClickListener { showAddGraph() }
+            })
         }
-        extraChipsTitle.text = if (supported == null) getString(R.string.graphs_more_title)
-            else getString(R.string.graphs_more_reported, shown)
-        extraChipsTitle.visibility = if (shown == 0) View.GONE else View.VISIBLE
-        (extraChips.values.first().parent as? View)?.visibility = if (shown == 0) View.GONE else View.VISIBLE
+        graphChipGroup.addView(Chip(this).apply {
+            text = getString(R.string.graphs_add)
+            setTextColor(themeColor(R.attr.obdAccent))
+            chipStrokeColor = android.content.res.ColorStateList.valueOf(themeColor(R.attr.obdAccent))
+            setOnClickListener { showAddGraph() }
+        })
+        graphCount.text = getString(R.string.graphs_count, graphChosen.size, MAX_GRAPHS, graphChoices(ObdSession.state.value.supported).size)
+    }
+
+    /** Adds or removes one graph, up to [MAX_GRAPHS] and at least one. Returns whether it changed. */
+    private fun toggleGraph(key: String): Boolean {
+        if (key in graphChosen) {
+            if (graphChosen.size == 1) { toast(getString(R.string.graphs_keep_one)); return false }
+            graphChosen -= key
+        } else {
+            if (graphChosen.size >= MAX_GRAPHS) { toast(getString(R.string.graphs_max, MAX_GRAPHS)); return false }
+            graphChosen += key
+        }
+        prefs.edit().putString(PREF_GRAPHS, graphChosen.joinToString(",")).apply()
+        buildGraphs(graphChosen)
+        return true
+    }
+
+    /** A reading's value now, in the user's units, for the Add a graph sheet. */
+    private fun graphValueText(ch: Channel): String {
+        val s = ObdSession.state.value
+        if (!s.isConnected) return ""
+        if (ch.key in s.unsupported) return com.obdreader.app.obd.ClearedCheck.NA
+        val v = s.readings[ch.key]?.let { Units.value(ch.key, it) } ?: return "–"
+        return String.format(Locale.US, "%.${ch.decimals}f", v) + (if (ch.unit.isEmpty()) "" else " ${ch.unit}")
+    }
+
+    /**
+     * "Add a graph": every reading the car reports, grouped by what part of the car it comes from,
+     * with its value now. Tapping a row adds or removes its graph straight away.
+     */
+    private fun showAddGraph() {
+        val values = mutableListOf<Pair<Channel, TextView>>()
+        val ticker = object : Runnable {
+            override fun run() {
+                values.forEach { (ch, v) -> v.text = graphValueText(ch) }
+                graphChipGroup.postDelayed(this, 1000)
+            }
+        }
+        val sheet = choiceSheet(getString(R.string.graphs_add_title)) { body, open ->
+            sheetNote(body, getString(R.string.graphs_add_sub, MAX_GRAPHS))
+            val byKey = graphChoices(ObdSession.state.value.supported).associateBy { it.key }
+            for ((group, keys) in com.obdreader.app.obd.ReadingGroups.sort(byKey.keys)) {
+                sheetHeading(body, group.label)
+                for (k in keys) {
+                    val ch = byKey.getValue(k)
+                    val label = graphLabel(k)
+                    val check = com.google.android.material.checkbox.MaterialCheckBox(this).apply {
+                        isChecked = k in graphChosen; isClickable = false; isFocusable = false
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    }
+                    val value = TextView(this).apply {
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                        text = graphValueText(ch)
+                    }
+                    values += ch to value
+                    body.addView(LinearLayout(this).apply {
+                        orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                        minimumHeight = dp(48f).toInt()
+                        setPadding(dp(4f).toInt(), 0, 0, 0)
+                        isClickable = true; isFocusable = true
+                        background = android.util.TypedValue().let { tv -> theme.resolveAttribute(android.R.attr.selectableItemBackground, tv, true); androidx.core.content.ContextCompat.getDrawable(context, tv.resourceId) }
+                        setAccessibilityDelegate(object : View.AccessibilityDelegate() {
+                            override fun onInitializeAccessibilityNodeInfo(host: View, info: android.view.accessibility.AccessibilityNodeInfo) {
+                                super.onInitializeAccessibilityNodeInfo(host, info)
+                                info.isCheckable = true; info.isChecked = check.isChecked
+                                info.className = android.widget.CheckBox::class.java.name
+                            }
+                        })
+                        contentDescription = label
+                        addView(View(this@MainActivity).apply {
+                            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(graphColour(k)) }
+                        }, LinearLayout.LayoutParams(dp(10f).toInt(), dp(10f).toInt()).apply { marginEnd = dp(12f).toInt() })
+                        addView(TextView(this@MainActivity).apply {
+                            text = label; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary))
+                        }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                        addView(value, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(8f).toInt() })
+                        addView(check)
+                        setOnClickListener { if (toggleGraph(k)) check.isChecked = k in graphChosen }
+                    })
+                }
+            }
+            sheetButtons(body, getString(R.string.done) to { open.dismiss() })
+        }
+        ticker.run()
+        sheet.setOnDismissListener { graphChipGroup.removeCallbacks(ticker) }
     }
 
     /** The graphs' names, hints and N/A for this car: oxygen sensor names, fuel system status under the fuel trims. */
@@ -2407,6 +2492,7 @@ open class MainActivity : AppCompatActivity() {
         graphList.removeAllViews()
         graphStrips.clear()
         if (::graphOrderBtn.isInitialized) graphOrderBtn.visibility = if (keys.size >= 2) View.VISIBLE else View.GONE
+        if (::graphChipGroup.isInitialized) showGraphChips()
         android.util.Log.i("OBD2Graphs", "order: ${keys.joinToString(",")}")
         val fallback = themeColor(R.attr.obdAccent)
         for (ch in keys.mapNotNull { k -> channels.firstOrNull { it.key == k } }) {
@@ -3525,7 +3611,7 @@ open class MainActivity : AppCompatActivity() {
         }
         // Graphs: names, notes (fuel system status under fuel trims) and N/A for this car.
         if (s.supported != lastSupported || s.relabels != lastRelabels || s.unsupported != lastGraphUnsupported || s.readings["03"] != lastFuelStatus || s.isConnected != lastGraphConnected) {
-            if (s.supported != lastSupported) showReportedChips(s.supported)
+            if (s.supported != lastSupported || s.relabels != lastRelabels) showGraphChips()
             refreshGraphNotes(s)
             lastSupported = s.supported; lastRelabels = s.relabels; lastGraphUnsupported = s.unsupported
             lastFuelStatus = s.readings["03"]; lastGraphConnected = s.isConnected
