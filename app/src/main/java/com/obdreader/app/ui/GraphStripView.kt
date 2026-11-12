@@ -101,13 +101,13 @@ class GraphStripView(
 
     private fun fmt(v: Double) = String.format(Locale.US, "%.${decimals}f", v)
 
-    /** The hint laid out for the strip's width (at most three lines), and the height it adds. */
+    /** The hint laid out for the strip's width (at most four lines), and the height it adds. */
     private fun hintHeight(w: Int): Int {
         val text = hint ?: return 0
         val inner = (w - 28 * d).toInt().coerceAtLeast(1)
         if (hintLayout == null || hintFor != text || hintWidth != inner) {
             hintLayout = android.text.StaticLayout.Builder.obtain(text, 0, text.length, hintPaint, inner)
-                .setMaxLines(3).setEllipsize(android.text.TextUtils.TruncateAt.END).build()
+                .setMaxLines(4).setEllipsize(android.text.TextUtils.TruncateAt.END).build()
             hintFor = text; hintWidth = inner
         }
         return hintLayout!!.height + (6 * d).toInt()

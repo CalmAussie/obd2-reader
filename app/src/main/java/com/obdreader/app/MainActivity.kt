@@ -2271,7 +2271,7 @@ open class MainActivity : AppCompatActivity() {
             val isTrim = g.key in setOf("06", "07", "08", "09")
             g.hint = when {
                 about == null -> null
-                isTrim && status != null -> "$about Now: $status."
+                isTrim && status != null -> "$about Now: ${status.replaceFirstChar { it.lowercase() }}."
                 else -> about
             }
             g.notReported = s.isConnected && g.key in s.unsupported

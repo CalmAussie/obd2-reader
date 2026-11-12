@@ -1927,7 +1927,7 @@ const CHANNELS = PIDS.map(p => ({ key: hex2(p.n), label: GLABEL[hex2(p.n)] || p.
 const ghist = {};            /* LiveHistory: last 60 s of every reading */
 let gWindow = 30000, gPaused = false, gFrozen = 0, gChannels = ["0C", "0D", "11"], gRate = 0, gCount = 0;
 let ignOff = false, autoReconnect = true;
-try { const c = JSON.parse(localStorage.getItem("graphChannels")); if (Array.isArray(c) && c.length) gChannels = c.slice(0, 4); } catch (e) {}
+try { const c = JSON.parse(localStorage.getItem("graphChannels")); if (Array.isArray(c) && c.length) gChannels = c.filter(k => CHANNELS.some(x => x.key === k)).slice(0, 4); if (!gChannels.length) gChannels = ["0C", "0D", "11"]; } catch (e) {}
 
 function sample(key, v, t) {
   const h = ghist[key] || (ghist[key] = []);
@@ -3993,6 +3993,185 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
 .grp-box{display:flex;flex-direction:column;gap:6px}
 .grp-rule{height:1px;background:currentColor;opacity:.15;margin:12px 0 4px}`;
   document.head.appendChild(st);
+})();
+
+/* ===== Diagnostics pack A: more standard readings and "Codes recently cleared?" (mirrors obd/Pids.extra, FuelInfo, ClearedCheck, ui/GraphStripView hints, MainActivity.showClearedCheck) ===== */
+(function () {
+  /* The demo car's other readings (mirrors DemoTransport.more) */
+  const prevRaw = car.raw;
+  const one = v => [Math.max(0, Math.min(255, Math.trunc(v)))];
+  const two = v => { v = Math.max(0, Math.min(65535, Math.trunc(v))); return [v >> 8, v & 255]; };
+  const pct = p => p * 255 / 100, trim = p => one(128 + p * 1.28);
+  car.raw = n => {
+    const t = car.t(), d = Math.pow(0.5 + 0.5 * Math.sin(t / 2.5), 2), flick = 0.5 + 0.4 * Math.sin(t * 6);
+    if (n === 0x03) return t > 15 ? [2, 0] : [1, 0];
+    if (n === 0x06) return trim(2 + 3 * Math.sin(t * 1.7));
+    if (n === 0x07) return trim(4.7);
+    if (n === 0x08) return trim(1.5 + 3 * Math.sin(t * 1.5 + 1));
+    if (n === 0x09) return trim(3.9);
+    if (n === 0x0A) return one(380 / 3);
+    if (n >= 0x14 && n <= 0x1B) return one(((n - 0x14) % 4 === 0 ? flick : 0.66) * 200).concat([0x80]);
+    if (n === 0x1F) return two(t);
+    if (n === 0x22) return two(300 / 0.079);
+    if (n === 0x23 || n === 0x59) return two((5000 + d * 10000) / 10);
+    if (n >= 0x24 && n <= 0x2B) { const l = (n - 0x24) % 4 === 0 ? 1 + 0.02 * Math.sin(t * 6) : 1; return two(l * 32768).concat(two(l * 0.8 * 8192)); }
+    if (n === 0x2C) return one(pct(8 * d));
+    if (n === 0x2D) return trim(Math.sin(t));
+    if (n === 0x32) return two(0x10000 - 200);
+    if (n >= 0x3C && n <= 0x3F) return two((Math.min(620, 300 + t * 6) - (n - 0x3C) * 40 + 40) * 10);
+    if (n === 0x42) return two(car.volts() * 1000);
+    if (n === 0x51) return [1];
+    if (n === 0x52) return one(pct(10));
+    if (n === 0x5E) return two((0.8 + d * 12) * 20);
+    return prevRaw(n);
+  };
+
+  /* The extra readings (mirrors Pids.extraNumbers): key, label, unit, decimals, range, decode */
+  const tr = b => b[0] * 100 / 128 - 100, cat = b => (b[0] * 256 + b[1]) / 10 - 40;
+  const o2 = i => `O2 bank ${Math.floor(i / 4) + 1} sensor ${i % 4 + 1}`;
+  const X = [
+    [0x06, "Short-term fuel trim, bank 1", "%", 1, -25, 25, tr], [0x07, "Long-term fuel trim, bank 1", "%", 1, -25, 25, tr],
+    [0x08, "Short-term fuel trim, bank 2", "%", 1, -25, 25, tr], [0x09, "Long-term fuel trim, bank 2", "%", 1, -25, 25, tr],
+    [0x0A, "Fuel pressure", "kPa", 0, 0, 765, b => b[0] * 3], [0x1F, "Run time since start", "min", 1, 0, 120, b => (b[0] * 256 + b[1]) / 60],
+    ...[0, 1, 2, 3, 4, 5, 6, 7].map(i => [0x14 + i, o2(i) + " voltage", "V", 2, 0, 1, b => b[0] / 200]),
+    [0x22, "Fuel rail pressure (relative)", "kPa", 0, 0, 5177, b => (b[0] * 256 + b[1]) * 0.079], [0x23, "Fuel rail pressure", "kPa", 0, 0, 200000, b => (b[0] * 256 + b[1]) * 10],
+    ...[0, 1, 2, 3, 4, 5, 6, 7].map(i => [0x24 + i, o2(i) + " lambda", "λ", 2, 0.7, 1.3, b => (b[0] * 256 + b[1]) * 2 / 65536]),
+    [0x2C, "Commanded EGR", "%", 0, 0, 100, b => b[0] * 100 / 255], [0x2D, "EGR error", "%", 1, -50, 50, tr],
+    [0x32, "Evap vapour pressure", "Pa", 0, -2000, 2000, b => { const r = b[0] * 256 + b[1]; return (r >= 0x8000 ? r - 0x10000 : r) / 4; }],
+    [0x3C, "Catalyst temp, bank 1 sensor 1", "°C", 0, 0, 1000, cat], [0x3D, "Catalyst temp, bank 2 sensor 1", "°C", 0, 0, 1000, cat],
+    [0x3E, "Catalyst temp, bank 1 sensor 2", "°C", 0, 0, 1000, cat], [0x3F, "Catalyst temp, bank 2 sensor 2", "°C", 0, 0, 1000, cat],
+    [0x42, "Module voltage", "V", 2, 10, 16, b => (b[0] * 256 + b[1]) / 1000], [0x52, "Ethanol", "%", 0, 0, 100, b => b[0] * 100 / 255],
+    [0x59, "Fuel rail pressure (absolute)", "kPa", 0, 0, 200000, b => (b[0] * 256 + b[1]) * 10], [0x5E, "Fuel rate", "L/h", 1, 0, 50, b => (b[0] * 256 + b[1]) / 20],
+    [0x61, "Driver demand torque", "%", 0, -25, 100, b => b[0] - 125], [0x62, "Actual torque", "%", 0, -25, 100, b => b[0] - 125],
+    [0x63, "Reference torque", "Nm", 0, 0, 1000, b => b[0] * 256 + b[1]],
+    [0x78, "Exhaust gas temp, bank 1", "°C", 0, 0, 1000, null], [0x79, "Exhaust gas temp, bank 2", "°C", 0, 0, 1000, null],
+    [0x7F, "Total engine run time", "h", 1, 0, 10000, null],
+  ];
+  /* The extra readings the demo car lists (DemoTransport's supported-readings answer): bank 1 trims, a wide-band first and narrow-band second oxygen sensor, rail pressure, two catalysts */
+  const DEMO_LISTS = new Set([0x03, 0x06, 0x07, 0x15, 0x1F, 0x23, 0x24, 0x32, 0x3C, 0x3E, 0x42, 0x51, 0x52, 0x5E]);
+  const reported = n => DEMO_LISTS.has(n);
+  const EXTRA = X.map(([n, label, unit, dec, min, max, dec2]) => ({ key: hex2(n), label, unit, dec, min, max, n, dec2, extra: true }));
+  EXTRA.forEach(c => CHANNELS.push(c));
+  // Saved choices can include these readings, which weren't known when the choices were first read.
+  try { const c = JSON.parse(localStorage.getItem("graphChannels")); if (Array.isArray(c) && c.length) { const k = c.filter(k => CHANNELS.some(x => x.key === k)).slice(0, 4); if (k.length) gChannels = k; } } catch (e) {}
+  const ABOUT = k => {
+    const n = parseInt(k, 16);
+    if (n === 0x06 || n === 0x08) return "What the engine computer is adding (+) or taking away (−) right now to keep the mixture right. Within about ±10% is normal.";
+    if (n === 0x07 || n === 0x09) return "The correction learnt over time; within about ±10% is normal. Well above: extra air (a leak) or weak fuel supply. Well below: too much fuel.";
+    if (n >= 0x14 && n <= 0x1B) return (n - 0x14) % 4 === 0 ? "When warm, it should flick between about 0.1 V (lean) and 0.9 V (rich) several times a second. A slow or stuck one is worth checking."
+      : "After the catalytic converter, it should stay fairly steady. If it flicks like the first sensor, the converter may be tired.";
+    if (n >= 0x24 && n <= 0x2B) return "1.00 is the ideal mixture: below 1 is rich (extra fuel), above 1 lean (extra air). Diesels, and some petrol engines cruising, run lean on purpose.";
+    return null;
+  };
+  const STATUS = { 0: "Engine off", 1: "Open loop, engine still warming up", 2: "Closed loop, using the oxygen sensors (normal)", 4: "Open loop, under load or slowing down", 8: "Open loop, a fault in the system", 16: "Closed loop, with a fault in a sensor" };
+  const hint = k => { const a = ABOUT(k); if (!a) return null; return ["06", "07", "08", "09"].includes(k) && state === "connected" ? `${a} Now: ${STATUS[car.raw(0x03)[0]].replace(/^./, c => c.toLowerCase())}.` : a; };
+
+  const baseVal = chVal;
+  chVal = ch => ch.extra ? (reported(ch.n) && ch.dec2 ? ch.dec2(car.raw(ch.n)) : null) : baseVal(ch);
+  const baseSample = sample;
+  sample = (key, v, t) => { if (v != null) baseSample(key, v, t); };
+
+  /* Two chip groups: the usual readings, then the extra ones the car reports (mirrors MainActivity.setupGraphs / showReportedChips) */
+  $("graphChips").insertAdjacentHTML("afterend", `<div class="more-title" id="moreTitle"></div><div class="chips more" id="moreChips" role="group" aria-label="More readings to graph"></div>`);
+  const st = document.createElement("style");
+  st.textContent = `.more-title{font-size:13px;font-weight:600;color:var(--fg-2);margin-top:14px}.chips.more{margin-top:6px}.strip.has-hint{height:206px}`;
+  document.head.appendChild(st);
+  const chip = c => `<button class="chip" role="checkbox" aria-checked="${gChannels.includes(c.key)}" data-k="${c.key}" style="--c:${GCOL[c.key] || "var(--accent)"}">${c.label}</button>`;
+  buildChips = function () {
+    const known = state === "connected";
+    $("graphChips").innerHTML = CHANNELS.filter(c => !c.extra).map(chip).join("");
+    const shown = EXTRA.filter(c => !known || reported(c.n) || gChannels.includes(c.key));
+    $("moreChips").innerHTML = shown.map(chip).join("");
+    $("moreTitle").textContent = known ? `More readings your car reports (${shown.length})` : "More readings, for cars that report them";
+    document.querySelectorAll("#graphChips .chip, #moreChips .chip").forEach(b => b.onclick = () => {
+      const k = b.dataset.k, on = gChannels.includes(k);
+      if (!on && gChannels.length >= 4) return toast("Up to 4 graphs at once, so each one stays fast");
+      if (on && gChannels.length === 1) return;
+      gChannels = on ? gChannels.filter(x => x !== k) : gChannels.concat(k);
+      try { localStorage.setItem("graphChannels", JSON.stringify(gChannels)); } catch (e) {}
+      buildChips(); buildStrips();
+    });
+  };
+  const baseStrips = buildStrips;
+  buildStrips = function () { baseStrips(); document.querySelectorAll("#graphList .strip").forEach(el => el.classList.toggle("has-hint", !!ABOUT(el.dataset.k))); };
+  let wasState = state;
+  setInterval(() => { if (state !== wasState) { wasState = state; buildChips(); } }, 500);
+
+  /* A graph with its "what this tells you" line under the name (mirrors GraphStripView.hint); the same drawing as drawStrip, with the chart moved down */
+  const baseDraw = drawStrip;
+  drawStrip = function (el, ch) {
+    const h = hint(ch.key);
+    if (!h) return baseDraw(el, ch);
+    const cv = el.querySelector("canvas"), dpr = devicePixelRatio || 1, W = el.clientWidth, H = el.clientHeight;
+    if (cv.width !== W * dpr || cv.height !== H * dpr) { cv.width = W * dpr; cv.height = H * dpr; }
+    const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+    const css = getComputedStyle($("phone")), fg = css.getPropertyValue("--fg").trim(), fg2 = css.getPropertyValue("--fg-2").trim(), lineC = css.getPropertyValue("--line").trim();
+    const col = GCOL[ch.key] || css.getPropertyValue("--accent").trim();
+    g.fillStyle = col; g.fillRect(0, 0, 3, H);
+    const pad = 14, now = gPaused ? gFrozen : performance.now(), from = now - gWindow;
+    const pts = (ghist[ch.key] || []).filter(p => p[0] >= from && p[0] <= now);
+    const vals = pts.map(p => p[1]), fmt = v => v.toFixed(ch.dec);
+    g.font = "600 13px Archivo"; g.fillStyle = fg; g.textAlign = "left"; g.fillText(ch.label, pad, pad + 12);
+    g.font = "500 12px Archivo"; g.fillStyle = fg2; g.textAlign = "right"; g.fillText(ch.unit, W - pad, pad + 20);
+    const uw = g.measureText(ch.unit).width, lay = $("phone").dataset.layout;
+    g.font = lay === "telemetry" ? "700 28px Archivo" : lay === "cockpit" ? "300 28px Archivo" : "italic 850 26px Archivo";
+    g.fontStretch = lay === "telemetry" ? "condensed" : lay === "cockpit" ? "normal" : "expanded"; g.fillStyle = fg;
+    g.fillText(vals.length ? fmt(vals[vals.length - 1]) : "—", W - pad - uw - 5, pad + 20); g.fontStretch = "normal";
+    g.font = "400 11px Archivo"; g.fillStyle = fg2; g.textAlign = "left";
+    if (vals.length) g.fillText(`Min ${fmt(Math.min(...vals))}   Max ${fmt(Math.max(...vals))}`, pad, pad + 30);
+    // The hint: up to three lines under the min and max.
+    g.font = "400 11.5px Archivo";
+    const lines = []; let cur = "";
+    for (const w of h.split(" ")) { const t = cur ? cur + " " + w : w; if (g.measureText(t).width > W - 2 * pad && cur) { lines.push(cur); cur = w; } else cur = t; }
+    if (cur) lines.push(cur);
+    const shown = lines.slice(0, 4); if (lines.length > 4) shown[3] = shown[3].replace(/\s*\S*$/, "…");
+    shown.forEach((l, i) => g.fillText(l, pad, pad + 38 + 11 + i * 14));
+    const top = pad + 42 + shown.length * 14 + 6, bottom = H - 22, left = pad, right = W - pad;
+    g.font = "400 11px Archivo"; g.strokeStyle = lineC; g.lineWidth = 1;
+    for (let i = 0; i < 3; i++) { const y = top + (bottom - top) * i / 2; g.beginPath(); g.moveTo(left, y); g.lineTo(right, y); g.stroke(); }
+    const step = gWindow <= 10000 ? 2000 : gWindow <= 30000 ? 5000 : 10000; g.textAlign = "center";
+    for (let b = 0; b <= gWindow; b += step) { const x = right - (right - left) * b / gWindow; g.fillText(b ? `-${b / 1000}s` : "now", Math.min(right - 10, Math.max(left + 10, x)), H - 7); }
+    if (vals.length < 2) { g.fillText(state === "waiting" ? "Ignition off" : "Waiting for readings…", W / 2, (top + bottom) / 2); return; }
+    let lo = Math.min(...vals), hi = Math.max(...vals); const range = ch.max - ch.min;
+    if (hi - lo < range * .05) { const m = (hi + lo) / 2; lo = m - range * .025; hi = m + range * .025; }
+    const span = hi - lo; lo = Math.max(ch.min - span, lo - span * .1); hi = Math.min(ch.max + span, hi + span * .1);
+    const Xp = t => right - (right - left) * (now - t) / gWindow, Yp = v => bottom - (bottom - top) * (v - lo) / (hi - lo);
+    const path = new Path2D(); pts.forEach(([t, v], i) => i ? path.lineTo(Xp(t), Yp(v)) : path.moveTo(Xp(t), Yp(v)));
+    const area = new Path2D(path); area.lineTo(Xp(pts[pts.length - 1][0]), bottom); area.lineTo(Xp(pts[0][0]), bottom); area.closePath();
+    const grad = g.createLinearGradient(0, top, 0, bottom); grad.addColorStop(0, col + "46"); grad.addColorStop(1, col + "00");
+    g.fillStyle = grad; g.fill(area); g.strokeStyle = col; g.lineWidth = 2; g.lineJoin = "round"; g.stroke(path);
+  };
+  buildChips(); buildStrips();
+
+  /* Diagnostics: "Codes recently cleared?" (mirrors MainActivity.showClearedCheck and obd/ClearedCheck) */
+  const chev = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg>`;
+  const HELP = "A used-car check: how far the car has gone, and how many times it has warmed up, since its trouble codes were last cleared.";
+  const row = `<button class="setting" id="clearedRow"><div class="r"><span style="flex:1">Codes recently cleared?</span>${chev}</div><div class="h" id="clearedHelp">${HELP}</div></button>`;
+  const after = $("modulesRow");
+  if (after) {
+    after.insertAdjacentHTML("afterend", row);
+    const box = after.parentElement, sub = box.previousElementSibling && box.previousElementSibling.querySelector(".grp-sub");
+    if (sub) sub.textContent = [...box.children].map(r => (r.querySelector(".r > span") || r).textContent.trim()).join(" · ");
+  }
+  const km = n => `${Math.round(n).toLocaleString("en-US")} km`;
+  const HEADLINE = "Codes look recently cleared: only 18 km and 3 warm-ups since.";
+  const CAVEAT = "Clearing codes isn't the only thing that resets these counters: disconnecting the battery or replacing the engine computer does too. A recent reset isn't proof of a hidden fault, but it's worth asking why.";
+  const line = (t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${t}</div>`;
+  const head = t => `<div class="trip-h">${t}</div>`;
+  if ($("clearedRow")) $("clearedRow").onclick = () => {
+    if (state !== "connected") return toast("Connect to your car first.");
+    $("clearedHelp").textContent = HEADLINE;
+    overlay(`<div class="handle"></div><h2>Codes recently cleared?</h2>` +
+      `<p>${HEADLINE}</p><p>1 readiness monitor is not finished yet. They finish over a few days of normal driving after a clear, so this fits a recent one.</p>` +
+      head("What the car counts") +
+      [["Distance since codes cleared", km(18)], ["Warm-ups since codes cleared", "3 warm-ups"], ["Engine running time since codes cleared", "41 min"],
+        ["Distance with check-engine light on", km(6)], ["Time with check-engine light on", "9 min"], ["Readiness monitors", "1 of 7 not complete yet"]]
+        .map(([k, v]) => line(`${k}: ${v}`, v === "N/A")).join("") +
+      head("What this means") +
+      line("When trouble codes are cleared, the engine computer starts these counts again from zero. Very small numbers on a car for sale can mean a fault was cleared to hide the warning light until it comes back.", true) +
+      line(CAVEAT, true) + line("It's also in the code report when you share it.", true), { sheet: true });
+  };
+  setInterval(() => { if (state !== "connected" && $("clearedHelp")) $("clearedHelp").textContent = HELP; }, 1000);
 })();
 
 window.carReady = true;

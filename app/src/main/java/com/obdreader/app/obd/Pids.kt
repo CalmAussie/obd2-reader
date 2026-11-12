@@ -137,13 +137,13 @@ object Pids {
     fun about(hex: String): String? {
         val n = hex.toIntOrNull(16) ?: return null
         return when (n) {
-            0x06, 0x08 -> "Fuel the engine computer is adding (+) or taking away (−) right now to keep the mixture right. It moves quickly; within about ±10% is normal."
-            0x07, 0x09 -> "The correction learnt over time. Within about ±10% is normal. Well above means it's adding fuel for extra air (a leak, or weak fuel supply); well below, it's taking fuel away (a rich mixture)."
+            0x06, 0x08 -> "What the engine computer is adding (+) or taking away (−) right now to keep the mixture right. Within about ±10% is normal."
+            0x07, 0x09 -> "The correction learnt over time; within about ±10% is normal. Well above: extra air (a leak) or weak fuel supply. Well below: too much fuel."
             in 0x14..0x1B -> if ((n - 0x14) % 4 == 0)
-                "A warm engine's first sensor flicks between about 0.1 V (lean) and 0.9 V (rich) several times a second. A slow or stuck one is worth checking."
+                "When warm, it should flick between about 0.1 V (lean) and 0.9 V (rich) several times a second. A slow or stuck one is worth checking."
             else
-                "A sensor after the catalytic converter stays fairly steady when the converter works. If it flicks like the first sensor, the converter may be tired."
-            in 0x24..0x2B -> "1.00 is the ideal mixture. Below 1 is rich (extra fuel), above 1 is lean (extra air). Diesels, and some petrol engines when cruising, run lean on purpose."
+                "After the catalytic converter, it should stay fairly steady. If it flicks like the first sensor, the converter may be tired."
+            in 0x24..0x2B -> "1.00 is the ideal mixture: below 1 is rich (extra fuel), above 1 lean (extra air). Diesels, and some petrol engines cruising, run lean on purpose."
             else -> null
         }
     }
@@ -168,16 +168,8 @@ object Pids {
 /** Fuel system status (service 01 PID 03) and fuel type (PID 51), in words. */
 object FuelInfo {
 
-    /** The fuel system status, from the first fuel system's code (byte A). */
-    fun status(code: Int): String? = when (code) {
-        0 -> "Engine off"
-        1 -> "Open loop: engine still warming up"
-        2 -> "Closed loop: following the oxygen sensors"
-        4 -> "Open loop: hard acceleration or slowing down"
-        8 -> "Open loop: a fault stops it using the oxygen sensors"
-        16 -> "Closed loop, but with a fault in the oxygen sensor feedback"
-        else -> null
-    }
+    /** The fuel system status, from the first fuel system's code (byte A), in the freeze frame's words. */
+    fun status(code: Int): String? = if (code == 0) "Engine off" else FreezeFrame.fuelSystem(intArrayOf(code))
 
     private val TYPES = listOf(
         null, "Petrol", "Methanol", "Ethanol", "Diesel", "LPG", "CNG", "Propane", "Electric",

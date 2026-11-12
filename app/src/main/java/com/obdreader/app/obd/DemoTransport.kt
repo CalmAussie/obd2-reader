@@ -124,8 +124,12 @@ class DemoTransport(
         val drive = (0.5 + 0.5 * sin(t / 2.5)).pow(2)   // 0..1 "accelerator"
         val rpm = 850 + 2400 * drive
         return when (number) {
-            0x00, 0x20 -> "FFFFFFFF"
-            0x40 -> "FFFFFFFE"
+            // What a 4-cylinder petrol turbo with direct injection lists: bank 1 fuel trims, a wide-band
+            // first oxygen sensor and a narrow-band second one, fuel rail pressure, two catalyst
+            // temperatures, the since-cleared counters and the usual dashboard readings.
+            0x00 -> "BE3FA813"
+            0x20 -> "B007E015"
+            0x40 -> "FEDCC014"
             0x0C -> two((rpm * 4).toInt())
             0x0D -> one(DemoTestHooks.fixedSpeed?.toDouble() ?: (drive * 95))
             0x11 -> one(pct(12 + drive * 70))

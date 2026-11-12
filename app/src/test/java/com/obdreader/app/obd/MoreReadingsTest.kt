@@ -98,8 +98,8 @@ class MoreReadingsTest {
     }
 
     @Test fun fuelSystemStatusAndTypeAreWords() {
-        assertEquals("Closed loop: following the oxygen sensors", FuelInfo.status(2))
-        assertEquals("Open loop: engine still warming up", FuelInfo.status(1))
+        assertEquals("Closed loop, using the oxygen sensors (normal)", FuelInfo.status(2))
+        assertEquals("Open loop, engine still warming up", FuelInfo.status(1))
         assertNull(FuelInfo.status(3))
         assertTrue(FuelInfo.trimsActive(2) && FuelInfo.trimsActive(16) && !FuelInfo.trimsActive(4))
         assertEquals("Petrol", FuelInfo.type(1))
@@ -121,7 +121,7 @@ class MoreReadingsTest {
 
     @Test fun logReadsTheNewReadings() {
         assertEquals("Short-term fuel trim, bank 1: 10.2%", LogTranslator.describe("0106", listOf("41068D")))
-        assertEquals("Fuel system status: Closed loop: following the oxygen sensors", LogTranslator.describe("0103", listOf("41030200")))
+        assertEquals("Fuel system status: Closed loop, using the oxygen sensors (normal)", LogTranslator.describe("0103", listOf("41030200")))
         assertEquals("Fuel type: Petrol", LogTranslator.describe("0151", listOf("415101")))
     }
 
@@ -129,7 +129,7 @@ class MoreReadingsTest {
         val c = ElmClient(DemoTransport().apply { open() })
         val supported = c.supportedPids()!!
         val listed = Pids.extra.filter { it.number in supported }
-        assertTrue(listed.size > 30)
+        assertEquals(listOf("03", "06", "07", "15", "1F", "23", "24", "32", "3C", "3E", "42", "51", "52", "5E"), listed.map { it.hex }.sorted())
         for (chunk in listed.chunked(ElmClient.MAX_MULTI_PIDS)) {
             val got = c.readPids(chunk)
             chunk.forEach { p -> assertNotNull("demo answers ${p.hex}", got[p]) }
