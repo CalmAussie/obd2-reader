@@ -1927,7 +1927,7 @@ const CHANNELS = PIDS.map(p => ({ key: hex2(p.n), label: GLABEL[hex2(p.n)] || p.
 const ghist = {};            /* LiveHistory: last 60 s of every reading */
 let gWindow = 30000, gPaused = false, gFrozen = 0, gChannels = ["0C", "0D", "11"], gRate = 0, gCount = 0;
 let ignOff = false, autoReconnect = true;
-try { const c = JSON.parse(localStorage.getItem("graphChannels")); if (Array.isArray(c) && c.length) gChannels = c.filter(k => CHANNELS.some(x => x.key === k)).slice(0, 4); if (!gChannels.length) gChannels = ["0C", "0D", "11"]; } catch (e) {}
+try { const c = JSON.parse(localStorage.getItem("graphChannels")); if (Array.isArray(c) && c.length) gChannels = c.filter(k => CHANNELS.some(x => x.key === k)).slice(0, 6); if (!gChannels.length) gChannels = ["0C", "0D", "11"]; } catch (e) {}
 
 function sample(key, v, t) {
   const h = ghist[key] || (ghist[key] = []);
@@ -1959,7 +1959,7 @@ function buildChips() {
   $("graphChips").innerHTML = CHANNELS.map(c => `<button class="chip" role="checkbox" aria-checked="${gChannels.includes(c.key)}" data-k="${c.key}" style="--c:${GCOL[c.key] || "var(--accent)"}">${c.label}</button>`).join("");
   $("graphChips").querySelectorAll(".chip").forEach(b => b.onclick = () => {
     const k = b.dataset.k, on = gChannels.includes(k);
-    if (!on && gChannels.length >= 4) return toast("Up to 4 graphs at once. Turn one off first.");
+    if (!on && gChannels.length >= 6) return toast("Up to 6 graphs at once. Turn one off first.");
     if (on && gChannels.length === 1) return;
     gChannels = on ? gChannels.filter(x => x !== k) : gChannels.concat(k);
     try { localStorage.setItem("graphChannels", JSON.stringify(gChannels)); } catch (e) {}
@@ -4053,7 +4053,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   const EXTRA = X.map(([n, label, unit, dec, min, max, dec2]) => ({ key: hex2(n), label, unit, dec, min, max, n, dec2, extra: true }));
   EXTRA.forEach(c => CHANNELS.push(c));
   // Saved choices can include these readings, which weren't known when the choices were first read.
-  try { const c = JSON.parse(localStorage.getItem("graphChannels")); if (Array.isArray(c) && c.length) { const k = c.filter(k => CHANNELS.some(x => x.key === k)).slice(0, 4); if (k.length) gChannels = k; } } catch (e) {}
+  try { const c = JSON.parse(localStorage.getItem("graphChannels")); if (Array.isArray(c) && c.length) { const k = c.filter(k => CHANNELS.some(x => x.key === k)).slice(0, 6); if (k.length) gChannels = k; } } catch (e) {}
   const ABOUT = k => {
     const n = parseInt(k, 16);
     if (n === 0x06 || n === 0x08) return "What the engine computer is adding (+) or taking away (−) right now to keep the mixture right. Within about ±10% is normal.";
@@ -4102,7 +4102,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   const save = () => { try { localStorage.setItem("graphChannels", JSON.stringify(gChannels)); } catch (e) {} };
   const toggle = k => {
     if (gChannels.includes(k)) { if (gChannels.length === 1) { toast("Keep at least one graph"); return false; } gChannels = gChannels.filter(x => x !== k); }
-    else { if (gChannels.length >= 4) { toast("Up to 4 graphs at once, so each one stays fast"); return false; } gChannels = gChannels.concat(k); }
+    else { if (gChannels.length >= 6) { toast("Up to 6 graphs at once, so each one stays fast"); return false; } gChannels = gChannels.concat(k); }
     save(); buildStrips(); return true;
   };
   const valText = c => { if (!known()) return ""; const v = chVal(c); return v == null || Number.isNaN(v) ? "–" : `${v.toFixed(c.dec)}${c.unit ? " " + c.unit : ""}`; };
@@ -4114,7 +4114,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     if (gTab && !groups.some(([g]) => g === gTab)) gTab = null;
     $("graphTabs").innerHTML = [[null], ...groups].map(([g]) => `<button role="tab" aria-selected="${g === gTab}" data-g="${g || ""}">${g ? SHORT[g] || g : "All"}</button>`).join("");
     $("graphTabs").querySelectorAll("button").forEach(b => b.onclick = () => { gTab = b.dataset.g || null; try { localStorage.setItem("graphTab", gTab || ""); } catch (e) {} buildChips(); });
-    $("graphCount").textContent = `${gChannels.length} of 4 graphs · ${choices().length} readings available`;
+    $("graphCount").textContent = `${gChannels.length} of 6 graphs · ${choices().length} readings available`;
     if (gTab) {
       const ks = groups.find(([g]) => g === gTab)[1];
       $("graphChips").innerHTML = ks.map(k => `<button class="chip" role="checkbox" aria-checked="${gChannels.includes(k)}" data-k="${k}" style="--c:${col(k)}">${lab(k)}</button>`).join("");
@@ -4127,7 +4127,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   };
   function showAddGraph() {
     const rows = groupsNow();
-    const s = overlay(`<div class="handle"></div><h2>Add a graph</h2><p>Readings your car reports, with their value now. Tap one to add or remove its graph; up to 4 at once.</p>` +
+    const s = overlay(`<div class="handle"></div><h2>Add a graph</h2><p>Readings your car reports, with their value now. Tap one to add or remove its graph; up to 6 at once.</p>` +
       rows.map(([g, ks]) => `<div class="gsheet-h">${g}</div>` + ks.map(k => `<button class="grow" role="checkbox" aria-checked="${gChannels.includes(k)}" data-k="${k}" style="--c:${col(k)}"><span class="d"></span><span class="l">${lab(k)}</span><span class="v"></span><span class="ck"></span></button>`).join("")).join("") +
       `<div class="sheet-actions"><button class="primary" id="graphDone">Done</button></div>`, { sheet: true });
     s.querySelector(".sheet").classList.add("tall");

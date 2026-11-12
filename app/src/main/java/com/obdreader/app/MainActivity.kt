@@ -5029,7 +5029,7 @@ open class MainActivity : AppCompatActivity() {
         private const val THROTTLE_KEY = "11"
         private const val PREF_GRAPHS = "graph_channels"
         private const val PREF_GRAPH_TAB = "graph_tab"
-        private const val MAX_GRAPHS = 4
+        private const val MAX_GRAPHS = 6  // six is what a CAN car answers in one request (ElmClient.MAX_MULTI_PIDS)
         private const val FUEL_KEY = "2F"
         private const val BLE_SCAN_MS = 12_000L
         private const val LOG_REFRESH_MS = 250L
