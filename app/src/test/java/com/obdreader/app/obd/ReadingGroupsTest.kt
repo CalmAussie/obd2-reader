@@ -28,4 +28,16 @@ class ReadingGroupsTest {
     @Test fun keysAreMatchedWhateverTheCase() {
         assertEquals(ReadingGroups.Group.EXHAUST, ReadingGroups.of("3c"))
     }
+
+    @Test fun everyNamedStandardReadingHasAGroup() {
+        CarCoverage.named.filter { it % 0x20 != 0 }.forEach {
+            val k = String.format(java.util.Locale.US, "%02X", it)
+            assertNotEquals("$k ${CarCoverage.name(it)} has a group", ReadingGroups.Group.OTHER, ReadingGroups.of(k))
+        }
+    }
+
+    @Test fun graphsNeverGetADiagnosticsTab() {
+        val graphable = Pids.dashboard.map { it.hex } + Pids.extraNumbers.map { it.hex } + Boost.KEY + "VOLT"
+        assertEquals(false, ReadingGroups.sort(graphable).any { it.first == ReadingGroups.Group.DIAGNOSTICS })
+    }
 }

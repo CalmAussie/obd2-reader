@@ -363,9 +363,9 @@ PY
   log "diagnostics sections: opened $opened"
   for k in 1 2 3 4 5 6 7 8 9 10; do adb shell input swipe 540 700 540 2000 120; done; sleep 1
   # Each section lists its rows in alphabetical order (Your car stays first), and Alerts is under Deeper checks. Top section first: find_scrolled only scrolls down.
-  if find_scrolled 'Your car · Adapter log · Protocol · Reconnect automatically' "$OUT/ui-order.xml"; then log "diagnostics sections: Your car first"
+  if find_scrolled 'Your car · Adapter log · Hide VIN · Protocol · Reconnect automatically' "$OUT/ui-order.xml"; then log "diagnostics sections: Your car first"
   else log "diagnostics sections: FAILED (Your car not first, or Car and connection not in order)"; FAIL=1; fi
-  if find_scrolled 'Alerts · Codes from other modules · Codes recently cleared? · Custom readings' "$OUT/ui-order.xml"; then log "diagnostics sections: in alphabetical order, Alerts under Deeper checks"
+  if find_scrolled 'Alerts · Code history · Codes from other modules · Codes recently cleared? · Custom readings' "$OUT/ui-order.xml"; then log "diagnostics sections: in alphabetical order, Alerts under Deeper checks"
   else log "diagnostics sections: FAILED (Deeper checks not in order, or Alerts not in it)"; FAIL=1; fi
   for k in 1 2 3 4 5 6 7 8 9 10; do adb shell input swipe 540 700 540 2000 120; done; sleep 1
 }
@@ -875,12 +875,16 @@ SCAN=missing
 for attempt in 1 2; do
   tap_tab Dashboard; sleep 2; connect_demo; sleep 2
   diag_top
+  adb logcat -c
   if tap_scrolled "Scan what your car reports"; then
     sleep 8
     SEEN=0
+    # The sheet's values update every second, so a screen dump can time out and return the
+    # screen underneath: the app's own log line counts too.
     for i in 1 2 3 4 5; do
-      adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-scan.xml"
-      grep -q "What your car reports" "$OUT/ui-scan.xml" && { SEEN=1; break; }; sleep 2
+      adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-scan.xml" 2>/dev/null
+      grep -q "What your car reports" "$OUT/ui-scan.xml" && { SEEN=1; break; }
+      adb logcat -d -s OBD2Scan:I 2>/dev/null | grep -q "What your car reports: shown" && { SEEN=1; break; }; sleep 2
     done
     shot 12-car-scan
     adb shell input keyevent KEYCODE_BACK; sleep 2

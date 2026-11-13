@@ -224,14 +224,23 @@ object Exports {
      * car's engine computer sent when that's different, so a mechanic sees both.
      */
     fun vinLines(context: Context, carVin: String?): List<String> {
-        val user = AppPrefs.userVin(AppPrefs.of(context))
+        val prefs = AppPrefs.of(context)
+        val user = AppPrefs.userVin(prefs)
+        // Hide VIN: the serial number (or the whole VIN) is left out, as the user chose.
+        val mode = AppPrefs.vinPrivacy(prefs)
+        if (mode == com.obdreader.app.obd.VinPrivacy.Mode.HIDDEN) return if (user != null || carVin != null) listOf("VIN: hidden (Hide VIN is on)") else emptyList()
+        val show = { v: String -> com.obdreader.app.obd.VinPrivacy.mask(v, mode) }
+        val note = if (mode == com.obdreader.app.obd.VinPrivacy.Mode.PARTIAL) " (last 6 hidden)" else ""
         return when {
-            user != null -> listOfNotNull("VIN: $user (from the VIN plate)",
-                carVin?.takeIf { it != user }?.let { "VIN reported by the car's engine computer: $it" })
-            carVin != null -> listOf("VIN: $carVin" + if (carVin.length == 17 && !VinDecoder.isValid(carVin)) " (fails its check digit, so it may not be this car's)" else "")
+            user != null -> listOfNotNull("VIN: ${show(user)}$note (from the VIN plate)",
+                carVin?.takeIf { it != user }?.let { "VIN reported by the car's engine computer: ${show(it)}$note" })
+            carVin != null -> listOf("VIN: ${show(carVin)}$note" + if (carVin.length == 17 && !VinDecoder.isValid(carVin)) " (fails its check digit, so it may not be this car's)" else "")
             else -> emptyList()
         }
     }
+
+    /** The VINs the app knows (the car's and the one entered from the plate), for taking them out of logs. */
+    fun knownVins(context: Context, carVin: String?): List<String> = listOfNotNull(carVin, AppPrefs.userVin(AppPrefs.of(context)))
 
     /** A plain-text report of the car's trouble codes with full explanations, for a mechanic or a forum post. */
     fun codeReport(context: Context, s: ObdSession.State, carLabel: String?): File {
@@ -257,6 +266,8 @@ object Exports {
             appendLine()
             if (codes == null || codes.total == 0) {
                 appendLine("No trouble codes stored or pending.")
+                codes?.let { permanentLines(it).forEach { l -> appendLine(l) } }
+                historyLines(context).forEach { appendLine(it) }
                 return@buildString
             }
             appendLine("${codes.total} trouble codes (${codes.stored.size} stored, ${codes.pending.size} pending)")
@@ -278,14 +289,34 @@ object Exports {
             }
             codes.stored.forEach { section(it, true) }
             codes.pending.forEach { section(it, false) }
+            permanentLines(codes).forEach { appendLine(it) }
+            historyLines(context).forEach { appendLine(it) }
             appendLine()
             appendLine("Explanations are general guidance for generic OBD2 codes. Confirm with a mechanic before replacing parts.")
         }
         return exportFile(context, "OBD2Reader_codes_${SimpleDateFormat("yyyy-MM-dd_HHmm", Locale.US).format(Date())}.txt").apply { writeText(text) }
     }
 
-    /** The raw adapter conversation, for troubleshooting a stubborn adapter or car. */
-    fun adapterLog(context: Context, lines: List<String>, s: ObdSession.State): File {
+    /** The report's permanent codes, when the car reports them. */
+    private fun permanentLines(codes: ObdSession.Codes): List<String> {
+        val p = codes.permanent ?: return emptyList()
+        return listOf("", if (p.isEmpty()) "Permanent codes: none." else "Permanent codes: ${p.joinToString(", ")}. The engine computer keeps these until its own test shows the fault is fixed; no scan tool can clear them.")
+    }
+
+    /** The report's code history: this car's codes seen before, from the phone's history. */
+    private fun historyLines(context: Context): List<String> {
+        val all = com.obdreader.app.obd.CodeHistory.parse(AppPrefs.of(context).getString(AppPrefs.CODE_HISTORY, null))
+        val mine = com.obdreader.app.obd.CodeHistory.forCar(all, ObdSession.historyCar(context))
+        if (mine.isEmpty()) return emptyList()
+        val day = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
+        return listOf("", "Code history (codes this phone has seen on this car):") + mine.map { e ->
+            "  ${e.code}  ${com.obdreader.app.obd.CodeHistory.describe(e) { day.format(Date(it)) }}"
+        }
+    }
+
+    /** The raw adapter conversation, for troubleshooting a stubborn adapter or car. The VIN is hidden as Hide VIN says. */
+    fun adapterLog(context: Context, rawLines: List<String>, s: ObdSession.State): File {
+        val lines = com.obdreader.app.obd.VinPrivacy.scrubLog(rawLines, AppPrefs.vinPrivacy(AppPrefs.of(context)), knownVins(context, s.vin))
         val text = buildString {
             appendLine("OBD2 Reader adapter log, ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).format(Date())}")
             appendLine("State: ${s.title}. ${s.detail}")

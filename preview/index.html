@@ -4219,6 +4219,116 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   setInterval(() => { if (state !== "connected" && $("clearedHelp")) $("clearedHelp").textContent = HELP; }, 1000);
 })();
 
+/* ===== Diagnostics pack, chunk B: What your car reports grouped with live values, code history, Hide VIN (mirrors MainActivity.showScan / showCodeHistory / showVinPrivacy, obd/CodeHistory.kt, obd/VinPrivacy.kt) ===== */
+(function () {
+  const chev = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg>`;
+  const line = (t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${t}</div>`;
+  const head = t => `<div class="trip-h">${t}</div>`;
+  const esc = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const st = document.createElement("style");
+  st.textContent = `.rv{display:flex;gap:10px;align-items:baseline;font-size:13px;padding:3px 0}.rv .n{flex:1}.rv .v{font-variant-numeric:tabular-nums;max-width:45%;text-align:right}.rv.dim .n{color:var(--fg-2)}
+.fold{display:block;width:100%;text-align:left;font-size:15px;font-weight:600;color:var(--accent);padding:14px 0 6px;min-height:48px}
+.hist-c{font-size:14px;margin-top:8px}.hist-c.gone{color:var(--fg-2)}.hist-d{font-size:13px;color:var(--fg-2)}
+.opt-r{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;text-align:left;font-size:15px}.opt-r .o{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--fg-2);flex:none}.opt-r[aria-checked="true"] .o{box-shadow:inset 0 0 0 6px var(--accent)}`;
+  document.head.appendChild(st);
+
+  /* Hide VIN (VinPrivacy): full, last 6 hidden, or hidden (the default) */
+  const MODES = [["full", "Show it in full", "The whole VIN, on screen and in what you share."],
+    ["partial", "Hide the last 6 characters", "The last 6, your car's serial number, are hidden. The rest still says the maker, model year and factory."],
+    ["hidden", "Hide it completely", "No VIN on screen or in anything you share."]];
+  let vinMode = "hidden"; try { vinMode = localStorage.getItem("vinPrivacy") || "hidden"; } catch (e) {}
+  const mask = v => vinMode === "full" ? v : vinMode === "hidden" ? "hidden" : v.length > 6 ? v.slice(0, -6) + "******" : "******";
+  const baseShowVin = showVin;
+  showVin = function (vin) { baseShowVin(vin); if (vin) $("vin").textContent = vinMode === "hidden" ? "Hidden (Hide VIN is on)" : mask(vin); };
+  const baseLog = log;
+  let lastCmd = "";
+  log = function (l) {
+    if (vinMode !== "full") {
+      if (l.startsWith("< ") && (lastCmd === "0902" || lastCmd === "22F190")) l = "< (reply hidden: it holds the VIN)";
+      l = l.replace(/\b(?=[A-HJ-NPR-Z0-9]{17}\b)(?=[A-HJ-NPR-Z0-9]*[G-HJ-NPR-Z])[A-HJ-NPR-Z0-9]{17}\b/g, mask);
+    }
+    if (l.startsWith("> ")) lastCmd = l.slice(2).replace(/\s/g, "").split("<")[0];
+    baseLog(l);
+  };
+  const modeLabel = () => MODES.find(m => m[0] === vinMode)[1];
+
+  /* The rows: Hide VIN under Car and connection, Code history under Deeper checks, each section A to Z */
+  const place = (afterId, html) => {
+    const a = $(afterId); if (!a) return;
+    a.insertAdjacentHTML("afterend", html);
+    const box = a.parentElement;
+    const nameOf = el => (el.querySelector(".r > span") || el.querySelector(".r") || el).textContent.trim().split("\n")[0].trim();
+    [...box.children].sort((x, y) => (y.id === "carRow") - (x.id === "carRow") || nameOf(x).localeCompare(nameOf(y), undefined, { sensitivity: "base" })).forEach(r => box.appendChild(r));
+    const sub = box.previousElementSibling && box.previousElementSibling.querySelector(".grp-sub");
+    if (sub) sub.textContent = [...box.children].map(nameOf).join(" · ");
+  };
+  place("carRow", `<button class="setting" id="vinPrivacyRow"><div class="r"><span style="flex:1">Hide VIN</span>${chev}</div><div class="h" id="vinPrivacyHelp">${modeLabel()}</div></button>`);
+  place("clearedRow", `<button class="setting" id="historyRow"><div class="r"><span style="flex:1">Code history</span>${chev}</div><div class="h">Every trouble code seen on your car, with when it first showed and when it went</div></button>`);
+
+  if ($("vinPrivacyRow")) $("vinPrivacyRow").onclick = () => {
+    const s = overlay(`<div class="handle"></div><h2>Hide VIN</h2><p>How much of your VIN the app shows on screen and puts in code reports, car scans and adapter logs you share. The last 6 characters are your car's serial number: the part that says which car it is.</p>` +
+      MODES.map(([k, label]) => `<button class="opt-r" role="radio" aria-checked="${k === vinMode}" data-k="${k}"><span class="o"></span>${label}</button>`).join("") +
+      MODES.map(([, label, help]) => line(`${label}: ${help}`, true)).join(""), { sheet: true });
+    s.querySelectorAll(".opt-r").forEach(b => b.onclick = () => {
+      vinMode = b.dataset.k; try { localStorage.setItem("vinPrivacy", vinMode); } catch (e) {}
+      $("vinPrivacyHelp").textContent = modeLabel();
+      if (state === "connected") showVin(demoVin());
+      closeOverlay();
+    });
+  };
+
+  /* Code history: an example of what builds up on a real car (the demo car's own codes aren't kept) */
+  if ($("historyRow")) $("historyRow").onclick = () => {
+    const car = myCar ? [myCar.year, myCar.make, myCar.model].filter(Boolean).join(" ") : "Your car";
+    const E = [["P0133", "Stored. First seen 3 Nov 2026, still there on 12 Nov 2026", false], ["P0420", "Stored. First seen 9 Nov 2026, still there on 12 Nov 2026", false],
+      ["P0420", "Permanent. First seen 9 Nov 2026, still there on 12 Nov 2026", false], ["P0171", "Pending. Seen 28 Oct 2026 to 2 Nov 2026, gone since 3 Nov 2026", true]];
+    overlay(`<div class="handle"></div><h2>Code history</h2><p>Codes the app has seen on each car, kept on your phone only. Ones that have gone are greyed.</p>` + head(esc(car)) +
+      E.map(([c, d, gone]) => `<div class="hist-c${gone ? " gone" : ""}">${c}  ${esc(DESCR[c] || "")}</div><div class="hist-d">${d}</div>`).join("") +
+      `<div class="sheet-actions"><button class="btn-out" id="histClear" style="color:var(--accent)">Clear history</button></div>`, { sheet: true }).querySelector(".sheet").classList.add("tall");
+    $("histClear").onclick = () => { closeOverlay(); toast("Asks first: clears the app's list on your phone, never your car's codes."); };
+  };
+
+  /* Permanent codes under the codes (the demo car keeps P0420 as one) */
+  const baseShowCodes = showCodes;
+  showCodes = function (codes) {
+    baseShowCodes(codes);
+    if (codes.length) $("dtcList").insertAdjacentHTML("beforeend", `<div class="scan-l dim" style="margin-top:10px">Permanent codes: P0420. The engine computer keeps these until its own test shows the fault is fixed, which can take a few drives after a repair. No scan tool can clear them.</div>`);
+  };
+
+  /* What your car reports: the readings the demo car lists (DemoTransport bitmaps), by part of the car, with values now; the rest folded away */
+  const BITMAPS = [[0x00, "BE3FA813"], [0x20, "B007E015"], [0x40, "FEDCC014"]];
+  const listed = []; BITMAPS.forEach(([base, h]) => { const v = parseInt(h, 16); for (let i = 0; i < 32; i++) if (v & (1 << (31 - i))) listed.push(base + i + 1); });
+  const LISTS = listed.filter(n => n % 32 !== 0).map(hex2);
+  const GROUPS = [["Engine", "0C 0D 11 04 43 0E 05 67 5C 61 62 63 64 8E 45 47 48 49 4A 4B 4C 5A 6C 8D A4 A6 1F 7F"],
+    ["Fuel and mixture", "2F 06 07 08 09 24 25 26 27 28 29 2A 2B 14 15 16 17 18 19 1A 1B 34 35 36 37 38 39 3A 3B 13 1D 44 55 56 57 58 0A 22 23 59 6D 6E 5D 5E 9D 52 03 51"],
+    ["Air and boost", "0F 46 68 0B 87 10 50 66 33 6F 70 71 72 74 75 76 77"],
+    ["Exhaust", "3C 3E 3D 3F 78 79 73 84 2C 2D 6B 12 32 53 54 2E 7A 7B 7C 83 85 86 9E"],
+    ["Electrical", "42 5B 9A"],
+    ["Diagnostics", "01 41 21 4D 31 30 4E 02 1C 5F 7D 7E 1E 65 4F"]].map(([g, ks]) => [g, ks.split(" ")]);
+  const COUNTERS = { "31": "18 km", "30": "3 warm-ups", "4E": "41 min", "21": "6 km", "4D": "9 min", "01": "1 of 7 not complete yet", "03": "Closed loop, using the oxygen sensors (normal)", "51": "Petrol", "1C": "" };
+  const val = k => {
+    if (k in COUNTERS) return COUNTERS[k];
+    const ch = CHANNELS.find(c => c.key === k); if (!ch) return "";
+    const v = chVal(ch); return v == null || Number.isNaN(v) ? "–" : `${v.toFixed(ch.dec)}${ch.unit ? " " + ch.unit : ""}`;
+  };
+  $("scanRow").onclick = () => {
+    if (state !== "connected") return toast("Connect to your car first.");
+    const groups = GROUPS.map(([g, ks]) => [g, ks.filter(k => LISTS.includes(k))]).filter(([, ks]) => ks.length);
+    const shown = groups.flatMap(([, ks]) => ks);
+    const rest = Object.keys(PID_NAMES).filter(k => parseInt(k, 16) % 32 !== 0 && !LISTS.includes(k));
+    const s = overlay(`<div class="handle"></div><h2>What your car reports</h2><p>${shown.length} standard readings, by part of the car, with their value now. Ones without a value aren't read by the app yet.</p>` +
+      groups.map(([g, ks]) => head(g) + ks.map(k => `<div class="rv${val(k) ? "" : " dim"}"><span class="n">${k}  ${esc(PID_NAMES[k] || "Reading " + k)}</span><span class="v" data-k="${k}">${val(k)}</span></div>`).join("")).join("") +
+      `<button class="fold" id="scanFold" aria-expanded="false">Not reported by your car (${rest.length})  ▸</button><div id="scanRest" hidden>${rest.map(k => line(`${k}  ${esc(PID_NAMES[k])}`, true)).join("")}</div>` +
+      head("Battery") + line("✓  Battery voltage: measured by the adapter, on every car") + line("·  12-volt battery current: not part of standard OBD2. Some cars measure it in a maker-specific module, which the app can't read yet, so the Dashboard estimates charging from voltage instead.", true) + line("·  Hybrid/EV battery data (PID 9A): not offered by this car", true) +
+      `<button class="primary trip-done" id="scanShare">Share scan</button>`, { sheet: true });
+    s.querySelector(".sheet").classList.add("tall");
+    $("scanFold").onclick = () => { const o = $("scanRest").hidden; $("scanRest").hidden = !o; $("scanFold").setAttribute("aria-expanded", o); $("scanFold").textContent = `Not reported by your car (${rest.length})  ${o ? "▾" : "▸"}`; };
+    $("scanShare").onclick = () => { closeOverlay(); toast("Opens Android's share sheet with the scan as a text file."); };
+    const iv = setInterval(() => s.querySelectorAll(".v[data-k]").forEach(el => { el.textContent = val(el.dataset.k); }), 1000);
+    s.addEventListener("closed", () => clearInterval(iv));
+  };
+})();
+
 window.carReady = true;
 if (location.hash === "#car") showView(true);
 </script>
