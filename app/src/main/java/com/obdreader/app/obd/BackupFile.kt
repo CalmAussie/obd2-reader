@@ -470,7 +470,10 @@ object BackupFile {
         return try {
             val header = next() ?: return false
             if (!header.startsWith("Time,Seconds,") || header.any { it < ' ' || it == '\u007F' }) return false
-            val columns = splitCells(header).size
+            val names = splitCells(header)
+            // Names only: none that a spreadsheet would run as a formula (= + - @ at the start).
+            if (names.any { it.trimStart().firstOrNull()?.let { c -> c in "=+-@" } == true }) return false
+            val columns = names.size
             if (columns < 3) return false
             while (true) {
                 val row = next() ?: return true

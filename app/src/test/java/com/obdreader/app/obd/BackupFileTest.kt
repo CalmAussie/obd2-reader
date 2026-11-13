@@ -131,6 +131,8 @@ class BackupFileTest {
         rejects(withDrive(head + "2026-11-13 08:00:00.000,0.2,800,5,6\n"), "isn't a recorded drive")     // one too many
         rejects(withDrive("Time,Seconds\n"), "isn't a recorded drive")
         rejects(withDrive("Time,Seconds,\u001B[31m\n"), "isn't a recorded drive")
+        rejects(withDrive("Time,Seconds,=HYPERLINK(\"http://x\")\n"), "isn't a recorded drive")
+        rejects(withDrive("Time,Seconds,Speed,\" @SUM(A1)\"\n"), "isn't a recorded drive")
         // One enormous line (it would all have to be held in memory to read it back).
         rejects(withDrive(head + "2026-11-13 08:00:00.000," + "1".repeat(5000) + ",1,1\n"), "isn't a recorded drive")
         rejects(withDrive("Time,Seconds," + "x".repeat(5000) + "\n"), "isn't a recorded drive")
