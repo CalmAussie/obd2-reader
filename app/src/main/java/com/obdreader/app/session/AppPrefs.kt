@@ -9,6 +9,10 @@ object AppPrefs {
     const val FILE = "obd_reader"
 
     const val THEME = "theme"
+    /** Day and night switching ([com.obdreader.app.obd.DayNight.Mode]) and the two styles it switches between. */
+    const val STYLE_AUTO = "style_auto"
+    const val STYLE_DAY = "style_day"
+    const val STYLE_NIGHT = "style_night"
     const val APP_ICON = "app_icon"
     const val PROTOCOL = "protocol"
     const val LAST_PROTOCOL = "last_protocol"

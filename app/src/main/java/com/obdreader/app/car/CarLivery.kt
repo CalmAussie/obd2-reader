@@ -46,7 +46,8 @@ object CarLivery {
     private const val INK = 0xFF111214.toInt()
 
     fun colours(context: Context): Colours {
-        val id = AppThemes.byId(AppPrefs.of(context).getString(AppPrefs.THEME, null)).id
+        val night = (context as? androidx.car.app.CarContext)?.isDarkMode ?: false
+        val id = com.obdreader.app.ui.StyleClock.carStyleId(context, night)
         return COLOURS[id] ?: COLOURS.getValue("asphalt")
     }
 

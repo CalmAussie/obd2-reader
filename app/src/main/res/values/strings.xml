@@ -256,4 +256,61 @@
     <string name="history_codes_clear_title">Clear code history?</string>
     <string name="history_codes_clear_text">This clears the app\'s list on your phone. It doesn\'t change anything in your car: its codes stay as they are.</string>
     <string name="history_codes_cleared">Code history cleared</string>
+
+    <!-- Day and night styles -->
+    <string name="day_night_title">Day and night</string>
+    <string name="day_night_intro">Show one style by day and another by night. The switch fades over gently, and waits while you\'re using the screen.</string>
+    <string name="day_night_no_sensor">This phone has no light sensor, so \"With the light around the phone\" goes by sunset and sunrise instead.</string>
+    <string name="day_night_privacy">Sunset and sunrise are worked out on your phone from the date, the time and roughly where you are: the phone\'s last known location if you\'ve let the app use location, or else your time zone. Your location is never saved or sent anywhere.</string>
+    <string name="day_night_car">Android Auto goes by your car\'s own day and night (its light sensor or headlights), with the same day and night styles. Widgets follow the phone\'s style.</string>
+    <string name="day_style">Day style</string>
+    <string name="night_style">Night style</string>
+    <string name="day_style_set">Day style: %1$s</string>
+    <string name="night_style_set">Night style: %1$s</string>
+    <string name="day_night_now_day">Now: day style.</string>
+    <string name="day_night_now_night">Now: night style.</string>
+    <string name="day_night_next_day">Day style from %1$s.</string>
+    <string name="day_night_next_night">Night style from %1$s.</string>
+    <string name="day_night_rough">Worked out from your time zone, so it can be up to an hour out. Once the app may use location (it asks when you record a drive\'s route), it\'s exact.</string>
+    <string name="day_night_phone_dark">The phone\'s dark theme is on.</string>
+    <string name="day_night_phone_light">The phone\'s dark theme is off.</string>
+    <string name="day_night_light_dark">It\'s dark around the phone.</string>
+    <string name="day_night_light_bright">It\'s light around the phone.</string>
+
+    <!-- Back up and restore -->
+    <string name="backup_title">Back up and restore</string>
+    <string name="backup_help">Keep a copy of your settings and drives, or move them to a new phone</string>
+    <string name="backup_intro">A backup is one file with your settings, chosen car, styles, reading choices, custom readings, alert settings, drive history, code history and recorded drives. Keep it somewhere safe, like Google Drive, a computer or a USB stick, and restore it on a new phone.</string>
+    <plurals name="backup_drives">
+        <item quantity="one">%1$d recorded drive (%2$s).</item>
+        <item quantity="other">%1$d recorded drives (%2$s).</item>
+    </plurals>
+    <string name="backup_include">Also put in</string>
+    <string name="backup_routes">Routes of recorded drives (where you drove)</string>
+    <string name="backup_vin">The VIN you typed in</string>
+    <string name="backup_privacy">The file stays wherever you put it: the app doesn\'t send it anywhere. Anyone who has the file can open it and see what\'s in it, including your routes (and so where you live or work) if you leave them in.</string>
+    <string name="back_up">Back up</string>
+    <string name="restore">Restore</string>
+    <string name="backup_saved">Backup saved</string>
+    <string name="backup_failed">Couldn\'t finish: %1$s</string>
+    <string name="restore_disconnect_first">Disconnect from the car first, then restore.</string>
+    <string name="restore_refused_title">Can\'t restore this file</string>
+    <string name="restore_unreadable">The file couldn\'t be read.</string>
+    <string name="restore_title">Restore this backup?</string>
+    <string name="restore_made">Made on %1$s with version %2$s.</string>
+    <string name="restore_contents">In this backup</string>
+    <string name="restore_none">none chosen</string>
+    <string name="restore_car">Car: %1$s</string>
+    <string name="restore_style">Style: %1$s</string>
+    <string name="restore_custom">Custom readings: %1$d</string>
+    <string name="restore_trips">Drive history: %1$d drives</string>
+    <string name="restore_codes">Code history: %1$d codes</string>
+    <string name="restore_drives">Recorded drives: %1$d, without routes</string>
+    <string name="restore_drives_routes">Recorded drives: %1$d, with their routes</string>
+    <string name="restore_vin_in">Your VIN: included</string>
+    <string name="restore_vin_out">Your VIN: not included</string>
+    <string name="restore_settings">Settings: %1$d</string>
+    <string name="restore_skipped">Left out: %1$d settings this version doesn\'t use</string>
+    <string name="restore_what_happens">Restoring replaces this phone\'s settings with the backup\'s. Drive history, code history and recorded drives are added to what\'s already on this phone: nothing on it is deleted.</string>
+    <string name="restore_done">Restored %1$d settings and %2$d drives</string>
 </resources>
