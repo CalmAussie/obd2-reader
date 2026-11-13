@@ -2,6 +2,12 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.1 (13 November 2026)
+- **Hide VIN, on by default.** Your VIN is now hidden on screen, in code reports, shared files and the adapter log. Under Car and connection you can show it in full, or hide just the last six characters (the car's serial number).
+- **Code history.** Under Deeper checks: every trouble code your car has shown, with when it first and last appeared and when it went away. It's kept on your phone only, per car, and you can clear it. It's in the code report too.
+- **Permanent codes.** On cars that report them, the codes that stay until the car itself confirms the fault is fixed, even after clearing. Shown with your other codes.
+- **What your car reports, grouped.** The list is sorted by part of the car, each reading shows its value now, and the ones your car doesn't report are folded away at the bottom.
+
 ## 2.5.0 (12 November 2026)
 - **One-time reinstall needed.** This version has a new signing key, so it can't install over 2.4.4 or older. Uninstall the old app, then install this one from github.com/CalmAussie/obd2-reader/releases/latest. Settings and trips start fresh; saved videos, pictures and Downloads files stay.
 - **More readings, for cars that report them.** Fuel trims, oxygen sensors (voltage and wide-range), fuel and fuel rail pressure, EGR, catalyst and exhaust gas temperatures, fuel rate, ethanol, driver demand and actual torque, evaporative system pressure, module voltage, run time and more. The app asks only for the ones your car says it has, and they don't slow the Dashboard down. Fuel trims and oxygen sensors say in plain words what they tell you, and the fuel trims show whether the engine is using its oxygen sensors right now. You can also put them in a Dashboard readout.
