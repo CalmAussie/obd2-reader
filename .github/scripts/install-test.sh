@@ -875,12 +875,16 @@ SCAN=missing
 for attempt in 1 2; do
   tap_tab Dashboard; sleep 2; connect_demo; sleep 2
   diag_top
+  adb logcat -c
   if tap_scrolled "Scan what your car reports"; then
     sleep 8
     SEEN=0
+    # The sheet's values update every second, so a screen dump can time out and return the
+    # screen underneath: the app's own log line counts too.
     for i in 1 2 3 4 5; do
-      adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-scan.xml"
-      grep -q "What your car reports" "$OUT/ui-scan.xml" && { SEEN=1; break; }; sleep 2
+      adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-scan.xml" 2>/dev/null
+      grep -q "What your car reports" "$OUT/ui-scan.xml" && { SEEN=1; break; }
+      adb logcat -d -s OBD2Scan:I 2>/dev/null | grep -q "What your car reports: shown" && { SEEN=1; break; }; sleep 2
     done
     shot 12-car-scan
     adb shell input keyevent KEYCODE_BACK; sleep 2

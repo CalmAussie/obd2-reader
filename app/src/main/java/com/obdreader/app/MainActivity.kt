@@ -1936,13 +1936,15 @@ open class MainActivity : AppCompatActivity() {
         sheet.behavior.skipCollapsed = true
         val ticker = object : Runnable {
             override fun run() {
-                values.forEach { (n, v) -> v.text = scanValueText(n).orEmpty() }
+                // Only values that changed, so the sheet stays quiet for screen readers.
+                values.forEach { (n, v) -> scanValueText(n).orEmpty().let { t -> if (v.text.toString() != t) v.text = t } }
                 body.postDelayed(this, 1000)
             }
         }
         body.postDelayed(ticker, 1000)
         sheet.setOnDismissListener { body.removeCallbacks(ticker) }
         sheet.show()
+        android.util.Log.i("OBD2Scan", "What your car reports: shown, ${values.size} live values")
     }
 
     /**
