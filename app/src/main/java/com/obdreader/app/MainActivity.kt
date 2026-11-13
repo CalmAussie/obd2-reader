@@ -298,6 +298,23 @@ open class MainActivity : AppCompatActivity() {
             toast(if (ok) getString(R.string.file_saved_picked) else getString(R.string.file_save_failed))
         }
 
+    /** Record and replay: a recording file the user picked. It's checked line by line before it's replayed. */
+    private val openRecordingLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri == null) return@registerForActivityResult
+            lifecycleScope.launch {
+                val opened = try {
+                    withContext(Dispatchers.IO) { com.obdreader.app.session.ReplyRecordings.importFile(this@MainActivity, uri) }
+                } catch (e: CancellationException) { throw e } catch (e: com.obdreader.app.obd.ReplyRecording.BadRecording) {
+                    toast(getString(R.string.replies_bad, e.message)); return@launch
+                } catch (e: Exception) {
+                    toast(getString(R.string.replies_open_failed)); return@launch
+                }
+                currentSheet?.dismiss()
+                replay(opened.first, opened.second)
+            }
+        }
+
     /** A text file the app made (code report, adapter log): save it to the phone, or share it. */
     private fun offerFile(file: java.io.File, subject: String) {
         MaterialAlertDialogBuilder(this)
@@ -1053,7 +1070,7 @@ open class MainActivity : AppCompatActivity() {
      */
     private fun setupGroups() {
         val groups = listOf(
-            Triple("car", "Car and connection", listOf(R.id.carRow, R.id.vinPrivacyRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.logCard)),
+            Triple("car", "Car and connection", listOf(R.id.carRow, R.id.vinPrivacyRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.repliesRow, R.id.logCard)),
             Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.clearedRow, R.id.historyRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
             Triple("display", "Display and readings", listOf(R.id.unitsRow, R.id.slotsRow, R.id.widgetRow, R.id.autoRow, R.id.pipRow, R.id.appIconRow)),
             Triple("help", "Help and feedback", listOf(R.id.helpRow, R.id.reportRow, R.id.ideaRow, R.id.updatesRow)),
@@ -1168,6 +1185,73 @@ open class MainActivity : AppCompatActivity() {
         row(R.id.customRow, getString(R.string.custom_title), getString(R.string.custom_help)) { showCustomReadings() }
         row(R.id.historyRow, getString(R.string.history_codes_title), getString(R.string.history_codes_help)) { showCodeHistory() }
         row(R.id.vinPrivacyRow, getString(R.string.vin_privacy_title), vinMode().label) { showVinPrivacy() }
+        row(R.id.repliesRow, getString(R.string.replies_title), repliesHelp()) { showReplies() }
+    }
+
+    private fun repliesHelp() = getString(if (AppPrefs.recordReplies(prefs)) R.string.replies_help_on else R.string.replies_help_off)
+
+    /**
+     * Record and replay: a switch to save each connection's requests and replies (reads only, the
+     * VIN left out unless Hide VIN shows it), the saved recordings, and a button to open a file.
+     */
+    private fun showReplies() {
+        val sheet = choiceSheet(getString(R.string.replies_title)) { body, sheet ->
+            sheetNote(body, getString(R.string.replies_note))
+            body.addView(MaterialSwitch(this).apply {
+                text = getString(R.string.replies_switch); isChecked = AppPrefs.recordReplies(prefs)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary))
+                minHeight = dp(48f).toInt()
+                setOnCheckedChangeListener { _, on ->
+                    prefs.edit().putBoolean(AppPrefs.RECORD_REPLIES, on).apply()
+                    findViewById<View>(R.id.repliesRow)?.let { r -> rowHelp(r)?.text = repliesHelp() }
+                    if (on && ObdSession.state.value.isConnected && !ObdSession.state.value.isDemo) toast(getString(R.string.replies_next_time))
+                }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10f).toInt() })
+            sheetHeading(body, getString(R.string.replies_saved))
+            val files = com.obdreader.app.session.ReplyRecordings.saved(this)
+            if (files.isEmpty()) sheetNote(body, getString(R.string.replies_none))
+            for (file in files) {
+                sheetRow(body, com.obdreader.app.session.ReplyRecordings.describe(file), getString(R.string.replies_actions)) {
+                    recordingActions(file, sheet)
+                }
+            }
+            sheetButtons(body, getString(R.string.replies_open) to {
+                try { openRecordingLauncher.launch(arrayOf("text/plain", "application/octet-stream")) }
+                catch (e: android.content.ActivityNotFoundException) { toast(getString(R.string.replies_open_failed)) }
+            })
+        }
+        currentSheet = sheet
+    }
+
+    /** One saved recording: replay it, share or save it, or delete it. */
+    private fun recordingActions(file: java.io.File, parent: BottomSheetDialog) {
+        val rec = try { com.obdreader.app.session.ReplyRecordings.load(file) } catch (e: Exception) { null }
+        choiceSheet(com.obdreader.app.session.ReplyRecordings.describe(file)) { body, sheet ->
+            if (rec == null) sheetNote(body, getString(R.string.replies_unreadable))
+            rec?.let { r ->
+                val made = listOfNotNull(r.app?.let { "Made by OBD2 Reader $it" }, r.made?.let { "on $it" }).joinToString(" ")
+                sheetNote(body, listOf(made, String.format(Locale.getDefault(), "%,d requests", r.exchanges.size)).filter { it.isNotEmpty() }.joinToString(". ") + ".")
+            }
+            val buttons = mutableListOf<Pair<String, () -> Unit>>()
+            buttons += getString(R.string.history_delete) to {
+                file.delete()
+                sheet.dismiss(); parent.dismiss()
+                toast(getString(R.string.replies_deleted))
+                showReplies()
+            }
+            buttons += getString(R.string.replies_share) to { sheet.dismiss(); offerFile(file, "OBD2 Reader recording") }
+            if (rec != null) buttons += getString(R.string.replies_replay) to { sheet.dismiss(); parent.dismiss(); replay(file, rec) }
+            sheetButtons(body, *buttons.toTypedArray())
+        }
+    }
+
+    /** Replays [rec] like the demo car: the app talks to the recording, not to a car or adapter. */
+    private fun replay(file: java.io.File, rec: com.obdreader.app.obd.ReplyRecording.Recording) {
+        if (ObdSession.isActive) { toast(getString(R.string.replies_disconnect_first)); return }
+        val label = com.obdreader.app.session.ReplyRecordings.label(file)
+        android.util.Log.i("OBD2Replay", "Replaying a recording: ${rec.exchanges.size} requests")
+        startSession(com.obdreader.app.obd.ReplayTransport(rec, label))
+        bottomNav.selectedItemId = R.id.nav_dashboard
     }
 
     private fun vinMode() = AppPrefs.vinPrivacy(prefs)
@@ -3523,7 +3607,7 @@ open class MainActivity : AppCompatActivity() {
 
     private fun startSession(t: ObdTransport, onConnected: (() -> Unit)? = null) {
         if (ObdSession.isActive) return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && t !is DemoTransport &&
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && t !is DemoTransport && t !is com.obdreader.app.obd.ReplayTransport &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)

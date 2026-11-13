@@ -76,6 +76,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 - **Deeper checks:** readiness monitors, self-test results, and codes from ABS, power steering and other modules (on CAN cars, and on 1996–2007 Fords and Mazdas). Airbag modules are never asked. On Fords and Mazdas it can also read the second network on pins 3 and 11, with adapters that support it such as OBDLink MX+. On 1996–2000 Volvo 850, S70, V70, C70 and XC70 it reads Volvo's own modules and the true mileage stored in the instrument cluster.
 - **VIN:** reads your car's VIN. You can enter the one on your plate if they differ. **Hide VIN** (hidden by default) keeps it off the screen, reports, shared files and logs, or hides just the last six characters.
 - **What your car reports:** every reading your car offers, grouped by part of the car with its value now.
+- **Record and replay:** save what your car answers to the app's requests in a plain text file on your phone (VIN left out unless you choose to show it), then replay it later without the car, like the demo car. Handy for bug reports.
 
 ## Styles
 

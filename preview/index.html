@@ -4257,7 +4257,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     const a = $(afterId); if (!a) return;
     a.insertAdjacentHTML("afterend", html);
     const box = a.parentElement;
-    const nameOf = el => (el.querySelector(".r > span") || el.querySelector(".r") || el).textContent.trim().split("\n")[0].trim();
+    const nameOf = el => (el.querySelector(".r > span") || el.querySelector(".r > *") || el).textContent.trim().split("\n")[0].trim();
     [...box.children].sort((x, y) => (y.id === "carRow") - (x.id === "carRow") || nameOf(x).localeCompare(nameOf(y), undefined, { sensitivity: "base" })).forEach(r => box.appendChild(r));
     const sub = box.previousElementSibling && box.previousElementSibling.querySelector(".grp-sub");
     if (sub) sub.textContent = [...box.children].map(nameOf).join(" · ");
@@ -4327,6 +4327,57 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     const iv = setInterval(() => s.querySelectorAll(".v[data-k]").forEach(el => { el.textContent = val(el.dataset.k); }), 1000);
     s.addEventListener("closed", () => clearInterval(iv));
   };
+})();
+
+/* ===== Diagnostics pack, chunk C: Record and replay (mirrors MainActivity.showReplies / recordingActions / replay, obd/ReplyRecording.kt, session/ReplyRecordings.kt) ===== */
+(function () {
+  const chev = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg>`;
+  const st = document.createElement("style");
+  st.textContent = `.rec-row{display:flex;align-items:center;gap:8px;width:100%;min-height:52px;padding:14px 8px 14px 14px;margin-top:8px;border-radius:var(--r);background:var(--panel-2);text-align:left;font-size:15px}
+.rec-row .n{flex:1}.rec-row .v{color:var(--accent);font-size:14px}.rec-row svg{width:20px;height:20px;fill:var(--fg-2);flex:none}
+.rec-sw{display:flex;align-items:center;gap:12px;min-height:52px;margin-top:10px;font-size:15px}.rec-sw span{flex:1}
+.rec-h{font-size:14px;font-weight:600;margin-top:14px}`;
+  document.head.appendChild(st);
+  let on = false; try { on = localStorage.getItem("recordReplies") === "1"; } catch (e) {}
+  /* The newest 10 are kept: here, one sample made from the demo car */
+  let saved = [{ name: "13 Nov, 10:42 AM · Demo car (sample recording) · 11 KB", made: "Made by OBD2 Reader 2.5.3 on 2026-11-13 10:42. 667 requests.", label: "13 Nov, 10:42 AM" }];
+  const help = () => on ? "Recording is on: each connection's replies are saved on this phone." : "Replay a saved recording, or turn on recording to save your car's replies.";
+
+  const a = $("reconnectRow") || $("carRow"); if (!a) return;
+  a.insertAdjacentHTML("afterend", `<button class="setting" id="repliesRow"><div class="r"><span style="flex:1">Record and replay</span>${chev}</div><div class="h" id="repliesHelp">${help()}</div></button>`);
+  const box = a.parentElement;
+  const nameOf = el => (el.querySelector(".r > span") || el.querySelector(".r > *") || el).textContent.trim().split("\n")[0].trim();
+  [...box.children].sort((x, y) => (y.id === "carRow") - (x.id === "carRow") || nameOf(x).localeCompare(nameOf(y), undefined, { sensitivity: "base" })).forEach(r => box.appendChild(r));
+  const sub = box.previousElementSibling && box.previousElementSibling.querySelector(".grp-sub");
+  if (sub) sub.textContent = [...box.children].map(nameOf).join(" · ");
+
+  const showReplies = () => {
+    const s = overlay(`<div class="handle"></div><h2>Record and replay</h2><p>Saves what your car answers to each request the app makes (the app only ever reads), in a plain text file on this phone. Replay it later to see the app work without the car, or share it with a bug report. Your VIN is left out unless Hide VIN is set to show it in full. The newest 10 recordings are kept, up to about half an hour each.</p>` +
+      `<div class="rec-sw"><span>Record car replies</span><button class="switch" id="recSwitch" role="switch" aria-checked="${on}" aria-label="Record car replies"><i></i></button></div>` +
+      `<div class="rec-h">Saved recordings</div>` +
+      (saved.length ? saved.map((r, i) => `<button class="rec-row" data-i="${i}"><span class="n">${r.name}</span><span class="v">Open</span>${chev}</button>`).join("") : `<p>No recordings yet. Turn on Record car replies, then connect to your car.</p>`) +
+      `<div class="sheet-actions"><button class="btn primary" id="recOpen">Open a recording file</button></div>`, { sheet: true });
+    $("recSwitch").onclick = () => {
+      on = !on; try { localStorage.setItem("recordReplies", on ? "1" : "0"); } catch (e) {}
+      $("recSwitch").setAttribute("aria-checked", on); $("repliesHelp").textContent = help();
+      if (on && state === "connected") toast("Recording starts the next time you connect.");
+    };
+    $("recOpen").onclick = () => { closeOverlay(); toast("Opens Android's file picker. The file is checked line by line (plain text, read requests only, 2 MB at most) before it's replayed."); };
+    s.querySelectorAll(".rec-row").forEach(b => b.onclick = () => actions(saved[+b.dataset.i]));
+  };
+  const actions = r => {
+    overlay(`<div class="handle"></div><h2>${r.name}</h2><p>${r.made}</p>` +
+      `<div class="sheet-actions"><button class="btn-out" id="recDel" style="color:var(--accent)">Delete</button><button class="btn-out" id="recShare" style="color:var(--accent)">Save or share</button><button class="btn primary" id="recPlay">Replay</button></div>`, { sheet: true });
+    $("recDel").onclick = () => { saved = saved.filter(x => x !== r); closeOverlay(); toast("Recording deleted"); showReplies(); };
+    $("recShare").onclick = () => { closeOverlay(); toast("Save to Downloads, or share the text file."); };
+    $("recPlay").onclick = () => {
+      closeOverlay();
+      if (state !== "idle") return toast("Disconnect first, then replay the recording.");
+      const tab = $("tabDash"); if (tab) tab.click();
+      startSession("Recording: " + r.label);
+    };
+  };
+  $("repliesRow").onclick = showReplies;
 })();
 
 window.carReady = true;

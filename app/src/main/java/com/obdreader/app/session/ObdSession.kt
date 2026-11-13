@@ -17,6 +17,9 @@ import com.obdreader.app.obd.LockedAdapters
 import com.obdreader.app.obd.BleTransport
 import com.obdreader.app.obd.BluetoothTransport
 import com.obdreader.app.obd.DemoTransport
+import com.obdreader.app.obd.RecordingTransport
+import com.obdreader.app.obd.ReplayTransport
+import com.obdreader.app.obd.ReplyRecorder
 import com.obdreader.app.obd.ElmClient
 import com.obdreader.app.obd.ModuleScan
 import com.obdreader.app.obd.IgnitionOffException
@@ -172,7 +175,10 @@ object ObdSession {
         val app = context.applicationContext
         appContext = app
         val prefs = AppPrefs.of(app)
-        val isDemo = t is DemoTransport
+        // A replayed recording is like the demo car: nothing is saved as this car's history.
+        val isDemo = t is DemoTransport || t is ReplayTransport
+        // "Record car replies": only a real car's, and kept across automatic reconnects.
+        val recorder = if (!isDemo && AppPrefs.recordReplies(prefs)) ReplyRecorder() else null
         throttleKey = if (isDemo) null else "throttle_closed_" + (AppPrefs.savedCar(prefs)?.label ?: "unknown")
         throttle = ThrottleCalibration(throttleKey?.let { k -> prefs.getFloat(k, -1f).takeIf { it >= 0f }?.toDouble() })
         _log.value = emptyList()
@@ -200,7 +206,7 @@ object ObdSession {
                 while (currentCoroutineContext().isActive) {
                     var lastError: Exception? = null
                     try {
-                        runConnection(app, current, isDemo) {
+                        runConnection(app, recorder?.let { RecordingTransport(current, it) } ?: current, isDemo) {
                             everConnected = true
                             attempt = 0
                             if (first) onConnected?.invoke()
@@ -260,6 +266,12 @@ object ObdSession {
                     current = next ?: current
                 }
             } finally {
+                if (recorder != null) {
+                    val vin = _state.value.vin
+                    scope.launch(Dispatchers.IO) {
+                        try { ReplyRecordings.save(app, recorder, vin) } catch (e: Exception) { android.util.Log.w("OBD2Replies", "Couldn't save the recording", e) }
+                    }
+                }
                 if (isCurrent()) {
                     client = null
                     transport = null

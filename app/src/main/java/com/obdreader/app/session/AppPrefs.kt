@@ -43,6 +43,8 @@ object AppPrefs {
     const val CODE_HISTORY = "code_history"
     /** How much of the VIN to show and share ([com.obdreader.app.obd.VinPrivacy]). */
     const val VIN_PRIVACY = "vin_privacy"
+    /** "Record car replies": saves each connection's requests and replies ([com.obdreader.app.obd.ReplyRecording]). Off unless turned on. */
+    const val RECORD_REPLIES = "record_replies"
 
     const val TYPE_CLASSIC = "classic"
     const val TYPE_BLE = "ble"
@@ -55,6 +57,8 @@ object AppPrefs {
 
     /** "Reconnect automatically": on unless the user turns it off. */
     fun autoReconnect(prefs: SharedPreferences): Boolean = prefs.getBoolean(AUTO_RECONNECT, true)
+
+    fun recordReplies(prefs: SharedPreferences): Boolean = prefs.getBoolean(RECORD_REPLIES, false)
 
     fun alerts(prefs: SharedPreferences): Boolean = prefs.getBoolean(ALERTS, true)
 

@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.3 (13 November 2026)
+- **Record and replay.** Under Car and connection: turn on Record car replies, and each time you connect, what your car answers to the app's requests is saved in a plain text file on your phone. Replay it later without the car, like the demo car, or share it with a bug report. Your VIN is left out unless Hide VIN shows it in full. The newest 10 recordings are kept.
+
 ## 2.5.1 (13 November 2026)
 - **Hide VIN, on by default.** Your VIN is now hidden on screen, in code reports, shared files and the adapter log. Under Car and connection you can show it in full, or hide just the last six characters (the car's serial number).
 - **Code history.** Under Deeper checks: every trouble code your car has shown, with when it first and last appeared and when it went away. It's kept on your phone only, per car, and you can clear it. It's in the code report too.
