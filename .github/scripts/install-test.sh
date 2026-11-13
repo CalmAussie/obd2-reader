@@ -1116,7 +1116,13 @@ if tap_text "Style"; then
     if tap_contains "phone's dark mode"; then
       sleep 6; shot 15b-style-day-and-night; DSTEP="night switch"
       adb shell input keyevent KEYCODE_BACK; sleep 10
-      adb shell cmd uimode night yes > /dev/null 2>&1
+      adb shell cmd uimode night yes > /dev/null 2>&1; sleep 2
+      # Some emulator images (Android 10) ignore the command: try the setting too, and if the phone
+      # still isn't dark, there's nothing for the app to follow, so it can't be checked here.
+      if ! adb shell am get-config 2>/dev/null | grep -q -- "-night-"; then
+        adb shell settings put secure ui_night_mode 2 > /dev/null 2>&1; adb shell cmd uimode night yes > /dev/null 2>&1; sleep 3
+      fi
+      adb shell am get-config 2>/dev/null | grep -q -- "-night-" || DN=skip
       for i in $(seq 1 25); do adb logcat -d -s OBD2Style:I | grep -q "day/night:" && break; sleep 2; done
       sleep 3; shot 15c-night-style
       adb logcat -d -s OBD2Style:I > "$OUT/day-night.txt" 2>/dev/null
@@ -1124,17 +1130,21 @@ if tap_text "Style"; then
       for i in $(seq 1 25); do [ "$(adb logcat -d -s OBD2Style:I | grep -c 'day/night:')" -ge 2 ] && break; sleep 2; done
       adb logcat -d -s OBD2Style:I > "$OUT/day-night.txt" 2>/dev/null
       shot 15d-day-style-again
-      [ "$(grep -c 'day/night:' "$OUT/day-night.txt")" -ge 2 ] && DN=ok
+      [ $DN != skip ] && [ "$(grep -c 'day/night:' "$OUT/day-night.txt")" -ge 2 ] && DN=ok
+      adb shell settings put secure ui_night_mode 1 > /dev/null 2>&1
     fi
   fi
 fi
 # Switching off again (keeps the style showing).
 app_front; tap_text "Style" && sleep 2 && tap_text "Day and night" && sleep 2 && tap_text "Off" && sleep 4 && adb shell input keyevent KEYCODE_BACK; sleep 2
-[ $DN = ok ] && log "day and night: switched with the phone's dark mode and back ($(grep -o 'day/night: .*' "$OUT/day-night.txt" | tr '\n' ' '))" || { log "day and night: FAILED (at $DSTEP; $(grep -o 'day/night: .*' "$OUT/day-night.txt" 2>/dev/null | tr '\n' ' '))"; FAIL=1; }
+if [ $DN = skip ]; then log "day and night: not checked (this emulator doesn't turn dark mode on by command)"
+elif [ $DN = ok ]; then log "day and night: switched with the phone's dark mode and back ($(grep -o 'day/night: .*' "$OUT/day-night.txt" | tr '\n' ' '))"; else log "day and night: FAILED (at $DSTEP; $(grep -o 'day/night: .*' "$OUT/day-night.txt" 2>/dev/null | tr '\n' ' '))"; FAIL=1; fi
 # Back up and restore: save a backup through Android's file picker, then restore it (disconnected).
+# The section's heading lists "Back up and restore" too, so the row is found by its own help line.
+backup_row() { for i in $(seq 1 30); do tap_contains "Keep a copy of your settings" && return 0; adb shell input swipe 540 1500 540 1000 300; sleep 1; done; return 1; }
 BK=fail; BSTEP="row"
 diag_top; adb logcat -c
-if tap_scrolled "Back up and restore"; then
+if backup_row; then
   sleep 3; shot 16a-backup; BSTEP="Back up button"
   if tap_text "Back up"; then
     sleep 4; shot 16b-save-picker; BSTEP="picker Save"
@@ -1143,7 +1153,7 @@ if tap_scrolled "Back up and restore"; then
       adb logcat -d -s OBD2Backup:I > "$OUT/backup.txt" 2>/dev/null; BSTEP="written"
       if grep -q "backup written: true" "$OUT/backup.txt"; then
         sleep 2; app_front; diag_top; BSTEP="row again"
-        if tap_scrolled "Back up and restore" && sleep 3 && tap_text "Restore"; then
+        if backup_row && sleep 3 && tap_text "Restore"; then
           sleep 4; shot 16c-open-picker; BSTEP="pick the file"
           if tap_contains "OBD2Reader_backup"; then
             sleep 4; shot 16d-restore-preview; BSTEP="Restore button"
@@ -1160,6 +1170,8 @@ if tap_scrolled "Back up and restore"; then
   fi
 fi
 app_front
+# Connected again, as the steps after this expect (the new-code check needs a drive already under way).
+tap_tab Dashboard > /dev/null; sleep 2; connect_demo; sleep 12
 [ $BK = ok ] && log "back up and restore: saved and restored ($(grep -o 'restored .*' "$OUT/backup.txt" | head -1))" || { log "back up and restore: FAILED (at $BSTEP; $(tail -1 "$OUT/backup.txt" 2>/dev/null | cut -c1-120))"; FAIL=1; }
 # Swiping sideways across the screen moves between tabs: Dashboard → Graphs, then back.
 tap_tab Dashboard > /dev/null; sleep 2; adb logcat -c
