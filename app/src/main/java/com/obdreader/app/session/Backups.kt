@@ -53,7 +53,8 @@ object Backups {
         val dir = staging(context)
         dir.deleteRecursively(); dir.mkdirs()
         val input = context.contentResolver.openInputStream(uri) ?: throw BackupFile.BadBackup("Android didn't open the file.")
-        return input.use { BackupFile.read(it, dir) }
+        // A refused file leaves nothing behind in the staging folder.
+        return try { input.use { BackupFile.read(it, dir) } } catch (e: Exception) { dir.deleteRecursively(); throw e }
     }
 
     /** Forgets a backup that was read but not restored. */

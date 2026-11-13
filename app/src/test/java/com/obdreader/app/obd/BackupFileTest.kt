@@ -119,6 +119,54 @@ class BackupFileTest {
         rejects(zip("backup.txt" to info, "settings.txt" to "", "drives/OBD2Reader_2026-11-13_080000.csv" to "Time,Seconds,x\n\u0000\u0001"), "isn't a recorded drive")
     }
 
+    private fun withDrive(drive: String) = zip("backup.txt" to info, "settings.txt" to "", "drives/OBD2Reader_2026-11-13_080000.csv" to drive)
+
+    @Test fun drivesHoldOnlyNumbers() {
+        val head = "Time,Seconds,Engine speed (rpm),Speed (km/h)\n"
+        // A spreadsheet formula or any text in a row: refused, and nothing is left in the folder.
+        rejects(withDrive(head + "2026-11-13 08:00:00.000,0.2,=HYPERLINK(\"http://x\"),5\n"), "isn't a recorded drive")
+        rejects(withDrive(head + "2026-11-13 08:00:00.000,0.2,hello,5\n"), "isn't a recorded drive")
+        rejects(withDrive(head + "=1+1,0.2,800,5\n"), "isn't a recorded drive")
+        rejects(withDrive(head + "2026-11-13 08:00:00.000,0.2,800\n"), "isn't a recorded drive")         // a cell missing
+        rejects(withDrive(head + "2026-11-13 08:00:00.000,0.2,800,5,6\n"), "isn't a recorded drive")     // one too many
+        rejects(withDrive("Time,Seconds\n"), "isn't a recorded drive")
+        rejects(withDrive("Time,Seconds,\u001B[31m\n"), "isn't a recorded drive")
+        // One enormous line (it would all have to be held in memory to read it back).
+        rejects(withDrive(head + "2026-11-13 08:00:00.000," + "1".repeat(5000) + ",1,1\n"), "isn't a recorded drive")
+        rejects(withDrive("Time,Seconds," + "x".repeat(5000) + "\n"), "isn't a recorded drive")
+
+        // What the app writes: blanks, negatives, Windows line ends, and a last row cut short.
+        val ok = head + "2026-11-13 08:00:00.000,0.2,812.00,\r\n2026-11-13 08:00:00.200,0.4,-1.50,NaN\n\n2026-11-13 08:00:00.4"
+        assertTrue(BackupFile.looksLikeDrive(ok.byteInputStream()))
+        assertFalse(BackupFile.looksLikeDrive((head + "2026-11-13 08:00:00.000,0.2,=1").byteInputStream()))
+        val c = BackupFile.read(ByteArrayInputStream(withDrive(ok)), tmp())
+        assertEquals(ok, c.drives.single().readText())
+    }
+
+    @Test fun aRefusedDriveLeavesNothingBehind() {
+        // A good drive, then a broken one: both go, so a restore is all or nothing.
+        val bytes = zip(
+            "backup.txt" to info, "settings.txt" to "",
+            "drives/OBD2Reader_2026-11-13_080000.csv" to routeDrive,
+            "drives/OBD2Reader_2026-11-13_090000.csv" to "Time,Seconds,x\nnot,a,row\n",
+        )
+        rejects(bytes, "isn't a recorded drive")
+    }
+
+    @Test fun wifiAddressesStayOnTheLocalNetwork() {
+        for (ok in listOf("192.168.0.10", "10.0.0.1", "172.16.5.4", "172.31.255.254", "169.254.1.1"))
+            assertTrue(ok, BackupFile.isLocalAddress(ok))
+        for (bad in listOf("8.8.8.8", "172.32.0.1", "example.com", "192.168.0.10\rAT", "192.168.0", "192.168.0.256", "192.168.00.1x", ""))
+            assertFalse(bad, BackupFile.isLocalAddress(bad))
+        assertEquals("192.168.0.10", one("wifi_host", "192.168.0.10"))
+        assertNull(one("wifi_host", "8.8.8.8"))
+        assertNull(one("wifi_host", "adapter.example.com"))
+    }
+
+    @Test fun airbagAddressesAreDroppedFromCustomReadings() {
+        assertNull(one("custom_readings", "Bag\u001F221E1C\u001F7D2\u001FA\u001F"))
+    }
+
     @Test fun refusesOversizedEntries() {
         // A zip bomb: a small file that unpacks to more than the settings may be.
         val big = ByteArrayOutputStream()

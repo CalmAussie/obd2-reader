@@ -85,7 +85,17 @@ object BackupFile {
     private val ID = Regex("[a-z0-9_]{1,40}")
     private val NAME = Regex("[A-Za-z0-9_]{1,40}")
     private val TOKEN_LIST = Regex("[A-Za-z0-9_:. ,|+\\-]{0,4000}")
-    private val HOST = Regex("[A-Za-z0-9.:\\-]{1,253}")
+    /**
+     * A Wi-Fi adapter's address as a backup may carry it: an IPv4 address on a private network
+     * (10.x, 172.16–31.x, 192.168.x) or a link-local one (169.254.x), where the adapters live.
+     */
+    fun isLocalAddress(host: String): Boolean {
+        val parts = host.split(".")
+        if (parts.size != 4 || parts.any { it.isEmpty() || it.length > 3 || !it.all(Char::isDigit) }) return false
+        val n = parts.map { it.toInt() }
+        if (n.any { it > 255 }) return false
+        return n[0] == 10 || (n[0] == 172 && n[1] in 16..31) || (n[0] == 192 && n[1] == 168) || (n[0] == 169 && n[1] == 254)
+    }
     private val VIN = Regex("[A-HJ-NPR-Z0-9]{11,17}")
 
     private fun text(maxChars: Int = 200, check: (String) -> Boolean = { true }) =
@@ -111,7 +121,8 @@ object BackupFile {
         "vin_privacy" to text(10) { VinPrivacy.of(it).key == it },
         "user_vin" to text(17) { VIN.matches(it) }, "user_vin_car" to text(160),
         // Connection.
-        "wifi_host" to text(253) { HOST.matches(it) }, "wifi_port" to int(1..65535),
+        // A Wi-Fi adapter is on the car's own little network: only private and link-local addresses come back.
+        "wifi_host" to text(15) { isLocalAddress(it) }, "wifi_port" to int(1..65535),
         "auto_reconnect" to bool(), "pip" to bool(),
         // Units, readings and alerts.
         "units_mph" to bool(), "units_fahrenheit" to bool(),
@@ -358,6 +369,7 @@ object BackupFile {
         var sawSettings = false
         val drives = ArrayList<File>()
         val names = HashSet<String>()
+        var writing: File? = null
         try {
             ZipInputStream(input).use { zip ->
                 var index = 0
@@ -386,9 +398,11 @@ object BackupFile {
                             val target = File(staging, file)
                             if (target.parentFile?.canonicalFile != staging.canonicalFile) throw BadBackup("This backup has a file name the app can't use.")
                             val capped = Capped(zip, MAX_DRIVE_BYTES, "A drive", total)
+                            writing = target
                             target.outputStream().use { capped.copyTo(it) }
-                            if (!looksLikeDrive(target)) { target.delete(); throw BadBackup("\"$file\" in this backup isn't a recorded drive.") }
+                            if (!looksLikeDrive(target)) throw BadBackup("\"$file\" in this backup isn't a recorded drive.")
                             drives += target
+                            writing = null
                         }
                         else -> throw BadBackup("This backup has something the app doesn't know (\"${name.take(60)}\"), so it wasn't restored.")
                     }
@@ -397,10 +411,10 @@ object BackupFile {
                 }
             }
         } catch (e: BadBackup) {
-            drives.forEach { it.delete() }
+            writing?.delete(); drives.forEach { it.delete() }
             throw e
         } catch (e: IOException) {
-            drives.forEach { it.delete() }
+            writing?.delete(); drives.forEach { it.delete() }
             throw BadBackup("This file couldn't be read as a backup (${e.message ?: "it may be damaged"}).")
         }
         val i = info ?: throw BadBackup("This isn't an OBD2 Reader backup.")
@@ -424,18 +438,70 @@ object BackupFile {
         )
     }
 
-    /** A drive the app recorded: text, starting with its "Time,Seconds," header. */
-    private fun looksLikeDrive(file: File): Boolean {
-        val head = file.inputStream().use { s -> ByteArray(4096).let { b -> val n = s.read(b); if (n <= 0) ByteArray(0) else b.copyOf(n) } }
-        if (!head.toString(Charsets.UTF_8).startsWith("Time,Seconds,")) return false
-        // Text only: a zero byte means it's something else with a drive's first line.
-        file.inputStream().use { s ->
-            val buf = ByteArray(64 * 1024)
+    /** The longest line a drive of the app's has room for (a header of every reading, or a row of numbers). */
+    const val MAX_LINE = 4096
+    private val TIME_CELL = Regex("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}")
+    private val NUMBER_CELL = Regex("-?\\d{1,15}(\\.\\d{1,8})?|NaN|-?Infinity")
+    /** What a row cut short by the phone stopping mid-write can end with: digits and time punctuation only. */
+    private val CUT_CELL = Regex("[0-9 :.\\-]*")
+
+    /**
+     * A drive the app recorded, checked line by line: its "Time,Seconds," header (names only: no
+     * zero bytes or other control characters), then rows with the same number of cells, each a time
+     * then plain numbers or blanks (the last row may be cut short). So a drive can't hold anything but numbers (no spreadsheet
+     * formulas), and no line is longer than [MAX_LINE], so reading one back never needs much memory.
+     */
+    fun looksLikeDrive(file: File): Boolean = file.inputStream().use { looksLikeDrive(it) }
+
+    fun looksLikeDrive(input: InputStream): Boolean {
+        val reader = input.bufferedReader(Charsets.UTF_8)
+        val line = StringBuilder()
+        var ended = false
+        fun next(): String? {
+            line.setLength(0)
             while (true) {
-                val n = s.read(buf)
-                if (n < 0) return true
-                for (i in 0 until n) if (buf[i] == 0.toByte()) return false
+                val c = reader.read()
+                if (c < 0) { ended = true; return if (line.isEmpty()) null else line.toString() }
+                if (c == '\n'.code) return line.toString().removeSuffix("\r")
+                if (line.length >= MAX_LINE) throw BadBackup("too long")
+                line.append(c.toChar())
             }
         }
+        return try {
+            val header = next() ?: return false
+            if (!header.startsWith("Time,Seconds,") || header.any { it < ' ' || it == '\u007F' }) return false
+            val columns = splitCells(header).size
+            if (columns < 3) return false
+            while (true) {
+                val row = next() ?: return true
+                if (row.isEmpty()) continue
+                val cells = row.split(",")
+                // The last row of a drive the phone stopped writing mid-row: shorter, but still only numbers.
+                if (ended && cells.size <= columns && cells.all { CUT_CELL.matches(it) }) return true
+                if (cells.size != columns || !TIME_CELL.matches(cells[0])) return false
+                for (i in 1 until cells.size) if (cells[i].isNotEmpty() && !NUMBER_CELL.matches(cells[i])) return false
+            }
+            true
+        } catch (e: BadBackup) {
+            false
+        }
+    }
+
+    /** The header's cells: names may be quoted (a name with a comma in it). */
+    private fun splitCells(line: String): List<String> {
+        val out = mutableListOf<String>(); val sb = StringBuilder(); var quoted = false
+        var i = 0
+        while (i < line.length) {
+            val ch = line[i]
+            when {
+                ch == '"' && quoted && i + 1 < line.length && line[i + 1] == '"' -> { sb.append('"'); i++ }
+                ch == '"' -> quoted = !quoted
+                ch == ',' && !quoted -> { out += sb.toString(); sb.clear() }
+                else -> sb.append(ch)
+            }
+            i++
+        }
+        out += sb.toString()
+        return out
     }
 }

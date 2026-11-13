@@ -270,7 +270,7 @@ open class MainActivity : AppCompatActivity() {
     private var lightListener: android.hardware.SensorEventListener? = null
 
     /** Back up: where the user chose to save the file. */
-    private var backupRoutes = true
+    private var backupRoutes = false
     private var backupVin = false
     private val backupLauncher =
         registerForActivityResult(ActivityResultContracts.CreateDocument(com.obdreader.app.obd.BackupFile.MIME)) { uri ->
@@ -2255,7 +2255,8 @@ open class MainActivity : AppCompatActivity() {
                     val mineStats = com.obdreader.app.obd.RouteCompare.Stats.join(mineLines.mapNotNull { com.obdreader.app.obd.RouteCompare.Stats.parse(it) })
                     val history = tripHistory()
                     LogRecorder.saved(this@MainActivity).asSequence()
-                        .filter { it !in mineFiles && (fileStart(it) ?: Long.MAX_VALUE) < trip.startedAt }
+                        // A very long recording (hours) isn't read just to compare routes.
+                        .filter { it !in mineFiles && (fileStart(it) ?: Long.MAX_VALUE) < trip.startedAt && it.length() <= COMPARE_MAX_BYTES }
                         .take(60)
                         .mapNotNull { f ->
                             val lines = f.readLines()
@@ -2270,7 +2271,8 @@ open class MainActivity : AppCompatActivity() {
                             start to com.obdreader.app.obd.RouteCompare.compare(mineStats, stats, score(trip, mineStats), score(before, stats))
                         }
                         .firstOrNull()
-                } catch (e: Exception) { android.util.Log.w("OBD2Route", "compare: ${e.message}"); null }
+                } catch (e: Exception) { android.util.Log.w("OBD2Route", "compare: ${e.message}"); null
+                } catch (e: OutOfMemoryError) { android.util.Log.w("OBD2Route", "compare: too big to read"); null }
             } ?: return@launch
             val (foundAt, lines) = result
             android.util.Log.i("OBD2Route", "same route as the drive of $foundAt: ${lines.joinToString { it.label + " " + it.change }}")
@@ -2315,8 +2317,9 @@ open class MainActivity : AppCompatActivity() {
      * The route of [trip], from the recording(s) made during it with the route saved. Location
      * lives only in those files, so with no recording there's simply no outline.
      */
-    private fun routeFor(trip: TripSummary): com.obdreader.app.obd.Route? =
+    private fun routeFor(trip: TripSummary): com.obdreader.app.obd.Route? = try {
         com.obdreader.app.obd.Route.join(tripFiles(trip).map { com.obdreader.app.obd.Route.parse(it.readLines()) }).takeIf { !it.isEmpty }
+    } catch (e: OutOfMemoryError) { null }
 
     /** When a recording started, from its name. */
     private fun fileStart(f: java.io.File): Long? = try {
@@ -2848,7 +2851,7 @@ open class MainActivity : AppCompatActivity() {
     /** Background and size for the overlay video, then makes it. */
     private fun showOverlayOptions(file: java.io.File) {
         if (LogRecorder.active.value?.file == file) { toast("This drive is still recording. Stop recording first."); return }
-        val drive = DriveTrack.parse(file.readLines())
+        val drive = try { DriveTrack.parse(file.readLines()) } catch (e: OutOfMemoryError) { toast("This drive is too long to make a video on this phone."); return }
         if (drive == null || drive.duration < 2.0) { toast("This drive is too short to make a video."); return }
         val backgrounds = listOf(
             Triple("Green screen", "Remove it with your editor's chroma key (CapCut, Premiere, DaVinci Resolve…)", android.graphics.Color.rgb(0, 255, 0)),
@@ -4820,6 +4823,7 @@ open class MainActivity : AppCompatActivity() {
             val result = withContext(Dispatchers.IO) { runCatching { com.obdreader.app.session.Backups.read(applicationContext, uri) } }
             result.onSuccess { showRestorePreview(it) }.onFailure { e ->
                 android.util.Log.i("OBD2Backup", "restore refused: ${e.message}")
+                withContext(Dispatchers.IO) { com.obdreader.app.session.Backups.discard(applicationContext) }
                 MaterialAlertDialogBuilder(this@MainActivity)
                     .setTitle(R.string.restore_refused_title)
                     .setMessage((e as? com.obdreader.app.obd.BackupFile.BadBackup)?.message ?: getString(R.string.restore_unreadable))
@@ -4852,6 +4856,8 @@ open class MainActivity : AppCompatActivity() {
                 getString(R.string.restore_codes, codes),
                 getString(if (c.info.hasRoutes) R.string.restore_drives_routes else R.string.restore_drives, c.drives.size),
                 getString(if (c.has(AppPrefs.USER_VIN)) R.string.restore_vin_in else R.string.restore_vin_out),
+                // Where Connect looks for a Wi-Fi adapter: shown, since it changes where the app connects.
+                (c.value(AppPrefs.HOST) as? String)?.let { h -> getString(R.string.restore_wifi, h + ((c.value(AppPrefs.PORT) as? Int)?.let { ":$it" } ?: "")) },
                 getString(R.string.restore_settings, c.settings.size),
                 c.skipped.takeIf { it > 0 }?.let { getString(R.string.restore_skipped, it) },
             )
@@ -5531,6 +5537,8 @@ open class MainActivity : AppCompatActivity() {
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
 
     companion object {
+        /** Recordings bigger than this (several hours of driving) are left out of the same-route comparison. */
+        const val COMPARE_MAX_BYTES = 16L * 1024 * 1024
         /** The old screen's picture, faded out over the new one after a style switch. */
         private var fadeFrom: android.graphics.Bitmap? = null
         /** Open the Style sheet again once the screen is redrawn (after turning day and night on). */

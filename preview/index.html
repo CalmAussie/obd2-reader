@@ -4457,7 +4457,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     const rule = document.createElement("div"); rule.className = "grp-rule";
     help.before(head, box, rule);
   }
-  let routes = true, withVin = get("vinPrivacy", "hidden") === "full";
+  let routes = false, withVin = get("vinPrivacy", "hidden") === "full";
   const sw = (id, label, on) => `<button class="sw-row" id="${id}" role="switch" aria-checked="${on}"><span>${label}</span><span class="switch" aria-checked="${on}" style="flex:none"><i></i></span></button>`;
   if ($("backupRow")) $("backupRow").onclick = () => {
     const s = overlay(`<div class="handle"></div><h2>Back up and restore</h2>` +
@@ -4481,7 +4481,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     const s = overlay(`<div class="handle"></div><h2>Restore this backup?</h2>` + line(`Made on ${new Date().toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" })} with version 2.5.2.`, true) +
       `<div class="trip-h">In this backup</div>` +
       [`Car: ${car}`, `Style: ${nameOf(chosen)}${mode !== "off" ? " · Day and night: " + MODES.find(m => m[0] === mode)[1].toLowerCase() : ""}`, "Custom readings: 2", "Drive history: 38 drives", "Code history: 4 codes",
-        `Recorded drives: 12, ${routes ? "with their routes" : "without routes"}`, `Your VIN: ${withVin ? "included" : "not included"}`, "Settings: 31"].map(t => line("• " + t)).join("") +
+        `Recorded drives: 12, ${routes ? "with their routes" : "without routes"}`, `Your VIN: ${withVin ? "included" : "not included"}`, "Wi-Fi adapter: 192.168.0.10:35000", "Settings: 31"].map(t => line("• " + t)).join("") +
       line("Restoring replaces this phone's settings with the backup's. Drive history, code history and recorded drives are added to what's already on this phone: nothing on it is deleted.", true) +
       `<div class="sheet-actions"><button class="btn-out" id="rsCancel" style="color:var(--accent)">Cancel</button><button class="primary" id="rsGo">Restore</button></div>`, { sheet: true });
     s.querySelector(".sheet").classList.add("tall");
