@@ -67,6 +67,13 @@ class ReplyRecordingTest {
         assertTrue(ReplyRecording.holdsVin("22F1A0", frames, emptyList()))
         // The car's known VIN, even when it doesn't look like one to the pattern.
         assertTrue(ReplyRecording.holdsVin("2101", listOf("6101" + vinHex), listOf(sampleVin)))
+        // With headers on, as the module search asks: 11-bit and 29-bit addresses before each frame.
+        val v = vinHex.chunked(2)
+        val h11 = listOf("7E8 10 14 62 F1 8C " + v.take(3).joinToString(" "), "7E8 21 " + v.subList(3, 10).joinToString(" "), "7E8 22 " + v.subList(10, 17).joinToString(" "))
+        assertTrue(ReplyRecording.holdsVin("22F18C", h11, emptyList()))
+        val h29 = h11.map { "18DAF110 " + it.removePrefix("7E8 ") }
+        assertTrue(ReplyRecording.holdsVin("22F18C", h29, emptyList()))
+        assertFalse(ReplyRecording.holdsVin("1902FF", listOf("7E8 07 59 02 FF C1 21 00 08"), listOf(sampleVin)))
         // Ordinary readings are kept.
         assertFalse(ReplyRecording.holdsVin("010C", listOf("410C1AF8"), listOf(sampleVin)))
         assertFalse(ReplyRecording.holdsVin("03", listOf("430201330420"), listOf(sampleVin)))

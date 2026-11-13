@@ -1239,7 +1239,12 @@ open class MainActivity : AppCompatActivity() {
                 toast(getString(R.string.replies_deleted))
                 showReplies()
             }
-            buttons += getString(R.string.replies_share) to { sheet.dismiss(); offerFile(file, "OBD2 Reader recording") }
+            buttons += getString(R.string.replies_share) to {
+                sheet.dismiss()
+                // Shared from the exports folder (the one the file provider serves), never from the recordings folder itself.
+                val copy = try { Exports.exportFile(this, "OBD2Reader_" + file.name).also { file.copyTo(it, overwrite = true) } } catch (e: Exception) { null }
+                if (copy == null) toast(getString(R.string.file_save_failed)) else offerFile(copy, "OBD2 Reader recording")
+            }
             if (rec != null) buttons += getString(R.string.replies_replay) to { sheet.dismiss(); parent.dismiss(); replay(file, rec) }
             sheetButtons(body, *buttons.toTypedArray())
         }

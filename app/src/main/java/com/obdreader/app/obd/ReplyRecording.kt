@@ -70,20 +70,26 @@ object ReplyRecording {
     /** True when this reply has to be hidden: it answers a VIN request, or its bytes spell a VIN. */
     fun holdsVin(command: String, lines: List<String>, known: Collection<String>): Boolean {
         if (normalize(command) in VIN_REQUESTS) return true
-        val text = ascii(lines)
-        if (known.any { it.length >= 11 && text.contains(it) }) return true
-        return VIN_IN_TEXT.containsMatchIn(text)
+        // With headers on (ATH1) each line starts with the sender's address (3 or 8 hex digits) and a
+        // frame byte, so the reply is read three ways: as it is, and without each kind of header.
+        return listOf(0, 3, 8).any { header ->
+            val text = ascii(lines, header)
+            known.any { it.length >= 11 && text.contains(it) } || VIN_IN_TEXT.containsMatchIn(text)
+        }
     }
 
     /** 17 VIN characters (no I, O or Q) with at least one letter, read from a reply's bytes. */
     private val VIN_IN_TEXT = Regex("(?=[A-HJ-NPR-Z0-9]{17})(?=[A-HJ-NPR-Z0-9]{0,16}[A-HJ-NPR-Z])[A-HJ-NPR-Z0-9]{17}")
 
     /**
-     * The reply's bytes as text, line by line (CAN frame numbers like "0:" dropped), joined so a
-     * VIN split over frames reads whole. Anything unprintable becomes a space.
+     * The reply's bytes as text, line by line (CAN frame numbers like "0:" dropped, and [header]
+     * hex digits of address when headers are on), joined so a VIN split over frames reads whole.
+     * Anything unprintable becomes a space.
      */
-    private fun ascii(lines: List<String>): String = lines.joinToString("") { line ->
-        val hex = line.replace(" ", "").uppercase(Locale.US).replace(Regex("^[0-9A-F]:"), "")
+    private fun ascii(lines: List<String>, header: Int = 0): String = lines.joinToString("") { line ->
+        val raw = line.replace(" ", "").uppercase(Locale.US).replace(Regex("^[0-9A-F]:"), "")
+        // [header]: the address and the frame byte after it are left out.
+        val hex = if (header == 0) raw else if (raw.length > header + 2) raw.substring(header + 2) else ""
         if (!hex.all { it in '0'..'9' || it in 'A'..'F' }) " "
         else hex.chunked(2).filter { it.length == 2 }.map { b ->
             val c = b.toInt(16).toChar()
