@@ -125,9 +125,10 @@ jobs:
         run: rm -f "$RUNNER_TEMP/release.jks"
 
       # The certificate every release must carry (also in the README, so anyone can check their download).
+      # Since 2.5.0: the key behind the earlier certificate was lost, so releases moved to a new one.
       - name: Check the APK is signed with the release key and installable
         env:
-          EXPECTED_CERT_SHA256: 77ad52081183e8001d6235e096dbaae6a8728c283341402bdb60852b49602714
+          EXPECTED_CERT_SHA256: 67eb2dd363dd994f7fe4b3a747564d2c2ccb52e5ad4953c3391bd24e412d04c2
         run: |
           cp app/build/outputs/apk/release/app-release.apk OBD2Reader.apk
           APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -1)

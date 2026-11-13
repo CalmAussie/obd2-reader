@@ -2,7 +2,8 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
-## 2.4.5 (12 November 2026)
+## 2.5.0 (12 November 2026)
+- **One-time reinstall needed.** This version has a new signing key, so it can't install over 2.4.4 or older. Uninstall the old app, then install this one from github.com/CalmAussie/obd2-reader/releases/latest. Settings and trips start fresh; saved videos, pictures and Downloads files stay.
 - **More readings, for cars that report them.** Fuel trims, oxygen sensors (voltage and wide-range), fuel and fuel rail pressure, EGR, catalyst and exhaust gas temperatures, fuel rate, ethanol, driver demand and actual torque, evaporative system pressure, module voltage, run time and more. The app asks only for the ones your car says it has, and they don't slow the Dashboard down. Fuel trims and oxygen sensors say in plain words what they tell you, and the fuel trims show whether the engine is using its oxygen sensors right now. You can also put them in a Dashboard readout.
 - **Graphs sorted into tabs.** All shows the graphs you've chosen, with a × to remove one and Add a graph to pick from everything your car reports, grouped by part of the car with each value now. Engine, Fuel, Air, Exhaust and Electrical show just their own readings to tap on or off. Up to six graphs at once (it was four).
 - **Codes recently cleared?** A used-car check under Deeper checks: how far the car has gone, how many times it has warmed up and how long the engine has run since its trouble codes were last cleared, with the time and distance driven with the check-engine light on and the readiness monitors. Very small numbers can mean a fault was cleared to hide it before a sale. Anything your car doesn't report shows N/A, and the result is in the code report too.
