@@ -457,6 +457,11 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
   adb shell input swipe 540 900 540 1700 300   # back to the top
   sleep 8
   shot "5-$SLUG"
+  # Race telemetry: the g-meter stands beside the trace (the demo car's g-force needs no mount).
+  if [ $PASS = normal ] && [ "$STYLE" = "Race telemetry" ]; then
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-gmeter.xml"
+    if grep -q "G-force: speeding up" "$OUT/ui-gmeter.xml"; then log "g-force: g-meter on Race telemetry"; else log "g-force: FAILED (no g-meter on Race telemetry)"; FAIL=1; fi
+  fi
   adb shell settings put system user_rotation 1; sleep 5
   shot "6-$SLUG-landscape"
   alive && log "style $STYLE: upright and sideways OK" || { log "style $STYLE: FAILED (app stopped)"; FAIL=1; }
@@ -506,6 +511,11 @@ disconnect_app
 adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-trip.xml"
 shot 7-trip-summary
 if grep -q "Your drive" "$OUT/ui-trip.xml" && grep -q "Top speed" "$OUT/ui-trip.xml"; then log "trip summary: shown"; else log "trip summary: FAILED (not shown)"; FAIL=1; fi
+# G-force: the drive's hardest braking, speeding up and cornering, under the scores.
+adb shell input swipe 540 1700 540 900 400; sleep 1
+adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-trip-g.xml"
+shot 7b-trip-gforce
+if grep -q "Cornering" "$OUT/ui-trip-g.xml" && grep -q "Speeding up" "$OUT/ui-trip-g.xml"; then log "g-force: trip summary shows peaks"; else log "g-force: FAILED (no peaks in trip summary)"; FAIL=1; fi
 # Share the drive as a picture: the image is made and Android's share sheet opens.
 if tap_text "Share as a picture" && tap_contains "Story (9:16)"; then
   # The preview is in the same window, with Story and Square to switch between; Share sends the card.

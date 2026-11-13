@@ -16,7 +16,13 @@ class DriveTrack private constructor(
     private val lon: DoubleArray = DoubleArray(0),
     /** The drive's outline, for the overlay's map; null without a route. */
     val route: Route? = null,
+    /** G-force per row (NaN where there was none), when the drive has it: forward and sideways, in g. */
+    private val gForward: DoubleArray = DoubleArray(0),
+    private val gSide: DoubleArray = DoubleArray(0),
 ) {
+    /** Whether the drive has any g-force readings (recorded with the phone's motion sensor). */
+    val hasG: Boolean by lazy { gForward.any { !it.isNaN() } }
+
     /** For each row, the nearest row with a fix at or before it, and at or after it (-1: none). */
     private val prevFix: IntArray by lazy { IntArray(lat.size).also { a -> var last = -1; for (i in lat.indices) { if (!lat[i].isNaN()) last = i; a[i] = last } } }
     private val nextFix: IntArray by lazy { IntArray(lat.size).also { a -> var next = -1; for (i in lat.indices.reversed()) { if (!lat[i].isNaN()) next = i; a[i] = next } } }
@@ -39,7 +45,10 @@ class DriveTrack private constructor(
         return (lat[before] + (lat[after] - lat[before]) * f) to (lon[before] + (lon[after] - lon[before]) * f)
     }
 
-    data class Sample(val seconds: Double, val rpm: Double?, val speed: Double?, val throttle: Double?, val coolant: Double?)
+    data class Sample(
+        val seconds: Double, val rpm: Double?, val speed: Double?, val throttle: Double?, val coolant: Double?,
+        val gForward: Double? = null, val gSide: Double? = null,
+    )
 
     val duration: Double get() = if (t.isEmpty()) 0.0 else t.last()
     val size: Int get() = t.size
@@ -64,6 +73,7 @@ class DriveTrack private constructor(
         val j = (lo + 1).coerceAtMost(t.size - 1)
         val f = if (j == lo || t[j] == t[lo]) 0.0 else (s - t[lo]) / (t[j] - t[lo])
         fun mix(a: DoubleArray): Double? {
+            if (a.size != t.size) return null
             val x = a[lo]; val y = a[j]
             return when {
                 x.isNaN() && y.isNaN() -> null
@@ -72,7 +82,7 @@ class DriveTrack private constructor(
                 else -> x + (y - x) * f
             }
         }
-        return Sample(s, mix(rpm), mix(speed), mix(throttle), mix(coolant))
+        return Sample(s, mix(rpm), mix(speed), mix(throttle), mix(coolant), mix(gForward), mix(gSide))
     }
 
     companion object {
@@ -84,6 +94,7 @@ class DriveTrack private constructor(
             val iSec = col("Seconds"); val iRpm = col("Engine RPM"); val iSpeed = col("Speed")
             val iThr = col("Throttle"); val iCool = col("Coolant")
             val iLat = col("Latitude"); val iLon = col("Longitude"); val iAcc = col("Location accuracy")
+            val iGf = col("Forward g"); val iGs = col("Sideways g")
             if (iSec < 0) return null
             val rows = lines.drop(1).filter { it.isNotBlank() }.map { splitCsv(it) }
             fun num(row: List<String>, i: Int) = if (i < 0) Double.NaN else row.getOrNull(i)?.toDoubleOrNull() ?: Double.NaN
@@ -100,6 +111,8 @@ class DriveTrack private constructor(
                 if (route == null) DoubleArray(0) else ok.map { if (good(it)) num(it, iLat) else Double.NaN }.toDoubleArray(),
                 if (route == null) DoubleArray(0) else ok.map { if (good(it)) num(it, iLon) else Double.NaN }.toDoubleArray(),
                 route,
+                if (iGf < 0) DoubleArray(0) else ok.map { num(it, iGf) }.toDoubleArray(),
+                if (iGs < 0) DoubleArray(0) else ok.map { num(it, iGs) }.toDoubleArray(),
             )
         }
 

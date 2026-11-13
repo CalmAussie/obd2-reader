@@ -45,6 +45,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.obdreader.app.obd.DtcLibrary
+import com.obdreader.app.obd.GForce
 import com.obdreader.app.session.AppPrefs
 import com.obdreader.app.session.Exports
 import com.obdreader.app.session.Updater
@@ -186,6 +187,7 @@ open class MainActivity : AppCompatActivity() {
     private lateinit var startLights: StartLightsView
     private lateinit var shiftLights: ShiftLightsView
     private lateinit var trace: TraceView
+    private lateinit var gMeter: com.obdreader.app.ui.GMeterView
     private lateinit var teleRpm: TextView
     private lateinit var teleSpeed: TextView
     private lateinit var teleCoolant: TextView
@@ -227,6 +229,8 @@ open class MainActivity : AppCompatActivity() {
     private fun readout(key: String): Readout =
         (Pids.byHex(key)?.let { Readout(it.hex, it.label, it.unit, it.decimals, it.min, it.max, it.warnAbove) }
             ?: if (key == Boost.KEY) Readout(Boost.KEY, Boost.LABEL, "kPa", 0, Boost.MIN, Boost.MAX, null)
+            else if (key == GForce.FORWARD_KEY) Readout(key, getString(R.string.g_forward), "g", 2, -1.0, 1.0, null)
+            else if (key == GForce.SIDE_KEY) Readout(key, getString(R.string.g_side), "g", 2, -1.0, 1.0, null)
             else Readout(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0, null)).inUnits()
 
     /** The readout in the chosen units (°F, mph, psi) where that applies. */
@@ -238,6 +242,8 @@ open class MainActivity : AppCompatActivity() {
     /** Every reading that can go in a main readout (not engine speed or speed, which have their own). */
     private val readoutChoices: List<Readout> by lazy {
         Pids.dashboard.filter { it.hex != RPM_KEY && it.hex != SPEED_KEY }.map { readout(it.hex) } + readout(Boost.KEY) + readout(VOLTAGE_KEY) +
+            // G-force from the phone's motion sensor.
+            readout(GForce.FORWARD_KEY) + readout(GForce.SIDE_KEY) +
             // More standard readings, for cars that report them (N/A on the rest).
             Pids.extraNumbers.map { readout(it.hex) }
     }
@@ -554,6 +560,7 @@ open class MainActivity : AppCompatActivity() {
                 launch { LogRecorder.active.collect { renderRecording(it) } }
                 launch { DriveScorer.results.collect { renderScore() } }
                 launch { DriveScorer.topSpeed.collect { showTopSpeed(it) } }
+                launch { com.obdreader.app.session.PhoneMotion.status.collect { showMotionStatus(it) } }
                 // When a drive ends, sum it up (once), and keep it as the last drive.
                 launch {
                     DriveScorer.lastTrip.collect { latest ->
@@ -821,6 +828,36 @@ open class MainActivity : AppCompatActivity() {
     }
 
     /** The trip summary: what the drive added up to, as a sheet of tiles. */
+    /** The drive's g-force on its summary: the hardest braking, speeding up and cornering, and any harsh moments. */
+    private fun addTripMotion(body: LinearLayout, m: TripSummary.Motion) {
+        body.addView(TextView(this).apply {
+            setText(R.string.g_trip_title)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            typeface = uiTypeface(600)
+            setTextColor(themeColor(R.attr.obdTextPrimary))
+            setPadding(0, dp(14f).toInt(), 0, dp(6f).toInt())
+        })
+        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; background = tripTile(); setPadding(0, dp(12f).toInt(), 0, dp(12f).toInt()) }
+        listOf(R.string.g_trip_brake to m.peakBrake, R.string.g_trip_accel to m.peakAccel, R.string.g_trip_side to m.peakSide).forEach { (label, g) ->
+            row.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER_HORIZONTAL
+                addView(TextView(context).apply {
+                    text = TripSummary.Motion.g(g); setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = displayTypeface(); fontFeatureSettings = "tnum"
+                    setTextColor(themeColor(R.attr.obdTextPrimary))
+                })
+                addView(TextView(context).apply { setText(label); maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        body.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        body.addView(TextView(this).apply {
+            text = m.harshText() + ". " + getString(R.string.g_trip_note)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setTextColor(themeColor(if (m.harsh > 0) R.attr.obdWarn else R.attr.obdTextSecondary))
+            setPadding(0, dp(6f).toInt(), 0, 0)
+        })
+    }
+
     private fun showTripSummary(trip: TripSummary, justEnded: Boolean) {
         val sheet = BottomSheetDialog(this)
         val pad = dp(20f).toInt()
@@ -898,6 +935,7 @@ open class MainActivity : AppCompatActivity() {
             setTextColor(themeColor(R.attr.obdTextSecondary))
             setPadding(0, dp(6f).toInt(), 0, 0)
         })
+        trip.motion?.let { addTripMotion(body, it) }
         addRouteComparison(body, trip)
         body.addView(MaterialButton(this).apply {
             setText(R.string.done)
@@ -2352,6 +2390,9 @@ open class MainActivity : AppCompatActivity() {
         Pids.dashboard.map { Channel(it.hex, if (it.number == Pids.RPM) "RPM" else it.label, Units.unit(it.hex, it.unit), Units.decimals(it.hex, it.decimals), Units.value(it.hex, it.min), Units.value(it.hex, it.max)) } +
             Channel(Boost.KEY, Boost.LABEL, Units.unit(Boost.KEY, "kPa"), Units.decimals(Boost.KEY, 0), Units.value(Boost.KEY, Boost.MIN), Units.value(Boost.KEY, Boost.MAX)) +
             Channel(VOLTAGE_KEY, "Battery", "V", 1, 11.0, 15.0) +
+            // G-force from the phone's motion sensor (no car reading needed beyond speed).
+            Channel(GForce.FORWARD_KEY, getString(R.string.g_forward), "g", 2, -1.0, 1.0) +
+            Channel(GForce.SIDE_KEY, getString(R.string.g_side), "g", 2, -1.0, 1.0) +
             // More standard readings, read only when the car lists them.
             Pids.extraNumbers.map { Channel(it.hex, it.label, Units.unit(it.hex, it.unit), Units.decimals(it.hex, it.decimals), Units.value(it.hex, it.min), Units.value(it.hex, it.max)) }
     }
@@ -2765,7 +2806,10 @@ open class MainActivity : AppCompatActivity() {
     /** While the Graphs tab is open, the graphed readings are polled first, so they update as fast as possible. */
     private fun updateFocus() {
         ObdSession.focus = when {
-            pageGraphs.visibility == View.VISIBLE -> graphStrips.map { it.key }.toSet()
+            // G-force isn't read from the car; it needs the car's speed instead.
+            pageGraphs.visibility == View.VISIBLE -> graphStrips.map { it.key }.toSet().let { keys ->
+                if (keys.none { it in GForce.KEYS }) keys else keys - GForce.KEYS + SPEED_KEY
+            }
             // The Dashboard's moving readings, in one request per cycle (six is a CAN car's limit),
             // so the dials update as often as the graphs do.
             // An extra reading picked for a readout joins them, since it isn't otherwise read every turn.
@@ -2980,6 +3024,8 @@ open class MainActivity : AppCompatActivity() {
         startLights = findViewById(R.id.startLights)
         shiftLights = findViewById(R.id.shiftLights)
         trace = findViewById(R.id.teleTrace)
+        gMeter = findViewById(R.id.teleGMeter)
+        gMeter.follow = trace
         teleRpm = findViewById(R.id.teleRpm)
         teleSpeed = findViewById(R.id.teleSpeed)
         (teleRpm as FitTextView).sample = "8,888"
@@ -3123,6 +3169,11 @@ open class MainActivity : AppCompatActivity() {
             addTile(Boost.KEY, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, Channels.forKey(Boost.KEY, themeColor(R.attr.obdStripe1))))
         }
         if (VOLTAGE_KEY !in shownBig) addTile(VOLTAGE_KEY, TowerRowView(this, "Battery", "V", 11.0, 15.0, 15.0, 1, Channels.forKey(VOLTAGE_KEY, themeColor(R.attr.obdStripe1))))
+        // G-force from the phone, at the end of the list.
+        GForce.KEYS.filter { it !in shownBig }.forEach { k ->
+            val r = readout(k)
+            addTile(k, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, Channels.forKey(k, themeColor(R.attr.obdStripe1))))
+        }
     }
 
     private fun setRpm(value: Float?) {
@@ -3152,6 +3203,18 @@ open class MainActivity : AppCompatActivity() {
         retroDash.set(value, lastRpm)
         rallyBlocks[SPEED_KEY]?.setValue(value?.toDouble())
         hairlineDial.set(value, lastRpm)
+    }
+
+    /** G-force: while the phone learns how it sits in its mount, the readings say so instead of a blank. */
+    private fun showMotionStatus(status: com.obdreader.app.session.PhoneMotion.Status) {
+        val learning = status == com.obdreader.app.session.PhoneMotion.Status.LEARNING
+        GForce.KEYS.forEach { k -> tiles[k]?.labelOverride = if (learning) readout(k).label + " · " + getString(R.string.g_learning).lowercase(Locale.getDefault()) else null }
+        gMeter.mode = when (status) {
+            com.obdreader.app.session.PhoneMotion.Status.OFF -> com.obdreader.app.ui.GMeterView.Mode.OFF
+            com.obdreader.app.session.PhoneMotion.Status.LEARNING -> com.obdreader.app.ui.GMeterView.Mode.LEARNING
+            com.obdreader.app.session.PhoneMotion.Status.NO_SENSOR -> com.obdreader.app.ui.GMeterView.Mode.NO_SENSOR
+            com.obdreader.app.session.PhoneMotion.Status.READY -> com.obdreader.app.ui.GMeterView.Mode.LIVE
+        }
     }
 
     /** The top speed this drive, beside the speed in every style. */
@@ -3872,6 +3935,9 @@ open class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+            if (s.readings[GForce.FORWARD_KEY] != lastReadings[GForce.FORWARD_KEY] || s.readings[GForce.SIDE_KEY] != lastReadings[GForce.SIDE_KEY]) {
+                gMeter.set(s.readings[GForce.FORWARD_KEY], s.readings[GForce.SIDE_KEY])
+            }
             lastReadings = s.readings
         }
         // Graphs: names, notes (fuel system status under fuel trims) and N/A for this car.
@@ -3888,7 +3954,7 @@ open class MainActivity : AppCompatActivity() {
         }
         // A stand-in reading is labelled for what it really is.
         if (s.standIns != lastStandIns) {
-            tiles.forEach { (k, t) -> if (k != VOLTAGE_KEY) t.labelOverride = s.standIns[k] }
+            tiles.forEach { (k, t) -> if (k != VOLTAGE_KEY && k !in GForce.KEYS) t.labelOverride = s.standIns[k] }
             decals.forEach { (k, d) -> if (k != VOLTAGE_KEY) d.labelOverride = s.standIns[k] }
             lastStandIns = s.standIns
         }

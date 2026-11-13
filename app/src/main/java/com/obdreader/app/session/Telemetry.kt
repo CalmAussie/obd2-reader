@@ -76,7 +76,9 @@ object LogRecorder {
 
     private var job: Job? = null
     private val columns: List<Pair<String, String>> =
-        Pids.dashboard.map { it.hex to "${it.label} (${it.unit})" } + (com.obdreader.app.obd.Boost.KEY to "Boost (kPa)") + (ObdSession.VOLTAGE_KEY to "Battery (V)")
+        Pids.dashboard.map { it.hex to "${it.label} (${it.unit})" } + (com.obdreader.app.obd.Boost.KEY to "Boost (kPa)") + (ObdSession.VOLTAGE_KEY to "Battery (V)") +
+            // G-force from the phone's motion sensor (blank until it has learned the mount, or with no sensor).
+            (com.obdreader.app.obd.GForce.FORWARD_KEY to "Forward g (g)") + (com.obdreader.app.obd.GForce.SIDE_KEY to "Sideways g (g)")
 
     fun folder(context: Context): File = File(context.filesDir, "logs").apply { mkdirs() }
 
@@ -353,6 +355,7 @@ object DriveScorer {
 
     private fun newTrip() {
         score.reset(); latest.clear(); _topSpeed.value = null; publish(force = true)
+        PhoneMotion.newDrive()
         tripStart = System.currentTimeMillis(); tripEnded = false; offSince = null
     }
 
@@ -365,7 +368,7 @@ object DriveScorer {
         if (tripEnded) return
         tripEnded = true
         val all = com.obdreader.app.obd.DrivingScore.Style.values().associateWith { score.result(it) }
-        val trip = com.obdreader.app.obd.TripSummary.from(all.values.first(), all, tripStart, maxOf(endedAt, tripStart))
+        val trip = com.obdreader.app.obd.TripSummary.from(all.values.first(), all, tripStart, maxOf(endedAt, tripStart), PhoneMotion.drive())
         if (!trip.isDrive) return
         appContext?.let {
             val prefs = AppPrefs.of(it)
@@ -388,7 +391,7 @@ object DriveScorer {
     const val PREF_TRIP_HISTORY = "trip_history"
 
     fun start(context: Context? = null) {
-        context?.let { appContext = it.applicationContext }
+        context?.let { appContext = it.applicationContext; PhoneMotion.start(it) }
         if (started) return
         started = true
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)

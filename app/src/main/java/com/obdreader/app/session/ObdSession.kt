@@ -410,6 +410,16 @@ object ObdSession {
         }
     }
 
+    /**
+     * Readings the phone works out itself (g-force from its motion sensor, see [PhoneMotion]),
+     * joined to the car's while connected. Null means the phone can't measure it (N/A).
+     */
+    fun phoneReadings(values: Map<String, Double?>, timeMs: Long = SystemClock.elapsedRealtime()) {
+        if (_state.value.phase != Phase.CONNECTED) return
+        for ((k, v) in values) if (v != null) _samples.tryEmit(Sample(k, v, timeMs))
+        _state.update { it.copy(readings = it.readings + values) }
+    }
+
     fun disconnect() {
         transport?.close() // unblocks any read in progress
         job?.cancel()

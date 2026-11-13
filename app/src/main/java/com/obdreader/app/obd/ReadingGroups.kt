@@ -16,6 +16,8 @@ object ReadingGroups {
         AIR("Air and boost", "Air"),
         EXHAUST("Exhaust", "Exhaust"),
         ELECTRICAL("Electrical", "Electrical"),
+        /** How the car moves, from the phone's own motion sensor. */
+        DRIVING("Driving", "Driving"),
         /** The car's own checks: monitor status, counters since the codes were cleared, the OBD standard it meets. Never graphed. */
         DIAGNOSTICS("Diagnostics", "Diagnostics"),
         OTHER("Other", "Other"),
@@ -33,6 +35,7 @@ object ReadingGroups {
         Group.EXHAUST to listOf("3C", "3E", "3D", "3F", "78", "79", "73", "84", "2C", "2D", "6B", "12", "32", "53", "54", "2E",
             "7A", "7B", "7C", "83", "85", "86", "9E"),
         Group.ELECTRICAL to listOf("VOLT", "42", "5B", "9A"),
+        Group.DRIVING to listOf(GForce.FORWARD_KEY, GForce.SIDE_KEY),
         Group.DIAGNOSTICS to listOf("01", "41", "21", "4D", "31", "30", "4E", "02", "1C", "5F", "7D", "7E", "1E", "65", "4F"),
     )
 

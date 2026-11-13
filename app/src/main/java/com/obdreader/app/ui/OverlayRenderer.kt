@@ -142,6 +142,9 @@ class OverlayRenderer(context: Context, private val background: Int, private val
         small.color = Channels.RPM; canvas.drawText("■ rpm", left, 844f, small)
         small.color = Channels.SPEED; canvas.drawText("■ ${Units.speedUnit}", left + 90f, 844f, small)
 
+        // ---- Between the two: a g-meter, when the drive has g-force from the phone's motion sensor ----
+        if (drive.hasG) drawGMeter(canvas, drive, seconds, s)
+
         // ---- Right, above the trace: a mini-map of the route with a dot where the car is now ----
         drive.route?.let { route -> drawMiniMap(canvas, drive, route, seconds, u) }
 
@@ -150,6 +153,37 @@ class OverlayRenderer(context: Context, private val background: Int, private val
         small.textAlign = Paint.Align.CENTER; small.textSize = 22f; small.color = muted
         canvas.drawText(String.format(Locale.US, "%d:%02d", clock / 60, clock % 60), (left + right) / 2f, 844f, small)
         canvas.restore()
+    }
+
+    /** A g-meter in the gap between the two bottom panels: rings at half and one g, the last second as a trail. */
+    private fun drawGMeter(canvas: Canvas, drive: DriveTrack, seconds: Double, now: DriveTrack.Sample) {
+        rect.set(930f, 820f, 1150f, 1020f)
+        fill.color = panel
+        canvas.drawRoundRect(rect, radius, radius, fill)
+        val cx = 1040f; val cy = 912f; val r = 78f
+        stroke.strokeWidth = 2f; stroke.color = track
+        canvas.drawCircle(cx, cy, r, stroke)
+        canvas.drawCircle(cx, cy, r / 2f, stroke)
+        canvas.drawLine(cx - r, cy, cx + r, cy, stroke)
+        canvas.drawLine(cx, cy - r, cx, cy + r, stroke)
+        fun x(g: Double) = cx + r * g.coerceIn(-1.0, 1.0).toFloat()
+        fun y(g: Double) = cy - r * g.coerceIn(-1.0, 1.0).toFloat()
+        for (i in 1..10) {
+            val p = drive.at(seconds - i * 0.1)
+            val f = p.gForward ?: continue; val sd = p.gSide ?: continue
+            fill.color = ColorUtils.setAlphaComponent(accent, 160 - i * 13)
+            canvas.drawCircle(x(sd), y(f), 6f, fill)
+        }
+        val f = now.gForward; val sd = now.gSide
+        small.textAlign = Paint.Align.CENTER; small.textSize = 22f; small.color = muted
+        if (f != null && sd != null) {
+            fill.color = accent
+            canvas.drawCircle(x(sd), y(f), 11f, fill)
+            small.color = text
+            canvas.drawText(String.format(Locale.US, "%.2f g", kotlin.math.sqrt(f * f + sd * sd)), cx, 1012f, small)
+        } else {
+            canvas.drawText("g", cx, 1012f, small)
+        }
     }
 
     /** The map's box, in 1920 × 1080 units: above the trace panel, on the right. */

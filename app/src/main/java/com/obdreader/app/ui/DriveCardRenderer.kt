@@ -124,8 +124,13 @@ class DriveCardRenderer(private val context: Context) {
             trip.topSpeed?.let { "Top speed" to Units.speedText(it) },
             trip.averageSpeed?.let { "Average" to Units.speedText(it) },
             trip.best0to100?.let { "0–100 km/h" to String.format(Locale.US, "%.1f s", it) },
+            // The drive's hardest moment, from the phone's motion sensor: up front on the racing card.
+            trip.motion?.takeIf { card.kind != ShareScore.Kind.RACING }?.let { "Peak g" to TripSummary.Motion.g(it.peak) },
             "Idling" to TripSummary.duration(trip.idleSeconds),
-        ).take(if (story) 6 else if (showRoute) 2 else 4)
+        ).let { list ->
+            val peak = trip.motion?.takeIf { card.kind == ShareScore.Kind.RACING }?.let { "Peak g" to TripSummary.Motion.g(it.peak) }
+            if (peak == null) list else listOf(list[0], peak) + list.drop(1)
+        }.take(if (story) 6 else if (showRoute) 2 else 4)
         val gridLeft = if (story || showRoute) 72f else 470f
         val gridRight = w - 72f
         val gap = 24f

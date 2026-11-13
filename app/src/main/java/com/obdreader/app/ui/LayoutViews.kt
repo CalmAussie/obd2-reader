@@ -26,6 +26,7 @@ object Channels {
     private val byPid = mapOf(
         "11" to "#34D17A", "04" to "#FFB000", "0F" to "#34C8E0", "0B" to "#B57CFF", "10" to "#FF7AC6",
         "0E" to "#E6E15A", "46" to "#9AA3AD", "5C" to "#FF8A3D", "VOLT" to "#7DD3A0", "BOOST" to "#C8A26B",
+        "GLON" to "#E879F9", "GLAT" to "#2DD4BF",
     ).mapValues { Color.parseColor(it.value) }
 
     fun forKey(key: String, fallback: Int): Int = byPid[key] ?: fallback
@@ -347,5 +348,74 @@ class VinDecalView @JvmOverloads constructor(context: Context, attrs: AttributeS
         paint.color = if (s1 == context.themeColor(R.attr.obdTextPrimary)) context.themeColor(R.attr.obdStripe2) else s1
         canvas.drawPath(stripe, paint)
         canvas.restore()
+    }
+}
+
+/**
+ * A g-meter beside the telemetry trace: a dot for how the car is pushed right now (up for speeding up,
+ * down for braking, sideways for cornering) inside rings at half and one g, with a short fading trail.
+ * Sized to the trace's height. G-force comes from the phone's motion sensor (see PhoneMotion).
+ */
+class GMeterView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
+    enum class Mode { OFF, LEARNING, NO_SENSOR, LIVE }
+
+    /** The trace it stands beside, so it's always as tall. */
+    var follow: TraceView? = null
+    var mode = Mode.OFF
+        set(value) { if (field != value) { field = value; if (value != Mode.LIVE) trail.clear(); invalidate() } }
+
+    private val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; color = context.themeColor(R.attr.obdOutline); strokeWidth = dp(1f) }
+    private val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.themeColor(R.attr.obdStripe1) }
+    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.themeColor(R.attr.obdTextSecondary); textSize = dp(10f); fontFeatureSettings = "tnum" }
+    private val strong = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.themeColor(R.attr.obdTextPrimary); textSize = dp(11f); fontFeatureSettings = "tnum" }
+    private val trail = ArrayDeque<Pair<Float, Float>>()
+    private var forward = 0f
+    private var side = 0f
+
+    init { contentDescription = "G-force: speeding up, braking and cornering" }
+
+    /** The latest readings in g (null: none yet). */
+    fun set(forwardG: Double?, sideG: Double?) {
+        if (forwardG == null || sideG == null) return
+        forward = forwardG.toFloat(); side = sideG.toFloat()
+        trail.addLast(side to forward)
+        while (trail.size > 24) trail.removeFirst()
+        invalidate()
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val h = follow?.fixedHeight ?: dp(96f).toInt()
+        setMeasuredDimension(h, h)
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        val cx = width / 2f; val cy = height / 2f
+        val r = minOf(cx, cy) - dp(3f)
+        canvas.drawCircle(cx, cy, r, ring)
+        canvas.drawCircle(cx, cy, r / 2f, ring)
+        canvas.drawLine(cx - r, cy, cx + r, cy, ring)
+        canvas.drawLine(cx, cy - r, cx, cy + r, ring)
+        text.textAlign = Paint.Align.LEFT
+        canvas.drawText("1 g", cx + r * 0.72f, cy - r * 0.72f, text)
+        strong.textAlign = Paint.Align.CENTER
+        when (mode) {
+            Mode.LIVE -> {
+                // One g at the outer ring; beyond it the dot waits on the edge.
+                fun x(s: Float) = cx + r * s.coerceIn(-1f, 1f)
+                fun y(f: Float) = cy - r * f.coerceIn(-1f, 1f)
+                trail.forEachIndexed { i, (s, f) ->
+                    dot.alpha = 30 + 120 * i / trail.size
+                    canvas.drawCircle(x(s), y(f), dp(2.5f), dot)
+                }
+                dot.alpha = 255
+                canvas.drawCircle(x(side), y(forward), dp(5f), dot)
+                val total = kotlin.math.sqrt(forward * forward + side * side)
+                strong.textAlign = Paint.Align.LEFT
+                canvas.drawText(String.format(Locale.US, "%.2f g", total), dp(2f), height - dp(3f), strong)
+            }
+            Mode.LEARNING -> canvas.drawText("Learning", cx, cy + r / 2f + dp(4f), strong)
+            Mode.NO_SENSOR -> canvas.drawText("N/A", cx, cy + r / 2f + dp(4f), strong)
+            Mode.OFF -> {}
+        }
     }
 }
