@@ -648,7 +648,9 @@ if [ $DEBUG_BUILD = 1 ] && [ -f "$SAMPLE" ]; then
   adb shell chmod 644 /data/local/tmp/sample-recording.txt
   adb shell "run-as $PKG sh -c 'mkdir -p files/replies && cp /data/local/tmp/sample-recording.txt files/replies/recording-20261113-104200.txt'"
 fi
-disconnect_app > /dev/null
+# Disconnect is on the Dashboard (this step starts on Diagnostics), and replay only starts with nothing connected.
+tap_tab Dashboard; sleep 2
+disconnect_app > /dev/null || log "record and replay: demo car didn't disconnect first"
 # Disconnecting sums up the drive: close that first.
 tap_text "Done" > /dev/null 2>&1; sleep 1
 adb logcat -c
