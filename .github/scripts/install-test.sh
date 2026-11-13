@@ -1030,6 +1030,8 @@ deep_check "Readiness monitors" readiness "readiness: .*(complete|not complete)"
 deep_check "Self-test results" self-tests "self-tests: [1-9]"
 deep_check "Codes from other modules" modules "modules: .*ABS and stability control=C1145-1C"
 deep_check "Enhanced diagnostics" enhanced "enhanced: .*Transmission fluid temperature=[0-9.]+ °C"
+# EV battery: the demo car is petrol, so it reports no high-voltage battery (N/A, never a made-up value).
+deep_check "EV battery" ev-battery "ev battery: 5B not listed, maker tried 0, answered none"
 # Module information: the demo's ABS gives its part number.
 INFO=0
 diag_top
