@@ -309,6 +309,8 @@ open class MainActivity : AppCompatActivity() {
                     toast(getString(R.string.replies_bad, e.message)); return@launch
                 } catch (e: Exception) {
                     toast(getString(R.string.replies_open_failed)); return@launch
+                } catch (e: OutOfMemoryError) {
+                    toast(getString(R.string.replies_open_failed)); return@launch
                 }
                 currentSheet?.dismiss()
                 replay(opened.first, opened.second)

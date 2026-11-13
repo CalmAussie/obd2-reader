@@ -81,6 +81,30 @@ class ReplyRecordingTest {
     }
 
     @Test
+    fun moduleSerialNumbersAreHidden() {
+        val rec = ReplyRecording.Recording(null, null, null, listOf(
+            ReplyRecording.Exchange("ATSH7E0", listOf("OK")),
+            ReplyRecording.Exchange("22F18C", listOf("62F18C3132333435363738")),
+            ReplyRecording.Exchange("22F187", listOf("62F18741424331")),
+        ))
+        val hidden = ReplyRecording.encode(rec, showVin = false)
+        assertTrue(hidden.contains("> 22F18C\n< ${ReplyRecording.SERIAL_HIDDEN}\n"))
+        assertTrue(hidden.contains("< 62F18741424331"))
+        assertTrue(ReplyRecording.encode(rec, showVin = true).contains("< 62F18C3132333435363738"))
+        val r = ReplayTransport(ReplyRecording.parse(hidden), "test")
+        r.open()
+        r.exchange("ATSH7E0", 1000)
+        assertEquals(listOf("NO DATA"), ElmParser.cleanLines(r.exchange("22F18C", 1000), "22F18C"))
+    }
+
+    @Test
+    fun aMillionEmptyLinesIsJustEmpty() {
+        parseFails(ReplyRecording.HEADER + "\n".repeat(ReplyRecording.MAX_BYTES - ReplyRecording.HEADER.length - 1), "empty")
+        // A bad line stops it there, however long the file is.
+        parseFails("${ReplyRecording.HEADER}\nbad\n" + "> 010C\n".repeat(100_000), "Line 2 isn't part of a recording")
+    }
+
+    @Test
     fun roundTripsThroughText() {
         val rec = record { c ->
             c.initialize()

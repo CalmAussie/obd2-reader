@@ -27,8 +27,8 @@ import java.util.Locale
  *     ! no reply
  *
  * Each request starts with "> ", each line of its reply with "< ", and "! no reply" marks a request
- * the adapter didn't answer in time. Replies that hold the VIN are replaced with "(VIN hidden)"
- * unless Hide VIN is set to show it in full.
+ * the adapter didn't answer in time. Replies that hold the VIN are replaced with "(VIN hidden)",
+ * and modules' serial numbers with "(serial number hidden)", unless Hide VIN is set to show it in full.
  */
 object ReplyRecording {
 
@@ -64,6 +64,10 @@ object ReplyRecording {
      * replies are hidden, and so is any other reply whose bytes read as the car's VIN.
      */
     private val VIN_REQUESTS = setOf("0902", "22F190", "1A90")
+
+    /** Requests for a module's own serial number (UDS 22 F18C, KWP2000 1A 8C): hidden like the VIN. */
+    private val SERIAL_REQUESTS = setOf("22F18C", "1A8C")
+    const val SERIAL_HIDDEN = "(serial number hidden)"
 
     fun normalize(command: String): String = command.replace(" ", "").uppercase(Locale.US)
 
@@ -112,6 +116,7 @@ object ReplyRecording {
             when {
                 lines == null -> appendLine(NO_REPLY)
                 !showVin && holdsVin(x.command, lines, known) -> appendLine("< $VIN_HIDDEN")
+                !showVin && normalize(x.command) in SERIAL_REQUESTS -> appendLine("< $SERIAL_HIDDEN")
                 else -> lines.take(MAX_REPLY_LINES).forEach { appendLine("< ${clean(it, MAX_LINE)}") }
             }
         }
@@ -128,8 +133,9 @@ object ReplyRecording {
      */
     fun parse(text: String): Recording {
         if (text.length > MAX_BYTES) throw BadRecording("This recording is larger than 2 MB.")
-        val lines = text.split('\n').map { it.removeSuffix("\r") }
-        if (lines.firstOrNull()?.trim() != HEADER) throw BadRecording("This isn't an OBD2 Reader recording.")
+        // The header is checked first, and the rest is read one line at a time, stopping at the first
+        // bad line: a file of a million empty lines never becomes a million strings at once.
+        if (text.substringBefore('\n').removeSuffix("\r").trim() != HEADER) throw BadRecording("This isn't an OBD2 Reader recording.")
         var app: String? = null
         var made: String? = null
         var car: String? = null
@@ -146,7 +152,9 @@ object ReplyRecording {
             command = null; reply = null; noReply = false
         }
 
-        for ((i, raw) in lines.withIndex().drop(1)) {
+        for ((i, rawLine) in text.lineSequence().withIndex()) {
+            if (i == 0) continue
+            val raw = rawLine.removeSuffix("\r")
             val n = i + 1
             if (raw.length > MAX_LINE + 2) throw BadRecording("Line $n is too long.")
             if (!raw.all { it in ' '..'~' || it == '\t' }) throw BadRecording("Line $n isn't plain text.")
@@ -310,7 +318,7 @@ class ReplayTransport(val recording: ReplyRecording.Recording, val label: String
         val list = replies[k]
         val lines: List<String>? = if (!list.isNullOrEmpty()) take(k, list) else combined(c) ?: fallback(c)
         if (lines == null) throw AdapterTimeoutException("No reply to '$c' in the recording")
-        val shown = lines.map { if (it == ReplyRecording.VIN_HIDDEN) "NO DATA" else it }
+        val shown = lines.map { if (it == ReplyRecording.VIN_HIDDEN || it == ReplyRecording.SERIAL_HIDDEN) "NO DATA" else it }
         return shown.joinToString("\r") + "\r\r"
     }
 
