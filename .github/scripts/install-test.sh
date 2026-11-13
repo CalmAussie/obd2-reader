@@ -1103,6 +1103,64 @@ fi
 adb shell dumpsys notification > "$OUT/notifications.txt" 2>/dev/null
 grep -q "mId='alerts'" "$OUT/notifications.txt" && log "alerts channel: created" || { log "alerts channel: FAILED (missing)"; FAIL=1; }
 alive && log "still running after tour: OK" || log "still running after tour: FAILED"
+# Day and night: switching with the phone's dark mode. Turning it on picks a light day style and
+# the dark one for night; dark mode on then switches (once the screen has been left alone a few
+# seconds), with a fade. Then dark mode off and switching off again, back to the style from before.
+DN=fail; DSTEP="Style"
+tap_tab Dashboard > /dev/null; sleep 2; disconnect_app; tap_text "Done" > /dev/null || true
+adb shell cmd uimode night no > /dev/null 2>&1; sleep 2; adb logcat -c
+if tap_text "Style"; then
+  sleep 2; DSTEP="Day and night row"
+  if tap_text "Day and night"; then
+    sleep 2; shot 15a-day-night-modes; DSTEP="dark mode option"
+    if tap_contains "phone's dark mode"; then
+      sleep 6; shot 15b-style-day-and-night; DSTEP="night switch"
+      adb shell input keyevent KEYCODE_BACK; sleep 10
+      adb shell cmd uimode night yes > /dev/null 2>&1
+      for i in $(seq 1 25); do adb logcat -d -s OBD2Style:I | grep -q "day/night:" && break; sleep 2; done
+      sleep 3; shot 15c-night-style
+      adb logcat -d -s OBD2Style:I > "$OUT/day-night.txt" 2>/dev/null
+      adb shell cmd uimode night no > /dev/null 2>&1; sleep 12
+      for i in $(seq 1 25); do [ "$(adb logcat -d -s OBD2Style:I | grep -c 'day/night:')" -ge 2 ] && break; sleep 2; done
+      adb logcat -d -s OBD2Style:I > "$OUT/day-night.txt" 2>/dev/null
+      shot 15d-day-style-again
+      [ "$(grep -c 'day/night:' "$OUT/day-night.txt")" -ge 2 ] && DN=ok
+    fi
+  fi
+fi
+# Switching off again (keeps the style showing).
+app_front; tap_text "Style" && sleep 2 && tap_text "Day and night" && sleep 2 && tap_text "Off" && sleep 4 && adb shell input keyevent KEYCODE_BACK; sleep 2
+[ $DN = ok ] && log "day and night: switched with the phone's dark mode and back ($(grep -o 'day/night: .*' "$OUT/day-night.txt" | tr '\n' ' '))" || { log "day and night: FAILED (at $DSTEP; $(grep -o 'day/night: .*' "$OUT/day-night.txt" 2>/dev/null | tr '\n' ' '))"; FAIL=1; }
+# Back up and restore: save a backup through Android's file picker, then restore it (disconnected).
+BK=fail; BSTEP="row"
+diag_top; adb logcat -c
+if tap_scrolled "Back up and restore"; then
+  sleep 3; shot 16a-backup; BSTEP="Back up button"
+  if tap_text "Back up"; then
+    sleep 4; shot 16b-save-picker; BSTEP="picker Save"
+    if tap_text "Save"; then
+      for i in $(seq 1 15); do adb logcat -d -s OBD2Backup:I | grep -q "backup written" && break; sleep 2; done
+      adb logcat -d -s OBD2Backup:I > "$OUT/backup.txt" 2>/dev/null; BSTEP="written"
+      if grep -q "backup written: true" "$OUT/backup.txt"; then
+        sleep 2; app_front; diag_top; BSTEP="row again"
+        if tap_scrolled "Back up and restore" && sleep 3 && tap_text "Restore"; then
+          sleep 4; shot 16c-open-picker; BSTEP="pick the file"
+          if tap_contains "OBD2Reader_backup"; then
+            sleep 4; shot 16d-restore-preview; BSTEP="Restore button"
+            grep -q "Restore this backup" "$OUT/ui.xml" || { adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui.xml"; }
+            for k in 1 2 3; do tap_text "Restore" && break; adb shell input swipe 540 1800 540 900 300; sleep 1; done
+            for i in $(seq 1 15); do adb logcat -d -s OBD2Backup:I | grep -q "restored" && break; sleep 2; done
+            adb logcat -d -s OBD2Backup:I > "$OUT/backup.txt" 2>/dev/null
+            sleep 3; shot 16e-restored
+            grep -q "restored [1-9]" "$OUT/backup.txt" && BK=ok
+          fi
+        fi
+      fi
+    fi
+  fi
+fi
+app_front
+[ $BK = ok ] && log "back up and restore: saved and restored ($(grep -o 'restored .*' "$OUT/backup.txt" | head -1))" || { log "back up and restore: FAILED (at $BSTEP; $(tail -1 "$OUT/backup.txt" 2>/dev/null | cut -c1-120))"; FAIL=1; }
 # Swiping sideways across the screen moves between tabs: Dashboard → Graphs, then back.
 tap_tab Dashboard > /dev/null; sleep 2; adb logcat -c
 adb shell input swipe 980 1300 100 1320 250; sleep 2
