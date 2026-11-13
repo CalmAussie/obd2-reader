@@ -1580,7 +1580,7 @@ open class MainActivity : AppCompatActivity() {
             } catch (e: CancellationException) { throw e } catch (e: Exception) { null }
             wait.dismiss()
             if (info == null) { toast("The car stopped answering. Try again."); return@launch }
-            android.util.Log.i("OBD2Deep", com.obdreader.app.obd.VinPrivacy.scrub("module info: " + info.joinToString("; ") { (m, f) -> "${m.name}: " + f.joinToString(", ") { "${it.first}=${it.second}" } }.ifEmpty { "none" }, vinMode()))
+            android.util.Log.i("OBD2Deep", com.obdreader.app.obd.VinPrivacy.scrub("module info: " + info.joinToString("; ") { (m, f) -> "${m.name}: " + f.joinToString(", ") { "${it.first}=${it.second}" } }.ifEmpty { "none" }, vinMode(), Exports.knownVins(this@MainActivity, ObdSession.state.value.vin)))
             infoSheet(getString(R.string.enhanced_module_info)) { heading, line, _ ->
                 if (info.isEmpty()) { line("No module answered with its identifiers. Older modules don't have them.", true); return@infoSheet }
                 val carVin = ObdSession.state.value.vin
