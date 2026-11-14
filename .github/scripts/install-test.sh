@@ -738,7 +738,10 @@ replies_sheets() {
 }
 # Asphalt (a dark style) is showing after the style tour; Pit lane is a light one.
 replies_sheets asphalt
-if pick_style "Pit lane"; then replies_sheets pit-lane; pick_style "Asphalt" || { log "record and replay: FAILED (Asphalt not picked again)"; FAIL=1; }
+if pick_style "Pit lane"; then replies_sheets pit-lane
+  # The EV battery sheet in the light style too, for the design check (the demo car is petrol: N/A).
+  diag_top; if tap_scrolled "EV battery"; then sleep 4; shot 13-ev-battery-pit-lane; adb shell input keyevent KEYCODE_BACK; sleep 2; else log "ev battery (pit-lane): not shown"; fi
+  pick_style "Asphalt" || { log "record and replay: FAILED (Asphalt not picked again)"; FAIL=1; }
 else log "record and replay: FAILED (couldn't pick Pit lane)"; FAIL=1; fi
 if [ $DEBUG_BUILD = 1 ]; then
   adb logcat -c
@@ -1032,12 +1035,6 @@ deep_check "Codes from other modules" modules "modules: .*ABS and stability cont
 deep_check "Enhanced diagnostics" enhanced "enhanced: .*Transmission fluid temperature=[0-9.]+ °C"
 # EV battery: the demo car is petrol, so it reports no high-voltage battery (N/A, never a made-up value).
 deep_check "EV battery" ev-battery "ev battery: 5B not listed, maker tried 0, answered none"
-# The same sheet in the light Pit lane style, for the design check, then back to Asphalt.
-if pick_style "Pit lane"; then
-  diag_top
-  if tap_scrolled "EV battery"; then sleep 4; shot 13-ev-battery-pit-lane; adb shell input keyevent KEYCODE_BACK; sleep 2; fi
-  pick_style "Asphalt" || { log "ev battery: FAILED (Asphalt not picked again)"; FAIL=1; }
-fi
 # Module information: the demo's ABS gives its part number.
 INFO=0
 diag_top
