@@ -586,7 +586,7 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
 .trip-tiles b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .trip-h { font-size: 15px; font-weight: 600; margin: 16px 0 6px; }
 .trip-scores { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--panel-2, var(--panel)); box-shadow: inset 0 0 0 1px var(--line); border-radius: var(--r); padding: 12px 0; text-align: center; }
-.trip-scores b { display: block; font-family: var(--ui); font-stretch: 125%; font-weight: 800; font-size: 26px; }
+.trip-scores b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .trip-scores span { font-size: 12px; color: var(--fg-2); }
 .trip-note { font-size: 13px; color: var(--fg-2); margin: 6px 0 0; }
 .trip-done { width: 100%; margin-top: 18px; height: 48px; border-radius: var(--r); background: var(--accent); color: var(--on-accent); font-weight: 600; }
@@ -2595,7 +2595,7 @@ function showTripSummary(t, justEnded) {
   const day = new Date(t.start).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" });
   const tiles = [["Distance", tripKm(unitsMph ? t.km * 0.621371 : t.km).replace(" km", unitsMph ? " mi" : " km")], ["Driving time", tripDur(t.drive)], t.top != null && ["Top speed", uSpeedText(t.top)],
     t.avg != null && ["Average speed", uSpeedText(t.avg)], ["Idling", tripDur(t.idle)], t.best != null && ["Best 0–100 km/h", `${t.best.toFixed(1)} s`]].filter(Boolean);
-  const sc3 = ["EFFICIENCY", "EVERYDAY", "RACING"].map(k => { const v = t.scores[k]; return `<div><b style="color:${v == null ? "var(--fg-2)" : scoreCol(v)}">${v ?? "—"}</b><span>${SCORE_STYLES[k].label}</span></div>`; }).join("");
+  const sc3 = ["EFFICIENCY", "EVERYDAY", "RACING"].map(k => { const v = t.scores[k]; return `<div><b class="xb" style="color:${v == null ? "var(--fg-2)" : scoreCol(v)}">${v ?? "—"}</b><span>${SCORE_STYLES[k].label}</span></div>`; }).join("");
   const s = overlay(`<div class="handle"></div><h2>${justEnded ? "Your drive" : "Your last drive"}</h2>
     <p>${day}, ${tm(t.start)} to ${tm(t.end)}${myCar ? " · " + carLabel(myCar) : ""}</p>
     <div class="trip-tiles">${tiles.map(([l, v]) => `<div><span>${l}</span><b class="xb">${v}</b></div>`).join("")}</div>
@@ -4549,7 +4549,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     .gwrap #teleTrace { flex: 1; min-width: 0; }
     .gwrap #teleG { width: 96px; height: 96px; flex: none; }
     .trip-g { display: flex; background: var(--panel-2, var(--panel)); box-shadow: inset 0 0 0 1px var(--line); border-radius: var(--r); padding: 12px 0; }
-    .trip-g div { flex: 1; text-align: center; } .trip-g b { display: block; font-size: 22px; font-weight: 500; }
+    .trip-g div { flex: 1; text-align: center; } .trip-g b { display: block; font-size: clamp(18px, 6.4vw, 24px); font-variant-numeric: tabular-nums; white-space: nowrap; }
     .trip-g span { font-size: 12px; color: var(--fg-2); }`;
   document.head.appendChild(css);
   const trace = $("teleTrace"), wrap = document.createElement("div");
@@ -4566,14 +4566,15 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     if (!peaks.counted[key] && t - peaks.since[key] >= 300) { peaks[count]++; peaks.counted[key] = true; }
   }
   function draw() {
-    const ring = `<circle cx="48" cy="48" r="45" fill="none" stroke="var(--line)"/><circle cx="48" cy="48" r="22.5" fill="none" stroke="var(--line)"/>
-      <line x1="3" y1="48" x2="93" y2="48" stroke="var(--line)"/><line x1="48" y1="3" x2="48" y2="93" stroke="var(--line)"/>
-      <text x="80" y="17" font-size="9" fill="var(--fg-2)">1 g</text>`;
+    // Circle above, a strip below for the reading, as in the app.
+    const ring = `<circle cx="48" cy="37" r="34" fill="none" stroke="var(--line)"/><circle cx="48" cy="37" r="17" fill="none" stroke="var(--line)"/>
+      <line x1="14" y1="37" x2="82" y2="37" stroke="var(--line)"/><line x1="48" y1="3" x2="48" y2="71" stroke="var(--line)"/>
+      <text x="73" y="14" font-size="11" font-family="var(--ui)" font-weight="500" fill="var(--fg-2)">1 g</text>`;
     if (!live) { gsvg.innerHTML = ring; return; }
-    const X = s => 48 + 45 * Math.max(-1, Math.min(1, s)), Y = f => 48 - 45 * Math.max(-1, Math.min(1, f));
+    const X = s => 48 + 34 * Math.max(-1, Math.min(1, s)), Y = f => 37 - 34 * Math.max(-1, Math.min(1, f));
     const dots = trail.map(([s, f], i) => `<circle cx="${X(s).toFixed(1)}" cy="${Y(f).toFixed(1)}" r="2.5" fill="var(--s1)" opacity="${(0.12 + 0.5 * i / trail.length).toFixed(2)}"/>`).join("");
     gsvg.innerHTML = ring + dots + `<circle cx="${X(side).toFixed(1)}" cy="${Y(fwd).toFixed(1)}" r="5" fill="var(--s1)"/>
-      <text x="2" y="93" font-size="11" fill="var(--fg)">${Math.hypot(fwd, side).toFixed(2)} g</text>`;
+      <text x="48" y="90" text-anchor="middle" font-size="13" font-family="var(--ui)" font-weight="500" style="font-variant-numeric: tabular-nums" fill="var(--fg)">${Math.hypot(fwd, side).toFixed(2)} g</text>`;
   }
   setInterval(() => {
     const t = Date.now();
@@ -4614,8 +4615,8 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     const scores = [...document.querySelectorAll(".trip-scores")].pop(); if (!scores) return;
     const after = scores.nextElementSibling && scores.nextElementSibling.classList.contains("trip-note") ? scores.nextElementSibling : scores;
     after.insertAdjacentHTML("afterend", `<div class="trip-h">G-force</div>
-      <div class="trip-g"><div><b>${m.brake.toFixed(2)} g</b><span>Braking</span></div><div><b>${m.accel.toFixed(2)} g</b><span>Speeding up</span></div><div><b>${m.side.toFixed(2)} g</b><span>Cornering</span></div></div>
-      <p class="trip-note" style="${m.hb + m.ha + m.hc ? "color:var(--warn)" : ""}">${harshText(m)}. From the phone's motion sensor. Harsh moments are shown here and don't change the scores.</p>`);
+      <div class="trip-g"><div><b class="xb">${m.brake.toFixed(2)} g</b><span>Braking</span></div><div><b class="xb">${m.accel.toFixed(2)} g</b><span>Speeding up</span></div><div><b class="xb">${m.side.toFixed(2)} g</b><span>Cornering</span></div></div>
+      <p class="trip-note">${harshText(m)}. From the phone's motion sensor. Harsh moments are shown here and don't change the scores.</p>`);
   };
 
   /* Forward g and sideways g on the Graphs tab, in their own Driving group */

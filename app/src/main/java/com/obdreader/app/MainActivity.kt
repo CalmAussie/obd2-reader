@@ -848,6 +848,21 @@ open class MainActivity : AppCompatActivity() {
 
     /** The trip summary: what the drive added up to, as a sheet of tiles. */
     /** The drive's g-force on its summary: the hardest braking, speeding up and cornering, and any harsh moments. */
+    /** Shrinks one line of text from [maxSp] towards [minSp] until it fits its width, e.g. "1.21 g" on a 360dp phone. */
+    private fun TextView.shrinkToFit(maxSp: Float, minSp: Float) {
+        addOnLayoutChangeListener { v, l, _, r, _, oldL, _, oldR, _ ->
+            if (r - l == oldR - oldL) return@addOnLayoutChangeListener
+            val t = v as TextView
+            val room = (r - l) - t.paddingLeft - t.paddingRight
+            var size = maxSp
+            t.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
+            while (size > minSp && t.paint.measureText(t.text.toString()) > room) {
+                size -= 1f
+                t.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
+            }
+        }
+    }
+
     private fun addTripMotion(body: LinearLayout, m: TripSummary.Motion) {
         body.addView(TextView(this).apply {
             setText(R.string.g_trip_title)
@@ -863,7 +878,8 @@ open class MainActivity : AppCompatActivity() {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER_HORIZONTAL
                 addView(TextView(context).apply {
-                    text = TripSummary.Motion.g(g); gravity = Gravity.CENTER_HORIZONTAL; setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = displayTypeface(); fontFeatureSettings = "tnum"
+                    text = TripSummary.Motion.g(g); gravity = Gravity.CENTER_HORIZONTAL; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f); typeface = displayTypeface(); fontFeatureSettings = "tnum"
+                    shrinkToFit(24f, 18f)
                     setTextColor(themeColor(R.attr.obdTextPrimary))
                 })
                 addView(TextView(context).apply { setText(label); gravity = Gravity.CENTER_HORIZONTAL; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
@@ -873,7 +889,7 @@ open class MainActivity : AppCompatActivity() {
         body.addView(TextView(this).apply {
             text = m.harshText() + ". " + getString(R.string.g_trip_note)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-            setTextColor(themeColor(if (m.harsh > 0) R.attr.obdWarn else R.attr.obdTextSecondary))
+            setTextColor(themeColor(R.attr.obdTextSecondary))
             setPadding(0, dp(6f).toInt(), 0, 0)
         })
     }
@@ -942,7 +958,7 @@ open class MainActivity : AppCompatActivity() {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER_HORIZONTAL
                 addView(TextView(context).apply {
-                    text = s?.toString() ?: getString(R.string.dash); gravity = Gravity.CENTER_HORIZONTAL; setTextSize(TypedValue.COMPLEX_UNIT_SP, 26f); typeface = displayTypeface()
+                    text = s?.toString() ?: getString(R.string.dash); gravity = Gravity.CENTER_HORIZONTAL; setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f); typeface = displayTypeface(); fontFeatureSettings = "tnum"
                     setTextColor(s?.let { scoreColour(it) } ?: themeColor(R.attr.obdTextSecondary))
                 })
                 addView(TextView(context).apply { text = style.label; gravity = Gravity.CENTER_HORIZONTAL; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })

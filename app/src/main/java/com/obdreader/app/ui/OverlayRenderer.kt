@@ -160,7 +160,8 @@ class OverlayRenderer(context: Context, private val background: Int, private val
         rect.set(930f, 820f, 1150f, 1020f)
         fill.color = panel
         canvas.drawRoundRect(rect, radius, radius, fill)
-        val cx = 1040f; val cy = 912f; val r = 78f
+        // Rings and reading centred as one group in the panel, with the same room above and below.
+        val cx = 1040f; val cy = 898f; val r = 64f
         stroke.strokeWidth = 2f; stroke.color = track
         canvas.drawCircle(cx, cy, r, stroke)
         canvas.drawCircle(cx, cy, r / 2f, stroke)
@@ -180,9 +181,9 @@ class OverlayRenderer(context: Context, private val background: Int, private val
             fill.color = accent
             canvas.drawCircle(x(sd), y(f), 11f, fill)
             small.color = text
-            canvas.drawText(String.format(Locale.US, "%.2f g", kotlin.math.sqrt(f * f + sd * sd)), cx, 1012f, small)
+            canvas.drawText(String.format(Locale.US, "%.2f g", kotlin.math.sqrt(f * f + sd * sd)), cx, 1000f, small)
         } else {
-            canvas.drawText("g", cx, 1012f, small)
+            canvas.drawText("g", cx, 1000f, small)
         }
     }
 

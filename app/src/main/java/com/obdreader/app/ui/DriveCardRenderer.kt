@@ -330,11 +330,12 @@ class DriveCardRenderer(private val context: Context) {
         paint.color = if (layout == DashLayout.CYBERPUNK) s1 else muted; paint.textSize = if (layout == DashLayout.CYBERPUNK) 26f else 32f
         if (layout == DashLayout.CYBERPUNK) paint.letterSpacing = 0.2f
         fitText(label(label), tw - 56f)
-        c.drawText(label(label), x + 36f, y + 58f, paint)
+        // Story tiles are shorter for their big numbers: lift the label and drop the number so a tail like "g" clears it.
+        c.drawText(label(label), x + 36f, y + if (story) 52f else 58f, paint)
         paint.letterSpacing = 0f
         paint.typeface = numberFace(); paint.color = text; paint.textSize = if (story) 72f else 62f
         fitText(value, tw - 60f)
-        c.drawText(value, x + 36f, y + th - 34f, paint)
+        c.drawText(value, x + 36f, y + th - if (story) 26f else 34f, paint)
     }
 
     /** A panel in the layout's style: livery card, flat logger panel, cockpit glass or a chamfered neon chip. */

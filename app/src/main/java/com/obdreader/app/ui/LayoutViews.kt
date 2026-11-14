@@ -17,6 +17,7 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 private fun View.dp(v: Float) = v * resources.displayMetrics.density
+private fun View.sp(v: Float) = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_SP, v, resources.displayMetrics)
 
 /** Data-logger channel colours, one per reading, like real logging software. */
 object Channels {
@@ -366,8 +367,9 @@ class GMeterView @JvmOverloads constructor(context: Context, attrs: AttributeSet
 
     private val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; color = context.themeColor(R.attr.obdOutline); strokeWidth = dp(1f) }
     private val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.themeColor(R.attr.obdStripe1) }
-    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.themeColor(R.attr.obdTextSecondary); textSize = dp(10f); fontFeatureSettings = "tnum" }
-    private val strong = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.themeColor(R.attr.obdTextPrimary); textSize = dp(11f); fontFeatureSettings = "tnum" }
+    // Archivo in sp, like the legend under the trace, so it follows the font and text-size settings.
+    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.themeColor(R.attr.obdTextSecondary); typeface = context.uiTypeface(500); textSize = sp(11f); fontFeatureSettings = "tnum" }
+    private val strong = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.themeColor(R.attr.obdTextPrimary); typeface = context.uiTypeface(500); textSize = sp(13f); fontFeatureSettings = "tnum"; textAlign = Paint.Align.CENTER }
     private val trail = ArrayDeque<Pair<Float, Float>>()
     private var forward = 0f
     private var side = 0f
@@ -389,15 +391,19 @@ class GMeterView @JvmOverloads constructor(context: Context, attrs: AttributeSet
     }
 
     override fun onDraw(canvas: Canvas) {
-        val cx = width / 2f; val cy = height / 2f
-        val r = minOf(cx, cy) - dp(3f)
+        // The circle sits above a strip for its words, so the reading never crosses a ring.
+        val fm = strong.fontMetrics
+        val strip = fm.descent - fm.ascent + dp(4f)
+        val cx = width / 2f; val cy = (height - strip) / 2f
+        val r = (minOf(cx, cy) - dp(3f)).coerceAtLeast(dp(8f))
         canvas.drawCircle(cx, cy, r, ring)
         canvas.drawCircle(cx, cy, r / 2f, ring)
         canvas.drawLine(cx - r, cy, cx + r, cy, ring)
         canvas.drawLine(cx, cy - r, cx, cy + r, ring)
         text.textAlign = Paint.Align.LEFT
         canvas.drawText("1 g", cx + r * 0.72f, cy - r * 0.72f, text)
-        strong.textAlign = Paint.Align.CENTER
+        // Centred in the strip under the circle.
+        val baseline = height - strip / 2f - (fm.ascent + fm.descent) / 2f
         when (mode) {
             Mode.LIVE -> {
                 // One g at the outer ring; beyond it the dot waits on the edge.
@@ -410,11 +416,10 @@ class GMeterView @JvmOverloads constructor(context: Context, attrs: AttributeSet
                 dot.alpha = 255
                 canvas.drawCircle(x(side), y(forward), dp(5f), dot)
                 val total = kotlin.math.sqrt(forward * forward + side * side)
-                strong.textAlign = Paint.Align.LEFT
-                canvas.drawText(String.format(Locale.US, "%.2f g", total), dp(2f), height - dp(3f), strong)
+                canvas.drawText(String.format(Locale.US, "%.2f g", total), cx, baseline, strong)
             }
-            Mode.LEARNING -> canvas.drawText("Learning", cx, cy + r / 2f + dp(4f), strong)
-            Mode.NO_SENSOR -> canvas.drawText("N/A", cx, cy + r / 2f + dp(4f), strong)
+            Mode.LEARNING -> canvas.drawText("Learning", cx, baseline, strong)
+            Mode.NO_SENSOR -> canvas.drawText("N/A", cx, baseline, strong)
             Mode.OFF -> {}
         }
     }
