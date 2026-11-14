@@ -4659,12 +4659,12 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   const dur = m => m >= 60 ? `${Math.floor(m / 60)} h` + (m % 60 ? ` ${m % 60} min` : "") : `${m} min`;
   const draw = (cv, pts) => {
     const dpr = devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight; cv.width = w * dpr; cv.height = h * dpr;
-    const g = cv.getContext("2d"); g.scale(dpr, dpr); const cs = getComputedStyle(document.body), acc = cs.getPropertyValue("--accent").trim() || "#4ade80", dim = "rgba(150,150,150,.8)";
+    const g = cv.getContext("2d"); g.scale(dpr, dpr); const cs = getComputedStyle(cv), acc = cs.getPropertyValue("--accent").trim() || "#4ade80", dim = "rgba(150,150,150,.8)";
     const padL = 4, padR = 36, padT = 10, padB = 20, W = w - padL - padR, H = h - padT - padB;
     let lo = Math.floor(Math.min(...pts.map(p => p[1])) / 5) * 5, hi = Math.ceil(Math.max(...pts.map(p => p[1])) / 5) * 5;
     if (hi - lo < 10) { const m = (lo + hi) / 2; lo = m - 5; hi = m + 5; } lo = Math.max(0, lo); hi = Math.max(lo + 10, Math.min(100, hi));
     const t0 = pts[0][0], span = Math.max(1, pts[pts.length - 1][0] - t0), x = t => padL + W * (t - t0) / span, y = v => padT + H * (1 - (v - lo) / (hi - lo));
-    g.font = "12px " + (getComputedStyle(document.body).getPropertyValue("--ui").trim() || "sans-serif"); g.fontVariantNumeric = "tabular-nums"; g.fillStyle = dim; g.strokeStyle = "rgba(150,150,150,.25)"; g.lineWidth = 1;
+    g.font = "12px " + (getComputedStyle(cv).getPropertyValue("--ui").trim() || "sans-serif"); g.fontVariantNumeric = "tabular-nums"; g.fillStyle = dim; g.strokeStyle = "rgba(150,150,150,.25)"; g.lineWidth = 1;
     [lo, (lo + hi) / 2, hi].forEach(v => { g.beginPath(); g.moveTo(padL, y(v)); g.lineTo(padL + W, y(v)); g.stroke(); g.fillText(v.toFixed(0) + "%", padL + W + 6, y(v) + 4); });
     g.beginPath(); g.moveTo(x(t0), padT + H); pts.forEach(p => g.lineTo(x(p[0]), y(p[1]))); g.lineTo(x(pts[pts.length - 1][0]), padT + H); g.closePath(); g.globalAlpha = .16; g.fillStyle = acc; g.fill(); g.globalAlpha = 1;
     g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(x(p[0]), y(p[1])) : g.moveTo(x(p[0]), y(p[1]))); g.strokeStyle = acc; g.lineWidth = 2.5; g.lineJoin = "round"; g.stroke();
