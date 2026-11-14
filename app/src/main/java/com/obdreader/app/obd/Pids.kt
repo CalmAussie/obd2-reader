@@ -83,6 +83,8 @@ object Pids {
         Pid(0x51, "Fuel type", "", 0, 1, false, 0.0, 23.0, null) { it[0].toDouble() },
         Pid(0x52, "Ethanol", "%", 0, 1, false, 0.0, 100.0, null) { it[0] * 100.0 / 255.0 },
         Pid(0x59, "Fuel rail pressure (absolute)", "kPa", 0, 2, false, 0.0, 200_000.0, null) { (it[0] * 256 + it[1]) * 10.0 },
+        // Hybrids and electric cars: the high-voltage battery's remaining charge, as the car reports it.
+        Pid(0x5B, "Hybrid/EV battery remaining", "%", 0, 1, false, 0.0, 100.0, null) { it[0] * 100.0 / 255.0 },
         Pid(0x5E, "Fuel rate", "L/h", 1, 2, false, 0.0, 50.0, null) { (it[0] * 256 + it[1]) / 20.0 },
         Pid(0x61, "Driver demand torque", "%", 0, 1, false, -25.0, 100.0, null) { it[0] - 125.0 },
         Pid(0x62, "Actual torque", "%", 0, 1, false, -25.0, 100.0, null) { it[0] - 125.0 },
