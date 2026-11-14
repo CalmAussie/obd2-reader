@@ -59,8 +59,9 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
 
     /** The themed context for the chosen style; rebuilt (with fresh views) when the style or day/night changes. */
     private fun context(): Context {
-        val id = AppThemes.byId(themeOverride ?: AppPrefs.of(car).getString(AppPrefs.THEME, null)).id
         val dark = isNight()
+        // With day and night switching on, the car's own day/night signal picks the day or night style.
+        val id = themeOverride?.let { AppThemes.byId(it).id } ?: com.obdreader.app.ui.StyleClock.carStyleId(car, dark)
         if (id != themeId || dark != night || !::ctx.isInitialized) {
             themeId = id; night = dark
             var theme = AppThemes.byId(id)

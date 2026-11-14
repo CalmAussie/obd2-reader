@@ -52,6 +52,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 - **Live data:** speed, revs, coolant, fuel, throttle, boost, battery and more, gliding smoothly. Readings past their limit turn red. Units in km/h or mph, °C or °F, and kPa, psi or bar.
 - **More readings to graph:** fuel trims, oxygen sensors, fuel and fuel rail pressure, EGR, catalyst and exhaust temperatures, fuel rate, ethanol, torque and more, whichever your car reports. Fuel trims and oxygen sensors say what they tell you. Graphs sorts every reading into tabs by part of the car, up to six at once.
 - **13 styles:** from racing liveries to an 80s digital dash. Every style works in landscape too.
+- **Day and night:** a day style and a night style, switched at sunrise and sunset, with the phone's dark mode or by the light sensor.
 - **Android Auto:** your readings and trouble codes on the car's screen, drawn in your style. You choose which readings it shows.
 - **Picture-in-picture (optional):** keep your readings in a small window over other apps.
 - **Home-screen widget:** live readings while connected, the last drive and battery reading when not.
@@ -76,6 +77,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 - **Deeper checks:** readiness monitors, self-test results, and codes from ABS, power steering and other modules (on CAN cars, and on 1996–2007 Fords and Mazdas). Airbag modules are never asked. On Fords and Mazdas it can also read the second network on pins 3 and 11, with adapters that support it such as OBDLink MX+. On 1996–2000 Volvo 850, S70, V70, C70 and XC70 it reads Volvo's own modules and the true mileage stored in the instrument cluster.
 - **VIN:** reads your car's VIN. You can enter the one on your plate if they differ. **Hide VIN** (hidden by default) keeps it off the screen, reports, shared files and logs, or hides just the last six characters.
 - **What your car reports:** every reading your car offers, grouped by part of the car with its value now.
+- **Back up and restore:** settings, history and recorded drives in one file you keep, to move to a new phone. Routes and VIN only if you choose.
 
 ## Styles
 
@@ -149,6 +151,7 @@ Videos are saved to **Movies → OBD2 Reader**.
 - **Read-only:** the app never clears codes or changes anything in your car. Anything that isn't a read is blocked.
 - **No account, no tracking:** nothing is sent to the developer. The only internet use is the update check, from GitHub (about once a day, in the background too while notifications are on).
 - **Your location stays on your phone:** it's only saved inside a drive you choose to record with its route.
+- **Backups go only where you put them:** the app never sends a backup anywhere, and restores only what it made itself.
 - **Check your download is genuine:** every release from 2.5.0 on is signed with the same certificate. Its SHA-256 fingerprint is `67eb2dd363dd994f7fe4b3a747564d2c2ccb52e5ad4953c3391bd24e412d04c2`. Releases up to 2.4.4 used an earlier certificate (`77ad52081183e8001d6235e096dbaae6a8728c283341402bdb60852b49602714`), whose key was lost, which is why 2.5.0 needs a one-time reinstall. To check an APK on a computer with the Android SDK, run `apksigner verify --print-certs OBD2Reader.apk` and compare the "certificate SHA-256 digest" line. Android also refuses any update signed with a different certificate.
 
 ## Feedback
