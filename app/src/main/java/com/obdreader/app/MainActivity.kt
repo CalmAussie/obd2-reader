@@ -858,14 +858,15 @@ open class MainActivity : AppCompatActivity() {
         })
         val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; background = tripTile(); setPadding(0, dp(12f).toInt(), 0, dp(12f).toInt()) }
         listOf(R.string.g_trip_brake to m.peakBrake, R.string.g_trip_accel to m.peakAccel, R.string.g_trip_side to m.peakSide).forEach { (label, g) ->
+            // Each line fills its cell's width, so the text itself is centred, not just the line.
             row.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER_HORIZONTAL
                 addView(TextView(context).apply {
-                    text = TripSummary.Motion.g(g); setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = displayTypeface(); fontFeatureSettings = "tnum"
+                    text = TripSummary.Motion.g(g); gravity = Gravity.CENTER_HORIZONTAL; setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); typeface = displayTypeface(); fontFeatureSettings = "tnum"
                     setTextColor(themeColor(R.attr.obdTextPrimary))
                 })
-                addView(TextView(context).apply { setText(label); maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+                addView(TextView(context).apply { setText(label); gravity = Gravity.CENTER_HORIZONTAL; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
             }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         }
         body.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
@@ -941,10 +942,10 @@ open class MainActivity : AppCompatActivity() {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER_HORIZONTAL
                 addView(TextView(context).apply {
-                    text = s?.toString() ?: getString(R.string.dash); setTextSize(TypedValue.COMPLEX_UNIT_SP, 26f); typeface = displayTypeface()
+                    text = s?.toString() ?: getString(R.string.dash); gravity = Gravity.CENTER_HORIZONTAL; setTextSize(TypedValue.COMPLEX_UNIT_SP, 26f); typeface = displayTypeface()
                     setTextColor(s?.let { scoreColour(it) } ?: themeColor(R.attr.obdTextSecondary))
                 })
-                addView(TextView(context).apply { text = style.label; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
+                addView(TextView(context).apply { text = style.label; gravity = Gravity.CENTER_HORIZONTAL; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
             }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         }
         body.addView(scores, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
