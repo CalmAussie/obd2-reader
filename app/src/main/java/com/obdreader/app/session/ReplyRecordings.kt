@@ -6,7 +6,9 @@ import com.obdreader.app.obd.ReplyRecorder
 import com.obdreader.app.obd.ReplyRecording
 import com.obdreader.app.obd.VinPrivacy
 import java.io.File
+import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -81,17 +83,31 @@ object ReplyRecordings {
         return file to recording
     }
 
-    /** "13 Nov, 10:42 · 2012 Ford Focus · 24 KB" for the list, from the file's first lines only. */
+    /** "Fri 13 Nov, 10:42 am · 2012 Ford Focus" for the list, from the file's first lines only. */
     fun describe(file: File): String {
-        val made = SimpleDateFormat("d MMM, h:mm a", Locale.getDefault()).format(Date(file.lastModified()))
+        val made = dateText(Date(file.lastModified()))
         val car = try {
             file.bufferedReader(Charsets.US_ASCII).useLines { lines ->
                 lines.take(5).firstOrNull { it.startsWith("# car ") }?.removePrefix("# car ")
                     ?.filter { it in ' '..'~' }?.trim()?.take(40)?.takeIf { it.isNotEmpty() }
             }
         } catch (e: Exception) { null }
-        val size = String.format(Locale.getDefault(), "%,d KB", (file.length() + 1023) / 1024)
-        return listOfNotNull(made, car, size).joinToString(" · ")
+        return listOfNotNull(made, car).joinToString(" · ")
+    }
+
+    /** "24 KB": the file's size, rounded up. */
+    fun size(file: File): String = String.format(Locale.getDefault(), "%,d KB", (file.length() + 1023) / 1024)
+
+    /** "Fri 13 Nov, 10:42 am", as drive history shows dates, with the year added when it isn't this year. */
+    fun dateText(date: Date): String {
+        val cal = Calendar.getInstance(); val thisYear = cal.get(Calendar.YEAR); cal.time = date
+        val day = SimpleDateFormat(if (cal.get(Calendar.YEAR) == thisYear) "EEE d MMM" else "EEE d MMM yyyy", Locale.getDefault()).format(date)
+        return day + ", " + DateFormat.getTimeInstance(DateFormat.SHORT).format(date)
+    }
+
+    /** When the recording was made ("2026-11-13 10:42" in the file) in [dateText]'s words, or null if it can't be read. */
+    fun madeText(made: String?): String? = made?.let {
+        try { SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).apply { isLenient = false }.parse(it)?.let(::dateText) } catch (e: Exception) { null }
     }
 
     /** "13 Nov, 10:42": the name a replay goes by. */
