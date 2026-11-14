@@ -37,6 +37,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.drawToBitmap
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.WindowInsetsCompat
@@ -261,6 +262,26 @@ open class MainActivity : AppCompatActivity() {
 
     private val prefs by lazy { getSharedPreferences(AppPrefs.FILE, MODE_PRIVATE) }
 
+    /** The style this screen is drawn in: the chosen one, or the day or night one with switching on. */
+    private var shownStyle: String? = null
+    /** When the screen was last touched: a style change waits while someone's using the screen. */
+    private var lastTouchMs = 0L
+    private var styleWatch: kotlinx.coroutines.Job? = null
+    private var lightListener: android.hardware.SensorEventListener? = null
+
+    /** Back up: where the user chose to save the file. */
+    private var backupRoutes = false
+    private var backupVin = false
+    private val backupLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument(com.obdreader.app.obd.BackupFile.MIME)) { uri ->
+            if (uri != null) writeBackup(uri)
+        }
+    /** Restore: the backup file the user picked. */
+    private val restoreLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) readBackup(uri)
+        }
+
     private val bluetoothAdapter: BluetoothAdapter? by lazy {
         getSystemService(BluetoothManager::class.java)?.adapter
     }
@@ -344,8 +365,9 @@ open class MainActivity : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // The chosen theme must be set before any view is created.
-        setTheme(AppThemes.byId(prefs.getString(PREF_THEME, null)).style)
+        // The chosen theme (or the day or night one) must be set before any view is created.
+        shownStyle = com.obdreader.app.ui.StyleClock.styleId(this)
+        setTheme(AppThemes.byId(shownStyle).style)
         AppPrefs.applyUnits(prefs)
         super.onCreate(savedInstanceState)
         // While the app is open on screen, the phone doesn't lock, connected or not. Android drops
@@ -360,6 +382,7 @@ open class MainActivity : AppCompatActivity() {
         }
         setContentView(R.layout.activity_main)
         findViewById<View>(R.id.root).applyTitleFonts()
+        fadeFromLastStyle()
 
         // Edge-to-edge: pages pad below the status bar; the bottom bar pads itself above the nav bar.
         val pages = listOf(findViewById<View>(R.id.content), findViewById<View>(R.id.contentDiag), findViewById<View>(R.id.contentGraphs))
@@ -583,6 +606,7 @@ open class MainActivity : AppCompatActivity() {
         // The car comes first: it decides how fault codes are explained, the redline and the protocol.
         // Checked here rather than only on a fresh start, so it comes back if the screen is recreated.
         if (needsCar() && !carPickerShowing) showCarPicker(firstRun = true)
+        else if (reopenAppearance) { reopenAppearance = false; showThemePicker() }
     }
 
     // ---------- Driving score ----------
@@ -1075,6 +1099,7 @@ open class MainActivity : AppCompatActivity() {
             Triple("car", "Car and connection", listOf(R.id.carRow, R.id.vinPrivacyRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.repliesRow, R.id.logCard)),
             Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.clearedRow, R.id.historyRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
             Triple("display", "Display and readings", listOf(R.id.unitsRow, R.id.slotsRow, R.id.widgetRow, R.id.autoRow, R.id.pipRow, R.id.appIconRow)),
+            Triple("backup", "Back up", listOf(R.id.backupRow)),
             Triple("help", "Help and feedback", listOf(R.id.helpRow, R.id.reportRow, R.id.ideaRow, R.id.updatesRow)),
         )
         val parent = findViewById<View>(R.id.carRow).parent as ViewGroup
@@ -1187,6 +1212,7 @@ open class MainActivity : AppCompatActivity() {
         row(R.id.customRow, getString(R.string.custom_title), getString(R.string.custom_help)) { showCustomReadings() }
         row(R.id.historyRow, getString(R.string.history_codes_title), getString(R.string.history_codes_help)) { showCodeHistory() }
         row(R.id.vinPrivacyRow, getString(R.string.vin_privacy_title), vinMode().label) { showVinPrivacy() }
+        row(R.id.backupRow, getString(R.string.backup_title), getString(R.string.backup_help)) { showBackup() }
         row(R.id.repliesRow, getString(R.string.replies_title), repliesHelp()) { showReplies() }
     }
 
@@ -2320,7 +2346,8 @@ open class MainActivity : AppCompatActivity() {
                     val mineStats = com.obdreader.app.obd.RouteCompare.Stats.join(mineLines.mapNotNull { com.obdreader.app.obd.RouteCompare.Stats.parse(it) })
                     val history = tripHistory()
                     LogRecorder.saved(this@MainActivity).asSequence()
-                        .filter { it !in mineFiles && (fileStart(it) ?: Long.MAX_VALUE) < trip.startedAt }
+                        // A very long recording (hours) isn't read just to compare routes.
+                        .filter { it !in mineFiles && (fileStart(it) ?: Long.MAX_VALUE) < trip.startedAt && it.length() <= COMPARE_MAX_BYTES }
                         .take(60)
                         .mapNotNull { f ->
                             val lines = f.readLines()
@@ -2335,7 +2362,8 @@ open class MainActivity : AppCompatActivity() {
                             start to com.obdreader.app.obd.RouteCompare.compare(mineStats, stats, score(trip, mineStats), score(before, stats))
                         }
                         .firstOrNull()
-                } catch (e: Exception) { android.util.Log.w("OBD2Route", "compare: ${e.message}"); null }
+                } catch (e: Exception) { android.util.Log.w("OBD2Route", "compare: ${e.message}"); null
+                } catch (e: OutOfMemoryError) { android.util.Log.w("OBD2Route", "compare: too big to read"); null }
             } ?: return@launch
             val (foundAt, lines) = result
             android.util.Log.i("OBD2Route", "same route as the drive of $foundAt: ${lines.joinToString { it.label + " " + it.change }}")
@@ -2380,8 +2408,9 @@ open class MainActivity : AppCompatActivity() {
      * The route of [trip], from the recording(s) made during it with the route saved. Location
      * lives only in those files, so with no recording there's simply no outline.
      */
-    private fun routeFor(trip: TripSummary): com.obdreader.app.obd.Route? =
+    private fun routeFor(trip: TripSummary): com.obdreader.app.obd.Route? = try {
         com.obdreader.app.obd.Route.join(tripFiles(trip).map { com.obdreader.app.obd.Route.parse(it.readLines()) }).takeIf { !it.isEmpty }
+    } catch (e: OutOfMemoryError) { null }
 
     /** When a recording started, from its name. */
     private fun fileStart(f: java.io.File): Long? = try {
@@ -2913,7 +2942,7 @@ open class MainActivity : AppCompatActivity() {
     /** Background and size for the overlay video, then makes it. */
     private fun showOverlayOptions(file: java.io.File) {
         if (LogRecorder.active.value?.file == file) { toast("This drive is still recording. Stop recording first."); return }
-        val drive = DriveTrack.parse(file.readLines())
+        val drive = try { DriveTrack.parse(file.readLines()) } catch (e: OutOfMemoryError) { toast("This drive is too long to make a video on this phone."); return }
         if (drive == null || drive.duration < 2.0) { toast("This drive is too short to make a video."); return }
         val backgrounds = listOf(
             Triple("Green screen", "Remove it with your editor's chroma key (CapCut, Premiere, DaVinci Resolve…)", android.graphics.Color.rgb(0, 255, 0)),
@@ -4230,6 +4259,7 @@ open class MainActivity : AppCompatActivity() {
      * whatever is under the finger, so a button under it isn't pressed.
      */
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        lastTouchMs = System.currentTimeMillis()
         if (draggedGraph != null) { swipeTracking = false; swiping = false; return super.dispatchTouchEvent(ev) }
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -4278,6 +4308,7 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        startStyleWatch()
         showBatteryNight() // the overnight readings may have moved on while the app was away
         Updater.showPrompt = { confirm -> showInstallPrompt(confirm) }
         Updater.waitingPrompt?.let { Updater.waitingPrompt = null; showInstallPrompt(it) }
@@ -4286,6 +4317,7 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
+        stopStyleWatch()
         Updater.showPrompt = null
         Updater.showProblem = null
         super.onPause()
@@ -4567,7 +4599,15 @@ open class MainActivity : AppCompatActivity() {
 
     private fun showThemePicker() {
         val sheet = BottomSheetDialog(this)
-        val current = AppThemes.byId(prefs.getString(PREF_THEME, null))
+        val mode = com.obdreader.app.ui.StyleClock.mode(prefs)
+        val auto = mode != com.obdreader.app.obd.DayNight.Mode.OFF
+        // With day and night switching on, the list sets the day or the night style; it starts on the one showing now.
+        var slot = when {
+            !auto -> PREF_THEME
+            com.obdreader.app.ui.StyleClock.isNight(this) -> AppPrefs.STYLE_NIGHT
+            else -> AppPrefs.STYLE_DAY
+        }
+        fun selectedId() = AppThemes.byId(prefs.getString(slot, null) ?: prefs.getString(PREF_THEME, null)).id
         val pad = dp(20f).toInt()
         val list = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -4583,8 +4623,40 @@ open class MainActivity : AppCompatActivity() {
             setText(R.string.appearance_subtitle)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setTextColor(themeColor(R.attr.obdTextSecondary))
-            setPadding(0, dp(4f).toInt(), 0, dp(16f).toInt())
+            setPadding(0, dp(4f).toInt(), 0, dp(4f).toInt())
         })
+
+        // Day and night: off, or switching between two styles.
+        sheetRow(list, getString(R.string.day_night_title), mode.label) { sheet.dismiss(); showDayNight() }
+        val cards = ArrayList<Triple<AppThemes.AppTheme, MaterialCardView, ImageView>>()
+        fun markSelected() {
+            val id = selectedId()
+            cards.forEach { (theme, card, check) ->
+                val on = theme.id == id
+                card.strokeWidth = dp(if (on) 2f else 1f).toInt()
+                card.strokeColor = themeColor(if (on) R.attr.obdAccent else R.attr.obdOutline)
+                check.visibility = if (on) View.VISIBLE else View.INVISIBLE
+            }
+        }
+        if (auto) {
+            list.addView(TextView(this).apply {
+                text = dayNightNow(mode); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setLineSpacing(0f, 1.15f)
+                setTextColor(themeColor(R.attr.obdTextSecondary)); setPadding(dp(2f).toInt(), dp(8f).toInt(), 0, 0)
+            })
+            val toggle = MaterialButtonToggleGroup(this).apply { isSingleSelection = true; isSelectionRequired = true }
+            val dayBtn = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply { id = View.generateViewId(); text = getString(R.string.day_style) }
+            val nightBtn = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply { id = View.generateViewId(); text = getString(R.string.night_style) }
+            toggle.addView(dayBtn, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            toggle.addView(nightBtn, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            toggle.check(if (slot == AppPrefs.STYLE_NIGHT) nightBtn.id else dayBtn.id)
+            toggle.addOnButtonCheckedListener { _, id, checked ->
+                if (!checked) return@addOnButtonCheckedListener
+                slot = if (id == nightBtn.id) AppPrefs.STYLE_NIGHT else AppPrefs.STYLE_DAY
+                markSelected()
+            }
+            list.addView(toggle, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(12f).toInt() })
+        }
+        list.addView(View(this), LinearLayout.LayoutParams(1, dp(8f).toInt()))
 
         for (theme in AppThemes.ALL) {
             if (theme == AppThemes.ALL.first() || theme.ownLayout && theme == AppThemes.ALL.first { it.ownLayout }) {
@@ -4596,7 +4668,6 @@ open class MainActivity : AppCompatActivity() {
                     setPadding(dp(2f).toInt(), dp(10f).toInt(), 0, dp(8f).toInt())
                 })
             }
-            val selected = theme.id == current.id
             val row = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
@@ -4618,31 +4689,30 @@ open class MainActivity : AppCompatActivity() {
                     setTextColor(themeColor(R.attr.obdTextSecondary))
                 })
             }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            if (selected) {
-                row.addView(ImageView(this).apply {
-                    setImageResource(R.drawable.ic_check)
-                    imageTintList = ColorStateList.valueOf(themeColor(R.attr.obdAccent))
-                    contentDescription = "Selected"
-                }, LinearLayout.LayoutParams(dp(24f).toInt(), dp(24f).toInt()))
+            val check = ImageView(this).apply {
+                setImageResource(R.drawable.ic_check)
+                imageTintList = ColorStateList.valueOf(themeColor(R.attr.obdAccent))
+                contentDescription = "Selected"
             }
+            row.addView(check, LinearLayout.LayoutParams(dp(24f).toInt(), dp(24f).toInt()))
             val card = MaterialCardView(this).apply {
                 shapeAppearanceModel = themeShape()
                 cardElevation = 0f
                 setCardBackgroundColor(themeColor(R.attr.obdSurfaceHigh))
-                strokeWidth = dp(if (selected) 2f else 1f).toInt()
-                strokeColor = themeColor(if (selected) R.attr.obdAccent else R.attr.obdOutline)
                 isClickable = true
                 isFocusable = true
                 addView(row)
                 setOnClickListener {
                     sheet.dismiss()
-                    if (!selected) applyTheme(theme)
+                    if (theme.id != selectedId()) applyTheme(theme, slot)
                 }
             }
+            cards += Triple(theme, card, check)
             list.addView(card, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 bottomMargin = dp(10f).toInt()
             })
         }
+        markSelected()
 
         sheet.setContentView(androidx.core.widget.NestedScrollView(this).apply { addView(list) })
         sheet.behavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -4650,11 +4720,260 @@ open class MainActivity : AppCompatActivity() {
         sheet.show()
     }
 
-    private fun applyTheme(theme: AppThemes.AppTheme) {
-        prefs.edit().putString(PREF_THEME, theme.id).apply()
-        // Redraws every screen in the new theme. The car connection lives outside this
-        // screen, so it carries on uninterrupted.
+    /** Saves a style: the chosen one, or with switching on, the day or night one ([slot]). */
+    private fun applyTheme(theme: AppThemes.AppTheme, slot: String = PREF_THEME) {
+        prefs.edit().putString(slot, theme.id).apply()
+        // Redraws every screen in the new style, if it's the one showing now. The car connection lives
+        // outside this screen, so it carries on uninterrupted.
+        if (com.obdreader.app.ui.StyleClock.styleId(this) != shownStyle) switchStyle()
+        else toast(getString(if (slot == AppPrefs.STYLE_NIGHT) R.string.night_style_set else R.string.day_style_set, theme.name))
+    }
+
+    // ---------- Day and night styles ----------
+
+    /** Day and night: off, at sunset and sunrise, with the phone's dark mode, or by the light sensor. */
+    private fun showDayNight() {
+        val modes = com.obdreader.app.obd.DayNight.Mode.entries
+        val current = com.obdreader.app.ui.StyleClock.mode(prefs)
+        choiceSheet(getString(R.string.day_night_title)) { body, sheet ->
+            sheetNote(body, getString(R.string.day_night_intro))
+            sheetOptions(body, modes.map { it.label }, modes.indexOf(current)) { i ->
+                sheet.dismiss()
+                setDayNight(modes[i])
+            }
+            modes.drop(1).forEach { sheetNote(body, "${it.label}: ${it.help}") }
+            if (getSystemService(android.hardware.SensorManager::class.java)?.getDefaultSensor(android.hardware.Sensor.TYPE_LIGHT) == null) {
+                sheetNote(body, getString(R.string.day_night_no_sensor))
+            }
+            sheetNote(body, getString(R.string.day_night_privacy))
+            sheetNote(body, getString(R.string.day_night_car))
+        }
+    }
+
+    private fun setDayNight(mode: com.obdreader.app.obd.DayNight.Mode) {
+        val edit = prefs.edit().putString(AppPrefs.STYLE_AUTO, mode.key)
+        val showing = AppThemes.byId(shownStyle)
+        if (mode == com.obdreader.app.obd.DayNight.Mode.OFF) {
+            // Off: keep the style showing now.
+            edit.putString(PREF_THEME, showing.id)
+        } else if (prefs.getString(AppPrefs.STYLE_DAY, null) == null || prefs.getString(AppPrefs.STYLE_NIGHT, null) == null) {
+            // First time on: the chosen style for whichever it suits, and a light or dark one for the other.
+            val light = android.view.ContextThemeWrapper(this, showing.style).themeBool(R.attr.obdIsLight)
+            edit.putString(AppPrefs.STYLE_DAY, if (light) showing.id else if (showing.ownLayout) "rally" else "pitlane")
+            edit.putString(AppPrefs.STYLE_NIGHT, if (light) "asphalt" else showing.id)
+        }
+        edit.apply()
+        restartStyleWatch()
+        // Back to the Style sheet, to pick the day and night styles (after the redraw, if the style changes now).
+        if (com.obdreader.app.ui.StyleClock.styleId(this) != shownStyle) { reopenAppearance = true; switchStyle() } else showThemePicker()
+    }
+
+    /** "Now: day style. Night style from 19:42." */
+    private fun dayNightNow(mode: com.obdreader.app.obd.DayNight.Mode): String {
+        val night = com.obdreader.app.ui.StyleClock.isNight(this)
+        val now = getString(if (night) R.string.day_night_now_night else R.string.day_night_now_day)
+        val time = android.text.format.DateFormat.getTimeFormat(this)
+        return when (mode) {
+            com.obdreader.app.obd.DayNight.Mode.SUN -> {
+                val place = com.obdreader.app.ui.StyleClock.place(this)
+                val next = com.obdreader.app.obd.DayNight.nextChange(System.currentTimeMillis(), place.latitude, place.longitude)
+                now + (next?.let { " " + getString(if (night) R.string.day_night_next_day else R.string.day_night_next_night, time.format(java.util.Date(it))) } ?: "") +
+                    if (place.exact) "" else " " + getString(R.string.day_night_rough)
+            }
+            com.obdreader.app.obd.DayNight.Mode.PHONE -> now + " " + getString(if (night) R.string.day_night_phone_dark else R.string.day_night_phone_light)
+            com.obdreader.app.obd.DayNight.Mode.LIGHT -> now + " " + getString(if (night) R.string.day_night_light_dark else R.string.day_night_light_bright)
+            else -> ""
+        }
+    }
+
+    /** Last light reading, fed again every few seconds: the sensor only reports changes, and a switch waits for the light to stay changed. */
+    private var lastLux: Float? = null
+
+    /** While the screen is open: the light sensor (if that's the mode) and a check every few seconds for sunset, sunrise or the light. */
+    private fun startStyleWatch() {
+        stopStyleWatch()
+        val mode = com.obdreader.app.ui.StyleClock.mode(prefs)
+        if (mode == com.obdreader.app.obd.DayNight.Mode.LIGHT) {
+            val sm = getSystemService(android.hardware.SensorManager::class.java)
+            val sensor = sm?.getDefaultSensor(android.hardware.Sensor.TYPE_LIGHT)
+            if (sm != null && sensor != null) {
+                val l = object : android.hardware.SensorEventListener {
+                    override fun onSensorChanged(e: android.hardware.SensorEvent) {
+                        val lux = e.values.firstOrNull() ?: return
+                        lastLux = lux
+                        val before = com.obdreader.app.ui.StyleClock.light.isNight
+                        if (com.obdreader.app.ui.StyleClock.light.feed(lux, android.os.SystemClock.elapsedRealtime()) != before) checkStyle()
+                    }
+                    override fun onAccuracyChanged(sensor: android.hardware.Sensor?, accuracy: Int) {}
+                }
+                sm.registerListener(l, sensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL)
+                lightListener = l
+            }
+        }
+        styleWatch = lifecycleScope.launch {
+            var tick = 0
+            while (true) {
+                lastLux?.let { lux ->
+                    val before = com.obdreader.app.ui.StyleClock.light.isNight
+                    if (com.obdreader.app.ui.StyleClock.light.feed(lux, android.os.SystemClock.elapsedRealtime()) != before) checkStyle()
+                }
+                // Every 30 s: has the sun set (or risen), or a switch waited for the screen to be left alone?
+                if (tick++ % 6 == 0) checkStyle()
+                delay(5_000)
+            }
+        }
+    }
+
+    private fun stopStyleWatch() {
+        styleWatch?.cancel(); styleWatch = null
+        lightListener?.let { getSystemService(android.hardware.SensorManager::class.java)?.unregisterListener(it) }
+        lightListener = null
+        lastLux = null
+    }
+
+    private fun restartStyleWatch() { if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) startStyleWatch() }
+
+    /**
+     * Switches to the day or night style if it's time. It waits while the screen is in use (touched
+     * in the last few seconds, a sheet or dialog open, or the floating window), so nothing changes
+     * under a finger; the next check tries again.
+     */
+    private fun checkStyle() {
+        val want = com.obdreader.app.ui.StyleClock.styleId(this)
+        if (want == shownStyle) return
+        if (isInPictureInPictureMode || !hasWindowFocus() || System.currentTimeMillis() - lastTouchMs < 8_000) return
+        android.util.Log.i("OBD2Style", "day/night: $shownStyle -> $want")
+        switchStyle()
+    }
+
+    /** Redraws the screen in the style that should show now, fading over from the old one (no flash). */
+    private fun switchStyle() {
+        fadeFrom = try { window.decorView.drawToBitmap() } catch (e: Exception) { null }
+        com.obdreader.app.widget.ObdWidget.refresh(this)
         recreate()
+    }
+
+    /** After [switchStyle]: lays the old screen's picture over the new one and fades it out. */
+    private fun fadeFromLastStyle() {
+        val shot = fadeFrom ?: return
+        fadeFrom = null
+        val decor = window.decorView as? ViewGroup ?: return
+        val cover = ImageView(this).apply {
+            setImageBitmap(shot); scaleType = ImageView.ScaleType.FIT_XY
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }
+        decor.addView(cover, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        cover.animate().alpha(0f).setStartDelay(120).setDuration(900).withEndAction { decor.removeView(cover) }.start()
+    }
+
+    // ---------- Back up and restore ----------
+
+    /** Back up and restore: what goes in a backup, the routes and VIN choices, then the file picker. */
+    private fun showBackup() {
+        lifecycleScope.launch {
+            val summary = withContext(Dispatchers.IO) { com.obdreader.app.session.Backups.summary(applicationContext) }
+            backupVin = com.obdreader.app.session.Backups.vinByDefault(this@MainActivity)
+            choiceSheet(getString(R.string.backup_title)) { body, sheet ->
+                sheetNote(body, getString(R.string.backup_intro))
+                sheetNote(body, resources.getQuantityString(R.plurals.backup_drives, summary.drives, summary.drives,
+                    android.text.format.Formatter.formatShortFileSize(this@MainActivity, summary.driveBytes)))
+                if (summary.anyRoute || summary.hasVin) sheetHeading(body, getString(R.string.backup_include))
+                if (summary.anyRoute) body.addView(MaterialSwitch(this@MainActivity).apply {
+                    text = getString(R.string.backup_routes); isChecked = backupRoutes
+                    setOnCheckedChangeListener { _, on -> backupRoutes = on }
+                })
+                if (summary.hasVin) body.addView(MaterialSwitch(this@MainActivity).apply {
+                    text = getString(R.string.backup_vin); isChecked = backupVin
+                    setOnCheckedChangeListener { _, on -> backupVin = on }
+                })
+                sheetNote(body, getString(R.string.backup_privacy))
+                sheetButtons(body,
+                    getString(R.string.restore) to {
+                        sheet.dismiss()
+                        if (ObdSession.isActive || LogRecorder.active.value != null) toast(getString(R.string.restore_disconnect_first))
+                        else restoreLauncher.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream"))
+                    },
+                    getString(R.string.back_up) to { sheet.dismiss(); backupLauncher.launch(com.obdreader.app.session.Backups.fileName(System.currentTimeMillis())) },
+                )
+            }
+        }
+    }
+
+    private fun writeBackup(uri: android.net.Uri) {
+        val routes = backupRoutes; val vin = backupVin
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) { runCatching { com.obdreader.app.session.Backups.write(applicationContext, uri, routes, vin) } }
+            android.util.Log.i("OBD2Backup", "backup written: ${result.isSuccess}")
+            toast(result.fold({ getString(R.string.backup_saved) }, { getString(R.string.backup_failed, it.message ?: "") }))
+        }
+    }
+
+    private fun readBackup(uri: android.net.Uri) {
+        if (ObdSession.isActive || LogRecorder.active.value != null) { toast(getString(R.string.restore_disconnect_first)); return }
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) { runCatching { com.obdreader.app.session.Backups.read(applicationContext, uri) } }
+            result.onSuccess { showRestorePreview(it) }.onFailure { e ->
+                android.util.Log.i("OBD2Backup", "restore refused: ${e.message}")
+                withContext(Dispatchers.IO) { com.obdreader.app.session.Backups.discard(applicationContext) }
+                MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle(R.string.restore_refused_title)
+                    .setMessage((e as? com.obdreader.app.obd.BackupFile.BadBackup)?.message ?: getString(R.string.restore_unreadable))
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            }
+        }
+    }
+
+    /** What a backup holds, before anything on the phone changes; Restore asks to go ahead. */
+    private fun showRestorePreview(c: com.obdreader.app.obd.BackupFile.Contents) {
+        var restoring = false
+        val sheet = choiceSheet(getString(R.string.restore_title)) { body, sheet ->
+            val day = java.text.SimpleDateFormat("d MMM yyyy", Locale.getDefault())
+            sheetNote(body, getString(R.string.restore_made, c.info.madeAtMs?.let { day.format(java.util.Date(it)) } ?: "?", c.info.appVersion ?: "?"))
+            sheetHeading(body, getString(R.string.restore_contents))
+            val car = (c.value(AppPrefs.CAR_MAKE) as? String)?.let { make ->
+                VehicleCatalog.Car(make, c.value(AppPrefs.CAR_YEAR) as? Int ?: 0, c.value(AppPrefs.CAR_MODEL) as? String, c.value(AppPrefs.CAR_ENGINE) as? String).label
+            }
+            val theme = (c.value(AppPrefs.THEME) as? String)?.let { AppThemes.byId(it).name }
+            val auto = com.obdreader.app.obd.DayNight.mode(c.value(AppPrefs.STYLE_AUTO) as? String)
+            val custom = com.obdreader.app.obd.CustomReading.decodeAll(c.value(PREF_CUSTOM) as? String).size
+            val trips = com.obdreader.app.obd.TripHistory.parse(c.value(DriveScorer.PREF_TRIP_HISTORY) as? String).size
+            val codes = com.obdreader.app.obd.CodeHistory.parse(c.value(AppPrefs.CODE_HISTORY) as? String).size
+            val lines = listOfNotNull(
+                getString(R.string.restore_car, car ?: getString(R.string.restore_none)),
+                theme?.let { getString(R.string.restore_style, it) + if (auto != com.obdreader.app.obd.DayNight.Mode.OFF) " · " + getString(R.string.day_night_title) + ": " + auto.label.lowercase() else "" },
+                getString(R.string.restore_custom, custom),
+                getString(R.string.restore_trips, trips),
+                getString(R.string.restore_codes, codes),
+                getString(if (c.info.hasRoutes) R.string.restore_drives_routes else R.string.restore_drives, c.drives.size),
+                getString(if (c.has(AppPrefs.USER_VIN)) R.string.restore_vin_in else R.string.restore_vin_out),
+                // Where Connect looks for a Wi-Fi adapter: shown, since it changes where the app connects.
+                (c.value(AppPrefs.HOST) as? String)?.let { h -> getString(R.string.restore_wifi, h + ((c.value(AppPrefs.PORT) as? Int)?.let { ":$it" } ?: "")) },
+                getString(R.string.restore_settings, c.settings.size),
+                c.skipped.takeIf { it > 0 }?.let { getString(R.string.restore_skipped, it) },
+            )
+            lines.forEach { sheetNote(body, "• $it") }
+            sheetNote(body, getString(R.string.restore_what_happens))
+            sheetButtons(body,
+                getString(android.R.string.cancel) to { sheet.dismiss() },
+                getString(R.string.restore) to {
+                    restoring = true
+                    sheet.dismiss()
+                    lifecycleScope.launch {
+                        val done = withContext(Dispatchers.IO) { runCatching { com.obdreader.app.session.Backups.restore(applicationContext, c) } }
+                        done.onSuccess { r ->
+                            android.util.Log.i("OBD2Backup", "restored ${r.settings} settings, ${r.drivesAdded} drives added, ${r.drivesAlreadyThere} already there")
+                            toast(getString(R.string.restore_done, r.settings, r.drivesAdded))
+                            com.obdreader.app.widget.ObdWidget.refresh(this@MainActivity)
+                            recreate()
+                        }.onFailure { toast(getString(R.string.backup_failed, it.message ?: "")) }
+                    }
+                    Unit
+                },
+            )
+        }
+        // Closed without restoring: the unpacked copy is thrown away.
+        sheet.setOnDismissListener { if (!restoring) com.obdreader.app.session.Backups.discard(applicationContext) }
     }
 
     // ---------- Your car ----------
@@ -5058,6 +5377,8 @@ open class MainActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         applyOrientation()
+        // The phone's dark mode may have changed.
+        checkStyle()
     }
 
     private fun move(view: View, to: ViewGroup, lp: ViewGroup.LayoutParams? = null) {
@@ -5307,6 +5628,12 @@ open class MainActivity : AppCompatActivity() {
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
 
     companion object {
+        /** Recordings bigger than this (several hours of driving) are left out of the same-route comparison. */
+        const val COMPARE_MAX_BYTES = 16L * 1024 * 1024
+        /** The old screen's picture, faded out over the new one after a style switch. */
+        private var fadeFrom: android.graphics.Bitmap? = null
+        /** Open the Style sheet again once the screen is redrawn (after turning day and night on). */
+        private var reopenAppearance = false
         private const val VOLTAGE_KEY = ObdSession.VOLTAGE_KEY
         private val RPM_KEY = String.format(Locale.US, "%02X", Pids.RPM)
         private val SPEED_KEY = String.format(Locale.US, "%02X", Pids.SPEED)

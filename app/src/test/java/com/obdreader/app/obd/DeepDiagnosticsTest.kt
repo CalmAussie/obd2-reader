@@ -117,6 +117,11 @@ class DeepDiagnosticsTest {
         assertEquals(r, CustomReading.decode(r.encode()))
         assertNotNull(CustomReading.problem("x", "3101FF", "", "A"))  // a routine, not a read: refused
         assertNotNull(CustomReading.problem("x", "010C", "", "A+"))
+        // Airbag modules are never asked anything, even a read.
+        assertNotNull(CustomReading.problem("x", "221E1C", "7D2", "A"))
+        assertNotNull(CustomReading.problem("x", "221E1C", "18DA53F1", "A"))
+        assertNotNull(CustomReading.problem("x", "221E1C", "DA53F1", "A"))
+        assertNull(CustomReading.validate("x", "221E1C", "7d2", "A", ""))
         assertNull(Formula.evaluate("A/0+", intArrayOf(1)))
         assertEquals(-40.0, Formula.evaluate("A-40", intArrayOf(0))!!, 1e-9)
     }

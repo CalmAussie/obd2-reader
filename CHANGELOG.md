@@ -2,8 +2,13 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
-## 2.5.3 (13 November 2026)
+## 2.5.3 (14 November 2026)
 - **Record and replay.** Under Car and connection: turn on Record car replies, and each time you connect, what your car answers to the app's requests is saved in a plain text file on your phone. Replay it later without the car, like the demo car, or share it with a bug report. Your VIN is left out unless Hide VIN shows it in full. The newest 10 recordings are kept.
+
+## 2.5.2 (14 November 2026)
+- **Day and night styles.** Under Style, pick one style for the day and one for the night, and the app switches between them at sunrise and sunset, with the phone's dark mode, or with the light sensor. Sunrise and sunset are worked out on your phone; your location is never saved or sent. The switch fades over, and waits if you're touching the screen. Android Auto follows the car's own day and night with the same two styles.
+- **Back up and restore.** Under Diagnostics, save your settings, trip and code history, performance times and recorded drives to one file wherever you choose, and restore it on a new phone. Routes and your VIN are left out unless you tick them. Restoring shows what's in the file first, and only takes back what this app made: anything else in the file is refused.
+- **Custom readings** now refuse airbag module addresses, like the rest of the app.
 
 ## 2.5.1 (13 November 2026)
 - **Hide VIN, on by default.** Your VIN is now hidden on screen, in code reports, shared files and the adapter log. Under Car and connection you can show it in full, or hide just the last six characters (the car's serial number).

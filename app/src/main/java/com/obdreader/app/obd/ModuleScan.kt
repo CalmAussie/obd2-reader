@@ -248,6 +248,12 @@ object ModuleScan {
     /** Every family's known airbag addresses, for makes whose own aren't known. */
     private val AIRBAG_ANY: Set<String> = AIRBAG_CAN + setOf("780", "7D2", "752", "715", "744", "247") + AIRBAG_29BIT
 
+    /** True for any make's known airbag address (11-bit, or 29-bit written in full or without its "18"). */
+    fun isAirbagAddress(header: String): Boolean {
+        val h = header.uppercase(Locale.US)
+        return h in AIRBAG_ANY || (h.length == 6 && "18$h" == AIRBAG_29BIT)
+    }
+
     /**
      * The airbag module addresses never asked for [make]: the ones that make's family uses (Ford
      * 737 and 765, Toyota 780, Hyundai and Kia 7D2, Nissan 752, the Volkswagen group 715, Chrysler's

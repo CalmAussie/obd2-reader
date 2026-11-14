@@ -45,6 +45,7 @@ data class CustomReading(val name: String, val request: String, val header: Stri
                 r.length < 4 || r.length % 2 != 0 || !r.all { it in '0'..'9' || it in 'A'..'F' } -> "The request is hex, like 010C or 221E1C."
                 r.substring(0, 2) !in SERVICES -> "Only reading requests are allowed: they start with 01, 21 or 22."
                 h.isNotEmpty() && (h.length !in setOf(3, 6, 8) || !h.all { it in '0'..'9' || it in 'A'..'F' }) -> "The address is hex, like 7E0 (or leave it empty)."
+                h.isNotEmpty() && ModuleScan.isAirbagAddress(h) -> "That's an airbag module's address. The app never talks to airbag modules."
                 Formula.evaluate(formula, IntArray(8) { 1 }) == null -> "The formula can use A, B, C, D (the answer's bytes), numbers, + - * / and brackets."
                 else -> null
             }

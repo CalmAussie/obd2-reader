@@ -127,7 +127,7 @@ class ObdWidget : AppWidgetProvider() {
         }
 
         private fun palettes(context: Context): Pair<Palette, Palette> {
-            val themed = ContextThemeWrapper(context, AppThemes.byId(AppPrefs.of(context).getString(AppPrefs.THEME, null)).style)
+            val themed = ContextThemeWrapper(context, AppThemes.byId(com.obdreader.app.ui.StyleClock.styleId(context)).style)
             val light = android.util.TypedValue().let { themed.theme.resolveAttribute(R.attr.obdIsLight, it, true) && it.data != 0 }
             val style = Palette(
                 themed.themeColor(R.attr.obdSurface), themed.themeColor(R.attr.obdTextPrimary), themed.themeColor(R.attr.obdTextSecondary),

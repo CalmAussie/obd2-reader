@@ -4380,6 +4380,167 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   $("repliesRow").onclick = showReplies;
 })();
 
+/* ===== Comfort pack, part 1: Day and night styles, Back up and restore (mirrors MainActivity.showThemePicker / showDayNight / showBackup / showRestorePreview, obd/DayNight.kt, obd/BackupFile.kt) ===== */
+(function () {
+  const chev = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg>`;
+  const line = (t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${t}</div>`;
+  const st = document.createElement("style");
+  st.textContent = `.dn-seg{display:flex;margin:12px 0 4px;border-radius:var(--r);box-shadow:inset 0 0 0 1.5px var(--line);overflow:hidden}.dn-seg button{flex:1;height:42px;font-size:14px;font-weight:600;color:var(--fg-2)}.dn-seg button[aria-checked="true"]{background:var(--accent);color:var(--on-accent)}
+.dn-now{font-size:13px;color:var(--fg-2);line-height:1.45;margin:8px 2px 0}.sw-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;min-height:52px;font-size:15px}.sw-row span{flex:1}
+.sim{font-size:12px;color:var(--fg-2);border:1px dashed var(--line);border-radius:6px;padding:8px 10px;margin-top:12px}
+.opt-r{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;text-align:left;font-size:15px}.opt-r .o{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--fg-2);flex:none}.opt-r[aria-checked="true"] .o{box-shadow:inset 0 0 0 6px var(--accent)}`;
+  document.head.appendChild(st);
+  const get = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch (e) { return d; } };
+  const put = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const LIGHT = new Set(["pitlane", "rally"]);
+  const nameOf = id => (THEMES.find(t => t[0] === id) || THEMES[0])[1];
+
+  /* ---- Day and night (DayNight.Mode) ---- */
+  const MODES = [["off", "Off", "One style all the time."],
+    ["sun", "At sunset and sunrise", "Worked out on the phone from the date, the time and roughly where you are."],
+    ["phone", "With the phone's dark mode", "Night style whenever the phone's dark theme is on."],
+    ["light", "With the light around the phone", "Night style when it's dark around the phone, by its light sensor."]];
+  let mode = get("dnMode", "off"), dayId = get("dnDay", null), nightId = get("dnNight", null), chosen = themeId;
+  let simDark = false; // the preview's stand-in for the light sensor
+
+  // The sun's height (same sums as DayNight.sunElevation), from a time-zone guess: the preview never asks for location.
+  const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+  function elevation(t, lat, lon) {
+    const d = t / 86400000 + 2440587.5 - 2451545.0;
+    const m = rad((357.5291 + 0.98560028 * d) % 360), c = 1.9148 * Math.sin(m) + 0.02 * Math.sin(2 * m) + 0.0003 * Math.sin(3 * m);
+    const l = rad((deg(m) + c + 180 + 102.9372) % 360), e = rad(23.4397);
+    const dec = Math.asin(Math.sin(l) * Math.sin(e)), ra = Math.atan2(Math.sin(l) * Math.cos(e), Math.cos(l));
+    const h = rad((280.16 + 360.9856235 * d + lon) % 360) - ra;
+    return deg(Math.asin(Math.sin(rad(lat)) * Math.sin(dec) + Math.cos(rad(lat)) * Math.cos(dec) * Math.cos(h)));
+  }
+  function place() {
+    const zone = (Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
+    const jan = new Date(new Date().getFullYear(), 0, 1).getTimezoneOffset(), jul = new Date(new Date().getFullYear(), 6, 1).getTimezoneOffset();
+    const lon = -Math.max(jan, jul) / 60 * 15; // standard time, without daylight saving
+    const SOUTH = { "Pacific/Auckland": -40, "America/Sao_Paulo": -23, "America/Santiago": -33, "Africa/Johannesburg": -26, "America/Argentina/Buenos_Aires": -35 };
+    const lat = SOUTH[zone] ?? ({ Europe: 50, America: 38, Asia: 30, Australia: -33, Africa: 5, Pacific: -15 }[zone.split("/")[0]] ?? 0);
+    return [lat, lon];
+  }
+  const nightBySun = t => { const [la, lo] = place(); return elevation(t, la, lo) < -0.833; };
+  function nextChange(t) { const now = nightBySun(t); const s = t - t % 60000; for (let i = 1; i <= 1440; i++) if (nightBySun(s + i * 60000) !== now) return s + i * 60000; return null; }
+  const phoneDark = () => matchMedia("(prefers-color-scheme: dark)").matches;
+  const isNight = () => mode === "sun" ? nightBySun(Date.now()) : mode === "phone" ? phoneDark() : mode === "light" ? simDark : false;
+  const wanted = () => mode === "off" ? chosen : (isNight() ? nightId : dayId) || chosen;
+
+  // The switch: a picture of the old screen fades out over the new one (MainActivity.switchStyle / fadeFromLastStyle).
+  function fadeTo(id) {
+    if (id === themeId) return;
+    const ph = $("phone"), r = ph.getBoundingClientRect(), pr = ph.parentElement.getBoundingClientRect();
+    const ghost = ph.cloneNode(true); ghost.removeAttribute("id"); ghost.querySelectorAll("[id]").forEach(e => e.removeAttribute("id"));
+    const ov = ghost.querySelector(".scrim"); if (ov) ov.remove();
+    Object.assign(ghost.style, { position: "absolute", left: (r.left - pr.left) + "px", top: (r.top - pr.top + ph.parentElement.scrollTop) + "px", width: r.width + "px", height: r.height + "px", margin: 0, pointerEvents: "none", transition: "opacity .9s .12s", zIndex: 20 });
+    ghost.querySelector(".scroll") && (ghost.querySelector(".scroll").scrollTop = ph.querySelector(".scroll") ? ph.querySelector(".scroll").scrollTop : 0);
+    if (getComputedStyle(ph.parentElement).position === "static") ph.parentElement.style.position = "relative";
+    ph.parentElement.appendChild(ghost);
+    const keep = chosen; setTheme(id); chosen = keep; put("theme", keep);
+    requestAnimationFrame(() => requestAnimationFrame(() => { ghost.style.opacity = "0"; }));
+    setTimeout(() => ghost.remove(), 1200);
+  }
+  const check = () => { if (!$("overlay")) fadeTo(wanted()); };
+  setInterval(check, 30000);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", check);
+  if (mode !== "off") { const w = wanted(); if (w !== themeId) { const keep = chosen; setTheme(w); chosen = keep; } }
+
+  function nowText() {
+    const n = isNight(), now = n ? "Now: night style." : "Now: day style.";
+    if (mode === "sun") {
+      const t = nextChange(Date.now()), at = t ? new Date(t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : null;
+      return now + (at ? ` ${n ? "Day" : "Night"} style from ${at}.` : "") + " Worked out from your time zone, so it can be up to an hour out. Once the app may use location (it asks when you record a drive's route), it's exact.";
+    }
+    if (mode === "phone") return now + (n ? " The phone's dark theme is on." : " The phone's dark theme is off.");
+    if (mode === "light") return now + (n ? " It's dark around the phone." : " It's light around the phone.");
+    return "";
+  }
+
+  function picker() {
+    const auto = mode !== "off";
+    let slot = !auto ? "chosen" : isNight() ? "night" : "day";
+    const sel = () => slot === "night" ? nightId : slot === "day" ? dayId : chosen;
+    const opt = ([id, name, desc]) => `<button class="theme-opt" role="radio" aria-checked="${id === sel()}" data-t="${id}">${swatch(id)}<span style="flex:1;min-width:0"><div class="tt">${name}</div><div class="ts">${desc}</div></span><svg class="ck" viewBox="0 0 24 24" aria-hidden="true" style="visibility:${id === sel() ? "visible" : "hidden"}"><path d="${ICON.check}"/></svg></button>`;
+    const s = overlay(`<div class="handle"></div><h2>Style</h2><p>Pick how your dash looks. Your choice is saved.</p>` +
+      `<button class="setting" id="dnRow"><div class="r"><span style="flex:1">Day and night</span><span>${MODES.find(m => m[0] === mode)[1]}</span>${chev}</div></button>` +
+      (auto ? `<div class="dn-now">${nowText()}</div><div class="dn-seg" role="radiogroup"><button role="radio" data-s="day" aria-checked="${slot === "day"}">Day style</button><button role="radio" data-s="night" aria-checked="${slot === "night"}">Night style</button></div>` +
+        (mode === "light" ? `<button class="sim" id="simLight">Preview only: make it ${simDark ? "light" : "dark"} around the phone</button>` : "") : "") +
+      `<div class="theme-group">Liveries</div>` + THEMES.filter(t => !LAYOUT[t[0]]).map(opt).join("") +
+      `<div class="theme-group">Other layouts</div>` + THEMES.filter(t => LAYOUT[t[0]]).map(opt).join(""), { sheet: true });
+    s.querySelector(".sheet").classList.add("tall");
+    const mark = () => s.querySelectorAll(".theme-opt").forEach(b => { const on = b.dataset.t === sel(); b.setAttribute("aria-checked", on); b.querySelector(".ck").style.visibility = on ? "visible" : "hidden"; });
+    s.querySelectorAll(".dn-seg button").forEach(b => b.onclick = () => { slot = b.dataset.s; s.querySelectorAll(".dn-seg button").forEach(x => x.setAttribute("aria-checked", x === b)); mark(); });
+    $("dnRow").onclick = () => { closeOverlay(); modes(); };
+    if ($("simLight")) $("simLight").onclick = () => { simDark = !simDark; closeOverlay(); toast(simDark ? "Dark for 30 s: switching to the night style" : "Light for 30 s: switching to the day style"); setTimeout(check, 900); };
+    s.querySelectorAll(".theme-opt").forEach(b => b.onclick = () => {
+      const id = b.dataset.t; closeOverlay();
+      if (id === sel()) return;
+      if (slot === "night") { nightId = id; put("dnNight", id); } else if (slot === "day") { dayId = id; put("dnDay", id); } else { chosen = id; put("theme", id); }
+      if (wanted() !== themeId) fadeTo(wanted()); else toast(`${slot === "night" ? "Night" : "Day"} style: ${nameOf(id)}`);
+    });
+  }
+  $("themeBtn").onclick = picker;
+
+  function modes() {
+    const s = overlay(`<div class="handle"></div><h2>Day and night</h2><p>Show one style by day and another by night. The switch fades over gently, and waits while you're using the screen.</p>` +
+      MODES.map(([k, label]) => `<button class="opt-r" role="radio" aria-checked="${k === mode}" data-k="${k}"><span class="o"></span>${label}</button>`).join("") +
+      MODES.slice(1).map(([, l, h]) => line(`${l}: ${h}`, true)).join("") +
+      line("Sunset and sunrise are worked out on your phone from the date, the time and roughly where you are: the phone's last known location if you've let the app use location, or else your time zone. Your location is never saved or sent anywhere.", true) +
+      line("Android Auto goes by your car's own day and night (its light sensor or headlights), with the same day and night styles. Widgets follow the phone's style.", true), { sheet: true });
+    s.querySelectorAll(".opt-r").forEach(b => b.onclick = () => {
+      const k = b.dataset.k; closeOverlay();
+      if (k === "off") chosen = themeId;
+      else if (!dayId || !nightId) { const light = LIGHT.has(themeId); dayId = light ? themeId : LAYOUT[themeId] ? "rally" : "pitlane"; nightId = light ? "asphalt" : themeId; put("dnDay", dayId); put("dnNight", nightId); }
+      mode = k; put("dnMode", k); put("theme", chosen);
+      fadeTo(wanted()); setTimeout(picker, wanted() !== themeId ? 1100 : 0);
+    });
+  }
+
+  /* ---- Back up and restore ---- */
+  const help = [...document.querySelectorAll(".grp-head")].find(h => h.textContent.includes("Help and feedback"));
+  if (help) {
+    const head = document.createElement("button"); head.className = "grp-head"; head.setAttribute("aria-expanded", "false");
+    head.innerHTML = `<span class="grp-t"><span class="grp-title xb">Back up</span><span class="grp-sub">Back up and restore</span></span>${chev}`;
+    const box = document.createElement("div"); box.className = "grp-box"; box.hidden = get("group_backup", "0") !== "1"; head.setAttribute("aria-expanded", !box.hidden);
+    box.innerHTML = `<button class="setting" id="backupRow"><div class="r"><span style="flex:1">Back up and restore</span>${chev}</div><div class="h">Keep a copy of your settings and drives, or move them to a new phone</div></button>`;
+    head.onclick = () => { const o = box.hidden; box.hidden = !o; head.setAttribute("aria-expanded", o); put("group_backup", o ? "1" : "0"); };
+    const rule = document.createElement("div"); rule.className = "grp-rule";
+    help.before(head, box, rule);
+  }
+  let routes = false, withVin = get("vinPrivacy", "hidden") === "full";
+  const sw = (id, label, on) => `<button class="sw-row" id="${id}" role="switch" aria-checked="${on}"><span>${label}</span><span class="switch" aria-checked="${on}" style="flex:none"><i></i></span></button>`;
+  if ($("backupRow")) $("backupRow").onclick = () => {
+    const s = overlay(`<div class="handle"></div><h2>Back up and restore</h2>` +
+      line("A backup is one file with your settings, chosen car, styles, reading choices, custom readings, alert settings, drive history, code history and recorded drives. Keep it somewhere safe, like Google Drive, a computer or a USB stick, and restore it on a new phone.", true) +
+      line("12 recorded drives (4.2 MB).", true) + `<div class="trip-h">Also put in</div>` +
+      sw("bkRoutes", "Routes of recorded drives (where you drove)", routes) + sw("bkVin", "The VIN you typed in", withVin) +
+      line("The file stays wherever you put it: the app doesn't send it anywhere. Anyone who has the file can open it and see what's in it, including your routes (and so where you live or work) if you leave them in.", true) +
+      `<div class="sheet-actions"><button class="btn-out" id="bkRestore" style="color:var(--accent)">Restore</button><button class="primary" id="bkSave">Back up</button></div>`, { sheet: true });
+    s.querySelector(".sheet").classList.add("tall");
+    const flip = (id, get, set) => { $(id).onclick = () => { set(!get()); $(id).setAttribute("aria-checked", get()); $(id).querySelector(".switch").setAttribute("aria-checked", get()); }; };
+    flip("bkRoutes", () => routes, v => routes = v); flip("bkVin", () => withVin, v => withVin = v);
+    $("bkSave").onclick = () => { closeOverlay(); toast(`Android's file picker opens to save OBD2Reader_backup_${new Date().toISOString().slice(0, 10)}.zip where you choose`); setTimeout(() => toast("Backup saved"), 3400); };
+    $("bkRestore").onclick = () => {
+      if (state === "connected") return closeOverlay(), toast("Disconnect from the car first, then restore.");
+      closeOverlay(); toast("Android's file picker opens: pick the backup file");
+      setTimeout(restorePreview, 1500);
+    };
+  };
+  function restorePreview() {
+    const car = myCar ? [myCar.year, myCar.make, myCar.model, myCar.engine].filter(Boolean).join(" ") : "none chosen";
+    const s = overlay(`<div class="handle"></div><h2>Restore this backup?</h2>` + line(`Made on ${new Date().toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" })} with version 2.5.2.`, true) +
+      `<div class="trip-h">In this backup</div>` +
+      [`Car: ${car}`, `Style: ${nameOf(chosen)}${mode !== "off" ? " · Day and night: " + MODES.find(m => m[0] === mode)[1].toLowerCase() : ""}`, "Custom readings: 2", "Drive history: 38 drives", "Code history: 4 codes",
+        `Recorded drives: 12, ${routes ? "with their routes" : "without routes"}`, `Your VIN: ${withVin ? "included" : "not included"}`, "Wi-Fi adapter: 192.168.0.10:35000", "Settings: 31"].map(t => line("• " + t)).join("") +
+      line("Restoring replaces this phone's settings with the backup's. Drive history, code history and recorded drives are added to what's already on this phone: nothing on it is deleted.", true) +
+      `<div class="sheet-actions"><button class="btn-out" id="rsCancel" style="color:var(--accent)">Cancel</button><button class="primary" id="rsGo">Restore</button></div>`, { sheet: true });
+    s.querySelector(".sheet").classList.add("tall");
+    $("rsCancel").onclick = closeOverlay;
+    $("rsGo").onclick = () => { closeOverlay(); toast("Restored 31 settings and 12 drives"); };
+  }
+})();
+
 window.carReady = true;
 if (location.hash === "#car") showView(true);
 </script>
