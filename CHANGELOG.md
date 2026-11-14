@@ -4,6 +4,8 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 
 ## 2.5.3 (14 November 2026)
 - **Record and replay.** Under Car and connection: turn on Record car replies, and each time you connect, what your car answers to the app's requests is saved in a plain text file on your phone. Replay it later without the car, like the demo car, or share it with a bug report. Your VIN is left out unless Hide VIN shows it in full. The newest 10 recordings are kept.
+- **G-force.** With your phone in a mount, its motion sensor shows forward and sideways g on the Dashboard and a g-meter on the Race telemetry layout. It learns how the phone sits in the mount after you drive off and brake once in a straight line; phones without a motion sensor show N/A. After a drive, the trip summary shows the peak braking, speeding up and cornering g and how many harsh moments there were (they don't change the driving scores), the drive card shows the peak g, recorded drives get g columns, and the video overlay shows a g-meter for drives recorded with it. It all stays on your phone.
+- **Trip summary.** The Driving score figures are now centred in their boxes.
 
 ## 2.5.2 (14 November 2026)
 - **Day and night styles.** Under Style, pick one style for the day and one for the night, and the app switches between them at sunrise and sunset, with the phone's dark mode, or with the light sensor. Sunrise and sunset are worked out on your phone; your location is never saved or sent. The switch fades over, and waits if you're touching the screen. Android Auto follows the car's own day and night with the same two styles.

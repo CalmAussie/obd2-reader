@@ -214,10 +214,24 @@
                             android:orientation="vertical"
                             android:padding="10dp">
 
-                            <com.obdreader.app.ui.TraceView
-                                android:id="@+id/teleTrace"
+                            <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <com.obdreader.app.ui.TraceView
+                                    android:id="@+id/teleTrace"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1" />
+
+                                <!-- G-force from the phone's motion sensor, beside the trace -->
+                                <com.obdreader.app.ui.GMeterView
+                                    android:id="@+id/teleGMeter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="10dp" />
+                            </LinearLayout>
 
                             <TextView
                                 android:id="@+id/teleLegend"
