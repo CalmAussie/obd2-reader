@@ -25,12 +25,16 @@ class ChargeGraphView(context: Context, private val colour: Int, private val gri
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colour; alpha = 40 }
     private val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colour }
     private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = grid; strokeWidth = dp(1f) }
-    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = label; textSize = dp(11f) }
+    private fun sp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, v, resources.displayMetrics)
+    // Archivo in sp, like the rest of the app's labels, so it follows the font and text-size settings.
+    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = label; typeface = context.uiTypeface(400); textSize = sp(12f); fontFeatureSettings = "tnum" }
 
     init { contentDescription = "Battery charge over time" }
 
     override fun onDraw(canvas: Canvas) {
-        val padL = dp(4f); val padR = dp(36f); val padT = dp(10f); val padB = dp(20f)
+        // Room for the labels at any text size: percentages on the right, times along the bottom.
+        val fm = text.fontMetrics
+        val padL = dp(4f); val padR = text.measureText("100%") + dp(10f); val padT = dp(10f); val padB = fm.descent - fm.ascent + dp(6f)
         val w = width - padL - padR; val h = height - padT - padB
         if (w <= 0 || h <= 0) return
         if (points.size < 2) {
@@ -46,7 +50,7 @@ class ChargeGraphView(context: Context, private val colour: Int, private val gri
         fun y(v: Double) = (padT + h * (1 - (v - lo) / (hi - lo))).toFloat()
         for (v in listOf(lo, (lo + hi) / 2, hi)) {
             canvas.drawLine(padL, y(v), padL + w, y(v), gridPaint)
-            canvas.drawText(String.format(Locale.US, "%.0f%%", v), padL + w + dp(6f), y(v) + dp(4f), text)
+            canvas.drawText(String.format(Locale.US, "%.0f%%", v), padL + w + dp(6f), y(v) - (fm.ascent + fm.descent) / 2, text)
         }
         val path = Path(); val area = Path()
         points.forEachIndexed { i, (t, v) ->
@@ -59,7 +63,7 @@ class ChargeGraphView(context: Context, private val colour: Int, private val gri
         val last = points.last()
         canvas.drawCircle(x(last.first), y(last.second), dp(4f), dot)
         val minutes = span / 60_000.0
-        canvas.drawText("now", padL + w - text.measureText("now"), padT + h + dp(15f), text)
-        canvas.drawText(if (minutes < 1) String.format(Locale.US, "%.0f s ago", span / 1000.0) else String.format(Locale.US, "%.0f min ago", minutes), padL, padT + h + dp(15f), text)
+        canvas.drawText("now", padL + w - text.measureText("now"), padT + h + dp(4f) - fm.ascent, text)
+        canvas.drawText(if (minutes < 1) String.format(Locale.US, "%.0f s ago", span / 1000.0) else String.format(Locale.US, "%.0f min ago", minutes), padL, padT + h + dp(4f) - fm.ascent, text)
     }
 }
