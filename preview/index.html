@@ -4679,7 +4679,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     // A 2015 Leaf on a 6.6 kW charger: about 25 % an hour; 10 minutes of history already, then 30 s of charging each second.
     let t = 0; const pts = []; const soc = t => 46 + t / 3600000 * 25, step = v => Math.floor(v * 2) / 2;
     for (; t <= 600000; t += 10000) pts.push([t, step(soc(t))]);
-    const s = sheet("EV battery", head("Battery") + vrow("Charge", "Standard reading, any make", "N/A") +
+    const s = sheet("EV battery", head("Battery") + /* no 5B and a maker charge answered: the standard Charge row is left out */
       vrow("Battery charge (state of charge)", "Unofficial · Battery controller", "", "ev-soc") + vrow("Battery capacity", "Unofficial · Battery controller", "66.2 Ah") +
       vrow("Battery voltage", "Unofficial · Battery controller", "", "ev-v") + vrow("Battery temperature", "Unofficial · Battery controller", "21 °C") +
       head("Charging") + `<div class="ev-pace" style="font-size:15px;padding:4px 0 8px"></div><canvas class="ev-graph" style="width:100%;height:140px;display:block"></canvas>` +

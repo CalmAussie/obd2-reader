@@ -1814,7 +1814,10 @@ open class MainActivity : AppCompatActivity() {
                 return v
             }
             heading("Battery")
-            standardView = valueRow(getString(R.string.ev_charge), getString(R.string.ev_charge_sub), pct(ObdSession.state.value.readings[EvBattery.CHARGE_KEY]), false)
+            // The standard Charge row, unless the car doesn't list it and a maker charge reading answered instead:
+            // a "Charge N/A" right above that reading's percentage would look broken.
+            if (listed || answered.none { EvBattery.isCharge(it) })
+                standardView = valueRow(getString(R.string.ev_charge), getString(R.string.ev_charge_sub), pct(ObdSession.state.value.readings[EvBattery.CHARGE_KEY]), false)
             answered.forEach { r -> values[r] = valueRow(r.name, r.module, fmt(r, first[r]), true) }
             if (!listed && answered.isEmpty()) line(getString(R.string.ev_none), true)
             heading("Charging")
