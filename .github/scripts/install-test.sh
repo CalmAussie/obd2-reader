@@ -472,10 +472,15 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
   [ $PASS = small ] && case "$STYLE" in Endurance|Kerb|"Pit lane"|Drift|Apex|"British racing") continue;; esac
   SLUG=$(echo "$STYLE" | tr ' A-Z' '-a-z'); [ $PASS = small ] && SLUG="small-$SLUG"
   disconnect_app   # disconnect, so the screen is still
+  # The drive just ended was in the light Pit lane style: keep its trip summary for the design check.
+  if [ $PASS = normal ] && [ "${LAST_SET:-}" = "Pit lane" ]; then
+    sleep 2; shot 7p-trip-pitlane
+    adb shell input swipe 540 1700 540 900 400; sleep 1; shot 7p-trip-gforce-pitlane
+  fi
   close_trip || true   # close the trip summary if that drive was long enough for one
   tap_text "Style" || { log "style $STYLE: FAILED (no Style button)"; FAIL=1; continue; }
   sleep 1
-  for i in 1 2 3 4 5 6; do tap_text "$STYLE" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
+  for i in 1 2 3 4 5 6; do tap_text "$STYLE" && { LAST_SET="$STYLE"; break; }; adb shell input swipe 540 1800 540 700 300; sleep 1; done
   sleep 4
   connect_demo || { log "style $STYLE: FAILED (no Demo car)"; FAIL=1; continue; }
   adb shell input swipe 540 900 540 1700 300   # back to the top
