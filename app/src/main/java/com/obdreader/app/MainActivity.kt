@@ -1001,6 +1001,35 @@ open class MainActivity : AppCompatActivity() {
         setPadding(0, dp(10f).toInt(), 0, 0)
     })
 
+    /** An on/off setting in a sheet: 15sp in the primary text colour, at least 48dp tall to tap. */
+    private fun sheetSwitch(body: LinearLayout, label: String, checked: Boolean, onChange: (Boolean) -> Unit) = body.addView(MaterialSwitch(this).apply {
+        text = label; isChecked = checked
+        setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary))
+        minHeight = dp(48f).toInt()
+        setOnCheckedChangeListener { _, on -> onChange(on) }
+    }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6f).toInt() })
+
+    /**
+     * Full-width buttons stacked down the sheet, as on the trip summary: the first filled, then
+     * outlined, and a [danger] one (Delete) last, borderless in the danger colour.
+     */
+    private fun sheetStackedButtons(body: LinearLayout, buttons: List<Pair<String, () -> Unit>>, danger: Pair<String, () -> Unit>? = null) {
+        val all = buttons + listOfNotNull(danger)
+        all.forEachIndexed { i, (label, action) ->
+            val isDanger = danger != null && i == all.lastIndex
+            val style = when {
+                isDanger -> com.google.android.material.R.attr.borderlessButtonStyle
+                i == 0 -> com.google.android.material.R.attr.materialButtonStyle
+                else -> com.google.android.material.R.attr.materialButtonOutlinedStyle
+            }
+            body.addView(MaterialButton(this, null, style).apply {
+                text = label
+                if (isDanger) setTextColor(themeColor(R.attr.obdDanger))
+                setOnClickListener { action() }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(if (i == 0) 18f else 4f).toInt() })
+        }
+    }
+
     /** A tappable row: [name] with its current [value] and a chevron, opening the next sheet. */
     private fun sheetRow(body: LinearLayout, name: String, value: String, onClick: () -> Unit): TextView {
         val valueView = TextView(this).apply {
@@ -1225,21 +1254,16 @@ open class MainActivity : AppCompatActivity() {
     private fun showReplies() {
         val sheet = choiceSheet(getString(R.string.replies_title)) { body, sheet ->
             sheetNote(body, getString(R.string.replies_note))
-            body.addView(MaterialSwitch(this).apply {
-                text = getString(R.string.replies_switch); isChecked = AppPrefs.recordReplies(prefs)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary))
-                minHeight = dp(48f).toInt()
-                setOnCheckedChangeListener { _, on ->
-                    prefs.edit().putBoolean(AppPrefs.RECORD_REPLIES, on).apply()
-                    findViewById<View>(R.id.repliesRow)?.let { r -> rowHelp(r)?.text = repliesHelp() }
-                    if (on && ObdSession.state.value.isConnected && !ObdSession.state.value.isDemo) toast(getString(R.string.replies_next_time))
-                }
-            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10f).toInt() })
+            sheetSwitch(body, getString(R.string.replies_switch), AppPrefs.recordReplies(prefs)) { on ->
+                prefs.edit().putBoolean(AppPrefs.RECORD_REPLIES, on).apply()
+                findViewById<View>(R.id.repliesRow)?.let { r -> rowHelp(r)?.text = repliesHelp() }
+                if (on && ObdSession.state.value.isConnected && !ObdSession.state.value.isDemo) toast(getString(R.string.replies_next_time))
+            }
             sheetHeading(body, getString(R.string.replies_saved))
             val files = com.obdreader.app.session.ReplyRecordings.saved(this)
             if (files.isEmpty()) sheetNote(body, getString(R.string.replies_none))
             for (file in files) {
-                sheetRow(body, com.obdreader.app.session.ReplyRecordings.describe(file), getString(R.string.replies_actions)) {
+                sheetRow(body, com.obdreader.app.session.ReplyRecordings.describe(file), com.obdreader.app.session.ReplyRecordings.size(file)) {
                     recordingActions(file, sheet)
                 }
             }
@@ -1251,30 +1275,39 @@ open class MainActivity : AppCompatActivity() {
         currentSheet = sheet
     }
 
-    /** One saved recording: replay it, share or save it, or delete it. */
+    /** One saved recording: replay it, share or save it, or delete it (after asking). */
     private fun recordingActions(file: java.io.File, parent: BottomSheetDialog) {
         val rec = try { com.obdreader.app.session.ReplyRecordings.load(file) } catch (e: Exception) { null }
-        choiceSheet(com.obdreader.app.session.ReplyRecordings.describe(file)) { body, sheet ->
+        choiceSheet(getString(R.string.replies_recording)) { body, sheet ->
+            body.addView(TextView(this).apply {
+                text = com.obdreader.app.session.ReplyRecordings.describe(file) + " · " + com.obdreader.app.session.ReplyRecordings.size(file)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextPrimary))
+            })
             if (rec == null) sheetNote(body, getString(R.string.replies_unreadable))
             rec?.let { r ->
-                val made = listOfNotNull(r.app?.let { "Made by OBD2 Reader $it" }, r.made?.let { "on $it" }).joinToString(" ")
+                val made = listOfNotNull(r.app?.let { "Made by OBD2 Reader $it" }, com.obdreader.app.session.ReplyRecordings.madeText(r.made)?.let { "on $it" }).joinToString(" ")
                 sheetNote(body, listOf(made, String.format(Locale.getDefault(), "%,d requests", r.exchanges.size)).filter { it.isNotEmpty() }.joinToString(". ") + ".")
             }
             val buttons = mutableListOf<Pair<String, () -> Unit>>()
-            buttons += getString(R.string.history_delete) to {
-                file.delete()
-                sheet.dismiss(); parent.dismiss()
-                toast(getString(R.string.replies_deleted))
-                showReplies()
-            }
+            if (rec != null) buttons += getString(R.string.replies_replay) to { sheet.dismiss(); parent.dismiss(); replay(file, rec) }
             buttons += getString(R.string.replies_share) to {
                 sheet.dismiss()
                 // Shared from the exports folder (the one the file provider serves), never from the recordings folder itself.
                 val copy = try { Exports.exportFile(this, "OBD2Reader_" + file.name).also { file.copyTo(it, overwrite = true) } } catch (e: Exception) { null }
                 if (copy == null) toast(getString(R.string.file_save_failed)) else offerFile(copy, "OBD2 Reader recording")
             }
-            if (rec != null) buttons += getString(R.string.replies_replay) to { sheet.dismiss(); parent.dismiss(); replay(file, rec) }
-            sheetButtons(body, *buttons.toTypedArray())
+            sheetStackedButtons(body, buttons, getString(R.string.history_delete) to {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.replies_delete_title)
+                    .setMessage(R.string.replies_delete_text)
+                    .setPositiveButton(R.string.history_delete) { _, _ ->
+                        file.delete()
+                        sheet.dismiss(); parent.dismiss()
+                        toast(getString(R.string.replies_deleted))
+                        showReplies()
+                    }
+                    .setNegativeButton(android.R.string.cancel, null).show()
+            })
         }
     }
 
@@ -4878,14 +4911,8 @@ open class MainActivity : AppCompatActivity() {
                 sheetNote(body, resources.getQuantityString(R.plurals.backup_drives, summary.drives, summary.drives,
                     android.text.format.Formatter.formatShortFileSize(this@MainActivity, summary.driveBytes)))
                 if (summary.anyRoute || summary.hasVin) sheetHeading(body, getString(R.string.backup_include))
-                if (summary.anyRoute) body.addView(MaterialSwitch(this@MainActivity).apply {
-                    text = getString(R.string.backup_routes); isChecked = backupRoutes
-                    setOnCheckedChangeListener { _, on -> backupRoutes = on }
-                })
-                if (summary.hasVin) body.addView(MaterialSwitch(this@MainActivity).apply {
-                    text = getString(R.string.backup_vin); isChecked = backupVin
-                    setOnCheckedChangeListener { _, on -> backupVin = on }
-                })
+                if (summary.anyRoute) sheetSwitch(body, getString(R.string.backup_routes), backupRoutes) { on -> backupRoutes = on }
+                if (summary.hasVin) sheetSwitch(body, getString(R.string.backup_vin), backupVin) { on -> backupVin = on }
                 sheetNote(body, getString(R.string.backup_privacy))
                 sheetButtons(body,
                     getString(R.string.restore) to {

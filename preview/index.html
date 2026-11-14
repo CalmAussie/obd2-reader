@@ -4336,11 +4336,17 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   st.textContent = `.rec-row{display:flex;align-items:center;gap:8px;width:100%;min-height:52px;padding:14px 8px 14px 14px;margin-top:8px;border-radius:var(--r);background:var(--panel-2);text-align:left;font-size:15px}
 .rec-row .n{flex:1}.rec-row .v{color:var(--accent);font-size:14px}.rec-row svg{width:20px;height:20px;fill:var(--fg-2);flex:none}
 .rec-sw{display:flex;align-items:center;gap:12px;min-height:52px;margin-top:10px;font-size:15px}.rec-sw span{flex:1}
-.rec-h{font-size:14px;font-weight:600;margin-top:14px}`;
+.rec-h{font-size:14px;font-weight:600;margin-top:14px}
+.rec-sub{font-size:13px;color:var(--fg);margin:2px 0 0}
+.m-btns{display:flex;justify-content:flex-end;gap:8px;padding-top:18px}
+.m-btn{height:40px;padding:0 24px;border-radius:20px;font-size:14px;font-weight:500;letter-spacing:.01em;font-family:"Roboto",system-ui,sans-serif}
+.m-btn.filled{background:var(--accent);color:var(--on-accent)}.m-btn.out{box-shadow:inset 0 0 0 1px var(--fg-2);color:var(--accent)}.m-btn.text{color:var(--accent)}.m-btn.danger{color:var(--red)}
+.m-stack .m-btn{display:block;width:100%;margin-top:4px}.m-stack .m-btn:first-child{margin-top:18px}
+[data-theme="apex"] .m-btn,[data-theme="cyberpunk"] .m-btn{border-radius:0}`;
   document.head.appendChild(st);
   let on = false; try { on = localStorage.getItem("recordReplies") === "1"; } catch (e) {}
   /* The newest 10 are kept: here, one sample made from the demo car */
-  let saved = [{ name: "13 Nov, 10:42 AM · Demo car (sample recording) · 11 KB", made: "Made by OBD2 Reader 2.5.3 on 2026-11-13 10:42. 667 requests.", label: "13 Nov, 10:42 AM" }];
+  let saved = [{ name: "Fri 13 Nov, 10:42 AM · Demo car (sample recording)", size: "11 KB", made: "Made by OBD2 Reader 2.5.3 on Fri 13 Nov, 10:42 AM. 667 requests.", label: "13 Nov, 10:42 AM" }];
   const help = () => on ? "Recording is on: each connection's replies are saved on this phone." : "Replay a saved recording, or turn on recording to save your car's replies.";
 
   const a = $("reconnectRow") || $("carRow"); if (!a) return;
@@ -4355,8 +4361,8 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     const s = overlay(`<div class="handle"></div><h2>Record and replay</h2><p>Saves what your car answers to each request the app makes (the app only ever reads), in a plain text file on this phone. Replay it later to see the app work without the car, or share it with a bug report. Your VIN is left out unless Hide VIN is set to show it in full. The newest 10 recordings are kept, up to about half an hour each.</p>` +
       `<div class="rec-sw"><span>Record car replies</span><button class="switch" id="recSwitch" role="switch" aria-checked="${on}" aria-label="Record car replies"><i></i></button></div>` +
       `<div class="rec-h">Saved recordings</div>` +
-      (saved.length ? saved.map((r, i) => `<button class="rec-row" data-i="${i}"><span class="n">${r.name}</span><span class="v">Open</span>${chev}</button>`).join("") : `<p>No recordings yet. Turn on Record car replies, then connect to your car.</p>`) +
-      `<div class="sheet-actions"><button class="btn primary" id="recOpen">Open a recording file</button></div>`, { sheet: true });
+      (saved.length ? saved.map((r, i) => `<button class="rec-row" data-i="${i}"><span class="n">${r.name}</span><span class="v">${r.size}</span>${chev}</button>`).join("") : `<p>No recordings yet. Turn on Record car replies, then connect to your car.</p>`) +
+      `<div class="m-btns"><button class="m-btn filled" id="recOpen">Open a recording file</button></div>`, { sheet: true });
     $("recSwitch").onclick = () => {
       on = !on; try { localStorage.setItem("recordReplies", on ? "1" : "0"); } catch (e) {}
       $("recSwitch").setAttribute("aria-checked", on); $("repliesHelp").textContent = help();
@@ -4366,9 +4372,15 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     s.querySelectorAll(".rec-row").forEach(b => b.onclick = () => actions(saved[+b.dataset.i]));
   };
   const actions = r => {
-    overlay(`<div class="handle"></div><h2>${r.name}</h2><p>${r.made}</p>` +
-      `<div class="sheet-actions"><button class="btn-out" id="recDel" style="color:var(--accent)">Delete</button><button class="btn-out" id="recShare" style="color:var(--accent)">Save or share</button><button class="btn primary" id="recPlay">Replay</button></div>`, { sheet: true });
-    $("recDel").onclick = () => { saved = saved.filter(x => x !== r); closeOverlay(); toast("Recording deleted"); showReplies(); };
+    /* Title "Recording"; what it is goes on the line under it. Buttons stacked full width, as on the trip summary. */
+    overlay(`<div class="handle"></div><h2>Recording</h2><div class="rec-sub">${r.name} · ${r.size}</div><p>${r.made}</p>` +
+      `<div class="m-stack"><button class="m-btn filled" id="recPlay">Replay</button><button class="m-btn out" id="recShare">Save or share</button><button class="m-btn text danger" id="recDel">Delete</button></div>`, { sheet: true });
+    /* Delete asks first, like drive history */
+    $("recDel").onclick = () => {
+      overlay(`<h3>Delete this recording?</h3><p class="msg">It's removed from this phone. Copies you saved or shared stay where they are.</p><div class="btns"><button id="recDelNo">Cancel</button><button id="recDelYes">Delete</button></div>`);
+      $("recDelNo").onclick = () => actions(r);
+      $("recDelYes").onclick = () => { saved = saved.filter(x => x !== r); closeOverlay(); toast("Recording deleted"); showReplies(); };
+    };
     $("recShare").onclick = () => { closeOverlay(); toast("Save to Downloads, or share the text file."); };
     $("recPlay").onclick = () => {
       closeOverlay();
