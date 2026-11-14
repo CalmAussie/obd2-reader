@@ -21,6 +21,8 @@
         <item name="obdWarnContainer">#3A2A08</item>
         <item name="obdDanger">#FF3B2F</item>
         <!-- Sheets, dialogs and menus use this style's own surfaces, not Material's default purple-grey. -->
+        <!-- No accent-coloured tint on raised surfaces (bottom sheets were tinted warm by it). -->
+        <item name="elevationOverlayEnabled">false</item>
         <item name="colorSurfaceContainerLowest">?attr/obdBg</item>
         <item name="colorSurfaceContainerLow">?attr/obdSurface</item>
         <item name="colorSurfaceContainer">?attr/obdSurface</item>
@@ -54,6 +56,8 @@
         <item name="obdWarnContainer">#FFEFD2</item>
         <item name="obdDanger">#FF3B2F</item>
         <!-- Sheets, dialogs and menus use this style's own surfaces, not Material's default purple-grey. -->
+        <!-- No accent-coloured tint on raised surfaces (bottom sheets were tinted warm by it). -->
+        <item name="elevationOverlayEnabled">false</item>
         <item name="colorSurfaceContainerLowest">?attr/obdBg</item>
         <item name="colorSurfaceContainerLow">?attr/obdSurface</item>
         <item name="colorSurfaceContainer">?attr/obdSurface</item>
