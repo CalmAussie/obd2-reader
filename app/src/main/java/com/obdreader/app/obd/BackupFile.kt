@@ -123,7 +123,7 @@ object BackupFile {
         // Connection.
         // A Wi-Fi adapter is on the car's own little network: only private and link-local addresses come back.
         "wifi_host" to text(15) { isLocalAddress(it) }, "wifi_port" to int(1..65535),
-        "auto_reconnect" to bool(), "pip" to bool(),
+        "auto_reconnect" to bool(), "pip" to bool(), "record_replies" to bool(),
         // Units, readings and alerts.
         "units_mph" to bool(), "units_fahrenheit" to bool(),
         "units_pressure" to text(20) { v -> Units.Pressure.values().any { it.name == v } },

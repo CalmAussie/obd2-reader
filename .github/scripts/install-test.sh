@@ -672,6 +672,45 @@ if tap_scrolled "Not your VIN? Enter it"; then
 else
   log "VIN from the plate: FAILED (no button)"; FAIL=1
 fi
+# Record and replay: a saved recording replays like the demo car. Debug builds: a sample (made
+# from the demo car, VIN hidden) goes into the app's own folder first; release builds can't be
+# written to that way, so only the sheet is checked.
+SAMPLE="$(dirname "$0")/sample-recording.txt"
+DEBUG_BUILD=0; adb shell run-as $PKG true 2>/dev/null && DEBUG_BUILD=1
+if [ $DEBUG_BUILD = 1 ] && [ -f "$SAMPLE" ]; then
+  adb push "$SAMPLE" /data/local/tmp/sample-recording.txt > /dev/null 2>&1
+  adb shell chmod 644 /data/local/tmp/sample-recording.txt
+  adb shell "run-as $PKG sh -c 'mkdir -p files/replies && cp /data/local/tmp/sample-recording.txt files/replies/recording-20261113-104200.txt'"
+fi
+# Disconnect is on the Dashboard (this step starts on Diagnostics), and replay only starts with nothing connected.
+tap_tab Dashboard; sleep 2
+disconnect_app > /dev/null || log "record and replay: demo car didn't disconnect first"
+# Disconnecting sums up the drive: close that first.
+tap_text "Done" > /dev/null 2>&1; sleep 1
+adb logcat -c
+diag_top
+if find_scrolled 'text="Record and replay"' "$OUT/ui-replies.xml"; then
+  tap_text "Record and replay" > /dev/null; sleep 2
+  adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-replies2.xml"
+  shot 4c-record-replay
+  if grep -q "Record car replies" "$OUT/ui-replies2.xml" && grep -q "Open a recording file" "$OUT/ui-replies2.xml"; then log "record and replay: sheet shown"
+  else log "record and replay: FAILED (sheet not shown)"; FAIL=1; fi
+  if [ $DEBUG_BUILD = 1 ]; then
+    if grep -q "Demo car (sample recording)" "$OUT/ui-replies2.xml" && tap_text "Open" && sleep 2 && tap_text "Replay"; then
+      sleep 10
+      if adb logcat -d -s OBD2Replay:I | grep -q "Replaying a recording" && [ "$(view_flag demoButton)" = G ]; then log "record and replay: sample recording replayed"
+      else log "record and replay: FAILED (replay didn't connect)"; FAIL=1; fi
+      shot 4d-replaying
+      disconnect_app > /dev/null
+    else log "record and replay: FAILED (sample recording not listed)"; FAIL=1; fi
+  else
+    adb shell input keyevent KEYCODE_BACK; sleep 1
+    log "record and replay: replay not checked (release build)"
+  fi
+else
+  log "record and replay: FAILED (row missing)"; FAIL=1
+fi
+connect_demo > /dev/null || { log "record and replay: FAILED (demo car didn't reconnect)"; FAIL=1; }
 # App updates: the row is on Diagnostics, near the bottom. Tapping it asks GitHub for the latest release.
 # Start from the top and scroll in small steps, so a fling can't carry the row past the screen.
 diag_top
