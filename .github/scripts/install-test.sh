@@ -105,7 +105,8 @@ app_views() {
 view_center_bottom() {   # $1 view id, $2 scrolling page id
   for k in 1 2 3 4 5; do adb shell input swipe 540 2000 540 500 150; done; sleep 2
   app_views "$OUT/views.txt"
-  python3 - "$1" "$2" "$OUT/views.txt" <<'PY'
+  local XY
+  XY=$(python3 - "$1" "$2" "$OUT/views.txt" <<'PY'
 import re, sys
 want, page, path = sys.argv[1], sys.argv[2], sys.argv[3]
 stack = []; page_box = None; page_depth = None; content_h = None
@@ -122,6 +123,11 @@ for line in open(path, encoding='utf-8', errors='ignore'):
         scroll = max(0, (content_h or 0) - page_box[1])
         print(ox + (x1 + x2) // 2, oy + (y1 + y2) // 2 - scroll); sys.exit(0)
 PY
+)
+  set -- $XY
+  # Right under the status bar a tap doesn't reach the app: pull the page down a known 600px first.
+  if [ -n "$XY" ] && [ "$2" -lt 300 ]; then drag_down_600; XY="$1 $(( $2 + 600 ))"; fi
+  echo $XY
 }
 
 # Fails if a button is missing or squeezed too small to tap (at least 40% of the width or 200 px).
@@ -387,6 +393,16 @@ find_scrolled() {
 # Record drive sits just below the bottom of the screen on the Dashboard, and the Dashboard
 # animates, so screen dumps of it fail. Scroll it up by a known 600px (a slow drag held still
 # before letting go, so it doesn't fling) and tap where the view tree puts the button.
+# A slow 600px pull down (held still before letting go, so it doesn't fling).
+drag_down_600() {
+  if adb shell input motionevent DOWN 540 1100 > /dev/null 2>&1; then
+    for y in 1200 1300 1400 1500 1600 1700; do adb shell input motionevent MOVE 540 $y; done
+    sleep 1; adb shell input motionevent UP 540 1700
+  else
+    adb shell input swipe 540 1100 540 1700 2000
+  fi
+  sleep 1
+}
 drag_up_600() {
   if adb shell input motionevent DOWN 540 1700 > /dev/null 2>&1; then
     for y in 1600 1500 1400 1300 1200 1100; do adb shell input motionevent MOVE 540 $y; done
@@ -435,6 +451,14 @@ record_set() {
 }
 # Scrolls the page back to the very top, so positions read from the view tree are on screen.
 scroll_top() { adb shell input swipe 540 800 540 2000 200; adb shell input swipe 540 800 540 2000 200; sleep 1; }
+# Closes the trip summary if one is open. On a small phone with large text its Done button can be
+# below the sheet's first screen, so scroll the sheet up to find it.
+close_trip() {
+  tap_text "Done" > /dev/null && return 0
+  grep -q 'text="Your \(last \)\?drive"' "$OUT/ui.xml" || return 0
+  for i in 1 2 3 4 5; do adb shell input swipe 540 1800 540 900 300; sleep 1; tap_text "Done" > /dev/null && return 0; done
+  return 1
+}
 # Each style with its own layout, upright and sideways, with the demo car running. The second
 # pass is a small phone with large text (360 dp wide, text at 115%), where crowding shows up.
 # Debug builds hold the demo car at 188 km/h here, so every style is seen with a three-digit speed
@@ -448,7 +472,7 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
   [ $PASS = small ] && case "$STYLE" in Endurance|Kerb|"Pit lane"|Drift|Apex|"British racing") continue;; esac
   SLUG=$(echo "$STYLE" | tr ' A-Z' '-a-z'); [ $PASS = small ] && SLUG="small-$SLUG"
   disconnect_app   # disconnect, so the screen is still
-  tap_text "Done" > /dev/null || true   # close the trip summary if that drive was long enough for one
+  close_trip || true   # close the trip summary if that drive was long enough for one
   tap_text "Style" || { log "style $STYLE: FAILED (no Style button)"; FAIL=1; continue; }
   sleep 1
   for i in 1 2 3 4 5 6; do tap_text "$STYLE" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
@@ -470,7 +494,7 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
   # kept the faded look of the pressed or outline style until the app was reopened).
   if [ $PASS = normal ] && [ "$STYLE" = "Digital cockpit" ]; then
     disconnect_app
-    tap_text "Done" > /dev/null || true; sleep 2
+    close_trip || true; sleep 2
     scroll_top; XY=$(view_center connectButton); shot "6b-$SLUG-after-disconnect"
     # Left of centre, clear of the "Connect" label.
     set -- $XY; PX=$(( ${1:-400} - 220 )); PY=${2:-0}

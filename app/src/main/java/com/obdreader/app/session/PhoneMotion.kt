@@ -47,6 +47,8 @@ object PhoneMotion {
     private var appContext: Context? = null
     private var listener: SensorEventListener? = null
     private var demoJob: Job? = null
+    /** The demo car: there's no mount to learn, so its readings show straight away. */
+    private var demoMode = false
     private var lastPublish = 0L
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -108,15 +110,17 @@ object PhoneMotion {
         listener?.let { l -> appContext?.getSystemService(SensorManager::class.java)?.unregisterListener(l) }
         listener = null
         demoJob?.cancel(); demoJob = null
+        demoMode = false
         if (_status.value != Status.NO_SENSOR) _status.value = Status.OFF
     }
 
     private fun publish(timeMs: Long) {
         if (timeMs - lastPublish < PUBLISH_MS) return
         lastPublish = timeMs
-        _status.value = if (gforce.calibrated) Status.READY else Status.LEARNING
+        val ready = demoMode || gforce.calibrated
+        _status.value = if (ready) Status.READY else Status.LEARNING
         // Until the mount is learned there's nothing to show yet: the readings stay blank, not N/A.
-        if (!gforce.calibrated) return
+        if (!ready) return
         ObdSession.phoneReadings(mapOf(GForce.FORWARD_KEY to gforce.forwardG, GForce.SIDE_KEY to gforce.sideG), timeMs)
     }
 
@@ -125,6 +129,7 @@ object PhoneMotion {
      * slowing down) with gentle bends, so the dial and graphs have something to show.
      */
     private fun playDemo() {
+        demoMode = true
         _status.value = Status.READY
         demoJob = scope.launch {
             var lastSpeed: Double? = null
