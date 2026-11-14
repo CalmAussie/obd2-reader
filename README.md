@@ -60,7 +60,8 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 
 **After the drive**
 - **Driving score:** out of 100 for Efficiency, Everyday or Racing, with a tip on what would help most.
-- **Trip summary and history:** distance, times, top speed and your score's trend.
+- **Trip summary and history:** distance, times, top speed, peak g-force and your score's trend.
+- **G-force:** with the phone in a mount, forward and sideways g on the Dashboard and a g-meter on Race telemetry, from the phone's own motion sensor.
 - **Same route as last time:** drive a recorded route again and see how you compare.
 - **Record drives:** save them as CSV files for Excel or Google Sheets.
 - **Video overlay:** turn a recorded drive into a gauge video for your dash-cam footage ([how](#video-overlay)).
@@ -152,6 +153,7 @@ Videos are saved to **Movies → OBD2 Reader**.
 - **Read-only:** the app never clears codes or changes anything in your car. Anything that isn't a read is blocked.
 - **No account, no tracking:** nothing is sent to the developer. The only internet use is the update check, from GitHub (about once a day, in the background too while notifications are on).
 - **Your location stays on your phone:** it's only saved inside a drive you choose to record with its route.
+- **G-force stays on your phone too:** each drive's peak g and harsh-moment counts are kept in your trip history and in backups, and nowhere else.
 - **Backups go only where you put them:** the app never sends a backup anywhere, and restores only what it made itself.
 - **Check your download is genuine:** every release from 2.5.0 on is signed with the same certificate. Its SHA-256 fingerprint is `67eb2dd363dd994f7fe4b3a747564d2c2ccb52e5ad4953c3391bd24e412d04c2`. Releases up to 2.4.4 used an earlier certificate (`77ad52081183e8001d6235e096dbaae6a8728c283341402bdb60852b49602714`), whose key was lost, which is why 2.5.0 needs a one-time reinstall. To check an APK on a computer with the Android SDK, run `apksigner verify --print-certs OBD2Reader.apk` and compare the "certificate SHA-256 digest" line. Android also refuses any update signed with a different certificate.
 
