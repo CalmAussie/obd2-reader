@@ -804,7 +804,7 @@ open class MainActivity : AppCompatActivity() {
             val score = com.obdreader.app.obd.ShareScore.of(trip.scores, raceTelemetry = false).score
             body.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-                background = panelBackground()
+                background = sheetPanel()
                 setPadding(dp(16f).toInt(), dp(12f).toInt(), dp(16f).toInt(), dp(12f).toInt())
                 addView(LinearLayout(this@MainActivity).apply {
                     orientation = LinearLayout.VERTICAL
@@ -1046,6 +1046,9 @@ open class MainActivity : AppCompatActivity() {
         return sheet
     }
 
+    /** A panel inside a sheet: one step up from the sheet's own surface, so it stands out (the sheet itself is obdSurface). */
+    private fun sheetPanel() = panelBackground().apply { setColor(themeColor(R.attr.obdSurfaceHigh)) }
+
     private fun sheetHeading(body: LinearLayout, text: String) = body.addView(TextView(this).apply {
         this.text = text; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdTextPrimary))
         setPadding(0, dp(14f).toInt(), 0, dp(2f).toInt())
@@ -1093,7 +1096,7 @@ open class MainActivity : AppCompatActivity() {
         }
         body.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-            background = panelBackground(); val p = dp(14f).toInt(); setPadding(p, p, dp(8f).toInt(), p)
+            background = sheetPanel(); val p = dp(14f).toInt(); setPadding(p, p, dp(8f).toInt(), p)
             isClickable = true; isFocusable = true; contentDescription = "$name: $value"
             addView(TextView(this@MainActivity).apply {
                 text = name; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary))
@@ -1821,7 +1824,7 @@ open class MainActivity : AppCompatActivity() {
         list.forEach { r ->
             body.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-                background = panelBackground(); val p = dp(14f).toInt(); setPadding(p, p, p, p)
+                background = sheetPanel(); val p = dp(14f).toInt(); setPadding(p, p, p, p)
                 addView(LinearLayout(this@MainActivity).apply {
                     orientation = LinearLayout.VERTICAL
                     addView(TextView(this@MainActivity).apply { text = r.name; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary)) })
@@ -1984,7 +1987,7 @@ open class MainActivity : AppCompatActivity() {
         AppIcons.ALL.forEach { icon ->
             body.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-                background = panelBackground(); val p = dp(12f).toInt(); setPadding(p, p, p, p)
+                background = sheetPanel(); val p = dp(12f).toInt(); setPadding(p, p, p, p)
                 isClickable = true; isFocusable = true
                 contentDescription = icon.name + if (icon == current) ", chosen" else ""
                 addView(android.widget.ImageView(this@MainActivity).apply {
@@ -2261,7 +2264,7 @@ open class MainActivity : AppCompatActivity() {
         }
         // The quarter mile is worked out from speed, so say it's an estimate.
         val estimate = TextView(this).apply {
-            setText(R.string.perf_quarter_estimate); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdWarn))
+            setText(R.string.perf_quarter_estimate); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdWarnText))
             gravity = Gravity.CENTER; setPadding(0, 0, 0, dp(12f).toInt())
         }
         body.addView(big); body.addView(status); body.addView(estimate)
@@ -2518,7 +2521,7 @@ open class MainActivity : AppCompatActivity() {
 
     private fun scoreColour(score: Int): Int = when {
         score >= 80 -> themeColor(R.attr.obdOk)
-        score >= 55 -> themeColor(R.attr.obdWarn)
+        score >= 55 -> themeColor(R.attr.obdWarnText)
         else -> themeColor(R.attr.obdDanger)
     }
 
@@ -5284,7 +5287,7 @@ open class MainActivity : AppCompatActivity() {
         items.forEach { item ->
             val colour = when (item.level) {
                 CarSupport.Level.UNLIKELY -> themeColor(R.attr.obdDanger)
-                CarSupport.Level.MAYBE -> themeColor(R.attr.obdWarn)
+                CarSupport.Level.MAYBE -> themeColor(R.attr.obdWarnText)
                 CarSupport.Level.LIMITED -> themeColor(R.attr.obdTextSecondary)
             }
             list.addView(TextView(this).apply {
@@ -5425,7 +5428,8 @@ open class MainActivity : AppCompatActivity() {
             text = info.severity.label
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             typeface = uiTypeface(600)
-            setTextColor(severityColour)
+            // Amber text is darker on the light styles; the tag's tint stays the plain status colour.
+            setTextColor(if (info.severity == DtcLibrary.Severity.MEDIUM) themeColor(R.attr.obdWarnText) else severityColour)
             background = GradientDrawable().apply {
                 cornerRadius = dp(4f)
                 setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(severityColour, 40))

@@ -477,7 +477,7 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/styleEfficiency"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -485,7 +485,7 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/styleEveryday"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -493,7 +493,7 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/styleRacing"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -853,7 +853,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="?attr/obdWarn"
+                        android:textColor="?attr/obdWarnText"
                         android:textSize="13sp"
                         android:visibility="gone" />
 
@@ -1578,6 +1578,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/obdSurface"
+        app:elevation="0dp"
         android:minHeight="56dp"
         app:itemPaddingTop="6dp"
         app:itemPaddingBottom="6dp"
