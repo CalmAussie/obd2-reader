@@ -29,7 +29,11 @@ class ChargeGraphView(context: Context, private val colour: Int, private val gri
     // Archivo in sp, like the rest of the app's labels, so it follows the font and text-size settings.
     private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = label; typeface = context.uiTypeface(400); textSize = sp(12f); fontFeatureSettings = "tnum" }
 
+    private val emptyPaint = android.text.TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = label; typeface = context.uiTypeface(400); textSize = sp(13f) }
+
     init { contentDescription = "Battery charge over time" }
+
+    private companion object { const val EMPTY = "The graph starts after a few readings." }
 
     override fun onDraw(canvas: Canvas) {
         // Room for the labels at any text size: percentages on the right, times along the bottom.
@@ -38,7 +42,10 @@ class ChargeGraphView(context: Context, private val colour: Int, private val gri
         val w = width - padL - padR; val h = height - padT - padB
         if (w <= 0 || h <= 0) return
         if (points.size < 2) {
-            canvas.drawText("The graph starts after a few readings.", padL, padT + h / 2, text)
+            // Centred and wrapped, so it fits at any text size.
+            val msg = android.text.StaticLayout.Builder.obtain(EMPTY, 0, EMPTY.length, emptyPaint, width.coerceAtLeast(1))
+                .setAlignment(android.text.Layout.Alignment.ALIGN_CENTER).build()
+            canvas.save(); canvas.translate(0f, ((height - msg.height) / 2f).coerceAtLeast(0f)); msg.draw(canvas); canvas.restore()
             return
         }
         val lo0 = points.minOf { it.second }; val hi0 = points.maxOf { it.second }

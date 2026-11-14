@@ -1788,31 +1788,34 @@ open class MainActivity : AppCompatActivity() {
         val hasCharge = listed || answered.any { EvBattery.isCharge(it) }
         android.util.Log.i("OBD2Deep", "ev battery: 5B " + (if (listed) "listed" else "not listed") + ", maker tried ${maker.size}, answered " +
             answered.joinToString(", ") { "${it.id}=${first[it]?.let(it::format)}" }.ifEmpty { "none" })
-        fun pct(v: Double?) = v?.let { String.format(Locale.US, "%.0f%%", it) } ?: "N/A"
+        fun pct(v: Double?) = v?.let { String.format(Locale.US, "%.0f %%", it) } ?: "N/A"
+        // Percentages with a space, as on the Dashboard ("82 %").
+        fun fmt(r: EnhancedReadings.Reading, v: Double?) = v?.let { r.format(it).replace(Regex("(\\d)%$"), "$1 %") } ?: "N/A"
         val values = mutableMapOf<EnhancedReadings.Reading, TextView>()
         var standardView: TextView? = null
         var paceView: TextView? = null
         var graph: com.obdreader.app.ui.ChargeGraphView? = null
         infoSheet(getString(R.string.ev_title)) { heading, line, body ->
             fun valueRow(name: String, sub: String, value: String, unofficial: Boolean): TextView {
-                val v = TextView(this).apply { text = value; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f); setTextColor(themeColor(R.attr.obdAccent)) }
+                // A live number, like the trip tiles: display font, even-width digits so it doesn't jump every 5 s.
+                val v = TextView(this).apply { text = value; typeface = displayTypeface(); fontFeatureSettings = "tnum"; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f); setTextColor(themeColor(R.attr.obdTextPrimary)) }
                 body.addView(LinearLayout(this).apply {
                     orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(6f).toInt(), 0, 0)
                     addView(LinearLayout(this@MainActivity).apply {
                         orientation = LinearLayout.VERTICAL
-                        addView(TextView(this@MainActivity).apply { text = name; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdTextPrimary)) })
+                        addView(TextView(this@MainActivity).apply { text = name; typeface = uiTypeface(500); setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary)) })
                         addView(TextView(this@MainActivity).apply {
                             text = if (unofficial) getString(R.string.ev_unofficial) + " · " + sub else sub
-                            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
                         })
-                    }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(12f).toInt() })
                     addView(v)
                 })
                 return v
             }
             heading("Battery")
             standardView = valueRow(getString(R.string.ev_charge), getString(R.string.ev_charge_sub), pct(ObdSession.state.value.readings[EvBattery.CHARGE_KEY]), false)
-            answered.forEach { r -> values[r] = valueRow(r.name, r.module, first[r]?.let(r::format) ?: "N/A", true) }
+            answered.forEach { r -> values[r] = valueRow(r.name, r.module, fmt(r, first[r]), true) }
             if (!listed && answered.isEmpty()) line(getString(R.string.ev_none), true)
             heading("Charging")
             if (hasCharge) {
@@ -1841,7 +1844,7 @@ open class MainActivity : AppCompatActivity() {
                 val now: Map<EnhancedReadings.Reading, Double?> = if (!connected || answered.isEmpty()) emptyMap()
                     else try { ObdSession.readEnhanced(answered) } catch (e: CancellationException) { throw e } catch (e: Exception) { emptyMap() }
                 standardView?.text = pct(std)
-                values.forEach { (r, tv) -> tv.text = now[r]?.let(r::format) ?: "N/A" }
+                values.forEach { (r, tv) -> tv.text = fmt(r, now[r]) }
                 evLog.add(android.os.SystemClock.elapsedRealtime(), EvBattery.charge(std, now))
                 graph?.show(evLog.all.map { it.timeMs to it.percent })
                 val pack = EvBattery.packKwh(now.entries.firstOrNull { it.key.id == "leaf.capacity" }?.value, now.entries.firstOrNull { it.key.id == "leaf.hv_volts" }?.value)
@@ -1852,7 +1855,7 @@ open class MainActivity : AppCompatActivity() {
         sheet.setOnDismissListener { job.cancel() }
     }
 
-    /** "Charging: +24 % an hour · about 5.8 kW · 80% in about 1 h 10 min", or null until the pace is known. */
+    /** "Charging: +24 % an hour · about 5.8 kW · 80 % in about 1 h 10 min", or null until the pace is known. */
     private fun evPace(packKwh: Double?): String? {
         val text = EvBattery.describe(evLog) ?: return null
         if (evLog.state() != EvBattery.State.CHARGING) return text
@@ -1861,7 +1864,7 @@ open class MainActivity : AppCompatActivity() {
         val to80 = evLog.minutesTo(80.0)
         val toFull = evLog.minutesTo(100.0)
         when {
-            to80 != null -> parts += "80% in about ${EvBattery.duration(to80)}"
+            to80 != null -> parts += "80 % in about ${EvBattery.duration(to80)}"
             toFull != null -> parts += "full in about ${EvBattery.duration(toFull)}"
         }
         return parts.joinToString(" · ")

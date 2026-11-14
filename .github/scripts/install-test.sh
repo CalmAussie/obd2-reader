@@ -1032,6 +1032,12 @@ deep_check "Codes from other modules" modules "modules: .*ABS and stability cont
 deep_check "Enhanced diagnostics" enhanced "enhanced: .*Transmission fluid temperature=[0-9.]+ °C"
 # EV battery: the demo car is petrol, so it reports no high-voltage battery (N/A, never a made-up value).
 deep_check "EV battery" ev-battery "ev battery: 5B not listed, maker tried 0, answered none"
+# The same sheet in the light Pit lane style, for the design check, then back to Asphalt.
+if pick_style "Pit lane"; then
+  diag_top
+  if tap_scrolled "EV battery"; then sleep 4; shot 13-ev-battery-pit-lane; adb shell input keyevent KEYCODE_BACK; sleep 2; fi
+  pick_style "Asphalt" || { log "ev battery: FAILED (Asphalt not picked again)"; FAIL=1; }
+fi
 # Module information: the demo's ABS gives its part number.
 INFO=0
 diag_top

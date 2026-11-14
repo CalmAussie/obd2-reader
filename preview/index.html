@@ -4648,7 +4648,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
   const line = (t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${t}</div>`;
   const head = t => `<div class="trip-h">${t}</div>`;
   const sheet = (title, html) => overlay(`<div class="handle"></div><h2>${title}</h2>${html}`, { sheet: true });
-  const vrow = (n, sub, v, cls) => `<div style="display:flex;align-items:center;margin-top:6px"><div style="flex:1"><div>${n}</div><div style="font-size:12px;opacity:.6">${sub}</div></div><b class="${cls || ""}" style="color:var(--accent);font-size:18px">${v}</b></div>`;
+  const vrow = (n, sub, v, cls) => `<div style="display:flex;align-items:center;margin-top:6px"><div style="flex:1;min-width:0;margin-right:12px"><div style="font-size:15px;font-weight:500">${n}</div><div style="font-size:13px;color:var(--fg-2)">${sub}</div></div><b class="xb ${cls || ""}" style="font-size:24px;font-variant-numeric:tabular-nums;white-space:nowrap">${v}</b></div>`;
   const about = head("About this") + line("Read-only: the app only reads what the car reports. It never wakes, switches or commands the high-voltage system.", true);
   const rate = pts => { // straight-line fit over the last 10 minutes, %/hour (EvBattery.ChargeLog.ratePerHour)
     const last = pts[pts.length - 1]; const r = pts.filter(p => last[0] - p[0] <= 600000);
@@ -4664,7 +4664,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     let lo = Math.floor(Math.min(...pts.map(p => p[1])) / 5) * 5, hi = Math.ceil(Math.max(...pts.map(p => p[1])) / 5) * 5;
     if (hi - lo < 10) { const m = (lo + hi) / 2; lo = m - 5; hi = m + 5; } lo = Math.max(0, lo); hi = Math.max(lo + 10, Math.min(100, hi));
     const t0 = pts[0][0], span = Math.max(1, pts[pts.length - 1][0] - t0), x = t => padL + W * (t - t0) / span, y = v => padT + H * (1 - (v - lo) / (hi - lo));
-    g.font = "11px sans-serif"; g.fillStyle = dim; g.strokeStyle = "rgba(150,150,150,.25)"; g.lineWidth = 1;
+    g.font = "12px " + (getComputedStyle(document.body).getPropertyValue("--ui").trim() || "sans-serif"); g.fontVariantNumeric = "tabular-nums"; g.fillStyle = dim; g.strokeStyle = "rgba(150,150,150,.25)"; g.lineWidth = 1;
     [lo, (lo + hi) / 2, hi].forEach(v => { g.beginPath(); g.moveTo(padL, y(v)); g.lineTo(padL + W, y(v)); g.stroke(); g.fillText(v.toFixed(0) + "%", padL + W + 6, y(v) + 4); });
     g.beginPath(); g.moveTo(x(t0), padT + H); pts.forEach(p => g.lineTo(x(p[0]), y(p[1]))); g.lineTo(x(pts[pts.length - 1][0]), padT + H); g.closePath(); g.globalAlpha = .16; g.fillStyle = acc; g.fill(); g.globalAlpha = 1;
     g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(x(p[0]), y(p[1])) : g.moveTo(x(p[0]), y(p[1]))); g.strokeStyle = acc; g.lineWidth = 2.5; g.lineJoin = "round"; g.stroke();
@@ -4688,9 +4688,9 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     const tick = () => {
       if (!document.body.contains(s)) return clearInterval(iv);
       const now = pts[pts.length - 1], r = rate(pts), v = 340 + now[1] * 0.9, kwh = 66.2 * v / 1000;
-      s.querySelector(".ev-soc").textContent = now[1].toFixed(1) + "%"; s.querySelector(".ev-v").textContent = v.toFixed(1) + " V";
+      s.querySelector(".ev-soc").textContent = now[1].toFixed(1) + " %"; s.querySelector(".ev-v").textContent = v.toFixed(1) + " V";
       const parts = [`Charging: +${r.toFixed(0)} % an hour`, `about ${(r / 100 * kwh).toFixed(1)} kW`];
-      if (now[1] < 80) parts.push(`80% in about ${dur(Math.round((80 - now[1]) / r * 60))}`); else if (now[1] < 100) parts.push(`full in about ${dur(Math.round((100 - now[1]) / r * 60))}`);
+      if (now[1] < 80) parts.push(`80 % in about ${dur(Math.round((80 - now[1]) / r * 60))}`); else if (now[1] < 100) parts.push(`full in about ${dur(Math.round((100 - now[1]) / r * 60))}`);
       s.querySelector(".ev-pace").textContent = parts.join(" · ");
       draw(s.querySelector(".ev-graph"), pts);
     };
