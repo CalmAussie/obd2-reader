@@ -740,7 +740,16 @@ replies_sheets() {
 replies_sheets asphalt
 if pick_style "Pit lane"; then replies_sheets pit-lane
   # The EV battery sheet in the light style too, for the design check (the demo car is petrol: N/A).
-  diag_top; if tap_scrolled "EV battery"; then sleep 4; shot 13-ev-battery-pit-lane; adb shell input keyevent KEYCODE_BACK; sleep 2; else log "ev battery (pit-lane): not shown"; fi
+  # A tap can land while the list is still settling from the scroll, so check the sheet ran and try twice.
+  EVP=0
+  for attempt in 1 2; do
+    diag_top; adb logcat -c
+    if tap_scrolled "EV battery"; then
+      for i in 1 2 3 4 5 6 7 8; do adb logcat -d -s OBD2Deep:I | grep -q "ev battery:" && { EVP=1; break; }; sleep 2; done
+      if [ $EVP = 1 ]; then sleep 2; shot 13-ev-battery-pit-lane; adb shell input keyevent KEYCODE_BACK; sleep 2; break; fi
+    fi
+  done
+  [ $EVP = 1 ] && log "ev battery (pit-lane): sheet shown" || log "ev battery (pit-lane): not shown (screenshot only, not a failure)"
   pick_style "Asphalt" || { log "record and replay: FAILED (Asphalt not picked again)"; FAIL=1; }
 else log "record and replay: FAILED (couldn't pick Pit lane)"; FAIL=1; fi
 if [ $DEBUG_BUILD = 1 ]; then
