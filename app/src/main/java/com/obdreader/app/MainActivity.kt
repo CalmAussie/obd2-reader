@@ -84,6 +84,7 @@ import com.obdreader.app.obd.TripSummary
 import com.obdreader.app.obd.Units
 import com.obdreader.app.obd.CustomReading
 import com.obdreader.app.obd.EnhancedReadings
+import com.obdreader.app.obd.EvBattery
 import com.obdreader.app.obd.ModuleScan
 import com.obdreader.app.obd.Readiness
 import com.obdreader.app.obd.CarCoverage
@@ -1181,7 +1182,7 @@ open class MainActivity : AppCompatActivity() {
     private fun setupGroups() {
         val groups = listOf(
             Triple("car", "Car and connection", listOf(R.id.carRow, R.id.vinPrivacyRow, R.id.marketRow, R.id.protocolRow, R.id.reconnectRow, R.id.repliesRow, R.id.logCard)),
-            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.clearedRow, R.id.historyRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.customRow, R.id.alertsRow)),
+            Triple("checks", "Deeper checks", listOf(R.id.scanRow, R.id.clearedRow, R.id.historyRow, R.id.readinessRow, R.id.testsRow, R.id.modulesRow, R.id.enhancedRow, R.id.evRow, R.id.customRow, R.id.alertsRow)),
             Triple("display", "Display and readings", listOf(R.id.unitsRow, R.id.slotsRow, R.id.widgetRow, R.id.autoRow, R.id.pipRow, R.id.appIconRow)),
             Triple("backup", "Back up", listOf(R.id.backupRow)),
             Triple("help", "Help and feedback", listOf(R.id.helpRow, R.id.reportRow, R.id.ideaRow, R.id.updatesRow)),
@@ -1293,6 +1294,7 @@ open class MainActivity : AppCompatActivity() {
         row(R.id.testsRow, getString(R.string.tests_title), getString(R.string.tests_help)) { runCheck(getString(R.string.tests_title)) { showTestResults() } }
         row(R.id.modulesRow, getString(R.string.modules_title), getString(R.string.modules_help)) { runCheck(getString(R.string.modules_title), "Asking each module in turn. This can take half a minute.") { showModules() } }
         row(R.id.enhancedRow, getString(R.string.enhanced_title), getString(R.string.enhanced_help)) { runCheck(getString(R.string.enhanced_title)) { showEnhanced() } }
+        row(R.id.evRow, getString(R.string.ev_title), getString(R.string.ev_help)) { runCheck(getString(R.string.ev_title)) { showEvBattery() } }
         row(R.id.customRow, getString(R.string.custom_title), getString(R.string.custom_help)) { showCustomReadings() }
         row(R.id.historyRow, getString(R.string.history_codes_title), getString(R.string.history_codes_help)) { showCodeHistory() }
         row(R.id.vinPrivacyRow, getString(R.string.vin_privacy_title), vinMode().label) { showVinPrivacy() }
@@ -1767,6 +1769,108 @@ open class MainActivity : AppCompatActivity() {
             }
         }
         sheet.setOnDismissListener { job.cancel() }
+    }
+
+    // ---- EV battery ----
+
+    /**
+     * EV battery: the standard charge reading (5B), the maker's battery readings where they're
+     * known for this car (marked Unofficial), and the charge's pace and graph while the sheet is
+     * open. Read-only: the high-voltage system is never woken or commanded.
+     */
+    private suspend fun showEvBattery() {
+        val car = AppPrefs.savedCar(AppPrefs.of(this))
+        val make = ObdSession.carMake(this)
+        val maker = EvBattery.makerReadings(make, car?.model, ObdSession.carYear(this))
+        val first: Map<EnhancedReadings.Reading, Double?> = if (maker.isEmpty()) emptyMap() else ObdSession.readEnhanced(maker)
+        val answered = maker.filter { first[it] != null }
+        val listed = ObdSession.state.value.supported?.contains(0x5B) == true
+        val hasCharge = listed || answered.any { EvBattery.isCharge(it) }
+        android.util.Log.i("OBD2Deep", "ev battery: 5B " + (if (listed) "listed" else "not listed") + ", maker tried ${maker.size}, answered " +
+            answered.joinToString(", ") { "${it.id}=${first[it]?.let(it::format)}" }.ifEmpty { "none" })
+        fun pct(v: Double?) = v?.let { String.format(Locale.US, "%.0f %%", it) } ?: "N/A"
+        // Percentages with a space, as on the Dashboard ("82 %").
+        fun fmt(r: EnhancedReadings.Reading, v: Double?) = v?.let { r.format(it).replace(Regex("(\\d)%$"), "$1 %") } ?: "N/A"
+        val values = mutableMapOf<EnhancedReadings.Reading, TextView>()
+        var standardView: TextView? = null
+        var paceView: TextView? = null
+        var graph: com.obdreader.app.ui.ChargeGraphView? = null
+        infoSheet(getString(R.string.ev_title)) { heading, line, body ->
+            fun valueRow(name: String, sub: String, value: String, unofficial: Boolean): TextView {
+                // A live number, like the trip tiles: display font, even-width digits so it doesn't jump every 5 s.
+                val v = TextView(this).apply { text = value; typeface = displayTypeface(); fontFeatureSettings = "tnum"; maxLines = 1; setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f); setTextColor(themeColor(R.attr.obdTextPrimary)) }
+                body.addView(LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(6f).toInt(), 0, 0)
+                    addView(LinearLayout(this@MainActivity).apply {
+                        orientation = LinearLayout.VERTICAL
+                        addView(TextView(this@MainActivity).apply { text = name; typeface = uiTypeface(500); setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary)) })
+                        addView(TextView(this@MainActivity).apply {
+                            text = if (unofficial) getString(R.string.ev_unofficial) + " · " + sub else sub
+                            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setTextColor(themeColor(R.attr.obdTextSecondary))
+                        })
+                    }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(12f).toInt() })
+                    addView(v)
+                })
+                return v
+            }
+            heading("Battery")
+            // The standard Charge row, unless the car doesn't list it and a maker charge reading answered instead:
+            // a "Charge N/A" right above that reading's percentage would look broken.
+            if (listed || answered.none { EvBattery.isCharge(it) })
+                standardView = valueRow(getString(R.string.ev_charge), getString(R.string.ev_charge_sub), pct(ObdSession.state.value.readings[EvBattery.CHARGE_KEY]), false)
+            answered.forEach { r -> values[r] = valueRow(r.name, r.module, fmt(r, first[r]), true) }
+            if (!listed && answered.isEmpty()) line(getString(R.string.ev_none), true)
+            heading("Charging")
+            if (hasCharge) {
+                val pace = TextView(this).apply {
+                    text = getString(R.string.ev_watching); setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); setTextColor(themeColor(R.attr.obdTextPrimary))
+                    setPadding(0, dp(4f).toInt(), 0, dp(8f).toInt())
+                }
+                body.addView(pace)
+                paceView = pace
+                val chart = com.obdreader.app.ui.ChargeGraphView(this, themeColor(R.attr.obdAccent), themeColor(R.attr.obdTextSecondary) and 0x40FFFFFF, themeColor(R.attr.obdTextSecondary))
+                body.addView(chart, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(140f).toInt()))
+                graph = chart
+                line(getString(R.string.ev_charging_help), true)
+            } else line(getString(R.string.ev_no_charge), true)
+            if (answered.isNotEmpty()) line(getString(R.string.ev_unofficial_note), true)
+            heading("About this")
+            line(getString(R.string.ev_about), true)
+        }
+        val sheet = currentSheet ?: return
+        if (!hasCharge && answered.isEmpty()) return
+        // Live while the sheet is open, every 5 seconds.
+        val job = lifecycleScope.launch {
+            while (true) {
+                val connected = ObdSession.state.value.isConnected
+                val std = if (connected) ObdSession.state.value.readings[EvBattery.CHARGE_KEY] else null
+                val now: Map<EnhancedReadings.Reading, Double?> = if (!connected || answered.isEmpty()) emptyMap()
+                    else try { ObdSession.readEnhanced(answered) } catch (e: CancellationException) { throw e } catch (e: Exception) { emptyMap() }
+                standardView?.text = pct(std)
+                values.forEach { (r, tv) -> tv.text = fmt(r, now[r]) }
+                evLog.add(android.os.SystemClock.elapsedRealtime(), EvBattery.charge(std, now))
+                graph?.show(evLog.all.map { it.timeMs to it.percent })
+                val pack = EvBattery.packKwh(now.entries.firstOrNull { it.key.id == "leaf.capacity" }?.value, now.entries.firstOrNull { it.key.id == "leaf.hv_volts" }?.value)
+                paceView?.text = evPace(pack) ?: getString(if (connected) R.string.ev_watching else R.string.ev_disconnected)
+                kotlinx.coroutines.delay(5000)
+            }
+        }
+        sheet.setOnDismissListener { job.cancel() }
+    }
+
+    /** "Charging: +24 % an hour · about 5.8 kW · 80 % in about 1 h 10 min", or null until the pace is known. */
+    private fun evPace(packKwh: Double?): String? {
+        val text = EvBattery.describe(evLog) ?: return null
+        if (evLog.state() != EvBattery.State.CHARGING) return text
+        val parts = mutableListOf(text)
+        EvBattery.powerKw(evLog.ratePerHour(), packKwh)?.let { parts += String.format(Locale.US, "about %.1f kW", it) }
+        val to80 = evLog.minutesTo(80.0)
+        val toFull = evLog.minutesTo(100.0)
+        when {
+            to80 != null -> parts += "80 % in about ${EvBattery.duration(to80)}"
+            toFull != null -> parts += "full in about ${EvBattery.duration(toFull)}"
+        }
+        return parts.joinToString(" · ")
     }
 
     private fun readModuleInfo() {
@@ -5738,6 +5842,8 @@ open class MainActivity : AppCompatActivity() {
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
 
     companion object {
+        /** The EV battery's charge while its sheet is open, kept across reopening (a gap of 10 minutes starts it again). */
+        private val evLog = EvBattery.ChargeLog()
         /** Recordings bigger than this (several hours of driving) are left out of the same-route comparison. */
         const val COMPARE_MAX_BYTES = 16L * 1024 * 1024
         /** The old screen's picture, faded out over the new one after a style switch. */

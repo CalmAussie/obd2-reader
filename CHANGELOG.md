@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.4 (15 November 2026)
+- **EV battery.** Under Diagnostics, for hybrids and electric cars: the high-voltage battery's charge, from the standard reading any make can report. Keep it open while the car charges to see how fast it's charging, about how many kW, and when it'll reach 80 % or full, with a graph of the charge. On the 2011–2017 Nissan Leaf and 2013–2019 Renault Zoe it also shows battery readings owners have found on their own cars, marked Unofficial. Cars without a high-voltage battery show N/A. Read-only, as always: the app never wakes, switches or commands the high-voltage system.
+- **Trip summary.** The average speed can no longer show a little above the top speed after a very short drive that stops at once.
+
 ## 2.5.3 (14 November 2026)
 - **Record and replay.** Under Car and connection: turn on Record car replies, and each time you connect, what your car answers to the app's requests is saved in a plain text file on your phone. Replay it later without the car, like the demo car, or share it with a bug report. Your VIN is left out unless Hide VIN shows it in full. The newest 10 recordings are kept.
 - **G-force.** With your phone in a mount, its motion sensor shows forward and sideways g on the Dashboard and a g-meter on the Race telemetry layout. It learns how the phone sits in the mount after you drive off and brake once in a straight line; phones without a motion sensor show N/A. After a drive, the trip summary shows the peak braking, speeding up and cornering g and how many harsh moments there were (they don't change the driving scores), the drive card shows the peak g, recorded drives get g columns, and the video overlay shows a g-meter for drives recorded with it. It all stays on your phone.

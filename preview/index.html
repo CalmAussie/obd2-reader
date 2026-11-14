@@ -4641,6 +4641,67 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
     return baseVal.apply(this, arguments);
   };
 })();
+/* ===== EV battery (mirrors obd/EvBattery.kt and MainActivity.showEvBattery): the demo car is petrol, so N/A; "Preview as an electric car" simulates one charging ===== */
+(() => {
+  const chev = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z"/></svg>`;
+  $("enhancedRow").insertAdjacentHTML("afterend", `<button class="setting" id="evRow"><div class="r"><span style="flex:1">EV battery</span>${chev}</div><div class="h">Hybrids and electric cars: the high-voltage battery's charge, plus how fast it's charging, with a graph.</div></button>`);
+  const line = (t, dim) => `<div class="scan-l${dim ? " dim" : ""}">${t}</div>`;
+  const head = t => `<div class="trip-h">${t}</div>`;
+  const sheet = (title, html) => overlay(`<div class="handle"></div><h2>${title}</h2>${html}`, { sheet: true });
+  const vrow = (n, sub, v, cls) => `<div style="display:flex;align-items:center;margin-top:6px"><div style="flex:1;min-width:0;margin-right:12px"><div style="font-size:15px;font-weight:500">${n}</div><div style="font-size:13px;color:var(--fg-2)">${sub}</div></div><b class="xb ${cls || ""}" style="font-size:24px;font-variant-numeric:tabular-nums;white-space:nowrap">${v}</b></div>`;
+  const about = head("About this") + line("Read-only: the app only reads what the car reports. It never wakes, switches or commands the high-voltage system.", true);
+  const rate = pts => { // straight-line fit over the last 10 minutes, %/hour (EvBattery.ChargeLog.ratePerHour)
+    const last = pts[pts.length - 1]; const r = pts.filter(p => last[0] - p[0] <= 600000);
+    if (r.length < 3 || last[0] - r[0][0] < 180000) return null;
+    const xs = r.map(p => (p[0] - r[0][0]) / 3600000), ys = r.map(p => p[1]), mx = xs.reduce((a, b) => a + b) / xs.length, my = ys.reduce((a, b) => a + b) / ys.length;
+    let sxy = 0, sxx = 0; xs.forEach((x, i) => { sxy += (x - mx) * (ys[i] - my); sxx += (x - mx) ** 2; }); return sxx ? sxy / sxx : null;
+  };
+  const dur = m => m >= 60 ? `${Math.floor(m / 60)} h` + (m % 60 ? ` ${m % 60} min` : "") : `${m} min`;
+  const draw = (cv, pts) => {
+    const dpr = devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight; cv.width = w * dpr; cv.height = h * dpr;
+    const g = cv.getContext("2d"); g.scale(dpr, dpr); const cs = getComputedStyle(cv), acc = cs.getPropertyValue("--accent").trim() || "#4ade80", dim = "rgba(150,150,150,.8)";
+    const padL = 4, padR = 36, padT = 10, padB = 20, W = w - padL - padR, H = h - padT - padB;
+    let lo = Math.floor(Math.min(...pts.map(p => p[1])) / 5) * 5, hi = Math.ceil(Math.max(...pts.map(p => p[1])) / 5) * 5;
+    if (hi - lo < 10) { const m = (lo + hi) / 2; lo = m - 5; hi = m + 5; } lo = Math.max(0, lo); hi = Math.max(lo + 10, Math.min(100, hi));
+    const t0 = pts[0][0], span = Math.max(1, pts[pts.length - 1][0] - t0), x = t => padL + W * (t - t0) / span, y = v => padT + H * (1 - (v - lo) / (hi - lo));
+    g.font = "12px " + (getComputedStyle(cv).getPropertyValue("--ui").trim() || "sans-serif"); g.fontVariantNumeric = "tabular-nums"; g.fillStyle = dim; g.strokeStyle = "rgba(150,150,150,.25)"; g.lineWidth = 1;
+    [lo, (lo + hi) / 2, hi].forEach(v => { g.beginPath(); g.moveTo(padL, y(v)); g.lineTo(padL + W, y(v)); g.stroke(); g.fillText(v.toFixed(0) + "%", padL + W + 6, y(v) + 4); });
+    g.beginPath(); g.moveTo(x(t0), padT + H); pts.forEach(p => g.lineTo(x(p[0]), y(p[1]))); g.lineTo(x(pts[pts.length - 1][0]), padT + H); g.closePath(); g.globalAlpha = .16; g.fillStyle = acc; g.fill(); g.globalAlpha = 1;
+    g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(x(p[0]), y(p[1])) : g.moveTo(x(p[0]), y(p[1]))); g.strokeStyle = acc; g.lineWidth = 2.5; g.lineJoin = "round"; g.stroke();
+    const l = pts[pts.length - 1]; g.beginPath(); g.arc(x(l[0]), y(l[1]), 4, 0, 7); g.fillStyle = acc; g.fill();
+    g.fillStyle = dim; g.fillText(`${Math.round(span / 60000)} min ago`, padL, padT + H + 15); g.fillText("now", padL + W - g.measureText("now").width, padT + H + 15);
+  };
+  const petrol = () => sheet("EV battery", head("Battery") + vrow("Charge", "Standard reading, any make", "N/A") +
+    line("Your car didn't report a high-voltage battery. Petrol and diesel cars don't have one, and some hybrids and EVs keep it to their maker's own tools.", true) +
+    head("Charging") + line("Charging needs the battery's charge, which your car didn't report.", true) + about +
+    `<button class="btn btn-out" id="evSim" style="margin-top:14px">Preview as an electric car</button><p class="msg" style="margin-top:6px">Preview only: shows a Nissan Leaf charging, sped up.</p>`);
+  const electric = () => {
+    // A 2015 Leaf on a 6.6 kW charger: about 25 % an hour; 10 minutes of history already, then 30 s of charging each second.
+    let t = 0; const pts = []; const soc = t => 46 + t / 3600000 * 25, step = v => Math.floor(v * 2) / 2;
+    for (; t <= 600000; t += 10000) pts.push([t, step(soc(t))]);
+    const s = sheet("EV battery", head("Battery") + /* no 5B and a maker charge answered: the standard Charge row is left out */
+      vrow("Battery charge (state of charge)", "Unofficial · Battery controller", "", "ev-soc") + vrow("Battery capacity", "Unofficial · Battery controller", "66.2 Ah") +
+      vrow("Battery voltage", "Unofficial · Battery controller", "", "ev-v") + vrow("Battery temperature", "Unofficial · Battery controller", "21 °C") +
+      head("Charging") + `<div class="ev-pace" style="font-size:15px;padding:4px 0 8px"></div><canvas class="ev-graph" style="width:100%;height:140px;display:block"></canvas>` +
+      line("Keep this open while the car charges (or drives) to see the pace. The car reports its charge in small steps, so the pace settles after a few minutes.", true) +
+      line("Readings marked Unofficial come from owners testing them on their own cars, not from the maker, so check one against your car before relying on it.", true) + about);
+    const tick = () => {
+      if (!document.body.contains(s)) return clearInterval(iv);
+      const now = pts[pts.length - 1], r = rate(pts), v = 340 + now[1] * 0.9, kwh = 66.2 * v / 1000;
+      s.querySelector(".ev-soc").textContent = now[1].toFixed(1) + " %"; s.querySelector(".ev-v").textContent = v.toFixed(1) + " V";
+      const parts = [`Charging: +${r.toFixed(0)} % an hour`, `about ${(r / 100 * kwh).toFixed(1)} kW`];
+      if (now[1] < 80) parts.push(`80 % in about ${dur(Math.round((80 - now[1]) / r * 60))}`); else if (now[1] < 100) parts.push(`full in about ${dur(Math.round((100 - now[1]) / r * 60))}`);
+      s.querySelector(".ev-pace").textContent = parts.join(" · ");
+      draw(s.querySelector(".ev-graph"), pts);
+    };
+    const iv = setInterval(() => { for (let k = 0; k < 3; k++) { t += 10000; pts.push([t, step(Math.min(100, soc(t)))]); } tick(); }, 1000);
+    requestAnimationFrame(tick);
+  };
+  $("evRow").onclick = () => {
+    if (state !== "connected") { toast("Connect to your car first."); return; }
+    petrol(); $("evSim").onclick = () => { closeOverlay(); electric(); };
+  };
+})();
 window.carReady = true;
 if (location.hash === "#car") showView(true);
 </script>

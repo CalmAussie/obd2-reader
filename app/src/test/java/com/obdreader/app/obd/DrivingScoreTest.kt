@@ -112,4 +112,16 @@ class DrivingScoreTest {
         assertTrue(r.idleSeconds in 18..20)
         assertTrue(r.connectedSeconds in 79..81)
     }
+
+    @Test
+    fun averageIsNeverAboveTopSpeed() {
+        val d = DrivingScore()
+        var t = 0L
+        // A short drive held at 188 km/h that stops at once: the stop's stretch adds distance, not driving time.
+        repeat(20) { d.update(t, 188.0, 3000.0, 40.0, 50.0, 90.0); t += 1000 }
+        d.update(t, 0.0, 800.0, 0.0, 20.0, 90.0)
+        val r = d.result(DrivingScore.Style.EVERYDAY)
+        assertTrue(r.averageSpeed!! <= r.topSpeed!! + 1e-9)
+        assertEquals(188.0, r.averageSpeed!!, 0.001)
+    }
 }

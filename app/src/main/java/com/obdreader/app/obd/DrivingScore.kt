@@ -47,8 +47,12 @@ class DrivingScore(redline: Float = 6500f) {
         /** Time connected to the car (moving or not), in seconds. */
         val connectedSeconds: Int = 0,
     ) {
-        /** Average speed while moving, in km/h; null until the car has moved. */
-        val averageSpeed: Double? get() = if (drivingSeconds > 0) distanceKm / (drivingSeconds / 3600.0) else null
+        /**
+         * Average speed while moving, in km/h; null until the car has moved. Never above the top speed:
+         * the last stretch of a sudden stop adds distance but isn't driving time, which on a very short
+         * drive could otherwise put the average a little over the top.
+         */
+        val averageSpeed: Double? get() = if (drivingSeconds > 0) (distanceKm / (drivingSeconds / 3600.0)).let { a -> topSpeed?.let { minOf(a, it) } ?: a } else null
     }
 
     var redline: Float = redline
