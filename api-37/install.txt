@@ -1,0 +1,25 @@
+Performing Streamed Install
+adb: failed to install OBD2Reader.apk: 
+Exception occurred while executing 'install':
+java.lang.NullPointerException: Attempt to invoke virtual method 'void android.content.pm.PackageManagerInternal.freeStorage(java.lang.String, long, int)' on a null object reference
+	at com.android.server.StorageManagerService.allocateBytes(StorageManagerService.java:4274)
+	at android.os.storage.StorageManager.allocateBytes(StorageManager.java:2311)
+	at android.os.storage.StorageManager.allocateBytes(StorageManager.java:2389)
+	at com.android.server.pm.PackageInstallerSession.doWriteInternal(PackageInstallerSession.java:2245)
+	at com.android.server.pm.PackageInstallerSession.write(PackageInstallerSession.java:2147)
+	at android.content.pm.PackageInstaller$Session.write(PackageInstaller.java:1987)
+	at com.android.server.pm.PackageManagerShellCommand.doWriteSplit(PackageManagerShellCommand.java:4377)
+	at com.android.server.pm.PackageManagerShellCommand.doWriteSplits(PackageManagerShellCommand.java:4326)
+	at com.android.server.pm.PackageManagerShellCommand.doRunInstall(PackageManagerShellCommand.java:1651)
+	at com.android.server.pm.PackageManagerShellCommand.runInstall(PackageManagerShellCommand.java:1577)
+	at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:249)
+	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+	at android.os.ShellCommand.exec(ShellCommand.java:39)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:7069)
+	at android.os.Binder.shellCommand(Binder.java:1088)
+	at android.os.Binder.onTransact(Binder.java:946)
+	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4786)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:7053)
+	at android.os.Binder.execTransactInternal(Binder.java:1369)
+	at android.os.Binder.execTransact(Binder.java:1323)
+
