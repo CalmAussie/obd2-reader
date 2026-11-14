@@ -78,6 +78,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 - **VIN:** reads your car's VIN. You can enter the one on your plate if they differ. **Hide VIN** (hidden by default) keeps it off the screen, reports, shared files and logs, or hides just the last six characters.
 - **What your car reports:** every reading your car offers, grouped by part of the car with its value now.
 - **Back up and restore:** settings, history and recorded drives in one file you keep, to move to a new phone. Routes and VIN only if you choose.
+- **Record and replay:** save what your car answers to the app's requests in a plain text file on your phone (VIN left out unless you choose to show it), then replay it later without the car, like the demo car. Handy for bug reports.
 
 ## Styles
 
