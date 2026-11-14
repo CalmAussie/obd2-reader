@@ -693,27 +693,64 @@ disconnect_app > /dev/null || log "record and replay: demo car didn't disconnect
 # Disconnecting sums up the drive: close that first.
 tap_text "Done" > /dev/null 2>&1; sleep 1
 adb logcat -c
-diag_top
-if find_scrolled 'text="Record and replay"' "$OUT/ui-replies.xml"; then
+# Opens the Record and replay sheet from Diagnostics. Returns 1 if the row isn't there.
+open_replies() {
+  diag_top
+  find_scrolled 'text="Record and replay"' "$OUT/ui-replies.xml" || return 1
   tap_text "Record and replay" > /dev/null; sleep 2
-  adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-replies2.xml"
-  shot 4c-record-replay
-  if grep -q "Record car replies" "$OUT/ui-replies2.xml" && grep -q "Open a recording file" "$OUT/ui-replies2.xml"; then log "record and replay: sheet shown"
-  else log "record and replay: FAILED (sheet not shown)"; FAIL=1; fi
+}
+# Picks a style from the Dashboard's Style list (it closes when one is tapped).
+pick_style() {
+  tap_tab Dashboard; sleep 2; scroll_top
+  tap_text "Style" > /dev/null || return 1
+  sleep 1
+  for i in 1 2 3 4 5 6; do tap_text "$1" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
+  sleep 4
+}
+# Both sheets, in one style: the list, then one recording (title "Recording", its buttons stacked).
+replies_sheets() {
+  open_replies || { log "record and replay ($1): FAILED (row missing)"; FAIL=1; return 1; }
+  adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-replies-$1.xml"
+  shot "4c-record-replay-$1"
+  if grep -q "Record car replies" "$OUT/ui-replies-$1.xml" && grep -q "Open a recording file" "$OUT/ui-replies-$1.xml"; then log "record and replay ($1): sheet shown"
+  else log "record and replay ($1): FAILED (sheet not shown)"; FAIL=1; fi
   if [ $DEBUG_BUILD = 1 ]; then
-    if grep -q "Demo car (sample recording)" "$OUT/ui-replies2.xml" && tap_text "Open" && sleep 2 && tap_text "Replay"; then
-      sleep 10
-      if adb logcat -d -s OBD2Replay:I | grep -q "Replaying a recording" && [ "$(view_flag demoButton)" = G ]; then log "record and replay: sample recording replayed"
-      else log "record and replay: FAILED (replay didn't connect)"; FAIL=1; fi
-      shot 4d-replaying
-      disconnect_app > /dev/null
-    else log "record and replay: FAILED (sample recording not listed)"; FAIL=1; fi
-  else
-    adb shell input keyevent KEYCODE_BACK; sleep 1
-    log "record and replay: replay not checked (release build)"
+    # The row shows the recording's size, not a word to tap: tap it by its car name.
+    if grep -q "Demo car (sample recording)" "$OUT/ui-replies-$1.xml" && grep -q 'text="[0-9,]* KB"' "$OUT/ui-replies-$1.xml" && tap_contains "Demo car (sample recording)"; then
+      sleep 2
+      adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-recording-$1.xml"
+      shot "4d-recording-$1"
+      if grep -q 'text="Recording"' "$OUT/ui-recording-$1.xml" && grep -q 'text="Replay"' "$OUT/ui-recording-$1.xml" && grep -q 'text="Save or share"' "$OUT/ui-recording-$1.xml" && grep -q 'text="Delete"' "$OUT/ui-recording-$1.xml"; then
+        log "record and replay ($1): recording sheet shown"
+      else log "record and replay ($1): FAILED (recording sheet not shown)"; FAIL=1; fi
+      # Delete asks first; Cancel keeps the recording.
+      if [ "$1" = asphalt ]; then
+        if tap_text "Delete" && sleep 1 && adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 && adb shell cat /sdcard/ui.xml > "$OUT/ui-delete.xml" && grep -q "Delete this recording?" "$OUT/ui-delete.xml"; then
+          shot 4e-delete-asks
+          tap_text "Cancel" > /dev/null; sleep 1
+          log "record and replay: Delete asks first"
+        else log "record and replay: FAILED (Delete didn't ask first)"; FAIL=1; fi
+      fi
+      adb shell input keyevent KEYCODE_BACK; sleep 1
+    else log "record and replay ($1): FAILED (sample recording not listed with its size)"; FAIL=1; fi
   fi
+  adb shell input keyevent KEYCODE_BACK; sleep 1
+}
+# Asphalt (a dark style) is showing after the style tour; Pit lane is a light one.
+replies_sheets asphalt
+if pick_style "Pit lane"; then replies_sheets pit-lane; pick_style "Asphalt" || { log "record and replay: FAILED (Asphalt not picked again)"; FAIL=1; }
+else log "record and replay: FAILED (couldn't pick Pit lane)"; FAIL=1; fi
+if [ $DEBUG_BUILD = 1 ]; then
+  adb logcat -c
+  if open_replies && tap_contains "Demo car (sample recording)" && sleep 2 && tap_text "Replay"; then
+    sleep 10
+    if adb logcat -d -s OBD2Replay:I | grep -q "Replaying a recording" && [ "$(view_flag demoButton)" = G ]; then log "record and replay: sample recording replayed"
+    else log "record and replay: FAILED (replay didn't connect)"; FAIL=1; fi
+    shot 4f-replaying
+    disconnect_app > /dev/null
+  else log "record and replay: FAILED (sample recording not opened)"; FAIL=1; fi
 else
-  log "record and replay: FAILED (row missing)"; FAIL=1
+  log "record and replay: replay not checked (release build)"
 fi
 connect_demo > /dev/null || { log "record and replay: FAILED (demo car didn't reconnect)"; FAIL=1; }
 # App updates: the row is on Diagnostics, near the bottom. Tapping it asks GitHub for the latest release.
