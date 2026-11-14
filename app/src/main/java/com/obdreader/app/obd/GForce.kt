@@ -21,6 +21,8 @@ import kotlin.math.sqrt
 class GForce {
 
     companion object {
+        /** The most a drive's summary keeps (it reads back 0 to 5 g). */
+        const val MAX_G = 5.0
         const val FORWARD_KEY = "GLON"
         const val SIDE_KEY = "GLAT"
         val KEYS = listOf(FORWARD_KEY, SIDE_KEY)
@@ -150,7 +152,8 @@ class GForce {
 
     /** This drive's peaks and harsh moments, or null if it never had a reading (the mount was still being learned). */
     fun drive(): TripSummary.Motion? = if (!measured) null else
-        TripSummary.Motion(peakBrake, peakAccel, peakSide, harshBrakes, harshAccels, harshCorners)
+        // A knock (the phone falling out of its mount) can read past 5 g: kept at 5, so the drive's summary still reads back.
+        TripSummary.Motion(peakBrake.coerceIn(0.0, MAX_G), peakAccel.coerceIn(0.0, MAX_G), peakSide.coerceIn(0.0, MAX_G), harshBrakes, harshAccels, harshCorners)
 
     /**
      * Readings already in the car's directions, for the demo car (there's no mount to learn): forward

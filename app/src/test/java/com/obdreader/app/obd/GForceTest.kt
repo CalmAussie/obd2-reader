@@ -129,4 +129,15 @@ class GForceTest {
         assertFalse(old.hasG)
         assertNull(old.at(0.5).gForward)
     }
+
+    @Test fun aKnockIsKeptAtFiveG() {
+        val g = GForce()
+        g.direct(0.0, 0.0, 0)
+        g.direct(-30.0, 12.0, 1000)   // the phone knocked out of its mount
+        val m = g.drive()!!
+        org.junit.Assert.assertTrue(m.peakBrake <= GForce.MAX_G && m.peakSide <= GForce.MAX_G)
+        // The summary still reads back with its g-force.
+        val t = TripSummary.decode(TripSummary(1_000, 2_000, 1.0, 60, 60, 0, 80.0, 40.0, null, emptyMap(), m).encode())
+        org.junit.Assert.assertNotNull(t?.motion)
+    }
 }
