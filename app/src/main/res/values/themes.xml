@@ -20,6 +20,16 @@
         <item name="obdWarn">#FFB000</item>
         <item name="obdWarnContainer">#3A2A08</item>
         <item name="obdDanger">#FF3B2F</item>
+        <!-- Sheets, dialogs and menus use this style's own surfaces, not Material's default purple-grey. -->
+        <item name="colorSurfaceContainerLowest">?attr/obdBg</item>
+        <item name="colorSurfaceContainerLow">?attr/obdSurface</item>
+        <item name="colorSurfaceContainer">?attr/obdSurface</item>
+        <item name="colorSurfaceContainerHigh">?attr/obdSurfaceHigh</item>
+        <item name="colorSurfaceContainerHighest">?attr/obdSurfaceHigh</item>
+        <!-- Buttons take the style's button corners (square, slightly rounded or pill), not Material's pill. -->
+        <item name="materialButtonStyle">@style/ObdButton</item>
+        <item name="materialButtonOutlinedStyle">@style/ObdButton.Outlined</item>
+        <item name="obdWarnText">?attr/obdWarn</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
@@ -43,6 +53,17 @@
         <item name="obdWarn">#FFB000</item>
         <item name="obdWarnContainer">#FFEFD2</item>
         <item name="obdDanger">#FF3B2F</item>
+        <!-- Sheets, dialogs and menus use this style's own surfaces, not Material's default purple-grey. -->
+        <item name="colorSurfaceContainerLowest">?attr/obdBg</item>
+        <item name="colorSurfaceContainerLow">?attr/obdSurface</item>
+        <item name="colorSurfaceContainer">?attr/obdSurface</item>
+        <item name="colorSurfaceContainerHigh">?attr/obdSurfaceHigh</item>
+        <item name="colorSurfaceContainerHighest">?attr/obdSurfaceHigh</item>
+        <!-- Buttons take the style's button corners (square, slightly rounded or pill), not Material's pill. -->
+        <item name="materialButtonStyle">@style/ObdButton</item>
+        <item name="materialButtonOutlinedStyle">@style/ObdButton.Outlined</item>
+        <!-- Amber text dark enough to read on a light surface (5:1); obdWarn stays for fills. -->
+        <item name="obdWarnText">#8A5700</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
@@ -435,6 +456,14 @@
     <style name="ShapeAppearance.Obd.Cut.8" parent=""><item name="cornerFamily">cut</item><item name="cornerSize">8dp</item></style>
     <style name="ShapeAppearance.Obd.Cut.12" parent=""><item name="cornerFamily">cut</item><item name="cornerSize">12dp</item></style>
     <style name="ShapeAppearance.Obd.Cut.16" parent=""><item name="cornerFamily">cut</item><item name="cornerSize">16dp</item></style>
+
+    <!-- ===== Buttons: the theme's corner radius (obdButtonRadius) ===== -->
+    <style name="ObdButton" parent="Widget.Material3.Button">
+        <item name="cornerRadius">?attr/obdButtonRadius</item>
+    </style>
+    <style name="ObdButton.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">?attr/obdButtonRadius</item>
+    </style>
 
     <!-- ===== Shared component styles (read the tokens above) ===== -->
     <style name="ObdSectionTitle">
