@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.5 (15 November 2026)
+- **Look.** Sheets, dialogs and the bottom bar now use your style's own colours instead of a purple or pink tint, buttons follow your style's corner shape, and rows inside sheets stand out from the sheet behind them. Amber notes and scores are easier to read on the light styles (Pit lane and Rally stage).
+
 ## 2.5.4 (15 November 2026)
 - **EV battery.** Under Diagnostics, for hybrids and electric cars: the high-voltage battery's charge, from the standard reading any make can report. Keep it open while the car charges to see how fast it's charging, about how many kW, and when it'll reach 80 % or full, with a graph of the charge. On the 2011–2017 Nissan Leaf and 2013–2019 Renault Zoe it also shows battery readings owners have found on their own cars, marked Unofficial. Cars without a high-voltage battery show N/A. Read-only, as always: the app never wakes, switches or commands the high-voltage system.
 - **Trip summary.** The average speed can no longer show a little above the top speed after a very short drive that stops at once.
