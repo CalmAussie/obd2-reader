@@ -980,6 +980,13 @@ fi
 tap_tab Graphs; sleep 2
 XY=$(view_center_bottom savedLogsButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8b-saved-drives
+# Deleting a saved drive asks first; Cancel keeps it. Tapping a choice closes the list, so open it again after.
+if tap_contains " KB" && tap_text "Delete" && sleep 1 && adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 && adb shell cat /sdcard/ui.xml > "$OUT/ui-drive-delete.xml" && grep -q "Delete this recorded drive?" "$OUT/ui-drive-delete.xml"; then
+  shot 8b2-saved-drive-delete-asks
+  tap_text "Cancel" > /dev/null; sleep 1
+  log "saved drives: Delete asks first"
+else log "saved drives: FAILED (Delete didn't ask first)"; FAIL=1; adb shell input keyevent KEYCODE_BACK; sleep 1; fi
+[ -n "$XY" ] && adb shell input tap $XY; sleep 2
 if tap_contains " KB" && tap_text "Make a video overlay" && tap_contains "720p" && tap_text "Make video"; then
   READY=0; PCT=; LASTPCT=; STILL=0
   # Slow emulators (Android 10 encodes in software) can need more than 3 minutes for the video: after
