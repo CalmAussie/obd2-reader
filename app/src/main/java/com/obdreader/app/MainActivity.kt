@@ -4030,8 +4030,6 @@ open class MainActivity : AppCompatActivity() {
     /** Closing the floating window is minimising, not closing the app: the connection carries on (the notification has Disconnect). */
     override fun onStop() {
         if (isInPictureInPictureMode) com.obdreader.app.session.AppClose.keepConnectionUntil = System.currentTimeMillis() + 5_000
-        // A VIN tapped to show is hidden again once the app is out of sight.
-        if (vinRevealed != null) { vinRevealed = null; showVin(shownCarVin) }
         super.onStop()
     }
 
@@ -4360,7 +4358,7 @@ open class MainActivity : AppCompatActivity() {
 
     /**
      * The VIN the user tapped to see in full, on screen only: Hide VIN still applies to everything
-     * shared. It's hidden again when they tap it again or the app goes to the background.
+     * shared. It's hidden again when they tap it again or the app leaves the screen (onPause).
      */
     private var vinRevealed: String? = null
 
@@ -4672,6 +4670,9 @@ open class MainActivity : AppCompatActivity() {
         stopStyleWatch()
         Updater.showPrompt = null
         Updater.showProblem = null
+        // A VIN tapped to show is hidden again as the app leaves the screen: here rather than in
+        // onStop, so it's already hidden when Android takes the Recents (app switcher) picture.
+        if (vinRevealed != null) { vinRevealed = null; showVin(shownCarVin) }
         super.onPause()
     }
 
