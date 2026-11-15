@@ -15,9 +15,10 @@ There are 13 styles, two of them light (Pit lane, Rally stage), and day/night sw
 | `obdTextPrimary` | Titles, values, body text you must read |
 | `obdTextSecondary` | Labels, help lines, notes, captions, units |
 | `obdAccent` | The filled button, the selected tab, icons, chart lines |
-| `obdAccentText` | Accent **text**: links, the current value in a row, borderless buttons. Lighter on Kerb, whose red is only about 3:1 on its panels. |
+| `obdAccentText` | Accent **text**: links, the current value in a row, borderless buttons. Lighter on Kerb, whose red is only about 3:1 on its panels; darker on Pit lane, where links sit on the grey page. |
 | `obdOk` / `obdWarn` / `obdDanger` | Status only: good, check soon, bad. Use them for fills, dots and bars. |
 | `obdWarnText` | Amber **text** (notes, tags, scores). It's darker on the light styles so it stays readable; `obdWarn` itself is only about 2.1 to 2.4:1 on white. |
+| `obdOkText` | Green **text** ("better" changes, good scores, low-severity tags). Darker on the light styles, where `obdOk` is about 3:1. |
 | `obdDangerText` | Red **text** (Delete buttons, "worse" changes, severity tags). Lighter on the dark styles where `obdDanger` is under 4.5:1 in sheets, darker on Rally stage. |
 | `obdStripe1/2`, `Channels.forKey()` | Livery stripes and the fixed colour of each reading in graphs. In `MainActivity`, pass channel colours through `onPanels()`, which darkens them on the light styles to at least 3:1. |
 

@@ -34,6 +34,7 @@
         <item name="obdWarnText">?attr/obdWarn</item>
         <item name="obdAccentText">?attr/obdAccent</item>
         <item name="obdDangerText">?attr/obdDanger</item>
+        <item name="obdOkText">?attr/obdOk</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
@@ -72,6 +73,7 @@
         <item name="obdWarnText">#8A5700</item>
         <item name="obdAccentText">?attr/obdAccent</item>
         <item name="obdDangerText">?attr/obdDanger</item>
+        <item name="obdOkText">#0B7A3B</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
@@ -183,6 +185,8 @@
 
     <!-- Pit lane: a light livery in black and race red -->
     <style name="Theme.ObdReader.Pitlane" parent="Base.ObdReader.Light">
+        <item name="obdAccentText">#C40500</item>
+        <item name="obdDangerText">#C0150D</item>
         <item name="obdBg">#EEEFF1</item>
         <item name="obdSurface">#FFFFFF</item>
         <item name="obdSurfaceHigh">#F6F6F7</item>
@@ -565,6 +569,7 @@
 
     <!-- Rally stage: paper white, black and safety orange, like a co-driver's board -->
     <style name="Theme.ObdReader.Rally" parent="Base.ObdReader.Light">
+        <item name="obdOkText">#0A6E35</item>
         <item name="obdDangerText">#B3140C</item>
         <item name="obdBg">#F2F0EA</item>
         <item name="obdSurface">#FFFFFF</item>

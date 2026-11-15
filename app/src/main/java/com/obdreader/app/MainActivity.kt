@@ -2615,7 +2615,7 @@ open class MainActivity : AppCompatActivity() {
                     })
                     addView(TextView(context).apply {
                         text = line.change; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); fontFeatureSettings = "tnum"; gravity = Gravity.END
-                        setTextColor(themeColor(when (line.better) { true -> R.attr.obdOk; false -> R.attr.obdDangerText; null -> R.attr.obdTextSecondary }))
+                        setTextColor(themeColor(when (line.better) { true -> R.attr.obdOkText; false -> R.attr.obdDangerText; null -> R.attr.obdTextSecondary }))
                     }, LinearLayout.LayoutParams(dp(118f).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT))
                 })
             }
@@ -2649,9 +2649,9 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun scoreColour(score: Int): Int = when {
-        score >= 80 -> themeColor(R.attr.obdOk)
+        score >= 80 -> themeColor(R.attr.obdOkText)
         score >= 55 -> themeColor(R.attr.obdWarnText)
-        else -> themeColor(R.attr.obdDanger)
+        else -> themeColor(R.attr.obdDangerText)
     }
 
     // ---------- Graphs ----------
@@ -5667,7 +5667,7 @@ open class MainActivity : AppCompatActivity() {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             typeface = uiTypeface(600)
             // Amber text is darker on the light styles; the tag's tint stays the plain status colour.
-            setTextColor(when (info.severity) { DtcLibrary.Severity.MEDIUM -> themeColor(R.attr.obdWarnText); DtcLibrary.Severity.HIGH -> themeColor(R.attr.obdDangerText); else -> severityColour })
+            setTextColor(when (info.severity) { DtcLibrary.Severity.MEDIUM -> themeColor(R.attr.obdWarnText); DtcLibrary.Severity.HIGH -> themeColor(R.attr.obdDangerText); DtcLibrary.Severity.LOW -> themeColor(R.attr.obdOkText); else -> severityColour })
             background = GradientDrawable().apply {
                 cornerRadius = dp(4f)
                 setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(severityColour, 40))
