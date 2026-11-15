@@ -46,10 +46,12 @@ class VinDetailsTest {
         assertEquals(2021, d.modelYear)
         assertEquals("Explorer", d.model)
         assertEquals("2021 Ford Explorer Platinum", d.title)
-        assertEquals("Sport Utility Vehicle [SUV]/Multipurpose Vehicle [MPV], 4 doors", d.body)
+        assertEquals("SUV, 4 doors", d.body)
+        assertEquals("SUV / MPV", d.vehicleTypeName)
         assertEquals("3.3 L V6 petrol", d.engine)
         assertEquals("Wayne, Michigan, United States", d.plant)
-        assertEquals("4WD/4-Wheel Drive/4x4", d.drive)
+        assertEquals("4WD", d.drive)
+        assertEquals("4WD/4-Wheel Drive/4x4", d.values[VinDetails.DRIVE])
         // Transmission comes from vPIC's vehicle specs for the model and trim, not the VIN patterns.
         assertEquals("Automatic", d.transmission)
     }

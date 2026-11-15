@@ -894,12 +894,12 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
       <div class="h2 xb">Vehicle</div>
       <div class="vin-decal"><div class="k">VIN</div><div class="vin xb" id="vin">—</div></div>
       <div class="veh-row"><div><div class="veh-line" id="vehicle">Make and year appear after connecting.</div><div class="veh-sub" id="protocol">Protocol not detected yet</div></div><button class="link-btn" id="vinBtn">Read VIN</button></div>
-      <button class="link-btn" id="vinDetailsBtn" hidden style="margin-top:2px">VIN details</button>
+      <button class="link-btn" id="vinDetailsBtn" hidden style="margin-top:2px;align-self:flex-start;text-align:left">VIN details</button>
       <div class="veh-sub" id="vinMismatch" hidden style="margin-top:8px;color:var(--warn)"></div>
-      <button class="link-btn" id="vinUseBtn" hidden style="margin-top:2px"></button>
+      <button class="link-btn" id="vinUseBtn" hidden style="margin-top:2px;align-self:flex-start;text-align:left"></button>
       <div class="veh-sub" id="vinNote" hidden style="margin-top:8px"></div>
       <div id="vinEdit" hidden style="margin-top:8px"><input id="vinInput" maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="17 characters from your VIN plate" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--line,#444);background:transparent;color:inherit;font:inherit;text-transform:uppercase"><div class="veh-sub" id="vinErr" hidden>A VIN is 17 letters and numbers, without I, O or Q.</div><div style="display:flex;gap:16px;margin-top:6px"><button class="link-btn" id="vinSave">Save</button><button class="link-btn" id="vinUseCar" hidden>Use the car's VIN</button><button class="link-btn" id="vinCancel">Cancel</button></div></div>
-      <button class="link-btn" id="vinEnter" style="margin-top:6px">Not your VIN? Enter it</button>
+      <button class="link-btn" id="vinEnter" style="margin-top:6px;align-self:flex-start;text-align:left">Not your VIN? Enter it</button>
       <button class="sim-btn" id="vinSample">Preview: enter a sample VIN (a made-up 2021 Ford Explorer)</button>
       <div class="h2 xb" style="margin-top:28px">Battery check</div>
       <div id="batteryCard" style="background:var(--panel);border-radius:14px;padding:16px;margin-top:10px"><div class="xb" id="batteryRating" style="font-size:20px">Not checked yet</div><div class="veh-sub" id="batteryText" style="margin-top:4px">Checked each time the engine starts while the app is connected: connect with the ignition on and the engine off, then start the engine. A healthy battery stays above about 10 V while starting.</div>
@@ -3276,8 +3276,8 @@ const CHANGES = {"version": "2.4.2", "date": "11 November 2026", "text": "• Ai
    hold that data, so it knows one made-up VIN. The demo car's own VIN isn't looked up, as in the app. */
 const VIN_SAMPLES = {
   "1FMVK8HB0MLH8DPVJ": { title: "2021 Ford Explorer Platinum", car: { make: "Ford", year: 2021, model: "Explorer", engine: null }, rows: [
-    ["The car", [["Make", "Ford"], ["Model", "Explorer"], ["Model year", "2021"], ["Trim", "Platinum"], ["Body", "Sport Utility Vehicle [SUV]/Multipurpose Vehicle [MPV], 4 doors"], ["Vehicle type", "Multipurpose Passenger Vehicle (MPV)"]]],
-    ["Engine and drive", [["Engine", "3.3 L V6 petrol"], ["Engine code", null], ["Fuel", "Petrol"], ["Drive", "4WD/4-Wheel Drive/4x4"], ["Transmission", "Automatic"]]],
+    ["The car", [["Make", "Ford"], ["Model", "Explorer"], ["Model year", "2021"], ["Trim", "Platinum"], ["Body", "SUV, 4 doors"], ["Vehicle type", "SUV / MPV"]]],
+    ["Engine and drive", [["Engine", "3.3 L V6 petrol"], ["Engine code", null], ["Fuel", "Petrol"], ["Drive", "4WD"], ["Transmission", "Automatic"]]],
     ["Where it was built", [["Built in", "Wayne, Michigan, United States"], ["Made by", "Ford Motor Company"]]]] },
 };
 let vinDetailsPaint = () => {};
@@ -3295,7 +3295,7 @@ let vinDetailsPaint = () => {};
     `<div class="scan-l">${d.title}</div>` +
     d.rows.map(([h, rs]) => `<div class="trip-h">${h}</div>` + rs.map(([k, v]) => `<div class="scan-l${v ? "" : " dim"}">${k}: ${v || "N/A"}</div>`).join("")).join("") +
     (differs(myCar, d.car) ? `<div class="m-stack"><button class="m-btn filled" id="vinUseCar2">Use this for my car</button></div>` : "") +
-    `<div class="scan-l dim">From NHTSA's vPIC data (US government), read on this phone: your VIN isn't sent anywhere. It's most complete for cars sold in North America. N/A means the data doesn't say.</div>`, { sheet: true });
+    `<div class="scan-l dim" style="margin-top:16px;font-size:13px">From NHTSA's vPIC data (US government), read on this phone: your VIN isn't sent anywhere. It's most complete for cars sold in North America. N/A means the data doesn't say.</div>`, { sheet: true });
   vinDetailsPaint = userVin => {
     const d = userVin ? VIN_SAMPLES[userVin] : null;
     $("vinDetailsBtn").hidden = !d; $("vinMismatch").hidden = true; $("vinUseBtn").hidden = true;

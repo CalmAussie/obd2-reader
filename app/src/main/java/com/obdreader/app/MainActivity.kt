@@ -4502,7 +4502,7 @@ open class MainActivity : AppCompatActivity() {
             fun row(name: String, value: String?) = line("$name: ${value ?: na}", value == null)
             heading("The car")
             row("Make", d.make); row("Model", d.model); row("Model year", d.modelYear?.toString())
-            row("Trim", d.trim); row("Body", d.body); row("Vehicle type", d.vehicleType)
+            row("Trim", d.trim); row("Body", d.body); row("Vehicle type", d.vehicleTypeName)
             heading("Engine and drive")
             row("Engine", d.engine); row("Engine code", d.engineCode); row("Fuel", d.fuel)
             row("Drive", d.drive); row("Transmission", d.transmission)
@@ -4517,7 +4517,11 @@ open class MainActivity : AppCompatActivity() {
                     showCarPicker(prefill = suggestion)
                 }))
             }
-            line(getString(R.string.vin_details_source), true)
+            // A footnote, set apart from the button above it.
+            body.addView(TextView(this).apply {
+                text = getString(R.string.vin_details_source); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); setLineSpacing(0f, 1.15f)
+                setTextColor(themeColor(R.attr.obdTextSecondary)); setPadding(0, dp(16f).toInt(), 0, 0)
+            })
         }
     }
 

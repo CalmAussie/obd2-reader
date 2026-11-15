@@ -34,8 +34,8 @@ object VinDetails {
         /** "2012 Ford Focus SE", from what's known. */
         val title: String get() = listOfNotNull(modelYear?.toString(), make, model, values[TRIM]).joinToString(" ")
 
-        /** "Sedan/Saloon, 4 doors". */
-        val body: String? get() = listOfNotNull(values[BODY], values[DOORS]?.let { "$it doors" }).joinToString(", ").ifEmpty { null }
+        /** "SUV, 4 doors". */
+        val body: String? get() = listOfNotNull(values[BODY]?.let(::bodyName), values[DOORS]?.takeIf { it != "0" }?.let { "$it doors" }).joinToString(", ").ifEmpty { null }
 
         /** "2.0 L 4-cylinder petrol, turbo, 252 hp" (the engine code is [engineCode]). */
         val engine: String? get() {
@@ -57,8 +57,11 @@ object VinDetails {
 
         /** The maker's engine (or motor) code, such as 2AZ-FE. */
         val engineCode: String? get() = values[ENGINE]
-        val drive: String? get() = values[DRIVE]
-        val transmission: String? get() = values[TRANSMISSION]
+        val drive: String? get() = values[DRIVE]?.let(::driveName)
+        val transmission: String? get() = values[TRANSMISSION]?.let(::transmissionName)
+
+        /** "SUV / MPV" for vPIC's "Multipurpose Passenger Vehicle (MPV)", and so on. */
+        val vehicleTypeName: String? get() = vehicleType?.let(::vehicleTypeName)
         val fuel: String? get() = fuelName(values[FUEL])
     }
 
@@ -75,6 +78,32 @@ object VinDetails {
         v.startsWith("Flexible Fuel", true) -> "Flex fuel (petrol or ethanol)"
         else -> v
     }
+
+    // vPIC's names read like a database ("Sport Utility Vehicle [SUV]/Multipurpose Vehicle [MPV]"):
+    // the common ones are shortened, the rest kept as vPIC writes them.
+    private val BODY_NAMES = mapOf(
+        "Sport Utility Vehicle [SUV]/Multipurpose Vehicle [MPV]" to "SUV", "Sedan/Saloon" to "Sedan",
+        "Hatchback/Liftback/Notchback" to "Hatchback", "Convertible/Cabriolet" to "Convertible",
+        "Crossover Utility Vehicle [CUV]" to "Crossover", "Sport Utility Truck [SUT]" to "Sport utility truck",
+        "Step Van/Walk-in Van" to "Step van", "Cargo Van" to "Cargo van",
+        "Low Speed Vehicle [LSV]/Neighborhood Electric Vehicle [NEV]" to "Low-speed vehicle",
+    )
+    private val DRIVE_NAMES = mapOf(
+        "4WD/4-Wheel Drive/4x4" to "4WD", "AWD/All-Wheel Drive" to "AWD", "FWD/Front-Wheel Drive" to "Front-wheel drive",
+        "RWD/Rear-Wheel Drive" to "Rear-wheel drive", "4x2" to "2WD (4x2)", "2WD/4WD" to "2WD or 4WD",
+    )
+    private val TRANSMISSION_NAMES = mapOf(
+        "Manual/Standard" to "Manual", "Continuously Variable Transmission (CVT)" to "CVT",
+        "Electronic Continuously Variable (e-CVT)" to "e-CVT", "Dual-clutch Transmission (DCT)" to "Dual-clutch",
+        "Automated Manual Transmission (AMT)" to "Automated manual",
+    )
+    private val TYPE_NAMES = mapOf(
+        "Multipurpose Passenger Vehicle (MPV)" to "SUV / MPV", "Passenger Car" to "Car", "Low Speed Vehicle (LSV)" to "Low-speed vehicle",
+    )
+    internal fun bodyName(v: String) = BODY_NAMES[v] ?: v
+    internal fun driveName(v: String) = DRIVE_NAMES[v] ?: v
+    internal fun transmissionName(v: String) = TRANSMISSION_NAMES[v] ?: v
+    internal fun vehicleTypeName(v: String) = TYPE_NAMES[v] ?: v
 
     private fun electrificationName(v: String): String = when {
         v.startsWith("BEV") -> "battery electric"
