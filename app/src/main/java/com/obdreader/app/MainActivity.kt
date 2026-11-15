@@ -4358,17 +4358,21 @@ open class MainActivity : AppCompatActivity() {
         if (vinDetailsLoading == vin) return
         vinDetailsLoading = vin
         lifecycleScope.launch {
+            val started = android.os.SystemClock.elapsedRealtime()
             val d = withContext(Dispatchers.IO) {
                 try {
-                    com.obdreader.app.obd.VinDetails.decode(vin, java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)) { assets.open("vpic/vin-data.txt.gz") }
-                } catch (e: Exception) {
-                    android.util.Log.w("OBD2Vin", "VIN details couldn't be read: ${e.javaClass.simpleName}")
+                    com.obdreader.app.obd.VinDetails.decode(vin, java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)) { assets.open(VIN_DATA) }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    // Never the VIN itself in the log: only what went wrong.
+                    android.util.Log.w("OBD2Vin", "VIN details couldn't be read: ${e.javaClass.simpleName}: ${e.message?.take(80)}")
                     null
                 }
             }
-            vinDetailsLoading = null
+            if (vinDetailsLoading == vin) vinDetailsLoading = null
             vinDetailsVin = vin; vinDetails = d
-            android.util.Log.i("OBD2Vin", "VIN details: ${d?.values?.size ?: 0} found")
+            android.util.Log.i("OBD2Vin", "VIN details: ${if (d == null) "maker not in the data" else "${d.values.size} found"} in ${android.os.SystemClock.elapsedRealtime() - started} ms")
             showVin(shownCarVin)
         }
     }
@@ -5959,6 +5963,8 @@ open class MainActivity : AppCompatActivity() {
         private const val PREF_THEME = AppPrefs.THEME
         private const val PREF_CAR_MAKE = AppPrefs.CAR_MAKE
         private const val PREF_CAR_YEAR = AppPrefs.CAR_YEAR
+        /** NHTSA's vPIC data, slimmed (tools/vpic/build_subset.py): gzip, named .dat so the build stores it as it is. */
+        private const val VIN_DATA = "vpic/vin-data.dat"
         private const val PREF_CAR_MODEL = AppPrefs.CAR_MODEL
         private const val PREF_CAR_ENGINE = AppPrefs.CAR_ENGINE
         private const val PREF_CAR_ASKED = "car_asked"

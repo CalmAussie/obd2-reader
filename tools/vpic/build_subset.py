@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Builds the app's offline VIN data (app/src/main/assets/vpic/vin-data.txt.gz) from NHTSA's vPIC
+Builds the app's offline VIN data (app/src/main/assets/vpic/vin-data.dat) from NHTSA's vPIC
 standalone database, so a VIN can be decoded on the phone without sending it anywhere.
 
 Source: https://vpic.nhtsa.dot.gov/downloads/ (the "PostgreSQL plain" zip). vPIC is US
 government data and in the public domain.
 
-    python3 tools/vpic/build_subset.py vPICList_lite_YYYY_MM.plain.zip app/src/main/assets/vpic/vin-data.txt.gz
+    python3 tools/vpic/build_subset.py vPICList_lite_YYYY_MM.plain.zip app/src/main/assets/vpic/vin-data.dat
 
 What is kept: cars, MPVs (SUVs, vans) and trucks, for VIN schemas used from 1996 on (OBD2 years),
 and only the details the app shows. Everything else (trailers, motorcycles, buses, safety

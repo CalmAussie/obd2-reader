@@ -10,11 +10,11 @@ import java.io.File
 /** The offline vPIC decoder. VINs here are made up for the test (valid check digits, random serials). */
 class VinDetailsTest {
 
-    private val data: File? = listOf(File("src/main/assets/vpic/vin-data.txt.gz"), File("app/src/main/assets/vpic/vin-data.txt.gz"))
+    private val data: File? = listOf(File("src/main/assets/vpic/vin-data.dat"), File("app/src/main/assets/vpic/vin-data.dat"))
         .firstOrNull { it.isFile }
 
     private fun decode(vin: String): VinDetails.Details? {
-        val f = data ?: error("vin-data.txt.gz missing")
+        val f = data ?: error("vin-data.dat missing")
         return VinDetails.decode(vin, 2026) { f.inputStream() }
     }
 

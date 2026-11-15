@@ -682,14 +682,14 @@ fi
 # $1 names the style for the screenshots: the Vehicle block with its links, the sheet's top, the
 # sheet scrolled to its button, and the filled-in car choice.
 vin_details() {
-  tap_tab Diagnostics > /dev/null; sleep 1
-  if ! tap_scrolled "Not your VIN? Enter it"; then log "VIN details ($1): FAILED (no enter button)"; FAIL=1; return 1; fi
+  tap_tab Diagnostics > /dev/null; sleep 1; adb logcat -c
+  if ! tap_scrolled "Not your VIN? Enter it" && ! tap_scrolled "Change the VIN you entered"; then log "VIN details ($1): FAILED (no enter button)"; FAIL=1; return 1; fi
   sleep 1; adb shell input keyevent KEYCODE_MOVE_END $(for i in $(seq 1 20); do printf 'KEYCODE_DEL '; done)
   adb shell input text 1FMVK8HB0MLH8DPVJ; sleep 1
   tap_text "Save" > /dev/null; sleep 2
   adb shell input swipe 540 1500 540 900 400; sleep 1
   # Reading the data takes a moment on a slow phone.
-  for i in $(seq 1 10); do
+  for i in $(seq 1 15); do
     adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-title-$1.xml"
     grep -q "VIN details" "$OUT/ui-vin-title-$1.xml" && break; sleep 2
   done
@@ -723,6 +723,8 @@ vin_details() {
   else
     log "VIN details ($1): FAILED (no title or VIN details button)"; FAIL=1
   fi
+  # What the app said about reading the data (never the VIN itself).
+  adb logcat -d -s OBD2Vin:* 2>/dev/null | grep -o "VIN details.*" | tail -3 | while read -r l; do log "  app: $l"; done
   tap_scrolled "Change the VIN you entered" > /dev/null && sleep 1 && tap_text "Use the car's VIN" > /dev/null; sleep 1
 }
 vin_details asphalt

@@ -8,7 +8,7 @@ import java.util.zip.GZIPInputStream
 
 /**
  * What a VIN says about the car (model, trim, body, engine, where it was built), read from the
- * offline copy of NHTSA's vPIC data that ships inside the app (assets/vpic/vin-data.txt.gz,
+ * offline copy of NHTSA's vPIC data that ships inside the app (assets/vpic/vin-data.dat,
  * made by tools/vpic/build_subset.py). The VIN never leaves the phone.
  *
  * It follows vPIC's own decoding: VIN positions 4–8 and 10–17 are matched against the patterns
