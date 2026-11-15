@@ -4438,7 +4438,7 @@ open class MainActivity : AppCompatActivity() {
      * it again; the label says which. With Hide VIN off it stays selectable text, as before.
      */
     private fun showVinTap(label: Int, canReveal: Boolean, revealed: Boolean) {
-        val decal = findViewById<View>(R.id.vinDecal)
+        val decal = findViewById<VinDecalView>(R.id.vinDecal)
         findViewById<TextView>(R.id.vinLabel).text = when {
             !canReveal -> getString(label)
             revealed -> getString(R.string.vin_tap_hide, getString(label))
@@ -4446,6 +4446,10 @@ open class MainActivity : AppCompatActivity() {
         }
         // Selectable text takes the taps for itself, so it's only selectable when there's nothing to reveal.
         vinText.setTextIsSelectable(!canReveal)
+        // A press ripple in the decal's ink colour, the shape of the card, so it reads as a button.
+        decal.foreground = if (!canReveal) null else decal.foreground ?: android.graphics.drawable.RippleDrawable(
+            ColorStateList.valueOf(androidx.core.graphics.ColorUtils.setAlphaComponent(decal.inkColor, 48)), null,
+            GradientDrawable().apply { setColor(android.graphics.Color.WHITE); cornerRadius = themeDimen(R.attr.obdCardRadius) })
         if (canReveal) {
             decal.setOnClickListener {
                 val vin = AppPrefs.userVin(prefs) ?: shownCarVin ?: return@setOnClickListener
