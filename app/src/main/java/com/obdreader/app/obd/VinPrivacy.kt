@@ -34,12 +34,35 @@ object VinPrivacy {
     /** VIN-shaped words: 17 VIN characters (no I, O or Q) with at least one letter that isn't hex, so readings in hex aren't caught. */
     private val VIN_LIKE = Regex("\\b(?=[A-HJ-NPR-Z0-9]{17}\\b)(?=[A-HJ-NPR-Z0-9]*[G-HJ-NPR-Z])[A-HJ-NPR-Z0-9]{17}\\b")
 
-    /** Hides the VIN in any text, as [mask] does: the [known] VINs, and anything else shaped like one. */
-    fun scrub(text: String, mode: Mode, known: Collection<String> = emptyList()): String {
+    /**
+     * A VIN after a "VIN" label ("VIN: ...", "VIN stored in the module=..."), whatever its letters: a
+     * VIN made only of digits and A to F looks like a hex reading, so only its label gives it away.
+     */
+    private val LABELLED_VIN = Regex("(?i:\\bVIN\\b)[^=:\\n|;]{0,40}[=:]\\s*([A-HJ-NPR-Z0-9]{17})\\b")
+
+    /** 17 characters that are all digits or A to F: a hex reading, or a VIN that happens to use only those. */
+    private val HEX_WORD = Regex("\\b[0-9A-F]{17}\\b")
+
+    /**
+     * True when a hex-looking word is more likely a VIN than a reading: its 9th character is the VIN
+     * check digit (required in North America, used by many other makers) and its 10th is a model year.
+     * About 1 in 11 random hex words pass too, so this is only used outside the car's raw replies.
+     */
+    private fun hexVin(word: String): Boolean = word[9] != '0' && VinDecoder.checkDigit(word) == word[8]
+
+    /**
+     * Hides the VIN in any text, as [mask] does: the [known] VINs, anything after a "VIN" label, and
+     * anything else shaped like one. [hexVins] also hides hex-looking words that pass the VIN check
+     * digit; it's off for the car's raw replies, which are hex readings.
+     */
+    fun scrub(text: String, mode: Mode, known: Collection<String> = emptyList(), hexVins: Boolean = true): String {
         if (mode == Mode.FULL) return text
         var out = text
         known.filter { it.length >= SERIAL }.sortedByDescending { it.length }.forEach { out = out.replace(it, mask(it, mode)) }
-        return VIN_LIKE.replace(out) { mask(it.value, mode) }
+        out = LABELLED_VIN.replace(out) { m -> val g = m.groups[1]!!; m.value.substring(0, g.range.first - m.range.first) + mask(g.value, mode) }
+        out = VIN_LIKE.replace(out) { mask(it.value, mode) }
+        if (hexVins) out = HEX_WORD.replace(out) { if (hexVin(it.value)) mask(it.value, mode) else it.value }
+        return out
     }
 
     /**
@@ -49,15 +72,20 @@ object VinPrivacy {
     fun scrubLog(lines: List<String>, mode: Mode, known: Collection<String> = emptyList()): List<String> {
         if (mode == Mode.FULL) return lines
         return lines.map { line ->
-            val l = if (isVinRequest(line)) line.substringBefore("  < ") + "  < (reply hidden: it holds the VIN)" else line
-            scrub(l, mode, known)
+            if (isVinRequest(line)) return@map scrub(line.substringBefore(REPLY), mode, known) + REPLY + "(reply hidden: it holds the VIN)"
+            val at = line.indexOf(REPLY)
+            if (line.startsWith(">") && at >= 0) scrub(line.substring(0, at), mode, known) + REPLY + scrub(line.substring(at + REPLY.length), mode, known, hexVins = false)
+            else scrub(line, mode, known)
         }
     }
 
-    /** A logged exchange that asks for a VIN: the engine computer's (09 02), or a module's (22 F190). */
+    /** Where a logged request ends and the car's reply starts. */
+    private const val REPLY = "  < "
+
+    /** A logged exchange that asks for a VIN: the engine computer's (09 02), or a module's (UDS 22 F190, KWP2000 1A 90). */
     private fun isVinRequest(line: String): Boolean {
         if (!line.startsWith(">")) return false
         val cmd = line.removePrefix(">").substringBefore("<").replace(" ", "").uppercase(java.util.Locale.US)
-        return cmd == "0902" || cmd == "22F190"
+        return cmd == "0902" || cmd == "22F190" || cmd == "1A90"
     }
 }

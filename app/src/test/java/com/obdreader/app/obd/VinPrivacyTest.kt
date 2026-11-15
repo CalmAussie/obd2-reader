@@ -46,6 +46,32 @@ class VinPrivacyTest {
         assertTrue(VinPrivacy.scrubLog(log, VinPrivacy.Mode.FULL, listOf(vin)) == log)
     }
 
+    // Made up for these tests: VINs that use only digits and A to F, with correct check digits.
+    private val hexVin = "1FAD3E4C7EA123456"
+    private val digitVin = "31415926159265359"
+
+    @Test fun rareVinsMadeOfHexCharactersAreMasked() {
+        // After a VIN label, whatever its letters.
+        assertEquals("Body: VIN stored in the module=1FAD3E4C7EA******", VinPrivacy.scrub("Body: VIN stored in the module=$hexVin", VinPrivacy.Mode.PARTIAL))
+        assertEquals("VIN: hidden", VinPrivacy.scrub("VIN: $digitVin", VinPrivacy.Mode.HIDDEN))
+        // With no label, when the check digit fits.
+        assertEquals("module said 1FAD3E4C7EA******", VinPrivacy.scrub("module said $hexVin", VinPrivacy.Mode.PARTIAL))
+        assertEquals("hidden", VinPrivacy.scrub(digitVin, VinPrivacy.Mode.HIDDEN))
+        // Hex that fails the check digit stays as it is.
+        assertEquals("1FAD3E4C5EA123456", VinPrivacy.scrub("1FAD3E4C5EA123456", VinPrivacy.Mode.HIDDEN))
+        assertEquals("module said $hexVin", VinPrivacy.scrub("module said $hexVin", VinPrivacy.Mode.FULL))
+    }
+
+    @Test fun rawRepliesInTheLogKeepTheirHex() {
+        // A raw reply that happens to pass the check digit is a reading, so it's left alone...
+        val log = listOf("> 2101  < $hexVin", "= VIN stored in the module: $hexVin", "> 1A90  < 5A90314641443345")
+        val out = VinPrivacy.scrubLog(log, VinPrivacy.Mode.PARTIAL)
+        assertEquals("> 2101  < $hexVin", out[0])
+        // ...but the same text anywhere else in the log is masked, and KWP2000 VIN replies are hidden.
+        assertEquals("= VIN stored in the module: 1FAD3E4C7EA******", out[1])
+        assertEquals("> 1A90  < (reply hidden: it holds the VIN)", out[2])
+    }
+
     @Test fun demoCarVinIsMaskedInItsOwnLog() = kotlinx.coroutines.runBlocking {
         val lines = mutableListOf<String>()
         val demoVin = VinDecoder.sampleVin(null, null)

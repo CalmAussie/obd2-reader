@@ -75,6 +75,10 @@ class ReplyRecordingTest {
         assertTrue(ReplyRecording.holdsVin("22F18C", h29, emptyList()))
         assertFalse(ReplyRecording.holdsVin("1902FF", listOf("7E8 07 59 02 FF C1 21 00 08"), listOf(sampleVin)))
         // Ordinary readings are kept.
+        // A VIN with no letters at all (made up, correct check digit) is caught by its check digit.
+        val digits = "31415926159265359".map { "%02X".format(it.code) }.joinToString("")
+        assertTrue(ReplyRecording.holdsVin("22F1A0", listOf("62F1A0$digits"), emptyList()))
+        assertFalse(ReplyRecording.holdsVin("22F1A0", listOf("62F1A0" + "31415926559265359".map { "%02X".format(it.code) }.joinToString("")), emptyList()))
         assertFalse(ReplyRecording.holdsVin("010C", listOf("410C1AF8"), listOf(sampleVin)))
         assertFalse(ReplyRecording.holdsVin("03", listOf("430201330420"), listOf(sampleVin)))
         assertFalse(ReplyRecording.holdsVin("ATI", listOf("ELM327 v1.5"), listOf(sampleVin)))
