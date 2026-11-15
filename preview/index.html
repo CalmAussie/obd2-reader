@@ -894,9 +894,13 @@ h1 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
       <div class="h2 xb">Vehicle</div>
       <div class="vin-decal"><div class="k">VIN</div><div class="vin xb" id="vin">—</div></div>
       <div class="veh-row"><div><div class="veh-line" id="vehicle">Make and year appear after connecting.</div><div class="veh-sub" id="protocol">Protocol not detected yet</div></div><button class="link-btn" id="vinBtn">Read VIN</button></div>
+      <button class="link-btn" id="vinDetailsBtn" hidden style="margin-top:2px">VIN details</button>
+      <div class="veh-sub" id="vinMismatch" hidden style="margin-top:8px;color:var(--warn)"></div>
+      <button class="link-btn" id="vinUseBtn" hidden style="margin-top:2px"></button>
       <div class="veh-sub" id="vinNote" hidden style="margin-top:8px"></div>
       <div id="vinEdit" hidden style="margin-top:8px"><input id="vinInput" maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="17 characters from your VIN plate" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--line,#444);background:transparent;color:inherit;font:inherit;text-transform:uppercase"><div class="veh-sub" id="vinErr" hidden>A VIN is 17 letters and numbers, without I, O or Q.</div><div style="display:flex;gap:16px;margin-top:6px"><button class="link-btn" id="vinSave">Save</button><button class="link-btn" id="vinUseCar" hidden>Use the car's VIN</button><button class="link-btn" id="vinCancel">Cancel</button></div></div>
       <button class="link-btn" id="vinEnter" style="margin-top:6px">Not your VIN? Enter it</button>
+      <button class="sim-btn" id="vinSample">Preview: enter a sample VIN (a made-up 2021 Ford Explorer)</button>
       <div class="h2 xb" style="margin-top:28px">Battery check</div>
       <div id="batteryCard" style="background:var(--panel);border-radius:14px;padding:16px;margin-top:10px"><div class="xb" id="batteryRating" style="font-size:20px">Not checked yet</div><div class="veh-sub" id="batteryText" style="margin-top:4px">Checked each time the engine starts while the app is connected: connect with the ignition on and the engine off, then start the engine. A healthy battery stays above about 10 V while starting.</div>
         <label style="display:flex;align-items:center;gap:12px;margin-top:16px;cursor:pointer"><span style="flex:1;font-size:15px">Watch the battery while the car is off</span><input type="checkbox" id="batteryWatch" style="width:22px;height:22px;accent-color:var(--accent)"></label>
@@ -3253,6 +3257,7 @@ const CHANGES = {"version": "2.4.2", "date": "11 November 2026", "text": "• Ai
     const note = userVin && carVin && carVin !== userVin
       ? `Your car's engine computer reports ${carVin}, which doesn't match your VIN plate. That happens on some cars: the VIN stored in the computer can have a typo from when it was programmed, or come from another car if the computer was replaced. It doesn't affect live data or trouble codes.` : "";
     $("vinNote").textContent = note; $("vinNote").hidden = !note;
+    vinDetailsPaint(userVin);
   };
   new MutationObserver(() => paint()).observe(vinEl, { childList: true, characterData: true, subtree: true });
   $("vinEnter").onclick = () => { $("vinEdit").hidden = false; $("vinEnter").hidden = true; $("vinUseCar").hidden = !userVin; $("vinInput").value = userVin || carVin || ""; $("vinErr").hidden = true; $("vinInput").focus(); };
@@ -3264,6 +3269,53 @@ const CHANGES = {"version": "2.4.2", "date": "11 November 2026", "text": "• Ai
     if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(v)) { $("vinErr").hidden = false; return; }
     userVin = v === carVin ? null : v; close(); if (!userVin) vinEl.textContent = carVin; paint();
   };
+})();
+
+/* VIN details (mirrors obd/VinDetails.kt and MainActivity.showVinDetails / showVinMismatch). The app reads
+   them from the copy of NHTSA's vPIC data inside it, so the VIN never leaves the phone. The preview can't
+   hold that data, so it knows one made-up VIN. The demo car's own VIN isn't looked up, as in the app. */
+const VIN_SAMPLES = {
+  "1FMVK8HB0MLH8DPVJ": { title: "2021 Ford Explorer Platinum", car: { make: "Ford", year: 2021, model: "Explorer", engine: null }, rows: [
+    ["The car", [["Make", "Ford"], ["Model", "Explorer"], ["Model year", "2021"], ["Trim", "Platinum"], ["Body", "Sport Utility Vehicle [SUV]/Multipurpose Vehicle [MPV], 4 doors"], ["Vehicle type", "Multipurpose Passenger Vehicle (MPV)"]]],
+    ["Engine and drive", [["Engine", "3.3 L V6 petrol"], ["Engine code", null], ["Fuel", "Petrol"], ["Drive", "4WD/4-Wheel Drive/4x4"], ["Transmission", "Automatic"]]],
+    ["Where it was built", [["Built in", "Wayne, Michigan, United States"], ["Made by", "Ford Motor Company"]]]] },
+};
+let vinDetailsPaint = () => {};
+(() => {
+  const label = c => [c.year, c.make, c.model, c.engine].filter(Boolean).join(" ");
+  let before = null, shown = null;
+  const prefill = car => {
+    closeOverlay(); showCarPicker();
+    const set = (id, v, ev) => { const e = $(id); if (!e) return; e.value = v; e.dispatchEvent(new Event(ev, { bubbles: true })); };
+    set("carMake", car.make, "change"); set("carYear", String(car.year), "change"); set("carModel", car.model || "", "input"); set("carEngine", car.engine || "", "input");
+    const p = document.querySelector("#overlay .sheet p"); if (p) p.textContent = "Filled in from your VIN. Check it, add anything missing, and tap Save.";
+  };
+  const differs = (car, s) => !car || car.make !== s.make || car.year !== s.year || (car.model || "").toLowerCase() !== (s.model || "").toLowerCase() || (s.engine && (car.engine || "").toLowerCase() !== s.engine.toLowerCase());
+  const open = d => overlay(`<div class="handle"></div><h2>What your VIN says</h2>` +
+    `<div class="scan-l">${d.title}</div>` +
+    d.rows.map(([h, rs]) => `<div class="trip-h">${h}</div>` + rs.map(([k, v]) => `<div class="scan-l${v ? "" : " dim"}">${k}: ${v || "N/A"}</div>`).join("")).join("") +
+    (differs(myCar, d.car) ? `<div class="m-stack"><button class="m-btn filled" id="vinUseCar2">Use this for my car</button></div>` : "") +
+    `<div class="scan-l dim">From NHTSA's vPIC data (US government), read on this phone: your VIN isn't sent anywhere. It's most complete for cars sold in North America. N/A means the data doesn't say.</div>`, { sheet: true });
+  vinDetailsPaint = userVin => {
+    const d = userVin ? VIN_SAMPLES[userVin] : null;
+    $("vinDetailsBtn").hidden = !d; $("vinMismatch").hidden = true; $("vinUseBtn").hidden = true;
+    if (d) {
+      if (shown === null) before = $("vehicle").textContent;
+      shown = d.title; $("vehicle").textContent = d.title;
+      $("vinDetailsBtn").onclick = () => { open(d); const b = $("vinUseCar2"); if (b) b.onclick = () => prefill(d.car); };
+      const sameMake = myCar && myCar.make === d.car.make, nearYear = myCar && Math.abs(myCar.year - d.car.year) <= 1;
+      if (!myCar) { $("vinUseBtn").textContent = `Use the ${label(d.car)} as my car`; $("vinUseBtn").hidden = false; }
+      else if (!sameMake || !nearYear) {
+        $("vinMismatch").textContent = `This car's VIN says it's a ${label(d.car)}, but your car is set to ${label(myCar)}. Fault codes are explained for the car you choose.`;
+        $("vinMismatch").hidden = false; $("vinUseBtn").textContent = `Set my car to ${label(d.car)}`; $("vinUseBtn").hidden = false;
+      }
+      $("vinUseBtn").onclick = () => prefill(d.car);
+    } else if (shown !== null) {
+      if ($("vehicle").textContent === shown) $("vehicle").textContent = before;
+      shown = null;
+    }
+  };
+  $("vinSample").onclick = () => { $("vinEnter").click(); $("vinInput").value = "1FMVK8HB0MLH8DPVJ"; $("vinSave").click(); };
 })();
 
 /* Battery check (mirrors obd/BatteryCheck.kt): the demo car starts with the engine off, then cranks,
