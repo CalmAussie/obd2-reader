@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.9 (16 November 2026)
+- **Tap to see your VIN.** With Hide VIN on, tapping the hidden VIN under Vehicle did nothing, so the only way to read it was to turn Hide VIN off. Now a tap shows the whole VIN on screen and another tap hides it again; it's hidden again by itself when you leave the app, before the recent-apps preview is taken. Reports, shared files and logs still follow Hide VIN.
+
 ## 2.5.7 (16 November 2026)
 - **Hide VIN catches rare VINs too.** A VIN made only of numbers and the letters A to F looks like a sensor reading, so Hide VIN could miss it in the adapter log and in recordings. It's now caught by its check digit or by the "VIN" label beside it, and a module's VIN reply in the older KWP2000 format is hidden in the adapter log too.
 

@@ -12,8 +12,8 @@ object VinPrivacy {
 
     enum class Mode(val key: String, val label: String, val help: String) {
         FULL("full", "Show it in full", "The whole VIN, on screen and in what you share."),
-        PARTIAL("partial", "Hide the last 6 characters", "The last 6, your car's serial number, are hidden. The rest still says the maker, model year and factory."),
-        HIDDEN("hidden", "Hide it completely", "No VIN on screen or in anything you share."),
+        PARTIAL("partial", "Hide the last 6 characters", "The last 6, your car's serial number, are hidden. The rest still says the maker, model year and factory. Tap the VIN to see all of it on screen."),
+        HIDDEN("hidden", "Hide it completely", "No VIN in anything you share, and on screen only when you tap it."),
     }
 
     /** Hidden unless the user chooses otherwise (George, 2026-11-12), so nothing on screen or shared identifies the car. */
