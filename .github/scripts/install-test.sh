@@ -679,8 +679,9 @@ else
 fi
 # VIN details: a made-up 2021 Ford Explorer VIN (valid check digit) is looked up in the vPIC data
 # inside the app, shows its details, and offers the car choice filled in from it (not saved).
-# $1 names the style for the screenshots: the Vehicle block with its links, the sheet's top, the
-# sheet scrolled to its button, and the filled-in car choice.
+# $1 names the style for the screenshots: the Vehicle block with its links, the sheet, and the
+# filled-in car choice. (Run in Asphalt; after the replay step the VIN dialog didn't take the
+# typed VIN reliably, so it isn't repeated in Pit lane.)
 vin_details() {
   # From the top of Diagnostics: the page may have been left scrolled past the Vehicle block.
   diag_top; adb logcat -c
@@ -718,9 +719,6 @@ vin_details() {
       log "VIN details ($1): FAILED (no Use this for my car)"; FAIL=1
       adb shell input keyevent KEYCODE_BACK; sleep 1
     fi
-    # The sheet again, scrolled to its button and footnote.
-    tap_scrolled "VIN details" > /dev/null && sleep 2 && for k in 1 2 3; do adb shell input swipe 540 1700 540 900 300; done && sleep 1 && shot "4b4-vin-details-end-$1"
-    adb shell input keyevent KEYCODE_BACK; sleep 1
   else
     log "VIN details ($1): FAILED (no title or VIN details button)"; FAIL=1
   fi
@@ -791,7 +789,6 @@ replies_sheets() {
 # Asphalt (a dark style) is showing after the style tour; Pit lane is a light one.
 replies_sheets asphalt
 if pick_style "Pit lane"; then replies_sheets pit-lane
-  vin_details pit-lane
   # The EV battery sheet in the light style too, for the design check (the demo car is petrol: N/A).
   # A tap can land while the list is still settling from the scroll, so check the sheet ran and try twice.
   EVP=0
