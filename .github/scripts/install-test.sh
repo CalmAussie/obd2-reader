@@ -677,6 +677,48 @@ if tap_scrolled "Not your VIN? Enter it"; then
 else
   log "VIN from the plate: FAILED (no button)"; FAIL=1
 fi
+# VIN details: a made-up 2021 Ford Explorer VIN (valid check digit) is looked up in the vPIC data
+# inside the app, shows its details, and offers the car choice filled in from it (not saved).
+if tap_scrolled "Not your VIN? Enter it"; then
+  sleep 1; adb shell input keyevent KEYCODE_MOVE_END $(for i in $(seq 1 20); do printf 'KEYCODE_DEL '; done)
+  adb shell input text 1FMVK8HB0MLH8DPVJ; sleep 1
+  tap_text "Save" > /dev/null; sleep 2
+  adb shell input swipe 540 1500 540 900 400; sleep 1
+  # Reading the data takes a moment on a slow phone.
+  for i in $(seq 1 10); do
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-title.xml"
+    grep -q "VIN details" "$OUT/ui-vin-title.xml" && break; sleep 2
+  done
+  shot 4b2-vin-title
+  if grep -q "2021 Ford Explorer Platinum" "$OUT/ui-vin-title.xml" && tap_text "VIN details"; then
+    sleep 2; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-details.xml"
+    shot 4b3-vin-details
+    if grep -q "Model: Explorer" "$OUT/ui-vin-details.xml" && grep -q "Built in: Wayne, Michigan, United States" "$OUT/ui-vin-details.xml"; then
+      log "VIN details: shown from the data in the app"
+    else
+      log "VIN details: FAILED (sheet missing details)"; FAIL=1
+    fi
+    if tap_scrolled "Use this for my car"; then
+      sleep 2; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-car.xml"
+      shot 4b4-vin-car-filled
+      if grep -q "Filled in from your VIN" "$OUT/ui-vin-car.xml" && grep -q 'text="Explorer"' "$OUT/ui-vin-car.xml"; then
+        log "VIN details: car choice filled in"
+      else
+        log "VIN details: FAILED (car choice not filled in)"; FAIL=1
+      fi
+      # Closed without saving: the chosen car stays as it was.
+      adb shell input keyevent KEYCODE_BACK; sleep 1
+    else
+      log "VIN details: FAILED (no Use this for my car)"; FAIL=1
+      adb shell input keyevent KEYCODE_BACK; sleep 1
+    fi
+  else
+    log "VIN details: FAILED (no title or VIN details button)"; FAIL=1
+  fi
+  tap_scrolled "Change the VIN you entered" > /dev/null && sleep 1 && tap_text "Use the car's VIN" > /dev/null; sleep 1
+else
+  log "VIN details: FAILED (no enter button)"; FAIL=1
+fi
 # Record and replay: a saved recording replays like the demo car. Debug builds: a sample (made
 # from the demo car, VIN hidden) goes into the app's own folder first; release builds can't be
 # written to that way, so only the sheet is checked.

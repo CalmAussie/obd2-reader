@@ -4347,7 +4347,34 @@ open class MainActivity : AppCompatActivity() {
         night.visibility = if (night.text.isNullOrEmpty()) View.GONE else View.VISIBLE
     }
 
+    /** What the offline vPIC data says about [vinDetailsVin] (null: nothing), once it's been read. */
+    private var vinDetails: com.obdreader.app.obd.VinDetails.Details? = null
+    private var vinDetailsVin: String? = null
+    private var vinDetailsLoading: String? = null
+    private var shownCarVin: String? = null
+
+    /** Reads the VIN's details from the data inside the app, away from the screen's thread. The VIN isn't sent anywhere. */
+    private fun loadVinDetails(vin: String) {
+        if (vinDetailsLoading == vin) return
+        vinDetailsLoading = vin
+        lifecycleScope.launch {
+            val d = withContext(Dispatchers.IO) {
+                try {
+                    com.obdreader.app.obd.VinDetails.decode(vin, java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)) { assets.open("vpic/vin-data.txt.gz") }
+                } catch (e: Exception) {
+                    android.util.Log.w("OBD2Vin", "VIN details couldn't be read: ${e.javaClass.simpleName}")
+                    null
+                }
+            }
+            vinDetailsLoading = null
+            vinDetailsVin = vin; vinDetails = d
+            android.util.Log.i("OBD2Vin", "VIN details: ${d?.values?.size ?: 0} found")
+            showVin(shownCarVin)
+        }
+    }
+
     private fun showVin(carVin: String?) {
+        shownCarVin = carVin
         val userVin = AppPrefs.userVin(prefs)
         val vin = userVin ?: carVin
         val checked = vin == null || vin.length < 17 || VinDecoder.isValid(vin)
@@ -4372,9 +4399,17 @@ open class MainActivity : AppCompatActivity() {
         }
         note.visibility = if (note.text.isNullOrEmpty()) View.GONE else View.VISIBLE
         val info = vin?.let { VinDecoder.decode(it) }
-        showVinMismatch(info)
+        // The demo car's made-up VIN isn't looked up: it would describe some other car.
+        val lookUp = checked && vin != null && vin.length == 17 && (userVin != null || !ObdSession.state.value.isDemo)
+        val details = vinDetails.takeIf { lookUp && vin == vinDetailsVin }
+        if (lookUp && vin != vinDetailsVin) loadVinDetails(vin!!)
+        showVinMismatch(info, details)
+        val detailsButton = findViewById<MaterialButton>(R.id.vinDetailsButton)
+        detailsButton.visibility = if (details != null) View.VISIBLE else View.GONE
+        detailsButton.setOnClickListener { details?.let { showVinDetails(it) } }
         vehicleText.text = when {
             !checked -> "Make and year not taken from this VIN"
+            details?.model != null && details.make != null -> details.title
             info?.make != null && info.modelYear != null -> "${info.make}, ${info.modelYear} model year"
             info?.make != null -> info.make
             vin != null -> "Make not recognised from VIN"
@@ -4417,33 +4452,81 @@ open class MainActivity : AppCompatActivity() {
     /**
      * The VIN is the car's own word on what it is. If it disagrees with the car the user chose,
      * say so and offer to switch, because the chosen car decides how manufacturer codes are explained.
+     * With no car chosen, offer the VIN's car. Either way the car choice opens filled in, and
+     * nothing changes until the user taps Save.
      */
-    private fun showVinMismatch(info: VinDecoder.Info?) {
+    private fun showVinMismatch(info: VinDecoder.Info?, details: com.obdreader.app.obd.VinDetails.Details? = null) {
         val note = findViewById<TextView>(R.id.vinMismatch)
         val fix = findViewById<MaterialButton>(R.id.vinMismatchFix)
         val car = savedCar()
-        val vinMake = info?.make
+        val vinMake = details?.make ?: info?.make
+        val vinYear = details?.modelYear ?: info?.modelYear
+        val suggestion = details?.let { com.obdreader.app.obd.VinDetails.suggestedCar(it) }
         val makeDiffers = car != null && vinMake != null && !VinDecoder.sameMake(vinMake, car.make)
-        val yearDiffers = car != null && vinMake != null && !makeDiffers && info.modelYear != null && kotlin.math.abs(info.modelYear - car.year) > 1
-        if (car == null || (!makeDiffers && !yearDiffers)) {
-            note.visibility = View.GONE; fix.visibility = View.GONE
+        val yearDiffers = car != null && vinMake != null && !makeDiffers && vinYear != null && kotlin.math.abs(vinYear - car.year) > 1
+        note.visibility = View.GONE; fix.visibility = View.GONE
+        if (car == null) {
+            if (suggestion != null) {
+                fix.text = "Use the ${suggestion.label} as my car"
+                fix.visibility = View.VISIBLE
+                fix.setOnClickListener { showCarPicker(prefill = suggestion) }
+            }
             return
         }
-        val fromVin = listOfNotNull(info?.modelYear?.toString(), vinMake?.substringBefore(" (")).joinToString(" ")
+        if (!makeDiffers && !yearDiffers) return
+        val fromVin = suggestion?.label ?: listOfNotNull(vinYear?.toString(), vinMake?.substringBefore(" (")).joinToString(" ")
         note.text = "This car's VIN says it's a $fromVin, but your car is set to ${car.label}. Fault codes are explained for the car you choose."
         note.visibility = View.VISIBLE
         fix.text = "Set my car to $fromVin"
         fix.visibility = View.VISIBLE
         fix.setOnClickListener {
+            if (suggestion != null) { showCarPicker(prefill = suggestion); return@setOnClickListener }
             val make = VehicleCatalog.makeNames.firstOrNull { VinDecoder.sameMake(vinMake!!, it) } ?: vinMake!!.substringBefore(" (")
-            prefs.edit().putString(PREF_CAR_MAKE, make).putInt(PREF_CAR_YEAR, info?.modelYear ?: car.year)
+            prefs.edit().putString(PREF_CAR_MAKE, make).putInt(PREF_CAR_YEAR, vinYear ?: car.year)
                 .remove(PREF_CAR_MODEL).remove(PREF_CAR_ENGINE).remove(PREF_LAST_PROTOCOL).apply()
             updateCarSetting(); applyRedline()
-            showVinMismatch(info)
+            showVinMismatch(info, details)
             lastCodes?.let { renderCodes(it) }
             toast("Your car is now set to $make. Add the model under Your car if you like.")
         }
     }
+
+    /**
+     * Everything the VIN says about the car, from NHTSA's vPIC data inside the app. Whatever the
+     * data doesn't cover shows N/A. Offers the car choice filled in from it.
+     */
+    private fun showVinDetails(d: com.obdreader.app.obd.VinDetails.Details) {
+        val na = getString(R.string.na)
+        infoSheet(getString(R.string.vin_details_title)) { heading, line, body ->
+            line(d.title.ifEmpty { na }, false)
+            fun row(name: String, value: String?) = line("$name: ${value ?: na}", value == null)
+            heading("The car")
+            row("Make", d.make); row("Model", d.model); row("Model year", d.modelYear?.toString())
+            row("Trim", d.trim); row("Body", d.body); row("Vehicle type", d.vehicleType)
+            heading("Engine and drive")
+            row("Engine", d.engine); row("Engine code", d.engineCode); row("Fuel", d.fuel)
+            row("Drive", d.drive); row("Transmission", d.transmission)
+            heading("Where it was built")
+            row("Built in", d.plant); row("Made by", d.manufacturer?.let { makerName(it) })
+            val suggestion = com.obdreader.app.obd.VinDetails.suggestedCar(d)
+            val car = savedCar()
+            if (suggestion != null && (car == null || car.make != suggestion.make || car.year != suggestion.year ||
+                    !car.model.equals(suggestion.model, true) || (suggestion.engine != null && !car.engine.equals(suggestion.engine, true)))) {
+                sheetStackedButtons(body, listOf(getString(R.string.vin_details_use) to {
+                    currentSheet?.dismiss()
+                    showCarPicker(prefill = suggestion)
+                }))
+            }
+            line(getString(R.string.vin_details_source), true)
+        }
+    }
+
+    /** vPIC writes makers in capitals ("FORD MOTOR COMPANY"); shown as "Ford Motor Company", keeping LLC, USA and the like. */
+    private fun makerName(s: String): String =
+        if (s.any { it.isLowerCase() }) s else s.split(' ').joinToString(" ") { w ->
+            if (w.trimEnd(',', '.') in setOf("LLC", "USA", "US", "BMW", "AG", "GMBH", "KG", "SA", "SPA", "NV", "BV", "AB", "UK", "GM", "FCA"))
+                w.replace("GMBH", "GmbH") else w.lowercase(Locale.US).replaceFirstChar { it.titlecase(Locale.US) }
+        }
 
     // ---------- Appearance ----------
 
@@ -5227,7 +5310,7 @@ open class MainActivity : AppCompatActivity() {
 
     private var carPickerShowing = false
 
-    private fun showCarPicker(firstRun: Boolean = false, onDone: (() -> Unit)? = null) {
+    private fun showCarPicker(firstRun: Boolean = false, prefill: VehicleCatalog.Car? = null, onDone: (() -> Unit)? = null) {
         val sheet = BottomSheetDialog(this)
         carPickerShowing = true
         sheet.setOnDismissListener { carPickerShowing = false }
@@ -5248,7 +5331,9 @@ open class MainActivity : AppCompatActivity() {
         val engineLayout = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.engineLayout)
         val redlineView = view.findViewById<TextView>(R.id.carRedline)
 
-        val current = savedCar()
+        // Filled in from the VIN when the user asked for that: nothing is saved until they tap Save.
+        val current = prefill ?: savedCar()
+        if (prefill != null) view.findViewById<TextView>(R.id.carSubtitle).setText(R.string.car_from_vin)
         var make = current?.make ?: VehicleCatalog.MAKES.first().name
         var year = current?.year ?: 2010
 
