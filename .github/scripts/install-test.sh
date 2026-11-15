@@ -682,7 +682,8 @@ fi
 # $1 names the style for the screenshots: the Vehicle block with its links, the sheet's top, the
 # sheet scrolled to its button, and the filled-in car choice.
 vin_details() {
-  tap_tab Diagnostics > /dev/null; sleep 1; adb logcat -c
+  # From the top of Diagnostics: the page may have been left scrolled past the Vehicle block.
+  diag_top; adb logcat -c
   if ! tap_scrolled "Not your VIN? Enter it" && ! tap_scrolled "Change the VIN you entered"; then log "VIN details ($1): FAILED (no enter button)"; FAIL=1; return 1; fi
   sleep 1; adb shell input keyevent KEYCODE_MOVE_END $(for i in $(seq 1 20); do printf 'KEYCODE_DEL '; done)
   adb shell input text 1FMVK8HB0MLH8DPVJ; sleep 1
