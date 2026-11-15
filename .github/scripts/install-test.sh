@@ -682,6 +682,24 @@ fi
 # $1 names the style for the screenshots: the Vehicle block with its links, the sheet, and the
 # filled-in car choice. (Run in Asphalt; after the replay step the VIN dialog didn't take the
 # typed VIN reliably, so it isn't repeated in Pit lane.)
+# Hide VIN is on (the default): a tap on the VIN card shows the whole VIN, another tap hides it again.
+vin_reveal() {
+  if ! tap_text "Hidden (Hide VIN is on)"; then log "VIN tap to show ($1): FAILED (no hidden VIN on the card)"; FAIL=1; return 1; fi
+  sleep 1; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-shown-$1.xml"
+  shot "4b2s-vin-shown-$1"
+  if grep -q 'text="1FMVK8HB0MLH8DPVJ"' "$OUT/ui-vin-shown-$1.xml" && grep -q "tap to hide" "$OUT/ui-vin-shown-$1.xml"; then
+    log "VIN tap to show ($1): whole VIN shown"
+  else
+    log "VIN tap to show ($1): FAILED (VIN still hidden after a tap)"; FAIL=1; return 1
+  fi
+  tap_text "1FMVK8HB0MLH8DPVJ" > /dev/null
+  sleep 1; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-hidden-$1.xml"
+  if grep -q 'text="Hidden (Hide VIN is on)"' "$OUT/ui-vin-hidden-$1.xml" && grep -q "tap to show" "$OUT/ui-vin-hidden-$1.xml"; then
+    log "VIN tap to show ($1): hidden again by a second tap"
+  else
+    log "VIN tap to show ($1): FAILED (second tap didn't hide it)"; FAIL=1
+  fi
+}
 vin_details() {
   # From the top of Diagnostics: the page may have been left scrolled past the Vehicle block.
   diag_top; adb logcat -c
@@ -696,6 +714,7 @@ vin_details() {
     grep -q "VIN details" "$OUT/ui-vin-title-$1.xml" && break; sleep 2
   done
   shot "4b2-vin-vehicle-$1"
+  vin_reveal "$1"
   if grep -q "2021 Ford Explorer Platinum" "$OUT/ui-vin-title-$1.xml" && tap_text "VIN details"; then
     sleep 2; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-details-$1.xml"
     shot "4b3-vin-details-$1"
