@@ -4030,6 +4030,8 @@ open class MainActivity : AppCompatActivity() {
     /** Closing the floating window is minimising, not closing the app: the connection carries on (the notification has Disconnect). */
     override fun onStop() {
         if (isInPictureInPictureMode) com.obdreader.app.session.AppClose.keepConnectionUntil = System.currentTimeMillis() + 5_000
+        // A VIN tapped to show is hidden again once the app is out of sight.
+        if (vinRevealed != null) { vinRevealed = null; showVin(shownCarVin) }
         super.onStop()
     }
 
@@ -4356,6 +4358,12 @@ open class MainActivity : AppCompatActivity() {
     private var vinDetailsLoading: String? = null
     private var shownCarVin: String? = null
 
+    /**
+     * The VIN the user tapped to see in full, on screen only: Hide VIN still applies to everything
+     * shared. It's hidden again when they tap it again or the app goes to the background.
+     */
+    private var vinRevealed: String? = null
+
     /** Reads the VIN's details from the data inside the app, away from the screen's thread. The VIN isn't sent anywhere. */
     private fun loadVinDetails(vin: String) {
         if (vinDetailsLoading == vin) return
@@ -4385,13 +4393,15 @@ open class MainActivity : AppCompatActivity() {
         val userVin = AppPrefs.userVin(prefs)
         val vin = userVin ?: carVin
         val checked = vin == null || vin.length < 17 || VinDecoder.isValid(vin)
-        val mode = vinMode()
+        val setting = vinMode()
+        val revealed = vin != null && vin == vinRevealed && setting != com.obdreader.app.obd.VinPrivacy.Mode.FULL
+        val mode = if (revealed) com.obdreader.app.obd.VinPrivacy.Mode.FULL else setting
         vinText.text = when {
             vin == null -> "Not reported"
             mode == com.obdreader.app.obd.VinPrivacy.Mode.HIDDEN -> getString(R.string.vin_hidden)
             else -> com.obdreader.app.obd.VinPrivacy.mask(vin, mode)
         }
-        findViewById<TextView>(R.id.vinLabel).setText(if (userVin != null) R.string.vin_entered else R.string.vin)
+        showVinTap(if (userVin != null) R.string.vin_entered else R.string.vin, vin != null && setting != com.obdreader.app.obd.VinPrivacy.Mode.FULL, revealed)
         findViewById<MaterialButton>(R.id.vinEnter).apply {
             setText(if (userVin != null) R.string.vin_change else R.string.vin_enter)
             setOnClickListener { askForVin(carVin) }
@@ -4425,11 +4435,39 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * With Hide VIN on, a tap on the VIN card shows the whole VIN on screen, and another tap hides
+     * it again; the label says which. With Hide VIN off it stays selectable text, as before.
+     */
+    private fun showVinTap(label: Int, canReveal: Boolean, revealed: Boolean) {
+        val decal = findViewById<View>(R.id.vinDecal)
+        findViewById<TextView>(R.id.vinLabel).text = when {
+            !canReveal -> getString(label)
+            revealed -> getString(R.string.vin_tap_hide, getString(label))
+            else -> getString(R.string.vin_tap_show, getString(label))
+        }
+        // Selectable text takes the taps for itself, so it's only selectable when there's nothing to reveal.
+        vinText.setTextIsSelectable(!canReveal)
+        if (canReveal) {
+            decal.setOnClickListener {
+                val vin = AppPrefs.userVin(prefs) ?: shownCarVin ?: return@setOnClickListener
+                vinRevealed = if (vinRevealed == vin) null else vin
+                showVin(shownCarVin)
+            }
+            androidx.core.view.ViewCompat.replaceAccessibilityAction(decal, androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+                getString(if (revealed) R.string.vin_hide_action else R.string.vin_show_action), null)
+        } else {
+            decal.setOnClickListener(null)
+            decal.isClickable = false
+            androidx.core.view.ViewCompat.replaceAccessibilityAction(decal, androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK, null, null)
+        }
+    }
+
     /** Lets the user type their VIN from the plate, or go back to the one the car sends. */
     private fun askForVin(carVin: String?) {
         val input = com.google.android.material.textfield.TextInputEditText(this).apply {
             // Filled in only when Hide VIN lets the whole VIN show.
-            setText(if (vinMode() == com.obdreader.app.obd.VinPrivacy.Mode.FULL) AppPrefs.userVin(prefs) ?: carVin ?: "" else "")
+            setText(if (vinMode() == com.obdreader.app.obd.VinPrivacy.Mode.FULL || vinRevealed != null) AppPrefs.userVin(prefs) ?: carVin ?: "" else "")
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS or android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
             filters = arrayOf(android.text.InputFilter.AllCaps(), android.text.InputFilter.LengthFilter(20))
             typeface = uiTypeface(500)
@@ -5855,7 +5893,8 @@ open class MainActivity : AppCompatActivity() {
         roundel.checkEngine = false
         vinText.setText(R.string.vin_unknown)
         vehicleText.setText(R.string.vehicle_unknown)
-        if (AppPrefs.userVin(prefs) != null) showVin(null)
+        vinRevealed = null
+        if (AppPrefs.userVin(prefs) != null) showVin(null) else { shownCarVin = null; showVinTap(R.string.vin, canReveal = false, revealed = false) }
         protocolText.setText(R.string.protocol_unknown)
         dtcContainer.removeAllViews()
         setCodeBadge(0)

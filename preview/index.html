@@ -3252,7 +3252,7 @@ const CHANGES = {"version": "2.4.2", "date": "11 November 2026", "text": "• Ai
     const shown = vinEl.textContent.trim();
     if (shown !== userVin) carVin = /^[A-HJ-NPR-Z0-9]{17}$/.test(shown) ? shown : null;
     if (userVin && shown !== userVin) vinEl.textContent = userVin;
-    label.textContent = userVin ? "VIN (from your VIN plate)" : "VIN";
+    label.textContent = (userVin ? "VIN (from your VIN plate)" : "VIN") + (window.vinTapHint ? window.vinTapHint() : "");
     $("vinEnter").textContent = userVin ? "Change the VIN you entered" : "Not your VIN? Enter it";
     const note = userVin && carVin && carVin !== userVin
       ? `Your car's engine computer reports ${carVin}, which doesn't match your VIN plate. That happens on some cars: the VIN stored in the computer can have a typo from when it was programmed, or come from another car if the computer was replaced. It doesn't affect live data or trouble codes.` : "";
@@ -4286,12 +4286,33 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { const top 
 
   /* Hide VIN (VinPrivacy): full, last 6 hidden, or hidden (the default) */
   const MODES = [["full", "Show it in full", "The whole VIN, on screen and in what you share."],
-    ["partial", "Hide the last 6 characters", "The last 6, your car's serial number, are hidden. The rest still says the maker, model year and factory."],
-    ["hidden", "Hide it completely", "No VIN on screen or in anything you share."]];
+    ["partial", "Hide the last 6 characters", "The last 6, your car's serial number, are hidden. The rest still says the maker, model year and factory. Tap the VIN to see all of it on screen."],
+    ["hidden", "Hide it completely", "No VIN in anything you share, and on screen only when you tap it."]];
   let vinMode = "hidden"; try { vinMode = localStorage.getItem("vinPrivacy") || "hidden"; } catch (e) {}
   const mask = v => vinMode === "full" ? v : vinMode === "hidden" ? "hidden" : v.length > 6 ? v.slice(0, -6) + "******" : "******";
   const baseShowVin = showVin;
-  showVin = function (vin) { baseShowVin(vin); if (vin) $("vin").textContent = vinMode === "hidden" ? "Hidden (Hide VIN is on)" : mask(vin); };
+  /* With Hide VIN on, a tap on the VIN card shows the whole VIN on screen; another tap hides it (MainActivity.showVinTap) */
+  let vinShown = false, lastVin = null;
+  window.vinTapHint = () => !lastVin || vinMode === "full" ? "" : vinShown ? " · tap to hide" : " · tap to show";
+  showVin = function (vin) {
+    baseShowVin(vin); lastVin = vin;
+    const can = !!vin && vinMode !== "full", decal = document.querySelector(".vin-decal"), k = decal && decal.querySelector(".k");
+    if (!can) vinShown = false;
+    if (vin) $("vin").textContent = vinShown ? vin : vinMode === "hidden" ? "Hidden (Hide VIN is on)" : mask(vin);
+    if (k) k.textContent = k.textContent.replace(/ · tap to (show|hide)$/, "") + window.vinTapHint();
+    if (decal) { decal.style.cursor = can ? "pointer" : ""; if (can) { decal.setAttribute("role", "button"); decal.tabIndex = 0; } else { decal.removeAttribute("role"); decal.removeAttribute("tabindex"); } }
+  };
+  (function () {
+    const decal = document.querySelector(".vin-decal"); if (!decal) return;
+    const flip = () => { if (!lastVin || vinMode === "full") return; vinShown = !vinShown; showVin(lastVin); };
+    decal.addEventListener("click", flip);
+    decal.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
+    const baseClear = clearReadings;
+    clearReadings = function () {
+      baseClear(); lastVin = null; vinShown = false;
+      const k = decal.querySelector(".k"); k.textContent = k.textContent.replace(/ · tap to (show|hide)$/, ""); decal.style.cursor = ""; decal.removeAttribute("role"); decal.removeAttribute("tabindex");
+    };
+  })();
   const baseLog = log;
   let lastCmd = "";
   log = function (l) {
