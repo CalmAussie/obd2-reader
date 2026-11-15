@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.6 (15 November 2026)
+- **What your VIN says.** Under Your car, VIN details shows the model, trim, body, engine (size, cylinders, fuel, power and engine code), drive, transmission and where the car was built, from NHTSA's vPIC data (the US government's VIN database). The data is inside the app, so your VIN is read on your phone and never sent anywhere. It's most complete for cars sold in North America; anything it doesn't cover shows N/A. Your car shows the full name, such as 2021 Ford Explorer Platinum.
+- **Choose your car from the VIN.** If no car is chosen yet, or the VIN says it's a different one, the app offers the car choice filled in from the VIN: model, year and, where it's certain, the engine. Nothing changes until you check it and tap Save.
+
 ## 2.5.5 (15 November 2026)
 - **Look.** Sheets, dialogs and the bottom bar now use your style's own colours instead of a purple or pink tint, buttons follow your style's corner shape, and rows inside sheets stand out from the sheet behind them. Amber notes and scores are easier to read on the light styles (Pit lane and Rally stage).
 

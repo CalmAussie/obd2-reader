@@ -77,7 +77,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 - **Battery checks:** how far the battery dips when starting, and an optional overnight drain check.
 - **EV battery:** for hybrids and electric cars, the high-voltage battery's charge (any make that reports it), and while charging, how fast it's going, about how many kW and when it'll reach 80 % or full, with a graph. On some models it also shows readings owners have found on their own cars, marked Unofficial. Read-only: it never wakes or commands the high-voltage system.
 - **Deeper checks:** readiness monitors, self-test results, and codes from ABS, power steering and other modules (on CAN cars, and on 1996–2007 Fords and Mazdas). Airbag modules are never asked. On Fords and Mazdas it can also read the second network on pins 3 and 11, with adapters that support it such as OBDLink MX+. On 1996–2000 Volvo 850, S70, V70, C70 and XC70 it reads Volvo's own modules and the true mileage stored in the instrument cluster.
-- **VIN:** reads your car's VIN. You can enter the one on your plate if they differ. **Hide VIN** (hidden by default) keeps it off the screen, reports, shared files and logs, or hides just the last six characters.
+- **VIN:** reads your car's VIN. You can enter the one on your plate if they differ. **VIN details** shows the model, trim, body, engine, drive, transmission and where it was built, from NHTSA's vPIC data inside the app, and can fill in your car choice from it. **Hide VIN** (hidden by default) keeps it off the screen, reports, shared files and logs, or hides just the last six characters.
 - **What your car reports:** every reading your car offers, grouped by part of the car with its value now.
 - **Back up and restore:** settings, history and recorded drives in one file you keep, to move to a new phone. Routes and VIN only if you choose.
 - **Record and replay:** save what your car answers to the app's requests in a plain text file on your phone (VIN left out unless you choose to show it), then replay it later without the car, like the demo car. Handy for bug reports.
@@ -153,6 +153,7 @@ Videos are saved to **Movies → OBD2 Reader**.
 
 - **Read-only:** the app never clears codes or changes anything in your car. Anything that isn't a read is blocked.
 - **No account, no tracking:** nothing is sent to the developer. The only internet use is the update check, from GitHub (about once a day, in the background too while notifications are on).
+- **Your VIN stays on your phone:** VIN details are looked up in the copy of NHTSA's data inside the app, not online.
 - **Your location stays on your phone:** it's only saved inside a drive you choose to record with its route.
 - **G-force stays on your phone too:** each drive's peak g and harsh-moment counts are kept in your trip history and in backups, and nowhere else.
 - **Backups go only where you put them:** the app never sends a backup anywhere, and restores only what it made itself.
@@ -179,5 +180,6 @@ OBD2 Reader is open source under the [MIT licence](LICENSE).
 - The [Archivo](https://fonts.google.com/specimen/Archivo) typeface is under the SIL Open Font License ([`licenses/Archivo-OFL.txt`](licenses/Archivo-OFL.txt)).
 - Retro digital's numbers use the [DSEG7](https://github.com/keshikan/DSEG) font by keshikan, under the SIL Open Font License ([`licenses/DSEG-OFL.txt`](licenses/DSEG-OFL.txt)).
 - Approximate top speeds come from [autoevolution.com](https://www.autoevolution.com) via the [automobile-models-and-specs](https://github.com/ilyasozkurt/automobile-models-and-specs) dataset.
+- VIN details come from the US National Highway Traffic Safety Administration's [vPIC](https://vpic.nhtsa.dot.gov/) database, US government work in the public domain. [`tools/vpic/build_subset.py`](tools/vpic/build_subset.py) builds the app's slimmed copy from NHTSA's download.
 - Volvo 850, S70, V70, C70 and XC70 module addresses, requests and code meanings come from Richard H. Jones's [Volvo 850 OBDII work](https://jonesrh.info/volvo850/), released into the public domain (CC0).
 - Trouble code names follow SAE J2012, cross-checked against [python-OBD](https://github.com/brendan-w/python-OBD), [AndrOBD](https://github.com/fr3ts0n/AndrOBD) and the [Wal33D DTC database](https://github.com/Wal33D/dtc-database). Ford definitions come from Ford's published *OBD System Operation Summary* documents. Other makers' definitions come from their own service bulletins, which the makers file with the US road safety regulator (NHTSA), and from GM's published engine diagnostic files; each is used only for the cars its document names, and [the support table](docs/CODE-SUPPORT.md) lists the source of every one.

@@ -677,6 +677,56 @@ if tap_scrolled "Not your VIN? Enter it"; then
 else
   log "VIN from the plate: FAILED (no button)"; FAIL=1
 fi
+# VIN details: a made-up 2021 Ford Explorer VIN (valid check digit) is looked up in the vPIC data
+# inside the app, shows its details, and offers the car choice filled in from it (not saved).
+# $1 names the style for the screenshots: the Vehicle block with its links, the sheet, and the
+# filled-in car choice. (Run in Asphalt; after the replay step the VIN dialog didn't take the
+# typed VIN reliably, so it isn't repeated in Pit lane.)
+vin_details() {
+  # From the top of Diagnostics: the page may have been left scrolled past the Vehicle block.
+  diag_top; adb logcat -c
+  if ! tap_scrolled "Not your VIN? Enter it" && ! tap_scrolled "Change the VIN you entered"; then log "VIN details ($1): FAILED (no enter button)"; FAIL=1; return 1; fi
+  sleep 1; adb shell input keyevent KEYCODE_MOVE_END $(for i in $(seq 1 20); do printf 'KEYCODE_DEL '; done)
+  adb shell input text 1FMVK8HB0MLH8DPVJ; sleep 1
+  tap_text "Save" > /dev/null; sleep 2
+  adb shell input swipe 540 1500 540 900 400; sleep 1
+  # Reading the data takes a moment on a slow phone.
+  for i in $(seq 1 15); do
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-title-$1.xml"
+    grep -q "VIN details" "$OUT/ui-vin-title-$1.xml" && break; sleep 2
+  done
+  shot "4b2-vin-vehicle-$1"
+  if grep -q "2021 Ford Explorer Platinum" "$OUT/ui-vin-title-$1.xml" && tap_text "VIN details"; then
+    sleep 2; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-details-$1.xml"
+    shot "4b3-vin-details-$1"
+    if grep -q "Model: Explorer" "$OUT/ui-vin-details-$1.xml" && grep -q "Built in: Wayne, Michigan, United States" "$OUT/ui-vin-details-$1.xml"; then
+      log "VIN details ($1): shown from the data in the app"
+    else
+      log "VIN details ($1): FAILED (sheet missing details)"; FAIL=1
+    fi
+    if tap_scrolled "Use this for my car"; then
+      # The same tap scrolled the sheet to its button: open it again scrolled down for that screenshot.
+      sleep 2; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-vin-car-$1.xml"
+      shot "4b5-vin-car-filled-$1"
+      if grep -q "Filled in from your VIN" "$OUT/ui-vin-car-$1.xml" && grep -q 'text="Explorer"' "$OUT/ui-vin-car-$1.xml"; then
+        log "VIN details ($1): car choice filled in"
+      else
+        log "VIN details ($1): FAILED (car choice not filled in)"; FAIL=1
+      fi
+      # Closed without saving: the chosen car stays as it was.
+      adb shell input keyevent KEYCODE_BACK; sleep 1
+    else
+      log "VIN details ($1): FAILED (no Use this for my car)"; FAIL=1
+      adb shell input keyevent KEYCODE_BACK; sleep 1
+    fi
+  else
+    log "VIN details ($1): FAILED (no title or VIN details button)"; FAIL=1
+  fi
+  # What the app said about reading the data (never the VIN itself).
+  adb logcat -d -s OBD2Vin:* 2>/dev/null | grep -o "VIN details.*" | tail -3 | while read -r l; do log "  app: $l"; done
+  tap_scrolled "Change the VIN you entered" > /dev/null && sleep 1 && tap_text "Use the car's VIN" > /dev/null; sleep 1
+}
+vin_details asphalt
 # Record and replay: a saved recording replays like the demo car. Debug builds: a sample (made
 # from the demo car, VIN hidden) goes into the app's own folder first; release builds can't be
 # written to that way, so only the sheet is checked.
