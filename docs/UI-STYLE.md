@@ -9,13 +9,14 @@ There are 13 styles, two of them light (Pit lane, Rally stage), and day/night sw
 | Token | Use it for |
 |---|---|
 | `obdBg` | The page behind everything |
-| `obdSurface` | Panels on the page (`panelBackground()`), and the background of sheets and dialogs |
-| `obdSurfaceHigh` | Anything inside a sheet: tiles, rows, panels (`tripTile()`) |
+| `obdSurface` | Panels on the page (`panelBackground()`), and the background of bottom sheets (the themes map Material's `colorSurfaceContainer*` to these tokens) |
+| `obdSurfaceHigh` | Anything inside a sheet: tiles, rows, panels (`tripTile()`, `sheetPanel()`), and dialogs |
 | `obdOutline` | Hairlines, rings, strokes on the outlined layouts |
 | `obdTextPrimary` | Titles, values, body text you must read |
 | `obdTextSecondary` | Labels, help lines, notes, captions, units |
 | `obdAccent` | Links, the current value in a row, the filled button, the selected tab |
-| `obdOk` / `obdWarn` / `obdDanger` | Status only: good, check soon, bad. Use them for fills, dots, bars and large numbers (24sp or more). Don't use `obdWarn` for body text: amber on the light styles is about 2.1 to 2.4:1 contrast, which fails readability. |
+| `obdOk` / `obdWarn` / `obdDanger` | Status only: good, check soon, bad. Use them for fills, dots and bars. |
+| `obdWarnText` | Amber **text** (notes, tags, scores). It's darker on the light styles so it stays readable; `obdWarn` itself is only about 2.1 to 2.4:1 on white. |
 | `obdStripe1/2`, `Channels.forKey()` | Livery stripes and the fixed colour of each reading in graphs |
 
 Check the result in **Asphalt** (dark), **Pit lane** (light) and one outlined layout (**Digital cockpit** or **Hairline**) before sending it for review.
@@ -62,7 +63,7 @@ Spacing comes in steps of **4dp**: 4, 8, 12, 14 (tile padding), 16, 20, 24.
 ## 5. Shapes
 
 - Panels and tiles use `obdCardRadius` (`panelBackground()`, `tripTile()`, `themeShape()`).
-- Buttons use `obdButtonRadius`. `sheet_car.xml` does this with `app:cornerRadius="?attr/obdButtonRadius"`. A plain `MaterialButton` is a fully round pill by default, which doesn't match the app.
+- Buttons use `obdButtonRadius`. The themes make `?attr/materialButtonStyle` and `?attr/materialButtonOutlinedStyle` do this, so use those (or a plain `MaterialButton`), never `@style/Widget.Material3.Button…` directly, which brings back Material's pill.
 - The main screen's big actions are `SkewButton` (they lean with the theme's `obdSkew`).
 
 ## 6. Sheets: use the shared helpers
@@ -92,10 +93,8 @@ Build every settings or info sheet from the helpers in `MainActivity` so they ma
 
 ## Known gaps (to fix)
 
-The design review keeps the current list, with priorities. As of 2026-11-14:
-- Sheets, dialogs and the bottom bar take Material's default purple-grey or pink tint, not the theme's `obdSurface` (`colorSurfaceContainer*` isn't set in the themes).
-- `sheetRow` panels use `obdSurface` inside sheets, so they nearly vanish. They should use `obdSurfaceHigh`.
-- Material buttons and button toggles are round pills in most places.
+The design review keeps the current list, with priorities. As of 2026-11-15:
 - `TrendView` (drive history) draws its labels with no typeface.
 - Section headings in sheets are 14sp in some and 15sp in others. Body text is 13sp in some and 14sp in others.
-- `obdWarn` is used for text in several places (performance estimate, car support "maybe", medium-severity codes).
+- Saved drives is a list in an alert dialog. It should be a sheet.
+- Bullet lists in code details don't use a hanging indent.
