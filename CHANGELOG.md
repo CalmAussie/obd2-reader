@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.7 (16 November 2026)
+- **Hide VIN catches rare VINs too.** A VIN made only of numbers and the letters A to F looks like a sensor reading, so Hide VIN could miss it in the adapter log and in recordings. It's now caught by its check digit or by the "VIN" label beside it, and a module's VIN reply in the older KWP2000 format is hidden in the adapter log too.
+
 ## 2.5.6 (15 November 2026)
 - **What your VIN says.** Under Your car, VIN details shows the model, trim, body, engine (size, cylinders, fuel, power and engine code), drive, transmission and where the car was built, from NHTSA's vPIC data (the US government's VIN database). The data is inside the app, so your VIN is read on your phone and never sent anywhere. It's most complete for cars sold in North America; anything it doesn't cover shows N/A. Your car shows the full name, such as 2021 Ford Explorer Platinum.
 - **Choose your car from the VIN.** If no car is chosen yet, or the VIN says it's a different one, the app offers the car choice filled in from the VIN: model, year and, where it's certain, the engine. Nothing changes until you check it and tap Save.

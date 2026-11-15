@@ -78,12 +78,16 @@ object ReplyRecording {
         // frame byte, so the reply is read three ways: as it is, and without each kind of header.
         return listOf(0, 3, 8).any { header ->
             val text = ascii(lines, header)
-            known.any { it.length >= 11 && text.contains(it) } || VIN_IN_TEXT.containsMatchIn(text)
+            known.any { it.length >= 11 && text.contains(it) } || VIN_IN_TEXT.containsMatchIn(text) ||
+                DIGITS_IN_TEXT.findAll(text).any { it.value[9] != '0' && VinDecoder.checkDigit(it.value) == it.value[8] }
         }
     }
 
     /** 17 VIN characters (no I, O or Q) with at least one letter, read from a reply's bytes. */
     private val VIN_IN_TEXT = Regex("(?=[A-HJ-NPR-Z0-9]{17})(?=[A-HJ-NPR-Z0-9]{0,16}[A-HJ-NPR-Z])[A-HJ-NPR-Z0-9]{17}")
+
+    /** 17 digits in a row: a VIN with no letters, when its check digit (9th) and model year (10th) fit. */
+    private val DIGITS_IN_TEXT = Regex("(?<![0-9])[0-9]{17}(?![0-9])")
 
     /**
      * The reply's bytes as text, line by line (CAN frame numbers like "0:" dropped, and [header]
