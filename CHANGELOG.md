@@ -2,6 +2,12 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.8 (16 November 2026)
+- **Look.** Pages no longer slide under the clock and icons at the top of the screen when you scroll, and the status bar icons stay visible on the Pit lane and Kerb stripes. Red links and Delete buttons are easier to read on the darker styles, buttons on Race telemetry have dark text, and graph lines are easier to see on the light styles (Pit lane and Rally stage).
+- **Deleting a recorded drive asks first.** Under Saved drives, Delete now asks before removing the drive, as everywhere else in the app.
+- **Miles in Drive history.** Drive history and its totals use miles when you've chosen mph, like the rest of the app.
+- **TalkBack.** The Reconnect automatically, Picture-in-picture and Alerts switches are read with their names and whether they're on, and the Cyberpunk and Race telemetry dials say miles an hour when you use mph.
+
 ## 2.5.7 (16 November 2026)
 - **Hide VIN catches rare VINs too.** A VIN made only of numbers and the letters A to F looks like a sensor reading, so Hide VIN could miss it in the adapter log and in recordings. It's now caught by its check digit or by the "VIN" label beside it, and a module's VIN reply in the older KWP2000 format is hidden in the adapter log too.
 
