@@ -397,7 +397,7 @@ open class MainActivity : AppCompatActivity() {
         // up goes behind it instead of under the clock.
         val pages = listOf(findViewById<View>(R.id.content), findViewById<View>(R.id.contentDiag), findViewById<View>(R.id.contentGraphs))
         val stripes = listOf(R.id.stripesDash, R.id.stripesDiag, R.id.stripesGraphs).map { findViewById<View>(it) }
-        val scrim = findViewById<com.obdreader.app.ui.StatusBarScrim>(R.id.statusScrim).apply { backdropOf = findViewById(R.id.root) }
+        val scrim = findViewById<com.obdreader.app.ui.StatusBarScrim>(R.id.statusScrim)
         val basePadTop = pages.first().paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root)) { _, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -439,6 +439,8 @@ open class MainActivity : AppCompatActivity() {
         logToggle = findViewById(R.id.logToggle)
 
         setupDashboard()
+        // After setupDashboard: Digital cockpit and Cyberpunk give the root their glow there.
+        findViewById<com.obdreader.app.ui.StatusBarScrim>(R.id.statusScrim).backdropOf = findViewById(R.id.root)
         applyRedline()
         applyOrientation()
 

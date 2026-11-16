@@ -998,7 +998,32 @@ else
   log "same route: FAILED (couldn't record a second drive)"; FAIL=1
 fi
 tap_tab Graphs; sleep 2
-XY=$(view_center_bottom savedLogsButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+XY=$(view_center_bottom savedLogsButton pageGraphs)
+# The page is scrolled to the bottom now, so its chips and text sit under the status bar. The strip
+# behind the status bar must hide them: between the clock and the icons, the strip is one plain colour.
+shot 8a5-status-bar-scrolled
+adb exec-out screencap > "$OUT/scrim.raw" 2>/dev/null
+SB=$(grep -o "[0-9]*,[0-9]*-[0-9]*,[0-9]* #[0-9a-f]* app:id/statusScrim" "$OUT/views.txt" | head -1 | sed 's/^[0-9]*,[0-9]*-[0-9]*,\([0-9]*\) .*/\1/')
+SCRIM=$(python3 - "$OUT/scrim.raw" "${SB:-0}" <<'PY'
+import struct, sys
+raw = open(sys.argv[1], 'rb').read(); top = int(sys.argv[2])
+if len(raw) < 16 or top < 24: print('unknown'); sys.exit()
+w, h = struct.unpack('<II', raw[:8]); head = len(raw) - w * h * 4
+if head not in (12, 16): print('unknown'); sys.exit()
+px = lambda x, y: raw[head + (y * w + x) * 4: head + (y * w + x) * 4 + 3]
+ref = px(w // 2, top - 6); worst = 0
+for y in range(4, top - 4, 2):
+    for x in range(int(w * 0.40), int(w * 0.70), 4):
+        worst = max(worst, sum(abs(a - b) for a, b in zip(px(x, y), ref)))
+print('plain' if worst <= 30 else 'covered-by-page')
+PY
+)
+case "$SCRIM" in
+  plain) log "status bar strip: page text hidden behind it";;
+  unknown) log "status bar strip: not checked (screen capture or strip size not found)";;
+  *) log "status bar strip: FAILED (page text shows under the clock)"; FAIL=1;;
+esac
+[ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8b-saved-drives
 # Deleting a saved drive asks first; Cancel keeps it. Tapping a choice closes the list, so open it again after.
 if tap_contains " KB" && tap_text "Delete" && sleep 1 && adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 && adb shell cat /sdcard/ui.xml > "$OUT/ui-drive-delete.xml" && grep -q "Delete this recorded drive?" "$OUT/ui-drive-delete.xml"; then
