@@ -78,13 +78,37 @@ jobs:
           name: OBD2Reader-test-apk
           path: OBD2Reader-test.apk
 
+  # Whether this build is a new version that can be released (see .github/scripts/release-check.sh).
+  # A push that doesn't raise obdVersion isn't released, so no approval is asked for; a version
+  # that went backwards, or a missing CHANGELOG entry, fails here. On pull requests it only reports.
+  check:
+    runs-on: ubuntu-24.04
+    outputs:
+      publish: ${{ steps.check.outputs.publish }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Is this a new version?
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(grep '^obdVersion=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          CHANGELOG=$(grep -m1 -oE '^## [0-9][0-9.]*' CHANGELOG.md | cut -c4-)
+          # The latest published release (pre-releases and drafts aren't counted, as the app
+          # doesn't offer them). No release at all is fine; any other error stops here.
+          if TAG=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name 2> gh-error.txt); then :
+          elif grep -q "HTTP 404" gh-error.txt; then TAG=""
+          else cat gh-error.txt; echo "::error::Couldn't read the latest release from GitHub."; exit 1; fi
+          bash .github/scripts/release-check.sh "$VERSION" "$CHANGELOG" "$TAG" "${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
   # Signs and publishes a release, which every installed copy is then offered. It runs only for
-  # main, and only after the "release" environment's required reviewer approves it on the run's
-  # page. The signing key lives only in that environment's secrets, so no other job, branch or
+  # main, only for a new version (the check job above), and only after the "release"
+  # environment's required reviewer approves it on the run's page. The signing key lives only in that environment's secrets, so no other job, branch or
   # pull request can use it.
   release:
-    needs: build
-    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    needs: [build, check]
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && needs.check.outputs.publish == 'true'
     environment: release
     permissions:
       contents: write
@@ -119,12 +143,25 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "OBD_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
+      # This job downloads every library fresh, so Maven Central can answer "429 Too Many
+      # Requests" (it did for 2.5.7). Gradle waits and asks again up to 6 times (5, 10, 20, 40,
+      # 80 s apart); if downloads still fail, the whole build is tried twice more, 2 minutes apart.
+      # A failure that isn't about downloading stops at once.
       - name: Build the signed APK
         env:
           OBD_KEYSTORE_PASSWORD: ${{ secrets.OBD_KEYSTORE_PASSWORD }}
           OBD_KEY_ALIAS: ${{ secrets.OBD_KEY_ALIAS }}
           OBD_KEY_PASSWORD: ${{ secrets.OBD_KEY_PASSWORD }}
-        run: gradle --no-daemon assembleRelease
+          GRADLE_OPTS: -Dorg.gradle.internal.repository.max.tentatives=6 -Dorg.gradle.internal.repository.initial.backoff=5000
+        run: |
+          for try in 1 2 3; do
+            gradle --no-daemon assembleRelease 2>&1 | tee release-build.log
+            [ "${PIPESTATUS[0]}" = 0 ] && exit 0
+            grep -qE "status code (429|5[0-9][0-9])|Could not (GET|HEAD|resolve|download)|Read timed out|Connection reset" release-build.log || exit 1
+            [ $try = 3 ] && exit 1
+            echo "::warning::Library downloads failed (try $try of 3); trying again in 2 minutes."
+            sleep 120
+          done
 
       - name: Remove the key from the runner
         if: always()

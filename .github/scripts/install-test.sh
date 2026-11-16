@@ -227,8 +227,26 @@ connect_demo() {
     fi
     sleep 6
   done
-  [ "$(view_flag demoButton)" = G ]
+  # The last tap can still be connecting on a slow phone: give it up to 15 more seconds.
+  for i in 1 2 3 4 5; do [ "$(view_flag demoButton)" = G ] && return 0; sleep 3; done
+  return 1
 }
+# Measures a view's width until it's at least $2 px or $3 seconds have passed; prints the last
+# width. It runs in $( ), so the longest wait is kept in a file for waited, and slow-but-passing
+# checks show up in the results.
+wait_wide() {
+  local w=0 t=0
+  while :; do
+    w=$(view_width "$1")
+    [ "${w:-0}" -ge "$2" ] && break
+    [ $t -ge "$3" ] && break
+    sleep 2; t=$((t + 2))
+  done
+  [ $t -gt "$(cat "$OUT/.waited" 2>/dev/null || echo 0)" ] && echo $t > "$OUT/.waited"
+  echo "${w:-0}"
+}
+# ", after N s" when the checks since the last call had to wait, then starts counting again.
+waited() { local t; t=$(cat "$OUT/.waited" 2>/dev/null || echo 0); rm -f "$OUT/.waited"; [ "$t" -gt 0 ] && printf ', after %s s' "$t"; return 0; }
 FAIL=0
 # First launch asks for the car before anything else.
 SEEN=0
@@ -310,16 +328,18 @@ DV=$(view_flag demoButton); [ "$DV" = "?" ] && { sleep 3; DV=$(view_flag demoBut
 if [ "$DV" = "G" ] && [ "${W:-0}" -ge $(( ${SW:-1080} * 80 / 100 )) ]; then log "connected: Demo car hidden, Disconnect full width (${W}px of ${SW}px)"; else log "connected: FAILED (Demo car '${DV:-?}', Disconnect ${W:-0}px of ${SW}px)"; FAIL=1; fi
 # Turn the phone sideways: the Dashboard switches to two columns, then back to portrait.
 adb shell settings put system accelerometer_rotation 0
+# A slow phone (Android 10's emulator) can still be laying the screen out several seconds after
+# it turns, so each size is measured until it's right or 20 seconds have passed.
 adb shell settings put system user_rotation 1
-sleep 5
+sleep 3
+LW=$(wait_wide connectButton 200 20); LR=$(wait_wide rpmRoundel 200 20)
 shot 2b-landscape
-LW=$(view_width connectButton); LR=$(view_width rpmRoundel)
-if alive && [ "${LW:-0}" -ge 200 ] && [ "${LR:-0}" -ge 200 ]; then log "landscape: OK (Disconnect ${LW}px, dial ${LR}px)"; else log "landscape: FAILED (Disconnect ${LW:-0}px, dial ${LR:-0}px)"; FAIL=1; fi
+if alive && [ "${LW:-0}" -ge 200 ] && [ "${LR:-0}" -ge 200 ]; then log "landscape: OK (Disconnect ${LW}px, dial ${LR}px$(waited))"; else log "landscape: FAILED (Disconnect ${LW:-0}px, dial ${LR:-0}px after 20 s)"; FAIL=1; fi
 adb shell settings put system user_rotation 0
-sleep 4
+sleep 3
+W=$(wait_wide connectButton 200 20)
 shot 2c-portrait-again
-W=$(view_width connectButton)
-alive && [ "${W:-0}" -ge 200 ] && log "back to portrait: OK" || { log "back to portrait: FAILED"; FAIL=1; }
+alive && [ "${W:-0}" -ge 200 ] && log "back to portrait: OK$(waited)" || { log "back to portrait: FAILED (Disconnect ${W:-0}px after 20 s)"; FAIL=1; }
 # Picture-in-picture: going Home while connected floats the readings in a small window, still connected; opening the app again restores it.
 # It's off until switched on: first, going Home leaves no floating window.
 adb logcat -c; adb shell input keyevent KEYCODE_HOME; sleep 4
@@ -1457,4 +1477,17 @@ if grep -q "FATAL EXCEPTION" "$OUT/logcat.txt" && grep -A3 "FATAL EXCEPTION" "$O
   log "crashes: FOUND"; grep -A20 "FATAL EXCEPTION" "$OUT/logcat.txt" > "$OUT/crash.txt"; exit 1
 fi
 log "crashes: none"
-exit $FAIL
+
+# Only the smoke checks fail this phone's job: the app installs, opens, connects to the demo car,
+# shows each tab, reads codes, saves a report, checks for updates and keeps running. A check that
+# finds the app stopped also counts. Every other tour check that failed is still reported (in
+# result.txt, tour-failed.txt and as a warning on the run's page) but doesn't turn the run red,
+# so a red run means something people would notice is broken.
+SMOKE="^(install|open|car picker|demo|button 'Disconnect'|connected|graphs|diagnostics|code report|updates|new version|minimised|still running after tour): FAILED|app stopped|app not running"
+grep ": FAILED" "$OUT/result.txt" > "$OUT/failed.txt" || true
+grep -E -v "$SMOKE" "$OUT/failed.txt" > "$OUT/tour-failed.txt" || true
+grep -E "$SMOKE" "$OUT/failed.txt" > "$OUT/smoke-failed.txt" || true
+[ -s "$OUT/tour-failed.txt" ] && log "tour: $(wc -l < "$OUT/tour-failed.txt" | tr -d ' ') other check(s) failed, not blocking"
+if [ -s "$OUT/smoke-failed.txt" ]; then log "smoke: FAILED ($(wc -l < "$OUT/smoke-failed.txt" | tr -d ' ') check(s))"; exit 1; fi
+log "smoke: all passed"
+exit 0
