@@ -609,14 +609,15 @@ WINS=$(adb shell dumpsys window windows 2>/dev/null | grep -c "Window #.*$PKG")
 if grep -q "Performance timers" "$OUT/ui-perf.xml" || grep -q "Performance timers" "$OUT/views-perf.txt" || [ "${WINS:-0}" -ge 2 ]; then log "performance timers: shown"; else log "performance timers: FAILED (not shown)"; FAIL=1; fi
 adb shell input keyevent KEYCODE_BACK; sleep 2
 # Codes are now also read on their own shortly after connecting, so they may already be listed.
-# Drive history: the drive summed up earlier is listed (Dashboard, under the score).
+# Drive history: the drive summed up earlier is listed (Dashboard, under the score), in km or in miles
+# (the tour has picked mph by now, and Drive history follows it).
 tap_tab Dashboard > /dev/null; sleep 2; scroll_top
 XY=$(view_center_bottom historyButton pageDashboard); HIST=0
 if [ -n "$XY" ]; then
   adb shell input tap $XY; sleep 2
   for i in 1 2 3; do
     adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-history.xml"
-    grep -q 'text="Drive history"' "$OUT/ui-history.xml" && grep -q " km · " "$OUT/ui-history.xml" && { HIST=1; break; }; sleep 1
+    grep -q 'text="Drive history"' "$OUT/ui-history.xml" && grep -qE " (km|mi) · " "$OUT/ui-history.xml" && { HIST=1; break; }; sleep 1
   done
   shot 4a-drive-history
   adb shell input keyevent KEYCODE_BACK; sleep 1
