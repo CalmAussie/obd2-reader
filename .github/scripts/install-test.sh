@@ -1482,8 +1482,9 @@ log "crashes: none"
 # shows each tab, reads codes, saves a report, checks for updates and keeps running. A check that
 # finds the app stopped also counts. Every other tour check that failed is still reported (in
 # result.txt, tour-failed.txt and as a warning on the run's page) but doesn't turn the run red,
-# so a red run means something people would notice is broken.
-SMOKE="^(install|open|car picker|demo|button 'Disconnect'|connected|graphs|diagnostics|code report|updates|new version|minimised|still running after tour): FAILED|app stopped|app not running"
+# so a red run means something people would notice is broken. Privacy checks always block:
+# the VIN must start hidden and hide again (keep any new privacy check in this list too).
+SMOKE="^(install|open|car picker|demo|button 'Disconnect'|connected|graphs|diagnostics|code report|updates|new version|minimised|still running after tour): FAILED|app stopped|app not running|no hidden VIN on the card|second tap didn't hide it"
 grep ": FAILED" "$OUT/result.txt" > "$OUT/failed.txt" || true
 grep -E -v "$SMOKE" "$OUT/failed.txt" > "$OUT/tour-failed.txt" || true
 grep -E "$SMOKE" "$OUT/failed.txt" > "$OUT/smoke-failed.txt" || true

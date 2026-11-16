@@ -154,9 +154,13 @@ jobs:
           OBD_KEY_PASSWORD: ${{ secrets.OBD_KEY_PASSWORD }}
           GRADLE_OPTS: -Dorg.gradle.internal.repository.max.tentatives=6 -Dorg.gradle.internal.repository.initial.backoff=5000
         run: |
+          # The exit code is caught directly (not through a pipe), so this works the same
+          # whether or not the shell has pipefail on.
           for try in 1 2 3; do
-            gradle --no-daemon assembleRelease 2>&1 | tee release-build.log
-            [ "${PIPESTATUS[0]}" = 0 ] && exit 0
+            rc=0
+            gradle --no-daemon assembleRelease > release-build.log 2>&1 || rc=$?
+            cat release-build.log
+            [ "$rc" = 0 ] && exit 0
             grep -qE "status code (429|5[0-9][0-9])|Could not (GET|HEAD|resolve|download)|Read timed out|Connection reset" release-build.log || exit 1
             [ $try = 3 ] && exit 1
             echo "::warning::Library downloads failed (try $try of 3); trying again in 2 minutes."
