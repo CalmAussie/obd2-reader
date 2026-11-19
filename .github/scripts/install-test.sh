@@ -490,6 +490,27 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
   if [ $PASS = normal ] && [ "$STYLE" = "Race telemetry" ]; then
     adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-gmeter.xml"
     if grep -q "G-force: speeding up" "$OUT/ui-gmeter.xml"; then log "g-force: g-meter on Race telemetry"; else log "g-force: FAILED (no g-meter on Race telemetry)"; FAIL=1; fi
+    # 2.5.11 design shots: the trace carries on through a style change (the screen is drawn again),
+    # the g-meter at a large font size (its legend may wrap), and Diagnostics' outlined rows.
+    shot 5t1-telemetry-before-style-switch
+    for target in "Asphalt" "Race telemetry"; do
+      tap_text "Style" || { log "trace through style change: FAILED (no Style button)"; break; }
+      sleep 1
+      for i in 1 2 3 4 5 6; do tap_text "$target" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
+      sleep 4
+    done
+    scroll_top; shot 5t2-telemetry-after-style-switch
+    alive && log "trace through style change: shots taken" || { log "trace through style change: FAILED (app stopped)"; FAIL=1; }
+    adb shell settings put system font_scale 1.3; sleep 5; scroll_top; shot 5t3-telemetry-large-font
+    adb shell settings put system font_scale 1.0; sleep 5
+    diag_top; sleep 1; shot 5t4-telemetry-diagnostics
+    adb shell input swipe 540 1500 540 800 300; sleep 1; shot 5t5-telemetry-diagnostics-rows
+    tap_tab Dashboard; sleep 2; scroll_top; sleep 3
+  fi
+  # Digital cockpit: a sheet must be solid (it was see-through glass before 2.5.11).
+  if [ $PASS = normal ] && [ "$STYLE" = "Digital cockpit" ]; then
+    if tap_text "Style"; then sleep 2; shot 5c1-cockpit-sheet; adb shell input keyevent KEYCODE_BACK; sleep 2
+    else log "cockpit sheet: FAILED (no Style button)"; FAIL=1; fi
   fi
   adb shell settings put system user_rotation 1; sleep 5
   shot "6-$SLUG-landscape"
