@@ -119,7 +119,7 @@ class DriveCardRenderer(private val context: Context) {
 
         // Stats.
         val stats = listOfNotNull(
-            "Distance" to TripSummary.distance(Units.distance(trip.distanceKm)).replace(" km", " ${Units.distanceUnit}"),
+            "Distance" to Units.distanceText(trip.distanceKm),
             "Driving time" to TripSummary.duration(trip.drivingSeconds),
             trip.topSpeed?.let { "Top speed" to Units.speedText(it) },
             trip.averageSpeed?.let { "Average" to Units.speedText(it) },

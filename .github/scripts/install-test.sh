@@ -629,14 +629,15 @@ WINS=$(adb shell dumpsys window windows 2>/dev/null | grep -c "Window #.*$PKG")
 if grep -q "Performance timers" "$OUT/ui-perf.xml" || grep -q "Performance timers" "$OUT/views-perf.txt" || [ "${WINS:-0}" -ge 2 ]; then log "performance timers: shown"; else log "performance timers: FAILED (not shown)"; FAIL=1; fi
 adb shell input keyevent KEYCODE_BACK; sleep 2
 # Codes are now also read on their own shortly after connecting, so they may already be listed.
-# Drive history: the drive summed up earlier is listed (Dashboard, under the score).
+# Drive history: the drive summed up earlier is listed (Dashboard, under the score), in km or in miles
+# (the tour has picked mph by now, and Drive history follows it).
 tap_tab Dashboard > /dev/null; sleep 2; scroll_top
 XY=$(view_center_bottom historyButton pageDashboard); HIST=0
 if [ -n "$XY" ]; then
   adb shell input tap $XY; sleep 2
   for i in 1 2 3; do
     adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-history.xml"
-    grep -q 'text="Drive history"' "$OUT/ui-history.xml" && grep -q " km · " "$OUT/ui-history.xml" && { HIST=1; break; }; sleep 1
+    grep -q 'text="Drive history"' "$OUT/ui-history.xml" && grep -qE " (km|mi) · " "$OUT/ui-history.xml" && { HIST=1; break; }; sleep 1
   done
   shot 4a-drive-history
   adb shell input keyevent KEYCODE_BACK; sleep 1
@@ -1017,8 +1018,40 @@ else
   log "same route: FAILED (couldn't record a second drive)"; FAIL=1
 fi
 tap_tab Graphs; sleep 2
-XY=$(view_center_bottom savedLogsButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+XY=$(view_center_bottom savedLogsButton pageGraphs)
+# The page is scrolled to the bottom now, so its chips and text sit under the status bar. The strip
+# behind the status bar must hide them: between the clock and the icons, the strip is one plain colour.
+shot 8a5-status-bar-scrolled
+adb exec-out screencap > "$OUT/scrim.raw" 2>/dev/null
+SB=$(grep -o "[0-9]*,[0-9]*-[0-9]*,[0-9]* #[0-9a-f]* app:id/statusScrim" "$OUT/views.txt" | head -1 | sed 's/^[0-9]*,[0-9]*-[0-9]*,\([0-9]*\) .*/\1/')
+SCRIM=$(python3 - "$OUT/scrim.raw" "${SB:-0}" <<'PY'
+import struct, sys
+raw = open(sys.argv[1], 'rb').read(); top = int(sys.argv[2])
+if len(raw) < 16 or top < 24: print('unknown'); sys.exit()
+w, h = struct.unpack('<II', raw[:8]); head = len(raw) - w * h * 4
+if head not in (12, 16): print('unknown'); sys.exit()
+px = lambda x, y: raw[head + (y * w + x) * 4: head + (y * w + x) * 4 + 3]
+ref = px(w // 2, top - 6); worst = 0
+for y in range(4, top - 4, 2):
+    for x in range(int(w * 0.40), int(w * 0.70), 4):
+        worst = max(worst, sum(abs(a - b) for a, b in zip(px(x, y), ref)))
+print('plain' if worst <= 30 else 'covered-by-page')
+PY
+)
+case "$SCRIM" in
+  plain) log "status bar strip: page text hidden behind it";;
+  unknown) log "status bar strip: not checked (screen capture or strip size not found)";;
+  *) log "status bar strip: FAILED (page text shows under the clock)"; FAIL=1;;
+esac
+[ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8b-saved-drives
+# Deleting a saved drive asks first; Cancel keeps it. Tapping a choice closes the list, so open it again after.
+if tap_contains " KB" && tap_text "Delete" && sleep 1 && adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 && adb shell cat /sdcard/ui.xml > "$OUT/ui-drive-delete.xml" && grep -q "Delete this recorded drive?" "$OUT/ui-drive-delete.xml"; then
+  shot 8b2-saved-drive-delete-asks
+  tap_text "Cancel" > /dev/null; sleep 1
+  log "saved drives: Delete asks first"
+else log "saved drives: FAILED (Delete didn't ask first)"; FAIL=1; adb shell input keyevent KEYCODE_BACK; sleep 1; fi
+[ -n "$XY" ] && adb shell input tap $XY; sleep 2
 if tap_contains " KB" && tap_text "Make a video overlay" && tap_contains "720p" && tap_text "Make video"; then
   READY=0; PCT=; LASTPCT=; STILL=0
   # Slow emulators (Android 10 encodes in software) can need more than 3 minutes for the video: after

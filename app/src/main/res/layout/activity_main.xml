@@ -455,7 +455,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="-12dp"
                         android:text="@string/choose_car"
-                        android:textColor="?attr/obdAccent"
+                        android:textColor="?attr/obdAccentText"
                         android:visibility="gone"
                         app:icon="@drawable/ic_search"
                         app:iconTint="?attr/obdAccent" />
@@ -583,7 +583,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="-12dp"
                     android:text="@string/graph_order"
-                    android:textColor="?attr/obdAccent"
+                    android:textColor="?attr/obdAccentText"
                     android:visibility="gone" />
 
                 <LinearLayout
@@ -612,7 +612,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/pause"
-                        android:textColor="?attr/obdAccent" />
+                        android:textColor="?attr/obdAccentText" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -637,7 +637,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="-12dp"
                     android:text="@string/saved_drives"
-                    android:textColor="?attr/obdAccent"
+                    android:textColor="?attr/obdAccentText"
                     app:icon="@drawable/ic_share"
                     app:iconTint="?attr/obdAccent" />
             </LinearLayout>
@@ -754,7 +754,7 @@
                         android:layout_marginStart="-12dp"
                         android:layout_marginTop="4dp"
                         android:text="@string/share_report"
-                        android:textColor="?attr/obdAccent"
+                        android:textColor="?attr/obdAccentText"
                         android:visibility="gone"
                         app:icon="@drawable/ic_share"
                         app:iconTint="?attr/obdAccent" />
@@ -845,7 +845,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/read_vin"
-                            android:textColor="?attr/obdAccent" />
+                            android:textColor="?attr/obdAccentText" />
                     </LinearLayout>
 
                     <!-- Everything the VIN says, from the vPIC data inside the app. -->
@@ -856,7 +856,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="-12dp"
                         android:text="@string/vin_details"
-                        android:textColor="?attr/obdAccent"
+                        android:textColor="?attr/obdAccentText"
                         android:visibility="gone" />
 
                     <TextView
@@ -874,7 +874,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="-12dp"
-                        android:textColor="?attr/obdAccent"
+                        android:textColor="?attr/obdAccentText"
                         android:visibility="gone" />
 
                     <!-- When the car's VIN doesn't match the plate: what the car reports, and why. -->
@@ -895,7 +895,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="-12dp"
                         android:text="@string/vin_enter"
-                        android:textColor="?attr/obdAccent" />
+                        android:textColor="?attr/obdAccentText" />
 
                     <!-- Battery check: measured each time the engine starts while connected. -->
                     <TextView
@@ -1018,7 +1018,7 @@
                                 android:gravity="end"
                                 android:maxLines="1"
                                 android:text="@string/car_not_set"
-                                android:textColor="?attr/obdAccent"
+                                android:textColor="?attr/obdAccentText"
                                 android:textSize="14sp" />
 
                             <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="4dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
@@ -1043,7 +1043,7 @@
                             android:background="?attr/selectableItemBackground"
                             android:fontFamily="@font/archivo_medium"
                             android:text="@string/car_expect"
-                            android:textColor="?attr/obdAccent"
+                            android:textColor="?attr/obdAccentText"
                             android:textSize="14sp"
                             android:visibility="gone" />
                     </LinearLayout>
@@ -1069,7 +1069,7 @@
                             android:layout_weight="1"
                             android:gravity="end"
                             android:maxLines="1"
-                            android:textColor="?attr/obdAccent"
+                            android:textColor="?attr/obdAccentText"
                             android:textSize="14sp" />
 
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="4dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
@@ -1103,7 +1103,7 @@
                                 android:gravity="end"
                                 android:maxLines="2"
                                 android:text="@string/protocol_auto"
-                                android:textColor="?attr/obdAccent"
+                                android:textColor="?attr/obdAccentText"
                                 android:textSize="14sp" />
 
                             <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="4dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
@@ -1235,7 +1235,7 @@
                             android:layout_weight="1"
                             android:gravity="end"
                             android:maxLines="1"
-                            android:textColor="?attr/obdAccent"
+                            android:textColor="?attr/obdAccentText"
                             android:textSize="14sp" />
 
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="4dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
@@ -1262,7 +1262,7 @@
                             android:layout_weight="1"
                             android:gravity="end"
                             android:maxLines="1"
-                            android:textColor="?attr/obdAccent"
+                            android:textColor="?attr/obdAccentText"
                             android:textSize="14sp" />
 
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="4dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
@@ -1289,7 +1289,7 @@
                             android:layout_weight="1"
                             android:gravity="end"
                             android:maxLines="1"
-                            android:textColor="?attr/obdAccent"
+                            android:textColor="?attr/obdAccentText"
                             android:textSize="14sp" />
 
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="4dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
@@ -1316,7 +1316,7 @@
                             android:layout_weight="1"
                             android:gravity="end"
                             android:maxLines="1"
-                            android:textColor="?attr/obdAccent"
+                            android:textColor="?attr/obdAccentText"
                             android:textSize="14sp" />
 
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="4dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
@@ -1349,7 +1349,7 @@
                                 android:ellipsize="end"
                                 android:gravity="end"
                                 android:maxLines="1"
-                                android:textColor="?attr/obdAccent"
+                                android:textColor="?attr/obdAccentText"
                                 android:textSize="14sp" />
 
                             <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="4dp" android:importantForAccessibility="no" android:src="@drawable/ic_chevron_right" app:tint="?attr/obdTextSecondary" />
@@ -1421,7 +1421,7 @@
                                 android:layout_marginEnd="20dp"
                                 android:background="?attr/selectableItemBackground"
                                 android:text="@string/save_or_share"
-                                android:textColor="?attr/obdAccent"
+                                android:textColor="?attr/obdAccentText"
                                 android:textSize="14sp" />
 
                             <TextView
@@ -1429,7 +1429,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/show"
-                                android:textColor="?attr/obdAccent"
+                                android:textColor="?attr/obdAccentText"
                                 android:textSize="14sp" />
                         </LinearLayout>
 
@@ -1582,6 +1582,14 @@
                 </LinearLayout>
             </FrameLayout>
         </androidx.core.widget.NestedScrollView>
+
+        <!-- Behind the status bar, over the pages: scrolled text goes under it, not under the clock.
+             MainActivity sets its height to the status bar's. -->
+        <com.obdreader.app.ui.StatusBarScrim
+            android:id="@+id/statusScrim"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="top" />
     </FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

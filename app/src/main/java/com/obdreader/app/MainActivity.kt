@@ -392,11 +392,18 @@ open class MainActivity : AppCompatActivity() {
         fadeFromLastStyle()
 
         // Edge-to-edge: pages pad below the status bar; the bottom bar pads itself above the nav bar.
+        // The livery stripes start below the status bar too (its icons vanished on the black and
+        // white bands), and a strip of the page's backdrop covers the status bar, so text scrolled
+        // up goes behind it instead of under the clock.
         val pages = listOf(findViewById<View>(R.id.content), findViewById<View>(R.id.contentDiag), findViewById<View>(R.id.contentGraphs))
+        val stripes = listOf(R.id.stripesDash, R.id.stripesDiag, R.id.stripesGraphs).map { findViewById<View>(it) }
+        val scrim = findViewById<com.obdreader.app.ui.StatusBarScrim>(R.id.statusScrim)
         val basePadTop = pages.first().paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root)) { _, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             pages.forEach { it.setPadding(it.paddingLeft, basePadTop + bars.top, it.paddingRight, it.paddingBottom) }
+            stripes.forEach { s -> (s.layoutParams as ViewGroup.MarginLayoutParams).let { if (it.topMargin != bars.top) { it.topMargin = bars.top; s.layoutParams = it } } }
+            scrim.layoutParams = scrim.layoutParams.apply { height = bars.top }
             insets
         }
 
@@ -432,6 +439,8 @@ open class MainActivity : AppCompatActivity() {
         logToggle = findViewById(R.id.logToggle)
 
         setupDashboard()
+        // After setupDashboard: Digital cockpit and Cyberpunk give the root their glow there.
+        findViewById<com.obdreader.app.ui.StatusBarScrim>(R.id.statusScrim).backdropOf = findViewById(R.id.root)
         applyRedline()
         applyOrientation()
 
@@ -484,6 +493,7 @@ open class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.reconnectRow).apply {
             background = panelBackground()
             setOnClickListener { findViewById<MaterialSwitch>(R.id.reconnectSwitch).toggle() }
+            readAsSwitch(findViewById(R.id.reconnectSwitch))
         }
         findViewById<MaterialSwitch>(R.id.pipSwitch).apply {
             isChecked = prefs.getBoolean(PREF_PIP, false)
@@ -493,6 +503,7 @@ open class MainActivity : AppCompatActivity() {
             background = panelBackground()
             visibility = if (pipSupported()) View.VISIBLE else View.GONE
             setOnClickListener { findViewById<MaterialSwitch>(R.id.pipSwitch).toggle() }
+            readAsSwitch(findViewById(R.id.pipSwitch))
         }
         findViewById<MaterialSwitch>(R.id.alertsSwitch).apply {
             isChecked = AppPrefs.alerts(prefs)
@@ -501,6 +512,7 @@ open class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.alertsRow).apply {
             background = panelBackground()
             setOnClickListener { findViewById<MaterialSwitch>(R.id.alertsSwitch).toggle() }
+            readAsSwitch(findViewById(R.id.alertsSwitch))
         }
         Alerts.start(this)
         findViewById<TextView>(R.id.slotsSetting).text = slots.joinToString(", ") { readout(it).label }
@@ -785,7 +797,7 @@ open class MainActivity : AppCompatActivity() {
         })
         val (km, secs) = com.obdreader.app.obd.TripHistory.totals(trips)
         body.addView(TextView(this).apply {
-            text = "${trips.size} ${if (trips.size == 1) "drive" else "drives"} · ${TripSummary.distance(km)} · ${TripSummary.duration(secs)} driving"
+            text = "${trips.size} ${if (trips.size == 1) "drive" else "drives"} · ${Units.distanceText(km)} · ${TripSummary.duration(secs)} driving"
             setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setPadding(0, dp(4f).toInt(), 0, dp(12f).toInt())
         })
@@ -814,14 +826,14 @@ open class MainActivity : AppCompatActivity() {
                         setTextColor(themeColor(R.attr.obdTextPrimary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
                     })
                     addView(TextView(this@MainActivity).apply {
-                        text = "${TripSummary.distance(trip.distanceKm)} · ${TripSummary.duration(trip.drivingSeconds)}" + (trip.topSpeed?.let { " · top ${Units.speedText(it)}" } ?: "")
+                        text = "${Units.distanceText(trip.distanceKm)} · ${TripSummary.duration(trip.drivingSeconds)}" + (trip.topSpeed?.let { " · top ${Units.speedText(it)}" } ?: "")
                         setTextColor(themeColor(R.attr.obdTextSecondary)); setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
                     })
                 }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
                 addView(TextView(this@MainActivity).apply {
                     text = score?.toString() ?: "–"
                     typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
-                    setTextColor(themeColor(R.attr.obdAccent))
+                    setTextColor(themeColor(R.attr.obdAccentText))
                     contentDescription = score?.let { "Drive score $it" } ?: "No score"
                 })
                 setOnClickListener { sheet.dismiss(); showTripSummary(trip, justEnded = false) }
@@ -920,7 +932,7 @@ open class MainActivity : AppCompatActivity() {
             setPadding(0, dp(2f).toInt(), 0, dp(14f).toInt())
         })
         val tiles = listOfNotNull(
-            "Distance" to TripSummary.distance(Units.distance(trip.distanceKm)).replace(" km", " ${Units.distanceUnit}"),
+            "Distance" to Units.distanceText(trip.distanceKm),
             "Driving time" to TripSummary.duration(trip.drivingSeconds),
             trip.topSpeed?.let { "Top speed" to Units.speedText(it) },
             trip.averageSpeed?.let { "Average speed" to Units.speedText(it) },
@@ -1083,7 +1095,7 @@ open class MainActivity : AppCompatActivity() {
             }
             body.addView(MaterialButton(this, null, style).apply {
                 text = label
-                if (isDanger) setTextColor(themeColor(R.attr.obdDanger))
+                if (isDanger) setTextColor(themeColor(R.attr.obdDangerText))
                 setOnClickListener { action() }
             }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(if (i == 0) 18f else 4f).toInt() })
         }
@@ -1092,7 +1104,7 @@ open class MainActivity : AppCompatActivity() {
     /** A tappable row: [name] with its current [value] and a chevron, opening the next sheet. */
     private fun sheetRow(body: LinearLayout, name: String, value: String, onClick: () -> Unit): TextView {
         val valueView = TextView(this).apply {
-            text = value; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdAccent))
+            text = value; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdAccentText))
             gravity = Gravity.END
         }
         body.addView(LinearLayout(this).apply {
@@ -1109,6 +1121,21 @@ open class MainActivity : AppCompatActivity() {
             setOnClickListener { onClick() }
         }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8f).toInt() })
         return valueView
+    }
+
+    /**
+     * A settings row with a switch at its end: TalkBack reads the whole row (its title and help
+     * line) as one switch with its on or off state, instead of a row and then an unnamed "Switch, off".
+     */
+    private fun View.readAsSwitch(switch: MaterialSwitch) {
+        switch.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        setAccessibilityDelegate(object : View.AccessibilityDelegate() {
+            override fun onInitializeAccessibilityNodeInfo(host: View, info: android.view.accessibility.AccessibilityNodeInfo) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.className = android.widget.Switch::class.java.name
+                info.isCheckable = true; info.isChecked = switch.isChecked
+            }
+        })
     }
 
     /** A single-choice list: tapping an option calls [onPick] with its index. */
@@ -1133,7 +1160,7 @@ open class MainActivity : AppCompatActivity() {
                 val last = i == buttons.lastIndex
                 addView(MaterialButton(this@MainActivity, null, if (last) com.google.android.material.R.attr.materialButtonStyle else com.google.android.material.R.attr.borderlessButtonStyle).apply {
                     text = label
-                    if (!last) setTextColor(themeColor(R.attr.obdAccent))
+                    if (!last) setTextColor(themeColor(R.attr.obdAccentText))
                     setOnClickListener { action() }
                 }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(8f).toInt() })
             }
@@ -1422,7 +1449,7 @@ open class MainActivity : AppCompatActivity() {
                 }
             }
             body.addView(MaterialButton(this, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
-                text = getString(R.string.history_codes_clear); setTextColor(themeColor(R.attr.obdAccent))
+                text = getString(R.string.history_codes_clear); setTextColor(themeColor(R.attr.obdAccentText))
                 setOnClickListener {
                     MaterialAlertDialogBuilder(this@MainActivity)
                         .setTitle(R.string.history_codes_clear_title)
@@ -1597,14 +1624,14 @@ open class MainActivity : AppCompatActivity() {
                 if (found.isEmpty()) line("No other modules answered.", true) else show(found)
             } else {
                 body.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-                    text = getString(R.string.modules_search); setTextColor(themeColor(R.attr.obdAccent))
+                    text = getString(R.string.modules_search); setTextColor(themeColor(R.attr.obdAccentText))
                     setOnClickListener { searchAllModules(results) }
                 }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16f).toInt() })
                 line(getString(R.string.modules_search_help), true)
             }
             if (ModuleScan.SecondNetwork.offeredFor(make, ObdSession.state.value.protocolCode)) {
                 body.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-                    text = getString(R.string.modules_second); setTextColor(themeColor(R.attr.obdAccent))
+                    text = getString(R.string.modules_second); setTextColor(themeColor(R.attr.obdAccentText))
                     setOnClickListener { searchSecondNetwork() }
                 }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16f).toInt() })
                 line(getString(R.string.modules_second_help), true)
@@ -1724,7 +1751,7 @@ open class MainActivity : AppCompatActivity() {
                         addView(TextView(this@MainActivity).apply { text = "Odometer (true mileage)"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f); setTextColor(themeColor(R.attr.obdTextPrimary)) })
                         addView(TextView(this@MainActivity).apply { text = "Instrument cluster (COMBI)"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
                     }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-                    addView(TextView(this@MainActivity).apply { text = odo; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f); setTextColor(themeColor(R.attr.obdAccent)) })
+                    addView(TextView(this@MainActivity).apply { text = odo; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f); setTextColor(themeColor(R.attr.obdAccentText)) })
                 })
                 line(if (volvoKm == null && ObdSession.volvoAdapterRefused) "Your adapter can't wake Volvo's instrument cluster (many cheap clones can't). An OBDLink, BAFX or Veepeak OBDCheck BLE+ can."
                     else if (volvoKm == null) "Your instrument cluster didn't share its mileage. Some 1996–97 850s have a Yazaki-made cluster that doesn't give it out through the OBD2 port at all, so no app can read it there; the mileage is still on the dashboard."
@@ -1743,7 +1770,7 @@ open class MainActivity : AppCompatActivity() {
                             addView(TextView(this@MainActivity).apply { text = r.module; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
                         }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
                         addView(TextView(this@MainActivity).apply {
-                            text = first[r]?.let(r::format) ?: "N/A"; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f); setTextColor(themeColor(R.attr.obdAccent))
+                            text = first[r]?.let(r::format) ?: "N/A"; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f); setTextColor(themeColor(R.attr.obdAccentText))
                             values[r] = this
                         })
                     })
@@ -1754,7 +1781,7 @@ open class MainActivity : AppCompatActivity() {
             heading("Module information")
             line("Part numbers, software versions and the VIN each module holds, read with the standard identifiers every make's modules use.", true)
             body.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-                text = getString(R.string.enhanced_module_info); setTextColor(themeColor(R.attr.obdAccent))
+                text = getString(R.string.enhanced_module_info); setTextColor(themeColor(R.attr.obdAccentText))
                 setOnClickListener { readModuleInfo() }
             }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8f).toInt() })
             heading("About this")
@@ -1935,7 +1962,7 @@ open class MainActivity : AppCompatActivity() {
                     addView(TextView(this@MainActivity).apply { text = (r.header?.let { "$it · " } ?: "") + r.request + " · " + r.formula; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); setTextColor(themeColor(R.attr.obdTextSecondary)) })
                 }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
                 addView(TextView(this@MainActivity).apply {
-                    text = "–"; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f); setTextColor(themeColor(R.attr.obdAccent))
+                    text = "–"; typeface = titleTypeface(); setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f); setTextColor(themeColor(R.attr.obdAccentText))
                     values[r] = this
                 })
                 setOnLongClickListener {
@@ -1949,7 +1976,7 @@ open class MainActivity : AppCompatActivity() {
             orientation = LinearLayout.HORIZONTAL
             addView(MaterialButton(this@MainActivity).apply { setText(R.string.custom_add); setOnClickListener { sheet.dismiss(); addCustomReading() } })
             if (list.isNotEmpty()) addView(MaterialButton(this@MainActivity, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
-                setText(R.string.custom_refresh); setTextColor(themeColor(R.attr.obdAccent)); setOnClickListener { readCustomInto(values) }
+                setText(R.string.custom_refresh); setTextColor(themeColor(R.attr.obdAccentText)); setOnClickListener { readCustomInto(values) }
             })
             setPadding(0, dp(12f).toInt(), 0, 0)
         })
@@ -2198,7 +2225,7 @@ open class MainActivity : AppCompatActivity() {
             }
             val title = "Not reported by your car (${notReported.size})"
             body.addView(TextView(this).apply {
-                text = "$title  ▸"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdAccent))
+                text = "$title  ▸"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f); typeface = uiTypeface(600); setTextColor(themeColor(R.attr.obdAccentText))
                 setPadding(0, dp(16f).toInt(), 0, dp(4f).toInt()); minHeight = dp(48f).toInt(); gravity = Gravity.CENTER_VERTICAL
                 isClickable = true; isFocusable = true; contentDescription = "$title, collapsed"
                 setOnClickListener {
@@ -2590,7 +2617,7 @@ open class MainActivity : AppCompatActivity() {
                     })
                     addView(TextView(context).apply {
                         text = line.change; setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f); fontFeatureSettings = "tnum"; gravity = Gravity.END
-                        setTextColor(themeColor(when (line.better) { true -> R.attr.obdOk; false -> R.attr.obdDanger; null -> R.attr.obdTextSecondary }))
+                        setTextColor(themeColor(when (line.better) { true -> R.attr.obdOkText; false -> R.attr.obdDangerText; null -> R.attr.obdTextSecondary }))
                     }, LinearLayout.LayoutParams(dp(118f).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT))
                 })
             }
@@ -2624,9 +2651,9 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun scoreColour(score: Int): Int = when {
-        score >= 80 -> themeColor(R.attr.obdOk)
+        score >= 80 -> themeColor(R.attr.obdOkText)
         score >= 55 -> themeColor(R.attr.obdWarnText)
-        else -> themeColor(R.attr.obdDanger)
+        else -> themeColor(R.attr.obdDangerText)
     }
 
     // ---------- Graphs ----------
@@ -2714,11 +2741,20 @@ open class MainActivity : AppCompatActivity() {
     private fun graphLabel(key: String): String =
         ObdSession.state.value.relabels[key] ?: channels.firstOrNull { it.key == key }?.label ?: key
 
-    private fun graphColour(key: String): Int = when (key) {
+    private fun graphColour(key: String): Int = onPanels(when (key) {
         RPM_KEY -> Channels.RPM
         SPEED_KEY -> Channels.SPEED
         else -> Channels.forKey(key, themeColor(R.attr.obdAccent))
-    }
+    })
+
+    /**
+     * A reading's channel colour as drawn on this style's panels. The channel colours are bright
+     * for the dark styles; on the light ones (Pit lane, Rally stage) they're darkened, keeping
+     * their hue, until they reach 3:1 on the page and its panels, so lines and bars stay visible.
+     */
+    private fun onPanels(colour: Int): Int =
+        if (!themeBool(R.attr.obdIsLight)) colour
+        else com.obdreader.app.obd.Contrast.darkenTo(colour, intArrayOf(themeColor(R.attr.obdBg), themeColor(R.attr.obdSurface), themeColor(R.attr.obdSurfaceHigh)))
 
     /**
      * What can be graphed: once the car has said which readings it supports, only the extra readings
@@ -2792,7 +2828,7 @@ open class MainActivity : AppCompatActivity() {
         }
         graphChipGroup.addView(Chip(this).apply {
             text = getString(R.string.graphs_add)
-            setTextColor(themeColor(R.attr.obdAccent))
+            setTextColor(themeColor(R.attr.obdAccentText))
             chipStrokeColor = android.content.res.ColorStateList.valueOf(themeColor(R.attr.obdAccent))
             setOnClickListener { showAddGraph() }
         })
@@ -3031,11 +3067,11 @@ open class MainActivity : AppCompatActivity() {
         android.util.Log.i("OBD2Graphs", "order: ${keys.joinToString(",")}")
         val fallback = themeColor(R.attr.obdAccent)
         for (ch in keys.mapNotNull { k -> channels.firstOrNull { it.key == k } }) {
-            val colour = when (ch.key) {
+            val colour = onPanels(when (ch.key) {
                 RPM_KEY -> Channels.RPM
                 SPEED_KEY -> Channels.SPEED
                 else -> Channels.forKey(ch.key, fallback)
-            }
+            })
             val strip = GraphStripView(this, ch.key, ch.label, ch.unit, ch.decimals, ch.min, ch.max, colour).apply {
                 tag = ch.key
                 windowMs = graphWindowMs
@@ -3124,8 +3160,15 @@ open class MainActivity : AppCompatActivity() {
                 if (LogRecorder.active.value?.file == file) {
                     toast("This drive is still recording. Stop recording first.")
                 } else {
-                    file.delete()
-                    toast("Deleted")
+                    // Deleting always asks first (style guide): a recorded drive can't be got back.
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.saved_drive_delete_title)
+                        .setMessage(R.string.saved_drive_delete_text)
+                        .setPositiveButton(R.string.history_delete) { _, _ ->
+                            file.delete()
+                            toast(getString(R.string.saved_drive_deleted))
+                        }
+                        .setNegativeButton(android.R.string.cancel, null).show()
                 }
             },
         )
@@ -3411,16 +3454,16 @@ open class MainActivity : AppCompatActivity() {
         val shownBig = setOf(RPM_KEY, SPEED_KEY, slots[0], slots[1])
         Pids.dashboard.filter { it.hex !in shownBig }.forEach { p ->
             val r = readout(p.hex)
-            addTile(p.hex, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, Channels.forKey(p.hex, themeColor(R.attr.obdStripe1))))
+            addTile(p.hex, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, onPanels(Channels.forKey(p.hex, themeColor(R.attr.obdStripe1)))))
         }
         if (Boost.KEY !in shownBig) readout(Boost.KEY).let { r ->
-            addTile(Boost.KEY, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, Channels.forKey(Boost.KEY, themeColor(R.attr.obdStripe1))))
+            addTile(Boost.KEY, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, onPanels(Channels.forKey(Boost.KEY, themeColor(R.attr.obdStripe1)))))
         }
-        if (VOLTAGE_KEY !in shownBig) addTile(VOLTAGE_KEY, TowerRowView(this, "Battery", "V", 11.0, 15.0, 15.0, 1, Channels.forKey(VOLTAGE_KEY, themeColor(R.attr.obdStripe1))))
+        if (VOLTAGE_KEY !in shownBig) addTile(VOLTAGE_KEY, TowerRowView(this, "Battery", "V", 11.0, 15.0, 15.0, 1, onPanels(Channels.forKey(VOLTAGE_KEY, themeColor(R.attr.obdStripe1)))))
         // G-force from the phone, at the end of the list.
         GForce.KEYS.filter { it !in shownBig }.forEach { k ->
             val r = readout(k)
-            addTile(k, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, Channels.forKey(k, themeColor(R.attr.obdStripe1))))
+            addTile(k, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, onPanels(Channels.forKey(k, themeColor(R.attr.obdStripe1)))))
         }
     }
 
@@ -4717,7 +4760,7 @@ open class MainActivity : AppCompatActivity() {
             release != null -> getString(R.string.updates_sub_available, release.version)
             else -> getString(R.string.updates_sub, appVersion())
         }
-        sub.setTextColor(if (release != null) themeColor(R.attr.obdAccent) else themeColor(R.attr.obdTextSecondary))
+        sub.setTextColor(if (release != null) themeColor(R.attr.obdAccentText) else themeColor(R.attr.obdTextSecondary))
     }
 
     /**
@@ -4932,7 +4975,7 @@ open class MainActivity : AppCompatActivity() {
             list.addView(TextView(this).apply {
                 setText(title)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-                setTextColor(themeColor(R.attr.obdAccent))
+                setTextColor(themeColor(R.attr.obdAccentText))
                 typeface = uiTypeface(600)
                 setPadding(0, dp(18f).toInt(), 0, dp(6f).toInt())
             })
@@ -5526,7 +5569,7 @@ open class MainActivity : AppCompatActivity() {
         })
         items.forEach { item ->
             val colour = when (item.level) {
-                CarSupport.Level.UNLIKELY -> themeColor(R.attr.obdDanger)
+                CarSupport.Level.UNLIKELY -> themeColor(R.attr.obdDangerText)
                 CarSupport.Level.MAYBE -> themeColor(R.attr.obdWarnText)
                 CarSupport.Level.LIMITED -> themeColor(R.attr.obdTextSecondary)
             }
@@ -5669,7 +5712,7 @@ open class MainActivity : AppCompatActivity() {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             typeface = uiTypeface(600)
             // Amber text is darker on the light styles; the tag's tint stays the plain status colour.
-            setTextColor(if (info.severity == DtcLibrary.Severity.MEDIUM) themeColor(R.attr.obdWarnText) else severityColour)
+            setTextColor(when (info.severity) { DtcLibrary.Severity.MEDIUM -> themeColor(R.attr.obdWarnText); DtcLibrary.Severity.HIGH -> themeColor(R.attr.obdDangerText); DtcLibrary.Severity.LOW -> themeColor(R.attr.obdOkText); else -> severityColour })
             background = GradientDrawable().apply {
                 cornerRadius = dp(4f)
                 setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(severityColour, 40))
