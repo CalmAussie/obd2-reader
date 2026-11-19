@@ -105,4 +105,22 @@ class RouteCompareTest {
         // The 29 s gap (no readings) counts as 5 s at most.
         assertEquals(26, st.drivingSeconds)
     }
+
+    @Test
+    fun aStrayFirstFixDoesntStopTheMatch() {
+        // The emulator's first fix of a drive can be a default place in California for a second
+        // or two. That used to move the drive's start across the world, so it never matched.
+        val clean = route(commute)
+        val rows = mutableListOf(header, "t,-2.0,800,0,37.421998,-122.084000,5", "t,-1.0,800,0,37.421998,-122.084000,5")
+        var t = 0.0
+        for (i in 1 until commute.size) {
+            val (a, b) = commute[i - 1] to commute[i]
+            for (s in 0 until 60) {
+                val f = s / 60.0
+                rows += String.format(java.util.Locale.US, "t,%.1f,1500,40,%.6f,%.6f,5", t, a.first + (b.first - a.first) * f, a.second + (b.second - a.second) * f)
+                t += 1.0
+            }
+        }
+        assertTrue(RouteCompare.sameRoute(clean, Route.parse(rows)))
+    }
 }

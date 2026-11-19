@@ -81,24 +81,7 @@ class Route private constructor(
          * of where the car got to, never a road shape: the app has no maps.
          */
         fun parse(lines: List<String>): Route {
-            if (lines.size < 2) return Route(emptyList())
-            val header = lines.first().split(",").map { it.trim('"') }
-            val iLat = header.indexOfFirst { it.startsWith("Latitude") }
-            val iLon = header.indexOfFirst { it.startsWith("Longitude") }
-            val iAcc = header.indexOfFirst { it.startsWith("Location accuracy") }
-            val iSec = header.indexOfFirst { it == "Seconds" }
-            val iSpeed = header.indexOfFirst { it.startsWith("Speed (") }
-            if (iLat < 0 || iLon < 0) return Route(emptyList())
-            class Row(val sec: Double?, val kmh: Double?, val fix: Pair<Double, Double>?)
-            val rows = lines.drop(1).map { line ->
-                val f = line.split(",")
-                val lat = f.getOrNull(iLat)?.toDoubleOrNull()
-                val lon = f.getOrNull(iLon)?.toDoubleOrNull()
-                val acc = if (iAcc >= 0) f.getOrNull(iAcc)?.toDoubleOrNull() else null
-                val good = lat != null && lon != null && abs(lat) <= 90 && abs(lon) <= 180 && !(lat == 0.0 && lon == 0.0) &&
-                    (acc == null || acc <= MAX_ACCURACY_M)
-                Row(f.getOrNull(iSec)?.toDoubleOrNull(), if (iSpeed >= 0) f.getOrNull(iSpeed)?.toDoubleOrNull() else null, if (good) lat!! to lon!! else null)
-            }
+            val rows = readRows(lines) ?: return Route(emptyList())
             val pts = mutableListOf<Pair<Double, Double>>()
             val kmh = mutableListOf<Double?>()
             // Rows repeat the last fix between GPS updates; keep each place once.
@@ -117,6 +100,77 @@ class Route private constructor(
                 pts.add(move(pts.last(), h, after)); kmh.add(averageSpeed(rows.subList(last, rows.size).map { it.kmh }))
             }
             return Route(pts, kmh)
+        }
+
+        /** One CSV row: its time, the car's speed and its usable position (null: none, too rough, or a stray). */
+        private class Row(val sec: Double?, val kmh: Double?, val fix: Pair<Double, Double>?)
+
+        /**
+         * Each row's usable position, in the order of the rows after the header (null for a row
+         * without one), with the same checks as [parse]: for the moving dot on the video overlay.
+         */
+        fun usableFixes(lines: List<String>): List<Pair<Double, Double>?> =
+            readRows(lines)?.map { it.fix } ?: lines.drop(1).map { null }
+
+        /** The rows of a drive CSV, or null when it has no location columns. */
+        private fun readRows(lines: List<String>): List<Row>? {
+            if (lines.size < 2) return null
+            val header = lines.first().split(",").map { it.trim('"') }
+            val iLat = header.indexOfFirst { it.startsWith("Latitude") }
+            val iLon = header.indexOfFirst { it.startsWith("Longitude") }
+            val iAcc = header.indexOfFirst { it.startsWith("Location accuracy") }
+            val iSec = header.indexOfFirst { it == "Seconds" }
+            val iSpeed = header.indexOfFirst { it.startsWith("Speed (") }
+            if (iLat < 0 || iLon < 0) return null
+            val rows = lines.drop(1).map { line ->
+                val f = line.split(",")
+                val lat = f.getOrNull(iLat)?.toDoubleOrNull()
+                val lon = f.getOrNull(iLon)?.toDoubleOrNull()
+                val acc = if (iAcc >= 0) f.getOrNull(iAcc)?.toDoubleOrNull() else null
+                val good = lat != null && lon != null && abs(lat) <= 90 && abs(lon) <= 180 && !(lat == 0.0 && lon == 0.0) &&
+                    (acc == null || acc <= MAX_ACCURACY_M)
+                Row(f.getOrNull(iSec)?.toDoubleOrNull(), if (iSpeed >= 0) f.getOrNull(iSpeed)?.toDoubleOrNull() else null, if (good) lat!! to lon!! else null)
+            }
+            return withoutStrays(rows)
+        }
+
+        /** Faster than any car is driven (about 320 km/h): moving faster than this between two fixes means one is wrong. */
+        private const val MAX_PLAUSIBLE_MS = 90.0
+        /** Allowance for ordinary fix error on top of that speed. */
+        private const val JUMP_SLACK_M = 150.0
+
+        /** Whether a car could have gone from [a]'s position to [b]'s in the time between them. */
+        private fun plausible(a: Row, b: Row): Boolean {
+            val dt = if (a.sec != null && b.sec != null) abs(b.sec - a.sec) else 1.0
+            return metres(a.fix!!, b.fix!!) <= MAX_PLAUSIBLE_MS * maxOf(dt, 1.0) + JUMP_SLACK_M
+        }
+
+        /**
+         * Drops positions that are confidently wrong: a phone's first fix is sometimes an old or
+         * default place far away (the Android emulator gives one in California for a second or two),
+         * and GPS can briefly jump. Such a fix passes the accuracy check, but no car could get there
+         * and back in time. The fixes are split where a jump is impossible; the longest stretch is
+         * kept, and each other stretch only if it carries on plausibly from what's kept (a tunnel
+         * gap does, because the time between the fixes allows for the distance).
+         */
+        private fun withoutStrays(rows: List<Row>): List<Row> {
+            val runs = mutableListOf<MutableList<Int>>()
+            for (i in rows.indices) {
+                if (rows[i].fix == null) continue
+                val run = runs.lastOrNull()
+                if (run != null && plausible(rows[run.last()], rows[i])) run += i else runs += mutableListOf(i)
+            }
+            if (runs.size < 2) return rows
+            // The longest stretch is the drive; on a tie the later one (strays come at the start).
+            var anchor = 0
+            for (k in runs.indices) if (runs[k].size >= runs[anchor].size) anchor = k
+            val keep = BooleanArray(runs.size).also { it[anchor] = true }
+            var ref = runs[anchor].first()
+            for (k in anchor - 1 downTo 0) if (plausible(rows[runs[k].last()], rows[ref])) { keep[k] = true; ref = runs[k].first() }
+            ref = runs[anchor].last()
+            for (k in anchor + 1 until runs.size) if (plausible(rows[ref], rows[runs[k].first()])) { keep[k] = true; ref = runs[k].last() }
+            val dropped = runs.filterIndexed { k, _ -> !keep[k] }.flatten().toSet()
+            return rows.mapIndexed { i, r -> if (i in dropped) Row(r.sec, r.kmh, null) else r }
         }
 
         private fun averageSpeed(v: List<Double?>): Double? = v.filterNotNull().takeIf { it.isNotEmpty() }?.average()
