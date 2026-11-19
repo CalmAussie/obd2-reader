@@ -541,6 +541,8 @@ open class MainActivity : AppCompatActivity() {
         setupGroups()
         setupGraphs()
         setupScore()
+        // Drawn again in another style while connected: the traces carry on from the last 30 seconds.
+        seedDashTraces()
         if (savedInstanceState == null) Exports.cleanUp(this) // shared reports and logs are temporary copies
 
         bottomNav.setOnItemSelectedListener { item ->
@@ -3274,6 +3276,7 @@ open class MainActivity : AppCompatActivity() {
         trace = findViewById(R.id.teleTrace)
         gMeter = findViewById(R.id.teleGMeter)
         gMeter.follow = trace
+        gMeter.legend = findViewById(R.id.teleLegend)
         teleRpm = findViewById(R.id.teleRpm)
         teleSpeed = findViewById(R.id.teleSpeed)
         (teleRpm as FitTextView).sample = "8,888"
@@ -3312,7 +3315,7 @@ open class MainActivity : AppCompatActivity() {
                 val start = length
                 append("■ ")
                 setSpan(android.text.style.ForegroundColorSpan(colour), start, length, 0)
-                append(label).append("    ")
+                append(label).append("   ")
             }
             key("rpm", Channels.RPM); key(Units.speedUnit, Channels.SPEED); key("throttle", Channels.THROTTLE); append("Last 30 s")
         }
@@ -3422,6 +3425,26 @@ open class MainActivity : AppCompatActivity() {
             val r = readout(k)
             addTile(k, TowerRowView(this, r.label, r.unit, r.min, r.max, r.warn, r.decimals, Channels.forKey(k, themeColor(R.attr.obdStripe1))))
         }
+    }
+
+    /**
+     * Fills the Dashboard's traces (Race telemetry's trace, the Cyberpunk bars and each reading's little
+     * trace) from the last minute of readings kept outside the screen. Before, they lived only in the
+     * screen, so changing style (which draws the screen again) or a spell on another tab started them empty.
+     */
+    private fun seedDashTraces() {
+        if (!ObdSession.state.value.isConnected) return
+        val now = android.os.SystemClock.elapsedRealtime()
+        fun points(key: String): List<Double?> {
+            val ser = LiveHistory.series(key)
+            val (times, values) = synchronized(LiveHistory) { ser.times.toList() to ser.values.toList() }
+            return com.obdreader.app.obd.TraceSeed.steps(times, values, now, TowerRowView.TRACE_STEP_MS, TowerRowView.HISTORY)
+        }
+        val rpm = points(RPM_KEY).map { it?.toFloat() }
+        val speed = points(SPEED_KEY).map { v -> Units.value(SPEED_KEY, v)?.toFloat() }
+        trace.seed(rpm, speed, points(THROTTLE_KEY).map { it?.toFloat() })
+        cyberHud.seed(com.obdreader.app.obd.TraceSeed.latestRun(rpm))
+        tiles.forEach { (key, tile) -> tile.seedTrace(com.obdreader.app.obd.TraceSeed.latestRun(points(key).map { Units.value(key, it) })) }
     }
 
     private fun setRpm(value: Float?) {
@@ -5930,6 +5953,8 @@ open class MainActivity : AppCompatActivity() {
         pageGraphs.visibility = if (itemId == R.id.nav_graphs) View.VISIBLE else View.GONE
         pageDiagnostics.visibility = if (itemId == R.id.nav_diagnostics) View.VISIBLE else View.GONE
         if (itemId != R.id.nav_diagnostics && ::graphRate.isInitialized) {
+            // Back on the Dashboard: its traces weren't drawn behind the other tab, so they catch up first.
+            if (itemId == R.id.nav_dashboard) seedDashTraces()
             lastReadings = emptyMap() // redraw every reading now that the Dashboard is back
             render(ObdSession.state.value)
         }

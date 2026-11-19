@@ -113,6 +113,22 @@ class TraceView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
 
     fun clear() { rpm.clear(); speed.clear(); throttle.clear(); invalidate() }
 
+    /**
+     * Starts again from points kept outside the screen (oldest first, [TowerRowView.TRACE_STEP_MS] apart,
+     * ending now), so drawing the screen again in another style or coming back from another tab
+     * doesn't wipe the last 30 seconds. Points before the readings started are left out.
+     */
+    fun seed(rpmPoints: List<Float?>, speedPoints: List<Float?>, throttlePoints: List<Float?>) {
+        rpm.clear(); speed.clear(); throttle.clear()
+        val first = rpmPoints.indices.firstOrNull { rpmPoints[it] != null || speedPoints.getOrNull(it) != null }
+        if (first != null) for (i in first until rpmPoints.size) {
+            rpm.addLast(rpmPoints[i] ?: 0f); speed.addLast(speedPoints.getOrNull(i) ?: 0f); throttle.addLast(throttlePoints.getOrNull(i))
+        }
+        while (rpm.size > TowerRowView.HISTORY) { rpm.removeFirst(); speed.removeFirst(); throttle.removeFirst() }
+        lastPushMs = android.os.SystemClock.uptimeMillis()
+        invalidate()
+    }
+
     /** Height in pixels; landscape shortens it so the whole telemetry column fits the screen. */
     var fixedHeight: Int? = null
         set(value) { if (field != value) { field = value; requestLayout() } }
@@ -355,13 +371,16 @@ class VinDecalView @JvmOverloads constructor(context: Context, attrs: AttributeS
 /**
  * A g-meter beside the telemetry trace: a dot for how the car is pushed right now (up for speeding up,
  * down for braking, sideways for cornering) inside rings at half and one g, with a short fading trail.
- * Sized to the trace's height. G-force comes from the phone's motion sensor (see PhoneMotion).
+ * The circle is as tall as the trace and centred on it; the reading sits underneath, on the line of the
+ * trace's legend. G-force comes from the phone's motion sensor (see PhoneMotion).
  */
 class GMeterView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
     enum class Mode { OFF, LEARNING, NO_SENSOR, LIVE }
 
-    /** The trace it stands beside, so it's always as tall. */
+    /** The trace it stands beside: the circle is as tall as it. */
     var follow: TraceView? = null
+    /** The trace's legend: the reading goes on its first line. */
+    var legend: android.widget.TextView? = null
     var mode = Mode.OFF
         set(value) { if (field != value) { field = value; if (value != Mode.LIVE) trail.clear(); invalidate() } }
 
@@ -385,16 +404,24 @@ class GMeterView @JvmOverloads constructor(context: Context, attrs: AttributeSet
         invalidate()
     }
 
+    /** How tall the trace is, so the circle matches it. */
+    private fun traceHeight(): Int = follow?.let { if (it.height > 0) it.height else it.fixedHeight } ?: dp(96f).toInt()
+
+    /** Room for the reading under the circle. */
+    private fun strip(): Float { val fm = strong.fontMetrics; return fm.descent - fm.ascent + dp(6f) }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val h = follow?.fixedHeight ?: dp(96f).toInt()
-        setMeasuredDimension(h, h)
+        val d = follow?.fixedHeight ?: dp(96f).toInt()
+        // As tall as the row (the trace and its legend) when the row sets it, else the circle and the reading.
+        val h = if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY) MeasureSpec.getSize(heightMeasureSpec)
+            else resolveSize(d + strip().toInt(), heightMeasureSpec)
+        setMeasuredDimension(d, h)
     }
 
     override fun onDraw(canvas: Canvas) {
-        // The circle sits above a strip for its words, so the reading never crosses a ring.
-        val fm = strong.fontMetrics
-        val strip = fm.descent - fm.ascent + dp(4f)
-        val cx = width / 2f; val cy = (height - strip) / 2f
+        // The circle fills the trace's height and shares its centre line, so the two read as one panel.
+        val th = traceHeight().toFloat().coerceAtMost(height.toFloat())
+        val cx = width / 2f; val cy = th / 2f
         val r = (minOf(cx, cy) - dp(3f)).coerceAtLeast(dp(8f))
         canvas.drawCircle(cx, cy, r, ring)
         canvas.drawCircle(cx, cy, r / 2f, ring)
@@ -402,8 +429,11 @@ class GMeterView @JvmOverloads constructor(context: Context, attrs: AttributeSet
         canvas.drawLine(cx, cy - r, cx, cy + r, ring)
         text.textAlign = Paint.Align.LEFT
         canvas.drawText("1 g", cx + r * 0.72f, cy - r * 0.72f, text)
-        // Centred in the strip under the circle.
-        val baseline = height - strip / 2f - (fm.ascent + fm.descent) / 2f
+        // The reading: on the legend's first line when there's one beside it, else centred under the circle.
+        val fm = strong.fontMetrics
+        val lg = legend
+        val baseline = if (lg != null && lg.visibility == VISIBLE && lg.height > 0 && lg.baseline > 0) (lg.top + lg.baseline).toFloat()
+            else th + dp(6f) - fm.ascent
         when (mode) {
             Mode.LIVE -> {
                 // One g at the outer ring; beyond it the dot waits on the edge.

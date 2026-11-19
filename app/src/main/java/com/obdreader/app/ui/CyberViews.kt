@@ -68,6 +68,15 @@ class CyberHudView @JvmOverloads constructor(context: Context, attrs: AttributeS
         invalidate()
     }
 
+    /** Fills the bar strip from points kept outside the screen (oldest first, [STEP_MS] apart, ending now). */
+    fun seed(points: List<Float>) {
+        val last = points.takeLast(HISTORY)
+        last.forEachIndexed { i, v -> history[i] = v }
+        count = last.size
+        lastPushMs = android.os.SystemClock.uptimeMillis()
+        invalidate()
+    }
+
     /** Adds a point to the bar strip, at most one every 320 ms so the strip always spans the same time. */
     fun push(rpm: Float?) {
         if (rpm == null) { count = 0; invalidate(); return }

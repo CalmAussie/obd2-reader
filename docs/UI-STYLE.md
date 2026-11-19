@@ -9,9 +9,9 @@ There are 13 styles, two of them light (Pit lane, Rally stage), and day/night sw
 | Token | Use it for |
 |---|---|
 | `obdBg` | The page behind everything |
-| `obdSurface` | Panels on the page (`panelBackground()`), and the background of bottom sheets (the themes map Material's `colorSurfaceContainer*` to these tokens) |
+| `obdSurface` | Panels on the page (`panelBackground()`), and the background of bottom sheets (the themes map Material's `colorSurfaceContainer*` to these tokens). Digital cockpit's is see-through glass, so that style gives sheets and menus a solid colour of their own; `ThemeSurfacesTest` checks every style's sheets are solid. |
 | `obdSurfaceHigh` | Anything inside a sheet: tiles, rows, panels (`tripTile()`, `sheetPanel()`), and dialogs |
-| `obdOutline` | Hairlines, rings, strokes on the outlined layouts |
+| `obdOutline` | Hairlines, rings, strokes on the outlined layouts (Digital cockpit, Cyberpunk, Retro digital, Hairline and Race telemetry, whose panels are too close to its page colour to stand out without one) |
 | `obdTextPrimary` | Titles, values, body text you must read |
 | `obdTextSecondary` | Labels, help lines, notes, captions, units |
 | `obdAccent` | Links, the current value in a row, the filled button, the selected tab |

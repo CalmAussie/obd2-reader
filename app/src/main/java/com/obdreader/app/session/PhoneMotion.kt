@@ -24,8 +24,9 @@ import kotlin.math.sin
 /**
  * G-force while the car is connected: the phone's accelerometer, turned into the car's forward and
  * sideways directions by [GForce], shown as two readings ([GForce.FORWARD_KEY], [GForce.SIDE_KEY])
- * like any other. Listens only while the car is connected with the ignition on; nothing is saved
- * except the drive's peaks in its summary, and nothing leaves the phone. No permission is needed.
+ * like any other. Listens only while the car is connected with the ignition on. Nothing is saved
+ * except the drive's peaks in its summary and how the phone sits in its mount (two directions, so the
+ * next drive's readings show at once), and nothing leaves the phone. No permission is needed.
  */
 object PhoneMotion {
 
@@ -60,12 +61,15 @@ object PhoneMotion {
         appContext = context.applicationContext
         if (started) return
         started = true
+        // The mount learned on an earlier drive, so the readings show from the start.
+        gforce.restore(AppPrefs.of(context).getString(AppPrefs.GFORCE_MOUNT, null))
         scope.launch {
             var last: ObdSession.Phase? = null
             ObdSession.state.collect { s ->
-                // A new connection may be another car or mount: learn it again. Ignition-off stops
-                // during a drive keep what's been learned.
-                if (s.phase == ObdSession.Phase.CONNECTING && (last == null || last == ObdSession.Phase.IDLE || last == ObdSession.Phase.ERROR)) gforce.reset()
+                // A new connection may be another car or mount: the mount learned before is kept but
+                // checked against the first readings, and learned again if the phone sits another way.
+                // Ignition-off stops during a drive keep it as it is.
+                if (s.phase == ObdSession.Phase.CONNECTING && (last == null || last == ObdSession.Phase.IDLE || last == ObdSession.Phase.ERROR)) gforce.newConnection()
                 if (s.phase == ObdSession.Phase.CONNECTED) listen(s.isDemo) else quiet()
                 last = s.phase
             }
@@ -107,6 +111,7 @@ object PhoneMotion {
     }
 
     private fun quiet() {
+        if (listener != null) saveMount()
         listener?.let { l -> appContext?.getSystemService(SensorManager::class.java)?.unregisterListener(l) }
         listener = null
         demoJob?.cancel(); demoJob = null
@@ -114,9 +119,25 @@ object PhoneMotion {
         if (_status.value != Status.NO_SENSOR) _status.value = Status.OFF
     }
 
+    /** What was saved last, so it's only written when it changes. */
+    private var savedMount: String? = null
+    private var savedMountLoaded = false
+
+    /** Keeps how the phone sits in its mount for the next drive (or forgets it, if it's being learned again). */
+    private fun saveMount() {
+        val prefs = appContext?.let { AppPrefs.of(it) } ?: return
+        if (!savedMountLoaded) { savedMount = prefs.getString(AppPrefs.GFORCE_MOUNT, null); savedMountLoaded = true }
+        val now = gforce.mount()
+        if (now == savedMount) return
+        savedMount = now
+        prefs.edit().apply { if (now == null) remove(AppPrefs.GFORCE_MOUNT) else putString(AppPrefs.GFORCE_MOUNT, now) }.apply()
+    }
+
     private fun publish(timeMs: Long) {
         if (timeMs - lastPublish < PUBLISH_MS) return
         lastPublish = timeMs
+        // Learned just now: kept straight away, in case the app is closed before the drive ends.
+        if (!demoMode && gforce.calibrated && _status.value == Status.LEARNING) saveMount()
         val ready = demoMode || gforce.calibrated
         _status.value = if (ready) Status.READY else Status.LEARNING
         // Until the mount is learned there's nothing to show yet: the readings stay blank, not N/A.

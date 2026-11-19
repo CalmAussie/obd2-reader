@@ -81,6 +81,60 @@ class GForceTest {
         assertNull(g.forwardG)
     }
 
+    @Test fun learnsFromOnePullAway() {
+        val g = GForce()
+        val mount = Mount()
+        feed(g, mount, 0, 3_000, { 0.0 }, 0.0, 0.0)
+        // A gentle pull-away: 1.5 m/s² for 3 s, 0 to about 16 km/h. Before, this wasn't nearly enough.
+        feed(g, mount, 3_000, 6_000, { t -> (t - 3_000) / 1000.0 * 1.5 * 3.6 }, 1.5, 0.0, noise = 0.3)
+        assertTrue(g.calibrated)
+        // And it reads the right way round straight away: a bend to the right.
+        feed(g, mount, 6_000, 8_000, { 16.2 }, 0.0, -3.0)
+        assertEquals(3.0 / GForce.G, g.sideG!!, 0.04)
+        assertEquals(0.0, g.forwardG!!, 0.04)
+    }
+
+    @Test fun theNextDriveReadsAtOnce() {
+        val g = GForce()
+        val mount = Mount()
+        feed(g, mount, 0, 3_000, { 0.0 }, 0.0, 0.0)
+        feed(g, mount, 3_000, 11_000, { t -> (t - 3_000) / 1000.0 * 2.0 * 3.6 }, 2.0, 0.0)
+        assertTrue(g.calibrated)
+        // Kept on the phone, and the app opened again later (a new GForce), then a new connection.
+        val kept = g.mount()!!
+        val next = GForce()
+        next.restore(kept)
+        next.newConnection()
+        assertTrue(next.calibrated)
+        // Already moving when it connects: braking reads at once, no learning.
+        feed(next, mount, 100_000, 102_000, { t -> 50.0 - (t - 100_000) / 1000.0 * 3.0 * 3.6 }, -3.0, 0.0)
+        assertTrue(next.calibrated)
+        assertEquals(-3.0 / GForce.G, next.forwardG!!, 0.04)
+        // The same in this app session: a new connection keeps the mount.
+        g.newConnection()
+        assertTrue(g.calibrated)
+    }
+
+    @Test fun aKeptMountIsCheckedAtTheStart() {
+        val g = GForce()
+        feed(g, Mount(), 0, 3_000, { 0.0 }, 0.0, 0.0)
+        feed(g, Mount(), 3_000, 11_000, { t -> (t - 3_000) / 1000.0 * 2.0 * 3.6 }, 2.0, 0.0)
+        g.newConnection()
+        // The phone now sits another way: the first second of readings shows it, so it learns again.
+        feed(g, Mount(yawDeg = 120.0, pitchDeg = 20.0), 20_000, 21_500, { 0.0 }, 0.0, 0.0)
+        assertFalse(g.calibrated)
+        assertNull(g.forwardG)
+        assertNull(g.mount())
+    }
+
+    @Test fun aBadKeptMountIsIgnored() {
+        listOf(null, "", "1,2,3", "a,b,c,d,e,f", "NaN,0,1,1,0,0", "0,0,0,0,0,0", "0,0,1,0,0,1").forEach {
+            val g = GForce()
+            g.restore(it)
+            assertFalse("restore($it)", g.calibrated)
+        }
+    }
+
     @Test fun noSpeedNoReading() {
         val g = GForce()
         feed(g, Mount(), 0, 10_000, { 0.0 }, 0.0, 0.0)

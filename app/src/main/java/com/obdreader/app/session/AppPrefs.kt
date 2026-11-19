@@ -49,6 +49,8 @@ object AppPrefs {
     const val VIN_PRIVACY = "vin_privacy"
     /** "Record car replies": saves each connection's requests and replies ([com.obdreader.app.obd.ReplyRecording]). Off unless turned on. */
     const val RECORD_REPLIES = "record_replies"
+    /** How the phone sits in its mount (two directions in the phone's own axes, for g-force), kept for the next drive. Not backed up: it's this phone's. */
+    const val GFORCE_MOUNT = "gforce_mount"
 
     const val TYPE_CLASSIC = "classic"
     const val TYPE_BLE = "ble"
