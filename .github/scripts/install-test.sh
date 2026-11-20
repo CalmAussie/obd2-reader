@@ -493,14 +493,20 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
     # 2.5.11 design shots: the trace carries on through a style change (the screen is drawn again),
     # the g-meter at a large font size (its legend may wrap), and Diagnostics' outlined rows.
     shot 5t1-telemetry-before-style-switch
-    for target in "Asphalt" "Race telemetry"; do
+    # Digital cockpit, not Asphalt: Asphalt's moving rpm gauge keeps the screen from going idle while
+    # connected, so uiautomator can't read it to find Style again (the 2.5.11 run stayed on Asphalt).
+    for target in "Digital cockpit" "Race telemetry"; do
+      scroll_top
       tap_text "Style" || { log "trace through style change: FAILED (no Style button)"; break; }
       sleep 1
       for i in 1 2 3 4 5 6; do tap_text "$target" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
       sleep 4
     done
     scroll_top; shot 5t2-telemetry-after-style-switch
-    alive && log "trace through style change: shots taken" || { log "trace through style change: FAILED (app stopped)"; FAIL=1; }
+    adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-gmeter-back.xml"
+    if ! alive; then log "trace through style change: FAILED (app stopped)"; FAIL=1
+    elif grep -q "G-force: speeding up" "$OUT/ui-gmeter-back.xml"; then log "trace through style change: back on Race telemetry, shots taken"
+    else log "trace through style change: FAILED (not back on Race telemetry)"; FAIL=1; fi
     adb shell settings put system font_scale 1.3; sleep 5; scroll_top; shot 5t3-telemetry-large-font
     adb shell settings put system font_scale 1.0; sleep 5
     diag_top; sleep 1; shot 5t4-telemetry-diagnostics
