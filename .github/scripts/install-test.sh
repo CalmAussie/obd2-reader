@@ -563,6 +563,10 @@ PY
     done
     if ! alive; then log "trace through style change: FAILED (app stopped)"; FAIL=1
     elif grep -q "G-force: speeding up" "$OUT/ui-gmeter-back.xml"; then log "trace through style change: back on Race telemetry, shots taken"
+    # uiautomator often can't read a screen just drawn again; the view list (dumpsys) can: the
+    # g-meter only has a size when Race telemetry is showing.
+    elif app_views "$OUT/views-back.txt" && grep 'app:id/teleGMeter}' "$OUT/views-back.txt" | grep -vq ' 0,0-0,0 '; then
+      log "trace through style change: back on Race telemetry (view list), shots taken"
     else log "trace through style change: FAILED (not back on Race telemetry)"; FAIL=1; fi
     adb shell settings put system font_scale 1.3; sleep 5; scroll_top; shot 5t3-telemetry-large-font
     adb shell settings put system font_scale 1.0; sleep 5

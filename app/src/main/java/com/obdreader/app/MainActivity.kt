@@ -3486,6 +3486,9 @@ open class MainActivity : AppCompatActivity() {
         val rpm = points(RPM_KEY).map { it?.toFloat() }
         val speed = points(SPEED_KEY).map { v -> Units.value(SPEED_KEY, v)?.toFloat() }
         trace.seed(rpm, speed, points(THROTTLE_KEY).map { it?.toFloat() })
+        // The trace takes the speed from the last speed reading shown. A screen drawn again has none
+        // until the next one arrives, which drew a drop to zero in the middle of the carried-on trace.
+        if (lastSpeed == null) lastSpeed = speed.lastOrNull()
         cyberHud.seed(com.obdreader.app.obd.TraceSeed.latestRun(rpm))
         tiles.forEach { (key, tile) -> tile.seedTrace(com.obdreader.app.obd.TraceSeed.latestRun(points(key).map { Units.value(key, it) })) }
     }
