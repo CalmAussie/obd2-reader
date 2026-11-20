@@ -130,6 +130,33 @@ class RouteTest {
     }
 
     @Test
+    fun aRepeatedFixCountsFromWhenItCame() {
+        // Rows repeat the latest fix until a new one comes: here 8 seconds of the same place, then
+        // one 700 m on. 700 m in 8 s is possible; it's the time since the fix came that counts,
+        // not the 0.2 s since the row that last repeated it.
+        val lines = mutableListOf(header)
+        lines += sydney(0, 20)
+        val held = -33.9 + 20 * 0.00018
+        for (k in 1..40) lines += "t,${20 + k * 0.2},2000,72,$held,151.2,5"
+        lines += (0..10).map { "t,${28.2 + it},2000,72,${held + (700.0 + it * 20) / 111_320.0},151.2,5" }
+        assertEquals(21 + 11, Route.parse(lines).points.size)
+    }
+
+    @Test
+    fun aSkipTooFarForTheTimeIsStillLeftOut() {
+        // The same, but 3 km on after those 8 seconds: no car does that, so the shorter part goes.
+        val lines = mutableListOf(header)
+        lines += sydney(0, 10)
+        val held = -33.9 + 10 * 0.00018
+        for (k in 1..40) lines += "t,${10 + k * 0.2},2000,72,$held,151.2,5"
+        lines += (0..20).map { "t,${18.2 + it},2000,72,${held + (3000.0 + it * 20) / 111_320.0},151.2,5" }
+        val r = Route.parse(lines)
+        // The longer part (21 positions; the 11 before were repeated in many rows, which doesn't count).
+        assertEquals(21, r.points.count { it.first >= held + 3000.0 / 111_320.0 - 1e-9 })
+        assertTrue("nothing from the first part", r.points.none { it.first <= held + 1e-9 })
+    }
+
+    @Test
     fun anOrdinaryDriveIsUnchanged() {
         val lines = mutableListOf(header)
         lines += sydney(0, 60)

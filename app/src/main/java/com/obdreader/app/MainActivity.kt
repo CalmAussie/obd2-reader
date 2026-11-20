@@ -2451,6 +2451,19 @@ open class MainActivity : AppCompatActivity() {
     private var readingDrive = false
 
     /**
+     * Says "Reading the drive…" if reading takes more than a moment (a long drive), so the tap
+     * doesn't seem to have done nothing. Call what it returns once the reading is done.
+     */
+    private fun readingNotice(): () -> Unit {
+        var shown: Toast? = null
+        val job = lifecycleScope.launch {
+            kotlinx.coroutines.delay(300)
+            shown = Toast.makeText(this@MainActivity, "Reading the drive…", Toast.LENGTH_SHORT).also { it.show() }
+        }
+        return { job.cancel(); shown?.cancel() }
+    }
+
+    /**
      * A picture of the drive in this style, for Shorts, TikTok, Reels or an Instagram post. The
      * route is read from the drive's recording in the background first: a long drive's file can be
      * several megabytes, too slow to read while the screen waits.
@@ -2459,7 +2472,8 @@ open class MainActivity : AppCompatActivity() {
         if (readingDrive) return
         readingDrive = true
         lifecycleScope.launch {
-            val route = try { withContext(Dispatchers.IO) { routeFor(trip) } } finally { readingDrive = false }
+            val done = readingNotice()
+            val route = try { withContext(Dispatchers.IO) { routeFor(trip) } } finally { readingDrive = false; done() }
             showDriveCard(trip, route)
         }
     }
@@ -3163,9 +3177,10 @@ open class MainActivity : AppCompatActivity() {
         if (readingDrive) return
         readingDrive = true
         lifecycleScope.launch {
+            val done = readingNotice()
             val read: Result<DriveTrack?> = try {
                 withContext(Dispatchers.IO) { runCatching { DriveTrack.parse(file.readLines()) } }
-            } finally { readingDrive = false }
+            } finally { readingDrive = false; done() }
             when (val e = read.exceptionOrNull()) {
                 null -> {}
                 is OutOfMemoryError -> { toast("This drive is too long to make a video on this phone."); return@launch }

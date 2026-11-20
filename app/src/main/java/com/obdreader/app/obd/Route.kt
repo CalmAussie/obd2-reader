@@ -139,10 +139,15 @@ class Route private constructor(
         /** Allowance for ordinary fix error on top of that speed. */
         private const val JUMP_SLACK_M = 150.0
 
-        /** Whether a car could have gone from [a]'s position to [b]'s in the time between them. */
-        private fun plausible(a: Row, b: Row): Boolean {
-            val dt = if (a.sec != null && b.sec != null) abs(b.sec - a.sec) else 1.0
-            return metres(a.fix!!, b.fix!!) <= MAX_PLAUSIBLE_MS * maxOf(dt, 1.0) + JUMP_SLACK_M
+        /**
+         * Whether a car could have gone from row [a]'s position to row [b]'s in the time between
+         * them. Rows repeat the latest fix until a new one comes, so a position's time is when it was
+         * first reported ([since]), not the row that last repeated it.
+         */
+        private fun plausible(rows: List<Row>, since: DoubleArray, a: Int, b: Int): Boolean {
+            val ta = since[a]; val tb = since[b]
+            val dt = if (!ta.isNaN() && !tb.isNaN()) abs(tb - ta) else 1.0
+            return metres(rows[a].fix!!, rows[b].fix!!) <= MAX_PLAUSIBLE_MS * maxOf(dt, 1.0) + JUMP_SLACK_M
         }
 
         /**
@@ -154,21 +159,30 @@ class Route private constructor(
          * gap does, because the time between the fixes allows for the distance).
          */
         private fun withoutStrays(rows: List<Row>): List<Row> {
+            // When each row's position was first reported: the time of the first of the rows in a row that repeat it.
+            val since = DoubleArray(rows.size) { Double.NaN }
+            for (i in rows.indices) {
+                val prev = i - 1
+                since[i] = if (prev >= 0 && rows[i].fix != null && rows[prev].fix == rows[i].fix) since[prev] else rows[i].sec ?: Double.NaN
+            }
+            fun plausible(a: Int, b: Int) = plausible(rows, since, a, b)
             val runs = mutableListOf<MutableList<Int>>()
             for (i in rows.indices) {
                 if (rows[i].fix == null) continue
                 val run = runs.lastOrNull()
-                if (run != null && plausible(rows[run.last()], rows[i])) run += i else runs += mutableListOf(i)
+                if (run != null && plausible(run.last(), i)) run += i else runs += mutableListOf(i)
             }
             if (runs.size < 2) return rows
-            // The longest stretch is the drive; on a tie the later one (strays come at the start).
+            // The longest stretch (the most positions reported, not rows repeating them) is the
+            // drive; on a tie the later one (strays come at the start).
+            val reported = runs.map { run -> run.count { i -> i == 0 || rows[i - 1].fix != rows[i].fix } }
             var anchor = 0
-            for (k in runs.indices) if (runs[k].size >= runs[anchor].size) anchor = k
+            for (k in runs.indices) if (reported[k] >= reported[anchor]) anchor = k
             val keep = BooleanArray(runs.size).also { it[anchor] = true }
             var ref = runs[anchor].first()
-            for (k in anchor - 1 downTo 0) if (plausible(rows[runs[k].last()], rows[ref])) { keep[k] = true; ref = runs[k].first() }
+            for (k in anchor - 1 downTo 0) if (plausible(runs[k].last(), ref)) { keep[k] = true; ref = runs[k].first() }
             ref = runs[anchor].last()
-            for (k in anchor + 1 until runs.size) if (plausible(rows[ref], rows[runs[k].first()])) { keep[k] = true; ref = runs[k].last() }
+            for (k in anchor + 1 until runs.size) if (plausible(ref, runs[k].first())) { keep[k] = true; ref = runs[k].last() }
             val dropped = runs.filterIndexed { k, _ -> !keep[k] }.flatten().toSet()
             return rows.mapIndexed { i, r -> if (i in dropped) Row(r.sec, r.kmh, null) else r }
         }

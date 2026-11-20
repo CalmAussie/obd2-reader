@@ -4,7 +4,7 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 
 ## 2.5.12 (20 November 2026)
 - **Drive routes.** A wrong GPS position, like the far-away place a phone can report for a moment when GPS starts, is now left out. It no longer stretches the route on the drive card or the video overlay's map, or stops the trip summary from spotting that you drove the same route as last time.
-- **Smoother sharing.** The drive card and the video overlay now read a long drive in the background, so the app doesn't pause while they open.
+- **Smoother sharing.** The drive card and the video overlay now read a long drive in the background, so the app doesn't pause while they open, and say so if a long drive takes a moment.
 
 ## 2.5.9 (16 November 2026)
 - **Tap to see your VIN.** With Hide VIN on, tapping the hidden VIN under Vehicle did nothing, so the only way to read it was to turn Hide VIN off. Now a tap shows the whole VIN on screen and another tap hides it again; it's hidden again by itself when you leave the app, before the recent-apps preview is taken. Reports, shared files and logs still follow Hide VIN.

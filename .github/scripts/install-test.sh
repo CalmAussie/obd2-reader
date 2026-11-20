@@ -996,6 +996,9 @@ gps_hold 151.2093 -33.8688
 if record_set on; then
   gps_release
   for i in $(seq 1 10); do adb emu geo fix "$(awk "BEGIN{print 151.2093 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8688 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
+  # The fed route skips about 1 km here (the first drive spends that time minimised). Give it the
+  # time a car would need, or the app rightly takes the skip for a GPS error and leaves part out.
+  sleep 20
   for i in $(seq 1 12); do adb emu geo fix "$(awk "BEGIN{print 151.2140 + $i * 0.0004}")" "$(awk "BEGIN{print -33.8800 - $i * 0.0003}")" > /dev/null 2>&1; sleep 2; done
   gps_hold 151.2188 -33.8836
   # What GPS the second recording got, to compare with the first's if the routes don't match.
