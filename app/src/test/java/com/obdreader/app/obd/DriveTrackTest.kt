@@ -68,4 +68,15 @@ class DriveTrackTest {
         val d = DriveTrack.parse(listOf("Time,Seconds,Speed (km/h)", "t,0,10", "t,1,12"))!!
         assertNull(d.route); assertNull(d.position(0.5))
     }
+
+    @Test
+    fun aStrayFixGivesNoPositionForItsRow() {
+        val lines = mutableListOf("Time,Seconds,Engine RPM (rpm),Speed (km/h),Latitude,Longitude,Location accuracy (m)")
+        lines += "t,0,800,0,37.421998,-122.084000,5"   // far away: left out
+        for (i in 1..20) lines += "t,$i,2000,72,${-33.9 + i * 0.001},151.2,5"
+        val d = DriveTrack.parse(lines)!!
+        assertNull(d.position(0.0))                          // no usable fix yet
+        assertEquals(-33.9 + 0.001, d.position(1.0)!!.first, 1e-9)
+        assertTrue(d.route!!.points.all { it.first < -33.0 })
+    }
 }
