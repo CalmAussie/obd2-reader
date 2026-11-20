@@ -399,9 +399,12 @@ open class MainActivity : AppCompatActivity() {
         val stripes = listOf(R.id.stripesDash, R.id.stripesDiag, R.id.stripesGraphs).map { findViewById<View>(it) }
         val scrim = findViewById<com.obdreader.app.ui.StatusBarScrim>(R.id.statusScrim)
         val basePadTop = pages.first().paddingTop
+        val basePadLeft = pages.first().paddingLeft
+        val basePadRight = pages.first().paddingRight
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root)) { _, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            pages.forEach { it.setPadding(it.paddingLeft, basePadTop + bars.top, it.paddingRight, it.paddingBottom) }
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            // Sideways with the three-button bar (or a camera cutout) at the side, the pages keep clear of it too.
+            pages.forEach { it.setPadding(basePadLeft + bars.left, basePadTop + bars.top, basePadRight + bars.right, it.paddingBottom) }
             stripes.forEach { s -> (s.layoutParams as ViewGroup.MarginLayoutParams).let { if (it.topMargin != bars.top) { it.topMargin = bars.top; s.layoutParams = it } } }
             scrim.layoutParams = scrim.layoutParams.apply { height = bars.top }
             insets

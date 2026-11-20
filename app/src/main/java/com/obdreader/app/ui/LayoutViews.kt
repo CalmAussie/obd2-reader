@@ -121,8 +121,12 @@ class TraceView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
     fun seed(rpmPoints: List<Float?>, speedPoints: List<Float?>, throttlePoints: List<Float?>) {
         rpm.clear(); speed.clear(); throttle.clear()
         val first = rpmPoints.indices.firstOrNull { rpmPoints[it] != null || speedPoints.getOrNull(it) != null }
+        // A short gap in the kept readings (the screen being drawn again, a slow reply) carries the last
+        // value on rather than dropping the line to zero.
+        var lastR = 0f; var lastS = 0f
         if (first != null) for (i in first until rpmPoints.size) {
-            rpm.addLast(rpmPoints[i] ?: 0f); speed.addLast(speedPoints.getOrNull(i) ?: 0f); throttle.addLast(throttlePoints.getOrNull(i))
+            rpmPoints[i]?.let { lastR = it }; speedPoints.getOrNull(i)?.let { lastS = it }
+            rpm.addLast(lastR); speed.addLast(lastS); throttle.addLast(throttlePoints.getOrNull(i))
         }
         while (rpm.size > TowerRowView.HISTORY) { rpm.removeFirst(); speed.removeFirst(); throttle.removeFirst() }
         lastPushMs = android.os.SystemClock.uptimeMillis()
