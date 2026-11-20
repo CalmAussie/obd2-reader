@@ -17,6 +17,11 @@
     <attr name="obdWarnContainer" format="color" />
     <!-- obdWarn for text: darker on the light styles so it stays readable. -->
     <attr name="obdWarnText" format="color" />
+    <!-- obdAccent and obdDanger for text (links, row values, Delete): lighter or darker where the
+         plain colour is under 4.5:1 on the style's panels. -->
+    <attr name="obdAccentText" format="color" />
+    <attr name="obdDangerText" format="color" />
+    <attr name="obdOkText" format="color" />
     <attr name="obdDanger" format="color" />
     <attr name="obdIdle" format="color" />
 

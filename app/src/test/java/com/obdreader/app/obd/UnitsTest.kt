@@ -33,6 +33,15 @@ class UnitsTest {
         assertEquals("230 °F", Units.temperatureText(110.0))
     }
 
+    @Test fun distanceTextFollowsTheChosenUnits() {
+        assertEquals("0.6 km", Units.distanceText(0.6))
+        assertEquals("128 km", Units.distanceText(128.4))
+        Units.mph = true
+        assertEquals("0.4 mi", Units.distanceText(0.6))
+        assertEquals("79.8 mi", Units.distanceText(128.4))
+        assertEquals("124 mi", Units.distanceText(200.0))
+    }
+
     @Test fun pressureConvertsBoostAndManifold() {
         assertEquals(50.0, Units.value(Boost.KEY, 50.0), 1e-9)
         assertEquals(0, Units.decimals(Boost.KEY, 0))

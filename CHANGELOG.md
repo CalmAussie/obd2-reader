@@ -6,6 +6,12 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 - **Drive routes.** A wrong GPS position, like the far-away place a phone can report for a moment when GPS starts, is now left out. It no longer stretches the route on the drive card or the video overlay's map, or stops the trip summary from spotting that you drove the same route as last time.
 - **Smoother sharing.** The drive card and the video overlay now read a long drive in the background, so the app doesn't pause while they open, and say so if a long drive takes a moment.
 
+## 2.5.10 (16 November 2026)
+- **Look.** Pages no longer slide under the clock and icons at the top of the screen when you scroll, and the status bar icons stay visible on the Pit lane and Kerb stripes. Red links and Delete buttons are easier to read on the darker styles, buttons on Race telemetry have dark text, and graph lines are easier to see on the light styles (Pit lane and Rally stage).
+- **Deleting a recorded drive asks first.** Under Saved drives, Delete now asks before removing the drive, as everywhere else in the app.
+- **Miles in Drive history.** Drive history and its totals use miles when you've chosen mph, like the rest of the app.
+- **TalkBack.** The Reconnect automatically, Picture-in-picture and Alerts switches are read with their names and whether they're on, and the Cyberpunk and Race telemetry dials say miles an hour when you use mph.
+
 ## 2.5.9 (16 November 2026)
 - **Tap to see your VIN.** With Hide VIN on, tapping the hidden VIN under Vehicle did nothing, so the only way to read it was to turn Hide VIN off. Now a tap shows the whole VIN on screen and another tap hides it again; it's hidden again by itself when you leave the app, before the recent-apps preview is taken. Reports, shared files and logs still follow Hide VIN.
 
