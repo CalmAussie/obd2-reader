@@ -64,7 +64,7 @@ class CyberHudView @JvmOverloads constructor(context: Context, attrs: AttributeS
         this.rpm = rpm
         smoothSpeed.set(speed); smoothRpm.set(rpm)
         if (!isShown) { smoothSpeed.snap(); smoothRpm.snap() }
-        contentDescription = "Speed ${speed?.roundToInt() ?: "unknown"} kilometres an hour, engine ${rpm?.roundToInt() ?: "unknown"} rpm"
+        contentDescription = "Speed ${speed?.roundToInt() ?: "unknown"} ${if (speedUnit == "mph") "miles" else "kilometres"} an hour, engine ${rpm?.roundToInt() ?: "unknown"} rpm"
         invalidate()
     }
 

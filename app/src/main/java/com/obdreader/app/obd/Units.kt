@@ -71,6 +71,12 @@ object Units {
     /** "112 km/h" or "70 mph". */
     fun speedText(kmh: Double): String = "${Math.round(speed(kmh))} $speedUnit"
 
+    /** "0.4 km" or "0.2 mi", "128 km" or "80 mi": a distance in the chosen units, one decimal under 100. */
+    fun distanceText(km: Double): String {
+        val d = distance(km)
+        return (if (d >= 100) "${Math.round(d)}" else String.format(java.util.Locale.US, "%.1f", d)) + " $distanceUnit"
+    }
+
     /** "110 °C" or "230 °F". */
     fun temperatureText(c: Double): String = "${Math.round(temperature(c))} $temperatureUnit"
 }

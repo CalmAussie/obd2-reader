@@ -32,6 +32,9 @@
         <item name="materialButtonStyle">@style/ObdButton</item>
         <item name="materialButtonOutlinedStyle">@style/ObdButton.Outlined</item>
         <item name="obdWarnText">?attr/obdWarn</item>
+        <item name="obdAccentText">?attr/obdAccent</item>
+        <item name="obdDangerText">?attr/obdDanger</item>
+        <item name="obdOkText">?attr/obdOk</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
@@ -68,12 +71,16 @@
         <item name="materialButtonOutlinedStyle">@style/ObdButton.Outlined</item>
         <!-- Amber text dark enough to read on a light surface (5:1); obdWarn stays for fills. -->
         <item name="obdWarnText">#8A5700</item>
+        <item name="obdAccentText">?attr/obdAccent</item>
+        <item name="obdDangerText">?attr/obdDanger</item>
+        <item name="obdOkText">#0B7A3B</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
     <!-- Asphalt (default): signal orange and white stripes on dark tarmac grey -->
     <style name="Theme.ObdReader" parent="Base.ObdReader.Dark">
+        <item name="obdDangerText">#FF6B61</item>
         <item name="obdBg">#131417</item>
         <item name="obdSurface">#1C1D21</item>
         <item name="obdSurfaceHigh">#26272C</item>
@@ -107,6 +114,7 @@
 
     <!-- Endurance: night-race navy and yellow -->
     <style name="Theme.ObdReader.Endurance" parent="Base.ObdReader.Dark">
+        <item name="obdDangerText">#FF6B61</item>
         <item name="obdBg">#0A1424</item>
         <item name="obdSurface">#111E33</item>
         <item name="obdSurfaceHigh">#1A2A44</item>
@@ -140,6 +148,9 @@
 
     <!-- Kerb: red and white kerb stripes -->
     <style name="Theme.ObdReader.Kerb" parent="Base.ObdReader.Dark">
+        <item name="obdDangerText">#FF6B61</item>
+        <item name="obdAccentText">#FF5A5F</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Obd.Dialog.Kerb</item>
         <item name="obdBg">#16171A</item>
         <item name="obdSurface">#1F2024</item>
         <item name="obdSurfaceHigh">#292A2F</item>
@@ -174,6 +185,8 @@
 
     <!-- Pit lane: a light livery in black and race red -->
     <style name="Theme.ObdReader.Pitlane" parent="Base.ObdReader.Light">
+        <item name="obdAccentText">#C40500</item>
+        <item name="obdDangerText">#C0150D</item>
         <item name="obdBg">#EEEFF1</item>
         <item name="obdSurface">#FFFFFF</item>
         <item name="obdSurfaceHigh">#F6F6F7</item>
@@ -210,6 +223,7 @@
 
     <!-- Drift: hot pink and teal -->
     <style name="Theme.ObdReader.Drift" parent="Base.ObdReader.Dark">
+        <item name="obdDangerText">#FF6B61</item>
         <item name="obdBg">#0F0F12</item>
         <item name="obdSurface">#18181D</item>
         <item name="obdSurfaceHigh">#222228</item>
@@ -243,6 +257,7 @@
 
     <!-- Apex: volt yellow on carbon black, sharply raked -->
     <style name="Theme.ObdReader.Apex" parent="Base.ObdReader.Dark">
+        <item name="obdDangerText">#FF6B61</item>
         <item name="obdBg">#0E0F11</item>
         <item name="obdSurface">#17191C</item>
         <item name="obdSurfaceHigh">#202328</item>
@@ -286,6 +301,7 @@
 
     <!-- British racing: cream and gold on British racing green, like a classic sports racer -->
     <style name="Theme.ObdReader.British" parent="Base.ObdReader.Dark">
+        <item name="obdDangerText">#FF8A80</item>
         <item name="obdBg">#0C2A20</item>
         <item name="obdSurface">#113526</item>
         <item name="obdSurfaceHigh">#18402F</item>
@@ -373,13 +389,13 @@
         <item name="obdSurfaceHigh">#1C1D21</item>
         <item name="obdOutline">#26282C</item>
         <item name="obdTextPrimary">#E9EBEE</item>
-        <item name="obdTextSecondary">#7F848C</item>
+        <item name="obdTextSecondary">#868B93</item>
         <item name="obdAccent">#FF3B30</item>
         <item name="obdAccentAlt">#E9EBEE</item>
         <item name="obdAccentContainer">#1C1D21</item>
-        <item name="obdOnAccent">#FFFFFF</item>
+        <item name="obdOnAccent">#0B0B0C</item>
         <item name="obdTrack">#1F2125</item>
-        <item name="obdIdle">#7F848C</item>
+        <item name="obdIdle">#868B93</item>
         <item name="obdStripe1">#FF3B30</item>
         <item name="obdStripe2">#E9EBEE</item>
         <item name="obdRoundel">#E9EBEE</item>
@@ -392,15 +408,15 @@
         <item name="obdDisplayFont">@font/archivo_condensed_bold</item>
         <item name="obdTitleFont">@font/archivo_condensed_bold</item>
         <item name="colorPrimary">#FF3B30</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorOnPrimary">#0B0B0C</item>
         <item name="colorPrimaryContainer">#1C1D21</item>
         <item name="colorOnPrimaryContainer">#E9EBEE</item>
         <item name="colorSecondaryContainer">#1C1D21</item>
         <item name="colorOnSecondaryContainer">#E9EBEE</item>
         <item name="colorSurface">#1C1D21</item>
         <item name="colorOnSurface">#E9EBEE</item>
-        <item name="colorOnSurfaceVariant">#7F848C</item>
-        <item name="colorOutline">#7F848C</item>
+        <item name="colorOnSurfaceVariant">#868B93</item>
+        <item name="colorOutline">#868B93</item>
         <item name="colorError">#FF3B2F</item>
         <item name="android:colorBackground">#0C0D0F</item>
     </style>
@@ -466,6 +482,11 @@
     <style name="ShapeAppearance.Obd.Cut.16" parent=""><item name="cornerFamily">cut</item><item name="cornerSize">16dp</item></style>
 
     <!-- ===== Buttons: the theme's corner radius (obdButtonRadius) ===== -->
+    <!-- Kerb: dialog buttons are text in the accent colour, which is under 4.5:1 on the dialog; use its text version. -->
+    <style name="ThemeOverlay.Obd.Dialog.Kerb" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorPrimary">#FF5A5F</item>
+    </style>
+
     <style name="ObdButton" parent="Widget.Material3.Button">
         <item name="cornerRadius">?attr/obdButtonRadius</item>
     </style>
@@ -552,6 +573,8 @@
 
     <!-- Rally stage: paper white, black and safety orange, like a co-driver's board -->
     <style name="Theme.ObdReader.Rally" parent="Base.ObdReader.Light">
+        <item name="obdOkText">#0A6E35</item>
+        <item name="obdDangerText">#B3140C</item>
         <item name="obdBg">#F2F0EA</item>
         <item name="obdSurface">#FFFFFF</item>
         <item name="obdSurfaceHigh">#E8E5DC</item>

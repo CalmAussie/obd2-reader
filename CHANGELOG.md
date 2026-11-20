@@ -8,6 +8,12 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 - **The Dashboard graph keeps going.** Changing style, or a spell on another tab, no longer empties the Race telemetry graph, the Cyberpunk bars or each reading's little graph: they carry on with the last 30 seconds.
 - **G-force starts sooner.** The g-meter learns how the phone sits in its mount from one gentle pull-away (to about 15 km/h, 10 mph), where it took about 45 km/h of speeding up and braking before, and remembers it for the next drive, so it shows straight away unless the phone sits another way. On Race telemetry its circle is as tall as the graph beside it and centred on it, with the reading underneath.
 
+## 2.5.10 (16 November 2026)
+- **Look.** Pages no longer slide under the clock and icons at the top of the screen when you scroll, and the status bar icons stay visible on the Pit lane and Kerb stripes. Red links and Delete buttons are easier to read on the darker styles, buttons on Race telemetry have dark text, and graph lines are easier to see on the light styles (Pit lane and Rally stage).
+- **Deleting a recorded drive asks first.** Under Saved drives, Delete now asks before removing the drive, as everywhere else in the app.
+- **Miles in Drive history.** Drive history and its totals use miles when you've chosen mph, like the rest of the app.
+- **TalkBack.** The Reconnect automatically, Picture-in-picture and Alerts switches are read with their names and whether they're on, and the Cyberpunk and Race telemetry dials say miles an hour when you use mph.
+
 ## 2.5.9 (16 November 2026)
 - **Tap to see your VIN.** With Hide VIN on, tapping the hidden VIN under Vehicle did nothing, so the only way to read it was to turn Hide VIN off. Now a tap shows the whole VIN on screen and another tap hides it again; it's hidden again by itself when you leave the app, before the recent-apps preview is taken. Reports, shared files and logs still follow Hide VIN.
 

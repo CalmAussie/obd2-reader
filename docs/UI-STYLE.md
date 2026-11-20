@@ -14,10 +14,13 @@ There are 13 styles, two of them light (Pit lane, Rally stage), and day/night sw
 | `obdOutline` | Hairlines, rings, strokes on the outlined layouts (Digital cockpit, Cyberpunk, Retro digital, Hairline and Race telemetry, whose panels are too close to its page colour to stand out without one) |
 | `obdTextPrimary` | Titles, values, body text you must read |
 | `obdTextSecondary` | Labels, help lines, notes, captions, units |
-| `obdAccent` | Links, the current value in a row, the filled button, the selected tab |
+| `obdAccent` | The filled button, the selected tab, icons, chart lines |
+| `obdAccentText` | Accent **text**: links, the current value in a row, borderless buttons. Lighter on Kerb, whose red is only about 3:1 on its panels; darker on Pit lane, where links sit on the grey page. |
 | `obdOk` / `obdWarn` / `obdDanger` | Status only: good, check soon, bad. Use them for fills, dots and bars. |
 | `obdWarnText` | Amber **text** (notes, tags, scores). It's darker on the light styles so it stays readable; `obdWarn` itself is only about 2.1 to 2.4:1 on white. |
-| `obdStripe1/2`, `Channels.forKey()` | Livery stripes and the fixed colour of each reading in graphs |
+| `obdOkText` | Green **text** ("better" changes, good scores, low-severity tags). Darker on the light styles, where `obdOk` is about 3:1. |
+| `obdDangerText` | Red **text** (Delete buttons, "worse" changes, severity tags). Lighter on the dark styles where `obdDanger` is under 4.5:1 in sheets, darker on Rally stage. |
+| `obdStripe1/2`, `Channels.forKey()` | Livery stripes and the fixed colour of each reading in graphs. In `MainActivity`, pass channel colours through `onPanels()`, which darkens them on the light styles to at least 3:1. |
 
 Check the result in **Asphalt** (dark), **Pit lane** (light) and one outlined layout (**Digital cockpit** or **Hairline**) before sending it for review.
 
@@ -76,13 +79,20 @@ Build every settings or info sheet from the helpers in `MainActivity` so they ma
 - Deleting always asks first, with a `MaterialAlertDialog` like "Delete this drive?" and Cancel / Delete buttons.
 - Lists of things (drives, recordings) go in a sheet, not an alert dialog.
 - Switches in sheets: 15sp primary text, 48dp minimum height. Use one shared helper for all of them.
+- A row with a title, a help line and a switch at its end (Diagnostics): call `readAsSwitch()` on the row, so TalkBack reads the whole row as one named switch.
+
+## 6b. Screen edges and accessibility
+
+- Pages run edge to edge. Their content is padded below the status bar, the livery stripes start below it, and `statusScrim` paints the page's backdrop behind it, so nothing scrolls under the clock. A new page or full-screen view must do the same.
+- Text colours reach 4.5:1 on the panel they sit on (3:1 for big numbers, lines and bars). Use the `…Text` tokens for coloured text.
+- Every control has a name TalkBack can read: its own text, a `contentDescription`, or the row it belongs to.
 
 ## 7. Words, dates and numbers
 
 - Use sentence case, plain words and British spelling, the way the rest of the app does.
 - Dates on screen: `EEE d MMM, h:mm a` ("Sat 14 Nov, 9:52 AM"). Add the year only when it isn't this year. Never show ISO dates (2026-11-13) on screen.
 - Join items on one line with " · ".
-- Put units after a space: "62 %", "1.21 g", "138 °F". Use `Units` for anything that can be metric or imperial.
+- Put units after a space: "62 %", "1.21 g", "138 °F". Use `Units` for anything that can be metric or imperial, including distances (`Units.distanceText()`), and spoken text ("miles an hour").
 
 ## 8. Before you ask for a design review
 

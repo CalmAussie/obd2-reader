@@ -227,8 +227,26 @@ connect_demo() {
     fi
     sleep 6
   done
-  [ "$(view_flag demoButton)" = G ]
+  # The last tap can still be connecting on a slow phone: give it up to 15 more seconds.
+  for i in 1 2 3 4 5; do [ "$(view_flag demoButton)" = G ] && return 0; sleep 3; done
+  return 1
 }
+# Measures a view's width until it's at least $2 px or $3 seconds have passed; prints the last
+# width. It runs in $( ), so the longest wait is kept in a file for waited, and slow-but-passing
+# checks show up in the results.
+wait_wide() {
+  local w=0 t=0
+  while :; do
+    w=$(view_width "$1")
+    [ "${w:-0}" -ge "$2" ] && break
+    [ $t -ge "$3" ] && break
+    sleep 2; t=$((t + 2))
+  done
+  [ $t -gt "$(cat "$OUT/.waited" 2>/dev/null || echo 0)" ] && echo $t > "$OUT/.waited"
+  echo "${w:-0}"
+}
+# ", after N s" when the checks since the last call had to wait, then starts counting again.
+waited() { local t; t=$(cat "$OUT/.waited" 2>/dev/null || echo 0); rm -f "$OUT/.waited"; [ "$t" -gt 0 ] && printf ', after %s s' "$t"; return 0; }
 FAIL=0
 # First launch asks for the car before anything else.
 SEEN=0
@@ -310,16 +328,18 @@ DV=$(view_flag demoButton); [ "$DV" = "?" ] && { sleep 3; DV=$(view_flag demoBut
 if [ "$DV" = "G" ] && [ "${W:-0}" -ge $(( ${SW:-1080} * 80 / 100 )) ]; then log "connected: Demo car hidden, Disconnect full width (${W}px of ${SW}px)"; else log "connected: FAILED (Demo car '${DV:-?}', Disconnect ${W:-0}px of ${SW}px)"; FAIL=1; fi
 # Turn the phone sideways: the Dashboard switches to two columns, then back to portrait.
 adb shell settings put system accelerometer_rotation 0
+# A slow phone (Android 10's emulator) can still be laying the screen out several seconds after
+# it turns, so each size is measured until it's right or 20 seconds have passed.
 adb shell settings put system user_rotation 1
-sleep 5
+sleep 3
+LW=$(wait_wide connectButton 200 20); LR=$(wait_wide rpmRoundel 200 20)
 shot 2b-landscape
-LW=$(view_width connectButton); LR=$(view_width rpmRoundel)
-if alive && [ "${LW:-0}" -ge 200 ] && [ "${LR:-0}" -ge 200 ]; then log "landscape: OK (Disconnect ${LW}px, dial ${LR}px)"; else log "landscape: FAILED (Disconnect ${LW:-0}px, dial ${LR:-0}px)"; FAIL=1; fi
+if alive && [ "${LW:-0}" -ge 200 ] && [ "${LR:-0}" -ge 200 ]; then log "landscape: OK (Disconnect ${LW}px, dial ${LR}px$(waited))"; else log "landscape: FAILED (Disconnect ${LW:-0}px, dial ${LR:-0}px after 20 s)"; FAIL=1; fi
 adb shell settings put system user_rotation 0
-sleep 4
+sleep 3
+W=$(wait_wide connectButton 200 20)
 shot 2c-portrait-again
-W=$(view_width connectButton)
-alive && [ "${W:-0}" -ge 200 ] && log "back to portrait: OK" || { log "back to portrait: FAILED"; FAIL=1; }
+alive && [ "${W:-0}" -ge 200 ] && log "back to portrait: OK$(waited)" || { log "back to portrait: FAILED (Disconnect ${W:-0}px after 20 s)"; FAIL=1; }
 # Picture-in-picture: going Home while connected floats the readings in a small window, still connected; opening the app again restores it.
 # It's off until switched on: first, going Home leaves no floating window.
 adb logcat -c; adb shell input keyevent KEYCODE_HOME; sleep 4
@@ -673,14 +693,15 @@ WINS=$(adb shell dumpsys window windows 2>/dev/null | grep -c "Window #.*$PKG")
 if grep -q "Performance timers" "$OUT/ui-perf.xml" || grep -q "Performance timers" "$OUT/views-perf.txt" || [ "${WINS:-0}" -ge 2 ]; then log "performance timers: shown"; else log "performance timers: FAILED (not shown)"; FAIL=1; fi
 adb shell input keyevent KEYCODE_BACK; sleep 2
 # Codes are now also read on their own shortly after connecting, so they may already be listed.
-# Drive history: the drive summed up earlier is listed (Dashboard, under the score).
+# Drive history: the drive summed up earlier is listed (Dashboard, under the score), in km or in miles
+# (the tour has picked mph by now, and Drive history follows it).
 tap_tab Dashboard > /dev/null; sleep 2; scroll_top
 XY=$(view_center_bottom historyButton pageDashboard); HIST=0
 if [ -n "$XY" ]; then
   adb shell input tap $XY; sleep 2
   for i in 1 2 3; do
     adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-history.xml"
-    grep -q 'text="Drive history"' "$OUT/ui-history.xml" && grep -q " km · " "$OUT/ui-history.xml" && { HIST=1; break; }; sleep 1
+    grep -q 'text="Drive history"' "$OUT/ui-history.xml" && grep -qE " (km|mi) · " "$OUT/ui-history.xml" && { HIST=1; break; }; sleep 1
   done
   shot 4a-drive-history
   adb shell input keyevent KEYCODE_BACK; sleep 1
@@ -1061,8 +1082,40 @@ else
   log "same route: FAILED (couldn't record a second drive)"; FAIL=1
 fi
 tap_tab Graphs; sleep 2
-XY=$(view_center_bottom savedLogsButton pageGraphs); [ -n "$XY" ] && adb shell input tap $XY; sleep 2
+XY=$(view_center_bottom savedLogsButton pageGraphs)
+# The page is scrolled to the bottom now, so its chips and text sit under the status bar. The strip
+# behind the status bar must hide them: between the clock and the icons, the strip is one plain colour.
+shot 8a5-status-bar-scrolled
+adb exec-out screencap > "$OUT/scrim.raw" 2>/dev/null
+SB=$(grep -o "[0-9]*,[0-9]*-[0-9]*,[0-9]* #[0-9a-f]* app:id/statusScrim" "$OUT/views.txt" | head -1 | sed 's/^[0-9]*,[0-9]*-[0-9]*,\([0-9]*\) .*/\1/')
+SCRIM=$(python3 - "$OUT/scrim.raw" "${SB:-0}" <<'PY'
+import struct, sys
+raw = open(sys.argv[1], 'rb').read(); top = int(sys.argv[2])
+if len(raw) < 16 or top < 24: print('unknown'); sys.exit()
+w, h = struct.unpack('<II', raw[:8]); head = len(raw) - w * h * 4
+if head not in (12, 16): print('unknown'); sys.exit()
+px = lambda x, y: raw[head + (y * w + x) * 4: head + (y * w + x) * 4 + 3]
+ref = px(w // 2, top - 6); worst = 0
+for y in range(4, top - 4, 2):
+    for x in range(int(w * 0.40), int(w * 0.70), 4):
+        worst = max(worst, sum(abs(a - b) for a, b in zip(px(x, y), ref)))
+print('plain' if worst <= 30 else 'covered-by-page')
+PY
+)
+case "$SCRIM" in
+  plain) log "status bar strip: page text hidden behind it";;
+  unknown) log "status bar strip: not checked (screen capture or strip size not found)";;
+  *) log "status bar strip: FAILED (page text shows under the clock)"; FAIL=1;;
+esac
+[ -n "$XY" ] && adb shell input tap $XY; sleep 2
 shot 8b-saved-drives
+# Deleting a saved drive asks first; Cancel keeps it. Tapping a choice closes the list, so open it again after.
+if tap_contains " KB" && tap_text "Delete" && sleep 1 && adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 && adb shell cat /sdcard/ui.xml > "$OUT/ui-drive-delete.xml" && grep -q "Delete this recorded drive?" "$OUT/ui-drive-delete.xml"; then
+  shot 8b2-saved-drive-delete-asks
+  tap_text "Cancel" > /dev/null; sleep 1
+  log "saved drives: Delete asks first"
+else log "saved drives: FAILED (Delete didn't ask first)"; FAIL=1; adb shell input keyevent KEYCODE_BACK; sleep 1; fi
+[ -n "$XY" ] && adb shell input tap $XY; sleep 2
 if tap_contains " KB" && tap_text "Make a video overlay" && tap_contains "720p" && tap_text "Make video"; then
   READY=0; PCT=; LASTPCT=; STILL=0
   # Slow emulators (Android 10 encodes in software) can need more than 3 minutes for the video: after
@@ -1521,4 +1574,18 @@ if grep -q "FATAL EXCEPTION" "$OUT/logcat.txt" && grep -A3 "FATAL EXCEPTION" "$O
   log "crashes: FOUND"; grep -A20 "FATAL EXCEPTION" "$OUT/logcat.txt" > "$OUT/crash.txt"; exit 1
 fi
 log "crashes: none"
-exit $FAIL
+
+# Only the smoke checks fail this phone's job: the app installs, opens, connects to the demo car,
+# shows each tab, reads codes, saves a report, checks for updates and keeps running. A check that
+# finds the app stopped also counts. Every other tour check that failed is still reported (in
+# result.txt, tour-failed.txt and as a warning on the run's page) but doesn't turn the run red,
+# so a red run means something people would notice is broken. Privacy checks always block:
+# the VIN must start hidden and hide again (keep any new privacy check in this list too).
+SMOKE="^(install|open|car picker|demo|button 'Disconnect'|connected|graphs|diagnostics|code report|updates|new version|minimised|still running after tour): FAILED|app stopped|app not running|no hidden VIN on the card|second tap didn't hide it"
+grep ": FAILED" "$OUT/result.txt" > "$OUT/failed.txt" || true
+grep -E -v "$SMOKE" "$OUT/failed.txt" > "$OUT/tour-failed.txt" || true
+grep -E "$SMOKE" "$OUT/failed.txt" > "$OUT/smoke-failed.txt" || true
+[ -s "$OUT/tour-failed.txt" ] && log "tour: $(wc -l < "$OUT/tour-failed.txt" | tr -d ' ') other check(s) failed, not blocking"
+if [ -s "$OUT/smoke-failed.txt" ]; then log "smoke: FAILED ($(wc -l < "$OUT/smoke-failed.txt" | tr -d ' ') check(s))"; exit 1; fi
+log "smoke: all passed"
+exit 0

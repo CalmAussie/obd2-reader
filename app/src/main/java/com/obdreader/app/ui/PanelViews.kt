@@ -373,6 +373,7 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
     private val outline = context.themeColor(R.attr.obdOutline)
     private val fg = context.themeColor(R.attr.obdTextPrimary)
     private val danger = context.themeColor(R.attr.obdDanger)
+    private val dangerText = context.themeColor(R.attr.obdDangerText)
     private val s1 = context.themeColor(R.attr.obdStripe1)
     private val s2 = context.themeColor(R.attr.obdStripe2)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -449,7 +450,7 @@ class SkewButton @JvmOverloads constructor(context: Context, attrs: AttributeSet
             paint.strokeWidth = stroke
             paint.color = outline
             canvas.drawPath(path, paint)
-            textPaint.color = if (kind == Kind.DANGER) danger else fg
+            textPaint.color = if (kind == Kind.DANGER) dangerText else fg
         }
         if (isPressed) {
             paint.style = Paint.Style.FILL
