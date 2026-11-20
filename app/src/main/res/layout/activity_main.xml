@@ -1592,12 +1592,15 @@
         </androidx.core.widget.NestedScrollView>
 
         <!-- Behind the status bar, over the pages: scrolled text goes under it, not under the clock.
-             MainActivity sets its height to the status bar's. -->
+             MainActivity sets its height to the status bar's. Raised above the pages so raised
+             buttons (Read codes, Record drive) also go under it; no outline, so no shadow. -->
         <com.obdreader.app.ui.StatusBarScrim
             android:id="@+id/statusScrim"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_gravity="top" />
+            android:layout_gravity="top"
+            android:outlineProvider="none"
+            android:translationZ="16dp" />
     </FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

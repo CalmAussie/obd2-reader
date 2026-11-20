@@ -3360,7 +3360,7 @@ open class MainActivity : AppCompatActivity() {
                 setSpan(android.text.style.ForegroundColorSpan(colour), start, length, 0)
                 append(label).append("   ")
             }
-            key("rpm", Channels.RPM); key(Units.speedUnit, Channels.SPEED); key("throttle", Channels.THROTTLE); append("Last 30 s")
+            key("rpm", Channels.RPM); key(Units.speedUnit, Channels.SPEED); key("throttle", Channels.THROTTLE); append("Last\u00A030\u00A0s") // non-breaking spaces: it wraps as one piece
         }
 
         fun pid(n: Int) = Pids.dashboard.first { it.number == n }

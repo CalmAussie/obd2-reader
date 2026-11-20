@@ -910,6 +910,11 @@ if pick_style "Pit lane"; then replies_sheets pit-lane
   [ $EVP = 1 ] && log "ev battery (pit-lane): sheet shown" || log "ev battery (pit-lane): not shown (screenshot only, not a failure)"
   pick_style "Asphalt" || { log "record and replay: FAILED (Asphalt not picked again)"; FAIL=1; }
 else log "record and replay: FAILED (couldn't pick Pit lane)"; FAIL=1; fi
+# 2.5.11 design shots: raised buttons (Read codes, Record drive) go under the status-bar strip when
+# scrolled, not over the clock.
+diag_top; sleep 1; adb shell input swipe 540 1500 540 800 300; sleep 1; shot 5a1-asphalt-diagnostics-rows
+tap_tab Dashboard; sleep 2; scroll_top; adb shell input swipe 540 1700 540 600 300; sleep 1; shot 5a2-asphalt-dashboard-scrolled
+scroll_top; sleep 1
 if [ $DEBUG_BUILD = 1 ]; then
   adb logcat -c
   if open_replies && tap_contains "Demo car (sample recording)" && sleep 2 && tap_text "Replay"; then

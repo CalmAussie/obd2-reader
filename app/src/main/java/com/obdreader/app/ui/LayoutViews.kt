@@ -428,7 +428,8 @@ class GMeterView @JvmOverloads constructor(context: Context, attrs: AttributeSet
         canvas.drawLine(cx - r, cy, cx + r, cy, ring)
         canvas.drawLine(cx, cy - r, cx, cy + r, ring)
         text.textAlign = Paint.Align.LEFT
-        canvas.drawText("1 g", cx + r * 0.72f, cy - r * 0.72f, text)
+        // Kept inside the view: with large text the label is wider than the room beside the ring.
+        canvas.drawText("1 g", minOf(cx + r * 0.72f, width - text.measureText("1 g") - dp(2f)), cy - r * 0.72f, text)
         // The reading: on the legend's first line when there's one beside it, else centred under the circle.
         val fm = strong.fontMetrics
         val lg = legend

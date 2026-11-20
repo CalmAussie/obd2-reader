@@ -7,6 +7,7 @@ Every change to OBD2 Reader, newest first. Each GitHub release shows the entry f
 - **Panels on Race telemetry.** The rows under Diagnostics and the tiles in sheets have a thin outline on Race telemetry, so they stand out from its near-black page instead of looking like text with no background.
 - **The Dashboard graph keeps going.** Changing style, or a spell on another tab, no longer empties the Race telemetry graph, the Cyberpunk bars or each reading's little graph: they carry on with the last 30 seconds.
 - **G-force starts sooner.** The g-meter learns how the phone sits in its mount from one gentle pull-away (to about 15 km/h, 10 mph), where it took about 45 km/h of speeding up and braking before, and remembers it for the next drive, so it shows straight away unless the phone sits another way. On Race telemetry its circle is as tall as the graph beside it and centred on it, with the reading underneath.
+- **Buttons stay under the top strip.** Since 2.5.10 a strip covers the clock and icons when you scroll, but filled buttons such as Read codes and Record drive still slid over it. Now they go under it like everything else.
 
 ## 2.5.10 (16 November 2026)
 - **Look.** Pages no longer slide under the clock and icons at the top of the screen when you scroll, and the status bar icons stay visible on the Pit lane and Kerb stripes. Red links and Delete buttons are easier to read on the darker styles, buttons on Race telemetry have dark text, and graph lines are easier to see on the light styles (Pit lane and Rally stage).
