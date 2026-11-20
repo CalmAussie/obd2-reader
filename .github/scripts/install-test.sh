@@ -493,17 +493,54 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
     # 2.5.11 design shots: the trace carries on through a style change (the screen is drawn again),
     # the g-meter at a large font size (its legend may wrap), and Diagnostics' outlined rows.
     shot 5t1-telemetry-before-style-switch
-    # Digital cockpit, not Asphalt: Asphalt's moving rpm gauge keeps the screen from going idle while
-    # connected, so uiautomator can't read it to find Style again (the 2.5.11 run stayed on Asphalt).
-    for target in "Digital cockpit" "Race telemetry"; do
-      scroll_top
-      tap_text "Style" || { log "trace through style change: FAILED (no Style button)"; break; }
-      sleep 1
-      for i in 1 2 3 4 5 6; do tap_text "$target" && break; adb shell input swipe 540 1800 540 700 300; sleep 1; done
-      sleep 4
-    done
+    # Other dashboards' moving gauges keep the screen from going idle while connected, so uiautomator
+    # often can't read them (or a Style list open over them). So: Style is found by its view id
+    # (dumpsys needs no idle screen), and on the way back, if the list can't be read, Race telemetry is
+    # tapped where it was in the same list opened from Race telemetry, after the same swipes.
+    style_list_find() {   # $1 text: prints its centre from a fresh dump; 2 = list not readable
+      local i
+      for i in 1 2 3 4; do
+        adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+        adb shell cat /sdcard/ui.xml > "$OUT/ui.xml" 2>/dev/null
+        grep -q 'Other layouts\|Liveries' "$OUT/ui.xml" && break
+        sleep 1
+      done
+      grep -q 'Other layouts\|Liveries' "$OUT/ui.xml" || return 2
+      python3 - "$1" "$OUT/ui.xml" <<'PY'
+import re, sys
+want, xml = sys.argv[1].lower(), open(sys.argv[2], encoding='utf-8', errors='ignore').read()
+for m in re.finditer(r'<node [^>]*>', xml):
+    t = (re.search(r' text="([^"]*)"', m.group(0)) or [None, ''])[1].lower()
+    if t == want:
+        x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', m.group(0)).groups())
+        print((x1 + x2) // 2, (y1 + y2) // 2); break
+PY
+    }
+    SW=0; BACK_XY=""; GONE=0
+    scroll_top; XY=$(view_center themeButton)
+    if [ -n "$XY" ]; then adb shell input tap $XY; sleep 2
+      for i in 1 2 3 4 5 6; do
+        C=$(style_list_find "Digital cockpit"); [ -n "$C" ] && break
+        adb shell input swipe 540 1800 540 700 300; sleep 1; SW=$((SW+1))
+      done
+      BACK_XY=$(style_list_find "Race telemetry")
+      [ -n "$C" ] && { adb shell input tap $C; GONE=1; }
+    fi
+    sleep 5
+    if [ $GONE = 1 ]; then
+      scroll_top; XY=$(view_center themeButton)
+      if [ -n "$XY" ]; then adb shell input tap $XY; sleep 2
+        for i in $(seq 1 $SW); do adb shell input swipe 540 1800 540 700 300; sleep 1; done
+        C=$(style_list_find "Race telemetry"); [ -n "$C" ] || C=$BACK_XY
+        [ -n "$C" ] && adb shell input tap $C
+      fi
+      sleep 5
+    else log "trace through style change: FAILED (Digital cockpit not picked)"; FAIL=1; fi
     scroll_top; shot 5t2-telemetry-after-style-switch
-    adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-gmeter-back.xml"
+    for i in 1 2 3; do
+      adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-gmeter-back.xml" 2>/dev/null
+      grep -q "G-force: speeding up" "$OUT/ui-gmeter-back.xml" && break; sleep 2
+    done
     if ! alive; then log "trace through style change: FAILED (app stopped)"; FAIL=1
     elif grep -q "G-force: speeding up" "$OUT/ui-gmeter-back.xml"; then log "trace through style change: back on Race telemetry, shots taken"
     else log "trace through style change: FAILED (not back on Race telemetry)"; FAIL=1; fi
