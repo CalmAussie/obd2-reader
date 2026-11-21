@@ -24,6 +24,13 @@ def escape(text):
     return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
 
 
+def plain(text):
+    # Lint messages quote the code under review, so keep them from becoming links or images.
+    for ch in "\\[]!<>`*_":
+        text = text.replace(ch, "\\" + ch)
+    return " ".join(text.split())
+
+
 def escape_property(text):
     # A property value also ends at "," or ":".
     return escape(text).replace(",", "%2C").replace(":", "%3A")
@@ -59,16 +66,18 @@ def main():
     for issue in errors:
         path, line = place(issue)
         where = f"{path}:{line}" if line else path
-        lines.append(f"- **{issue.get('id')}** {where}: {issue.get('message', '')}")
+        lines.append(f"- **{plain(issue.get('id', '?'))}** {plain(where)}: {plain(issue.get('message', ''))}")
     if warnings:
         lines += ["", "Warnings by check (they don't stop the build; the full report is in the lint-report download):", ""]
-        lines += [f"- {check}: {count}" for check, count in warnings.most_common()]
+        lines += [f"- {plain(check)}: {count}" for check, count in warnings.most_common()]
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
-    text = "\n".join(lines) + "\n"
     if summary:
         with open(summary, "a", encoding="utf-8") as f:
-            f.write(text)
-    print(text)
+            f.write("\n".join(lines) + "\n")
+    else:
+        # Indented, so no line of the log can start a workflow command.
+        for line in lines:
+            print(" " + escape(line))
 
 
 if __name__ == "__main__":
