@@ -36,7 +36,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
-          gradle-version: "8.7"
+          gradle-version: "9.8.2"
           # Open-source (MIT) caching. The default "enhanced" provider is a
           # closed-source component under separate Gradle terms of use.
           cache-provider: basic
@@ -78,6 +78,13 @@ jobs:
             echo "::error::APK is marked test-only and won't install from a file."; exit 1
           fi
           "$AAPT" dump badging OBD2Reader-test.apk | head -3
+
+      # Library updates can add permissions or app components through manifest merging. This lists
+      # any difference from the live release on the run's summary page; it never fails the build.
+      - name: Compare permissions and components with the live release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/manifest-diff.sh OBD2Reader-test.apk
 
       # Puts compiler errors and failed tests on the run's summary page, so they're readable
       # without downloading the full log.
@@ -157,7 +164,7 @@ jobs:
       # No shared build cache here: the job that holds the key builds from a clean start.
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
-          gradle-version: "8.7"
+          gradle-version: "9.8.2"
           # Open-source (MIT) caching. The default "enhanced" provider is a
           # closed-source component under separate Gradle terms of use.
           cache-provider: basic

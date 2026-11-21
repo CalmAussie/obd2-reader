@@ -48,7 +48,27 @@ for m in re.finditer(r'<node [^>]*>', xml):
     n = m.group(0)
     t = (re.search(r' text="([^"]*)"', n) or [None, ''])[1].lower()
     d = (re.search(r'content-desc="([^"]*)"', n) or [None, ''])[1].lower()
-    if t == want or d == want or (want in t and len(t) < len(want) + 12):
+    # Since Material 1.14 an empty text box reports its label as a hint, not as its text.
+    h = (re.search(r' hint="([^"]*)"', n) or [None, ''])[1].lower()
+    if t == want or d == want or h == want or (want in t and len(t) < len(want) + 12):
+        x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
+        print((x1 + x2) // 2, (y1 + y2) // 2); break
+PY
+)
+  if [ -n "$b" ]; then adb shell input tap $b; sleep 1; return 0; fi
+  return 1
+}
+# Taps the view with the app's id $1, for text boxes whose label the screen dump leaves out.
+tap_id() {
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+  adb shell cat /sdcard/ui.xml > "$OUT/ui.xml"
+  local b=$(python3 - "$PKG:id/$1" "$OUT/ui.xml" <<'PY'
+import re, sys
+want, path = sys.argv[1], sys.argv[2]
+xml = open(path, encoding='utf-8', errors='ignore').read()
+for m in re.finditer(r'<node [^>]*>', xml):
+    n = m.group(0)
+    if f'resource-id="{want}"' in n:
         x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
         print((x1 + x2) // 2, (y1 + y2) // 2); break
 PY
@@ -260,10 +280,10 @@ if [ $SEEN = 1 ]; then
   adb exec-out screencap -p > "$OUT/0-choose-car.png"
   log "car picker: shown first"
   # Engine: one tap on the box opens the list of engines for the model and year (Ford, 2010 by default).
-  if tap_text "Model"; then
+  if tap_text "Model" || tap_id modelInput; then
     adb shell input text "Escape"; sleep 1
     adb shell input keyevent KEYCODE_ENTER; sleep 1
-    tap_text "Engine" > /dev/null; sleep 2
+    { tap_text "Engine" || tap_id engineInput; } > /dev/null; sleep 2
     adb exec-out screencap -p > "$OUT/0b-engine-list.png"
     # Dumps can fail while the list animates open, so try a few times (clearing the old dump first).
     ENG=0
