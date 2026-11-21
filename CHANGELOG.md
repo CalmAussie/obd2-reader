@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.13 (21 November 2026)
+- **Up-to-date building blocks.** The app is now built with the current Android build tools and Kotlin, and uses newer versions of the Android libraries behind its screens and buttons. Nothing should look or work differently; this keeps the app current and picks up the libraries' own fixes.
+
 ## 2.5.12 (20 November 2026)
 - **Drive routes.** A wrong GPS position, like the far-away place a phone can report for a moment when GPS starts, is now left out. It no longer stretches the route on the drive card or the video overlay's map, or stops the trip summary from spotting that you drove the same route as last time.
 - **Smoother sharing.** The drive card and the video overlay now read a long drive in the background, so the app doesn't pause while they open, and say so if a long drive takes a moment.
