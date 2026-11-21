@@ -1,0 +1,225 @@
+--------- beginning of main
+11-21 09:19:15.722  1302  2407 D OverviewCommandHelper: command added: CommandInfo(type=TOGGLE, status=IDLE, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true)
+11-21 09:19:15.722  1302  2407 D OverviewCommandHelper: execute: CommandInfo(type=TOGGLE, status=IDLE, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true) - queue size: 1
+11-21 09:19:15.723  1302  1302 D OverviewCommandHelper: executing command: CommandInfo(type=TOGGLE, status=PROCESSING, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true)
+--------- beginning of system
+11-21 09:19:15.723   653   674 D AutofillManagerService: Close system dialogs
+11-21 09:19:15.723  1302  1302 D OverviewCommandHelper: executeCommand: CommandInfo(type=TOGGLE, status=PROCESSING, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true) - visibleRecentsView: null
+11-21 09:19:15.723  1302  1302 D OverviewCommandHelper: Querying TaskbarManager for TaskbarUIController for display: 0
+11-21 09:19:15.723  1302  1302 D OverviewCommandHelper: TaskbarUIController for display 0 was found
+11-21 09:19:15.723  1302  1302 D TFOManager: playPanelCloseAnimation() duration=150 traceTag=LauncherOverlay-hide isHomeButtonTap=true
+11-21 09:19:15.724  1302  1302 D TFOManager: Skipped creating panel close animation because -1 is invisible.
+11-21 09:19:15.724  1302  1302 D StateManager: goToState - fromState: Normal, toState: Overview, partial trace:
+11-21 09:19:15.724  1302  1302 D StateManager: 	at com.android.quickstep.LauncherActivityInterface.switchToRecentsIfVisible(go/retraceme 43e00d9cd0eb17b3d9dd30fc1741b1c71445c4c0f7c8c9b81300265c86c5b873:39)
+11-21 09:19:15.724  1302  1302 D StateManager: 	at com.android.quickstep.OverviewCommandHelper.executeWhenRecentsIsNotVisible(go/retraceme 43e00d9cd0eb17b3d9dd30fc1741b1c71445c4c0f7c8c9b81300265c86c5b873:292)
+11-21 09:19:15.724  1302  1302 D StateManager: 	at com.android.quickstep.OverviewCommandHelper.executeCommand(go/retraceme 43e00d9cd0eb17b3d9dd30fc1741b1c71445c4c0f7c8c9b81300265c86c5b873:49)
+11-21 09:19:15.724  1302  1302 D StateManager: onStateTransitionStart - state: Overview
+11-21 09:19:15.724  1302  1302 D RecentsView: updateTaskStackListenerState: true
+11-21 09:19:15.724  1302  1302 D RecentsView: reloadIfNeeded - getTasks: 86
+11-21 09:19:15.725   653   918 V WifiDialogManager: Received action: android.intent.action.CLOSE_SYSTEM_DIALOGS
+11-21 09:19:15.725   653   918 V WifiDialogManager: ACTION_CLOSE_SYSTEM_DIALOGS received, cancelling all legacy dialogs.
+11-21 09:19:15.726   653   969 D BackgroundInstallControlService: Package event received: 0
+11-21 09:19:15.726  1015  1015 I vol.VolumeDialogImpl: mDialog.dismiss() reason: volume_controller from: com.android.systemui.volume.VolumeDialogImpl$7.onDismissRequested:3
+11-21 09:19:15.728  1302  1302 D KeyboardInsetsHandler: setState, toState:Overview StateManager(mLastStableState:Normal, mCurrentStableState:Normal, mState:Overview, mRestState:null, isInTransition:false)
+11-21 09:19:15.728  1302  1302 D StateManager: onStateTransitionEnd - state: Overview
+11-21 09:19:15.728  1302  1302 D OverviewCommandHelper: switching to Overview state - onAnimationEnd: CommandInfo(type=TOGGLE, status=PROCESSING, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true)
+11-21 09:19:15.728  1302  1302 D OverviewCommandHelper: command executed: CommandInfo(type=TOGGLE, status=PROCESSING, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true) with result: true
+11-21 09:19:15.729  1302  1302 D OverviewCommandHelper: switching to Overview state - waiting: CommandInfo(type=TOGGLE, status=PROCESSING, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true)
+11-21 09:19:15.729  1302  1302 D OverviewCommandHelper: command executed: CommandInfo(type=TOGGLE, status=PROCESSING, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true) with result: false
+11-21 09:19:15.729  1302  1302 D OverviewCommandHelper: waiting for command callback: CommandInfo(type=TOGGLE, status=PROCESSING, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true)
+11-21 09:19:15.729  1302  1302 D OverviewCommandHelper: command executed successfully! CommandInfo(type=TOGGLE, status=COMPLETED, createTime=4434391, animationCallbacks=null, displayId=0, isLastOfBatch=true)
+11-21 09:19:15.729  1302  1302 D OverviewCommandHelper: no pending commands to be executed.
+11-21 09:19:15.746  1302  1302 D RecentsView: applyLoadPlan - taskGroups: []
+11-21 09:19:15.880   529   612 D PermissionCache: checking android.permission.WAKEUP_SURFACE_FLINGER for uid=10182 => granted (1087 us)
+11-21 09:19:15.897   529   529 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+11-21 09:19:15.945   653   668 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:16.351   653   668 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:16.754   653   668 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:17.157   653   668 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:17.557   653   668 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:17.957   653   668 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:18.343   653   918 D WifiClientModeImpl[36240:wlan0]: updateLinkLayerStatsRssiSpeedFrequencyCapabilities rssi=-50 TxLinkspeed=9 freq=2437 RxLinkSpeed=2
+11-21 09:19:18.344   653   918 D WifiDataStall: tx tput in kbps: 37000
+11-21 09:19:18.344   653   918 D WifiDataStall: rx tput in kbps: 37000
+11-21 09:19:18.344   653   918 V WifiConfigManager: Updating scan detail cache freq=2437 BSSID=02:15:b2:00:00:01 RSSI=-50 for "AndroidWifi"NONE
+11-21 09:19:18.344   653   918 D WifiThroughputPredictor:  utilization (LLS) 80 isBluetoothConnected: false final utilization: 80
+11-21 09:19:18.344   653   918 D WifiThroughputPredictor:  BW: 0 RSSI: -50 Nss: 1 Mode: 1 symDur: 4000 snrDb 30 bitPerTone: 4500 rate: 54 throughput: 37
+11-21 09:19:18.344   653   918 D WifiThroughputPredictor:  utilization (LLS) 80 isBluetoothConnected: false final utilization: 80
+11-21 09:19:18.344   653   918 D WifiThroughputPredictor:  BW: 0 RSSI: -50 Nss: 1 Mode: 1 symDur: 4000 snrDb 30 bitPerTone: 4500 rate: 54 throughput: 37
+11-21 09:19:18.344   653   918 D WifiThroughputPredictor:  utilization (LLS) 80 isBluetoothConnected: false final utilization: 80
+11-21 09:19:18.344   653   918 D WifiThroughputPredictor:  BW: 0 RSSI: -50 Nss: 1 Mode: 1 symDur: 4000 snrDb 30 bitPerTone: 4500 rate: 54 throughput: 37
+11-21 09:19:18.344   653   918 D WifiThroughputPredictor:  utilization (LLS) 80 isBluetoothConnected: false final utilization: 80
+11-21 09:19:18.344   653   918 D WifiThroughputPredictor:  BW: 0 RSSI: -50 Nss: 1 Mode: 1 symDur: 4000 snrDb 30 bitPerTone: 4500 rate: 54 throughput: 37
+11-21 09:19:18.344   653   918 D WifiScoreCard: BSSID update SIGNAL_POLL ID: 321008640 SSID: "AndroidWifi", BSSID: 02:15:b2:00:00:01, MAC: 02:15:b2:00:00:00, IP: /10.0.2.16, Security type: 0, Supplicant state: COMPLETED, Wi-Fi standard: legacy, RSSI: -50, Link speed: 9Mbps, Tx Link speed: 9Mbps, Max Supported Tx Link speed: 54Mbps, Rx Link speed: 2Mbps, Max Supported Rx Link speed: 54Mbps, Frequency: 2437MHz, Net ID: 0, Metered hint: false, score: 60, isUsable: true, CarrierMerged: false, SubscriptionId: -1, IsPrimary: 1, Trusted: true, Restricted: false, Ephemeral: false, OEM paid: false, OEM private: false, OSU AP: false, FQDN: <none>, Provider friendly name: <none>, Requesting package name: <none>"AndroidWifi"openMLO Information: , Is TID-To-Link negotiation supported by the AP: false, AP MLD Address: <none>, AP MLO Link Id: <none>, AP MLO Affiliated links: <none>, Vendor Data: <none>
+11-21 09:19:18.344   653   918 D WifiScoreCard: txRate: 1 txSpeed: 9
+11-21 09:19:18.344   653   918 D WifiScoreCard: network update SIGNAL_POLL "AndroidWifi" ID: 1696570617 RSSI -50 txSpeed -1
+11-21 09:19:18.344   653   918 D WifiClientModeImpl[36240:wlan0]:  ClientModeImpl$L2ConnectedState screen=on 1 0 "AndroidWifi" 02:15:b2:00:00:01 rssi=-50 f=2437 sc=60 link=9 tx=0.0, 0.0, 0.0 rx=0.0 bcn=0 [on:0 tx:0 rx:0 period:3005] from screen [on:0 period:-43571384] score=60
+11-21 09:19:18.358   653   668 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:18.758   653   668 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:18.809 29183 29183 W screencap: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: SurfaceFlingerAIDL
+11-21 09:19:18.809 29183 29183 W BpBinder: Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+11-21 09:19:18.809 29183 29183 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+11-21 09:19:18.810   529   612 E HwcComposer: getLuts failed Status(-8, EX_SERVICE_SPECIFIC): '8: '
+11-21 09:19:18.810   529   612 E HWComposer: getLuts: getLuts failed for display 4619827259835644672: UNSUPPORTED (8)
+--------- beginning of kernel
+11-21 09:19:18.981     0     0 I servicemanager: Caller(pid=29183,uid=2000,sid=u:r:shell:s0) Found android.hardware.graphics.allocator.IAllocator/default in device VINTF manifest.
+11-21 09:19:18.983     0     0 I servicemanager: Caller(pid=29183,uid=2000,sid=u:r:shell:s0) Found android.hardware.graphics.allocator.IAllocator/default in device VINTF manifest.
+11-21 09:19:18.986     0     0 I servicemanager: Caller(pid=29183,uid=2000,sid=u:r:shell:s0) Found mapper/ranchu in device VINTF manifest.
+11-21 09:19:19.053  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch, no task to drag.
+11-21 09:19:19.053  1302  1302 D b/318590728: onInterceptTouchEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=540.0, y[0]=1300.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=4437719, downTime=4437719, deviceId=-1, source=0x1002, displayId=0, eventId=-945503365 }
+11-21 09:19:19.069  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.079  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.104  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.114  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.129  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.146  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.158   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:19.163  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.180  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.196  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.213  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.233  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.246  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.264  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.280  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.297  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.313  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.314  1302  1302 D TaskViewTouchControllerDeprecated: Not intercepting touch.
+11-21 09:19:19.558   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:19.938  1190  1439 D SatelliteController: iisInCarrierRoamingNbIotNtn: satellite is disabled
+11-21 09:19:19.961   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:20.362   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:20.767   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:21.169   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:21.347   653   918 D WifiClientModeImpl[36240:wlan0]: updateLinkLayerStatsRssiSpeedFrequencyCapabilities rssi=-50 TxLinkspeed=9 freq=2437 RxLinkSpeed=2
+11-21 09:19:21.347   653   918 D WifiDataStall: tx tput in kbps: 37000
+11-21 09:19:21.347   653   918 D WifiDataStall: rx tput in kbps: 37000
+11-21 09:19:21.347   653   918 V WifiConfigManager: Updating scan detail cache freq=2437 BSSID=02:15:b2:00:00:01 RSSI=-50 for "AndroidWifi"NONE
+11-21 09:19:21.347   653   918 D WifiThroughputPredictor:  utilization (LLS) 80 isBluetoothConnected: false final utilization: 80
+11-21 09:19:21.347   653   918 D WifiThroughputPredictor:  BW: 0 RSSI: -50 Nss: 1 Mode: 1 symDur: 4000 snrDb 30 bitPerTone: 4500 rate: 54 throughput: 37
+11-21 09:19:21.347   653   918 D WifiThroughputPredictor:  utilization (LLS) 80 isBluetoothConnected: false final utilization: 80
+11-21 09:19:21.347   653   918 D WifiThroughputPredictor:  BW: 0 RSSI: -50 Nss: 1 Mode: 1 symDur: 4000 snrDb 30 bitPerTone: 4500 rate: 54 throughput: 37
+11-21 09:19:21.348   653   918 D WifiThroughputPredictor:  utilization (LLS) 80 isBluetoothConnected: false final utilization: 80
+11-21 09:19:21.348   653   918 D WifiThroughputPredictor:  BW: 0 RSSI: -50 Nss: 1 Mode: 1 symDur: 4000 snrDb 30 bitPerTone: 4500 rate: 54 throughput: 37
+11-21 09:19:21.348   653   918 D WifiThroughputPredictor:  utilization (LLS) 80 isBluetoothConnected: false final utilization: 80
+11-21 09:19:21.348   653   918 D WifiThroughputPredictor:  BW: 0 RSSI: -50 Nss: 1 Mode: 1 symDur: 4000 snrDb 30 bitPerTone: 4500 rate: 54 throughput: 37
+11-21 09:19:21.349   653   918 D WifiScoreCard: BSSID update SIGNAL_POLL ID: 321008640 SSID: "AndroidWifi", BSSID: 02:15:b2:00:00:01, MAC: 02:15:b2:00:00:00, IP: /10.0.2.16, Security type: 0, Supplicant state: COMPLETED, Wi-Fi standard: legacy, RSSI: -50, Link speed: 9Mbps, Tx Link speed: 9Mbps, Max Supported Tx Link speed: 54Mbps, Rx Link speed: 2Mbps, Max Supported Rx Link speed: 54Mbps, Frequency: 2437MHz, Net ID: 0, Metered hint: false, score: 60, isUsable: true, CarrierMerged: false, SubscriptionId: -1, IsPrimary: 1, Trusted: true, Restricted: false, Ephemeral: false, OEM paid: false, OEM private: false, OSU AP: false, FQDN: <none>, Provider friendly name: <none>, Requesting package name: <none>"AndroidWifi"openMLO Information: , Is TID-To-Link negotiation supported by the AP: false, AP MLD Address: <none>, AP MLO Link Id: <none>, AP MLO Affiliated links: <none>, Vendor Data: <none>
+11-21 09:19:21.349   653   918 D WifiScoreCard: txRate: 1 txSpeed: 9
+11-21 09:19:21.349   653   918 D WifiScoreCard: network update SIGNAL_POLL "AndroidWifi" ID: 1696570617 RSSI -50 txSpeed -1
+11-21 09:19:21.349   653   918 D WifiClientModeImpl[36240:wlan0]:  ClientModeImpl$L2ConnectedState screen=on 1 0 "AndroidWifi" 02:15:b2:00:00:01 rssi=-50 f=2437 sc=60 link=9 tx=0.0, 0.0, 0.0 rx=0.0 bcn=0 [on:0 tx:0 rx:0 period:3005] from screen [on:0 period:-43568379] score=60
+11-21 09:19:21.570   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:21.970   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:22.371   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:22.772   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:23.173   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:23.382 29192 29192 W screencap: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: SurfaceFlingerAIDL
+11-21 09:19:23.382 29192 29192 W BpBinder: Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+11-21 09:19:23.382 29192 29192 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+11-21 09:19:23.385   529   612 E HwcComposer: getLuts failed Status(-8, EX_SERVICE_SPECIFIC): '8: '
+11-21 09:19:23.385   529   612 E HWComposer: getLuts: getLuts failed for display 4619827259835644672: UNSUPPORTED (8)
+11-21 09:19:23.546     0     0 I servicemanager: Caller(pid=29192,uid=2000,sid=u:r:shell:s0) Found android.hardware.graphics.allocator.IAllocator/default in device VINTF manifest.
+11-21 09:19:23.555     0     0 I servicemanager: Caller(pid=29192,uid=2000,sid=u:r:shell:s0) Found android.hardware.graphics.allocator.IAllocator/default in device VINTF manifest.
+11-21 09:19:23.558     0     0 I servicemanager: Caller(pid=29192,uid=2000,sid=u:r:shell:s0) Found mapper/ranchu in device VINTF manifest.
+11-21 09:19:23.574   653   732 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-21 09:19:23.608 29194 29194 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: activity
+11-21 09:19:23.648   653   675 W ActivityTaskManager: callingPackage for (uid=-1, pid=0) has no WPC
+11-21 09:19:23.648   653   675 W ActivityStartInterceptor: Starting home with component specified, uid=0
+11-21 09:19:23.649   653   675 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_OVERRIDE
+11-21 09:19:23.649   653   675 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_FULLSCREEN_OVERRIDE
+11-21 09:19:23.649   653   675 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES
+11-21 09:19:23.649   653   675 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE
+11-21 09:19:23.649   653   675 V GrammaticalInflectionUtils: AttributionSource: AttributionSource { uid = 10182, packageName = null, attributionTag = null, token = android.os.Binder@fb912f, deviceId = 0, next = null } does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+11-21 09:19:23.652  1015  1301 D KeyguardService: setOccluded(false)
+11-21 09:19:23.652   653   675 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity (has extras)} with LAUNCH_SINGLE_TASK from uid 0 (BAL_ALLOW_ALLOWLISTED_UID) result code=3
+11-21 09:19:23.653  1015  1301 D KeyguardViewMediator: setOccluded(false)
+11-21 09:19:23.653  1015  1015 D KeyguardViewMediator: handleSetOccluded(false)
+11-21 09:19:23.653  1015  1015 D KeyguardViewMediator: KeyguardViewMediator queue processing message: SET_OCCLUDED
+11-21 09:19:23.654  1015  1066 D WindowManagerShell: onActivityRestartAttempt: topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}, wasVisible=true
+11-21 09:19:23.655  1302  1302 W SplitSelectStateCtor: Missing session instanceIds
+11-21 09:19:23.655  1302  1302 D StatsLog: LAUNCHER_SPLIT_SELECTION_EXIT_INTERRUPTED
+11-21 09:19:23.655  1302  1302 D StateManager: goToState - fromState: Overview, toState: Normal, partial trace:
+11-21 09:19:23.655  1302  1302 D StateManager: 	at com.android.launcher3.Launcher.onNewIntent(go/retraceme 43e00d9cd0eb17b3d9dd30fc1741b1c71445c4c0f7c8c9b81300265c86c5b873:116)
+11-21 09:19:23.655  1302  1302 D StateManager: 	at com.android.launcher3.uioverrides.QuickstepLauncher.onNewIntent(go/retraceme 43e00d9cd0eb17b3d9dd30fc1741b1c71445c4c0f7c8c9b81300265c86c5b873:1)
+11-21 09:19:23.655  1302  1302 D StateManager: 	at com.google.android.apps.nexuslauncher.NexusLauncherActivity.onNewIntent(go/retraceme 43e00d9cd0eb17b3d9dd30fc1741b1c71445c4c0f7c8c9b81300265c86c5b873:1)
+11-21 09:19:23.656  1302  1302 D StateManager: onStateTransitionStart - state: Normal
+11-21 09:19:23.656  1302  1302 D RecentsView: updateTaskStackListenerState: false
+11-21 09:19:23.659  1302  1302 D KeyboardInsetsHandler: setState, toState:Normal StateManager(mLastStableState:Normal, mCurrentStableState:Overview, mState:Normal, mRestState:null, isInTransition:false)
+11-21 09:19:23.659   653   674 D AutofillManagerService: Close system dialogs
+11-21 09:19:23.659  1302  1302 D StateManager: onStateTransitionEnd - state: Normal
+11-21 09:19:23.659  1302  1302 D RecentsView: reset - mEnableDrawingLiveTile: false, mRecentsAnimationController: null
+11-21 09:19:23.660  1302  1302 D ActivityAllAppsContainerView: rebindAdapters: force: false
+11-21 09:19:23.660  1302  1302 D ActivityAllAppsContainerView: rebindAdapters: Not needed.
+11-21 09:19:23.660  1302  1302 D TFOManager: playPanelCloseAnimation() duration=200 traceTag=LauncherOverlay-hide isHomeButtonTap=true
+11-21 09:19:23.660  1302  1302 D TFOManager: Skipped creating panel close animation because -1 is invisible.
+11-21 09:19:23.660  1302  1302 D OverviewCommandHelper: clearing pending commands: []
+11-21 09:19:23.660  1302  1302 D StatsLog: LAUNCHER_ONRESUME
+11-21 09:19:23.662   529   612 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+11-21 09:19:23.662   653   969 D BackgroundInstallControlService: Package event received: 0
+11-21 09:19:23.662   653   918 V WifiDialogManager: Received action: android.intent.action.CLOSE_SYSTEM_DIALOGS
+11-21 09:19:23.662   653   918 V WifiDialogManager: ACTION_CLOSE_SYSTEM_DIALOGS received, cancelling all legacy dialogs.
+11-21 09:19:23.664  1302  1356 D QuickstepModelDelegate: notifyAppTargetEvent action=1 launchLocation=workspace/0/[-1,-1]/[1,1]
+11-21 09:19:23.665  1015  1015 I vol.VolumeDialogImpl: mDialog.dismiss() reason: volume_controller from: com.android.systemui.volume.VolumeDialogImpl$7.onDismissRequested:3
+11-21 09:19:23.666  1678  1799 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
+11-21 09:19:23.666  1678  1799 I AiAiEcho: EchoTargets: 
+11-21 09:19:23.666  1678  1799 I AiAiEcho: Filtered by AiAi flag check: 
+11-21 09:19:23.666  1678  1799 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
+11-21 09:19:23.666  1678  1799 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.672   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.673   653   677 W IPCThreadState: Sending oneway calls to frozen process.
+11-21 09:19:23.677  1678  1799 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+11-21 09:19:23.690  1302  1302 D SsBaseTemplateCard: No text view can be set up
+11-21 09:19:23.691  1302  1302 D SsBaseTemplateCard: Passed-in item info is null
+11-21 09:19:23.691  1302  1302 D SsBaseTemplateCard: Passed-in item info is null
+11-21 09:19:23.691  1302  1302 D SsBaseTemplateCard: Passed-in item info is null
+11-21 09:19:23.691  1302  1302 I SsBaseTemplateCard: Secondary card pane is null
