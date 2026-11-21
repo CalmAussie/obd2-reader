@@ -79,6 +79,13 @@ jobs:
           fi
           "$AAPT" dump badging OBD2Reader-test.apk | head -3
 
+      # Library updates can add permissions or app components through manifest merging. This lists
+      # any difference from the live release on the run's summary page; it never fails the build.
+      - name: Compare permissions and components with the live release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/manifest-diff.sh OBD2Reader-test.apk
+
       # Puts compiler errors and failed tests on the run's summary page, so they're readable
       # without downloading the full log.
       - name: Report build errors
