@@ -1094,7 +1094,7 @@ open class MainActivity : AppCompatActivity() {
         all.forEachIndexed { i, (label, action) ->
             val isDanger = danger != null && i == all.lastIndex
             val style = when {
-                isDanger -> com.google.android.material.R.attr.borderlessButtonStyle
+                isDanger -> androidx.appcompat.R.attr.borderlessButtonStyle
                 i == 0 -> com.google.android.material.R.attr.materialButtonStyle
                 else -> com.google.android.material.R.attr.materialButtonOutlinedStyle
             }
@@ -1163,7 +1163,7 @@ open class MainActivity : AppCompatActivity() {
             setPadding(0, dp(18f).toInt(), 0, 0)
             buttons.forEachIndexed { i, (label, action) ->
                 val last = i == buttons.lastIndex
-                addView(MaterialButton(this@MainActivity, null, if (last) com.google.android.material.R.attr.materialButtonStyle else com.google.android.material.R.attr.borderlessButtonStyle).apply {
+                addView(MaterialButton(this@MainActivity, null, if (last) com.google.android.material.R.attr.materialButtonStyle else androidx.appcompat.R.attr.borderlessButtonStyle).apply {
                     text = label
                     if (!last) setTextColor(themeColor(R.attr.obdAccentText))
                     setOnClickListener { action() }
@@ -1453,7 +1453,7 @@ open class MainActivity : AppCompatActivity() {
                     line(com.obdreader.app.obd.CodeHistory.describe(e) { day.format(java.util.Date(it)) }, true)
                 }
             }
-            body.addView(MaterialButton(this, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
+            body.addView(MaterialButton(this, null, androidx.appcompat.R.attr.borderlessButtonStyle).apply {
                 text = getString(R.string.history_codes_clear); setTextColor(themeColor(R.attr.obdAccentText))
                 setOnClickListener {
                     MaterialAlertDialogBuilder(this@MainActivity)
@@ -1980,7 +1980,7 @@ open class MainActivity : AppCompatActivity() {
         body.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             addView(MaterialButton(this@MainActivity).apply { setText(R.string.custom_add); setOnClickListener { sheet.dismiss(); addCustomReading() } })
-            if (list.isNotEmpty()) addView(MaterialButton(this@MainActivity, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
+            if (list.isNotEmpty()) addView(MaterialButton(this@MainActivity, null, androidx.appcompat.R.attr.borderlessButtonStyle).apply {
                 setText(R.string.custom_refresh); setTextColor(themeColor(R.attr.obdAccentText)); setOnClickListener { readCustomInto(values) }
             })
             setPadding(0, dp(12f).toInt(), 0, 0)
@@ -2982,7 +2982,7 @@ open class MainActivity : AppCompatActivity() {
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
                     setTextColor(themeColor(R.attr.obdTextPrimary))
                 }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-                fun move(by: Int, glyph: String, word: String) = MaterialButton(this, null, com.google.android.material.R.attr.borderlessButtonStyle).apply {
+                fun move(by: Int, glyph: String, word: String) = MaterialButton(this, null, androidx.appcompat.R.attr.borderlessButtonStyle).apply {
                     text = glyph
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                     contentDescription = "Move ${label(k)} $word"

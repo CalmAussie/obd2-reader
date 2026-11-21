@@ -22,9 +22,9 @@ jobs:
     # Pinned: this image ships with the Android SDK preinstalled (ubuntu-latest moved to Ubuntu 26).
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "17"
@@ -36,7 +36,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
-          gradle-version: "8.7"
+          gradle-version: "9.8.2"
           # Open-source (MIT) caching. The default "enhanced" provider is a
           # closed-source component under separate Gradle terms of use.
           cache-provider: basic
@@ -45,6 +45,23 @@ jobs:
         run: |
           gradle --no-daemon testDebugUnitTest 2>&1 | tee -a build.log
           exit ${PIPESTATUS[0]}
+
+      # Android Lint on every push and pull request. An error stops the build; warnings are
+      # listed on the run's summary page, and the full report is kept as the lint-report download.
+      - name: Android Lint
+        run: |
+          gradle --no-daemon lintRelease 2>&1 | tee -a build.log
+          rc=${PIPESTATUS[0]}
+          python3 .github/scripts/lint-summary.py app/build/reports/lint-results-release.xml
+          exit $rc
+
+      - name: Keep the lint report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-release.*
+          if-no-files-found: ignore
 
       # Without the key this is signed with a throwaway key: it proves the release build works,
       # and it's kept as a download for testing, but it's never published.
@@ -61,6 +78,13 @@ jobs:
             echo "::error::APK is marked test-only and won't install from a file."; exit 1
           fi
           "$AAPT" dump badging OBD2Reader-test.apk | head -3
+
+      # Library updates can add permissions or app components through manifest merging. This lists
+      # any difference from the live release on the run's summary page; it never fails the build.
+      - name: Compare permissions and components with the live release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/manifest-diff.sh OBD2Reader-test.apk
 
       # Puts compiler errors and failed tests on the run's summary page, so they're readable
       # without downloading the full log.
@@ -86,7 +110,7 @@ jobs:
     outputs:
       publish: ${{ steps.check.outputs.publish }}
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Is this a new version?
         id: check
@@ -95,17 +119,19 @@ jobs:
         run: |
           VERSION=$(grep '^obdVersion=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
           CHANGELOG=$(grep -m1 -oE '^## [0-9][0-9.]*' CHANGELOG.md | cut -c4-)
-          # The latest published release (pre-releases and drafts aren't counted, as the app
-          # doesn't offer them). No release at all is fine; any other error stops here.
-          if TAG=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name 2> gh-error.txt); then :
-          elif grep -q "HTTP 404" gh-error.txt; then TAG=""
-          else cat gh-error.txt; echo "::error::Couldn't read the latest release from GitHub."; exit 1; fi
+          # The newest release, counting pre-releases (one waiting for its install test, or one that
+          # failed it), so a version or build number is never used twice. No release at all is fine.
+          TAG=$(bash .github/scripts/newest-release.sh) || exit 1
           bash .github/scripts/release-check.sh "$VERSION" "$CHANGELOG" "$TAG" "${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
-  # Signs and publishes a release, which every installed copy is then offered. It runs only for
-  # main, only for a new version (the check job above), and only after the "release"
-  # environment's required reviewer approves it on the run's page. The signing key lives only in that environment's secrets, so no other job, branch or
+  # Signs and publishes a release. It runs only for main, only for a new version (the check job
+  # above), and only after the "release" environment's required reviewer approves it on the run's
+  # page. The signing key lives only in that environment's secrets, so no other job, branch or
   # pull request can use it.
+  #
+  # It's published as a pre-release, which the app's update check and the "latest" download link
+  # don't see. The install test (install-test.yml) then installs this exact release, and only if
+  # it passes is it made the latest release, which every installed copy is offered.
   release:
     needs: [build, check]
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && needs.check.outputs.publish == 'true'
@@ -114,9 +140,23 @@ jobs:
       contents: write
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+      # The same check as the check job, again just before signing: approval can come hours later,
+      # or this job can be re-run on an old run, by which time a newer build may have been released.
+      - name: Is this still the newest build?
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(grep '^obdVersion=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          CHANGELOG=$(grep -m1 -oE '^## [0-9][0-9.]*' CHANGELOG.md | cut -c4-)
+          TAG=$(bash .github/scripts/newest-release.sh) || exit 1
+          OUT=$(bash .github/scripts/release-check.sh "$VERSION" "$CHANGELOG" "$TAG" "${{ github.run_number }}") || exit 1
+          if [ "$OUT" != "publish=true" ]; then
+            echo "::error::$TAG was published since this build was checked, so build ${{ github.run_number }} isn't released. Raise obdVersion to release again."; exit 1
+          fi
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "17"
@@ -124,7 +164,7 @@ jobs:
       # No shared build cache here: the job that holds the key builds from a clean start.
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
-          gradle-version: "8.7"
+          gradle-version: "9.8.2"
           # Open-source (MIT) caching. The default "enhanced" provider is a
           # closed-source component under separate Gradle terms of use.
           cache-provider: basic
@@ -207,13 +247,15 @@ jobs:
             cat .github/release-notes.md
           } > release-body.md
 
-      # Each approved build on main becomes a release, so there's always a direct download link:
-      # https://github.com/<you>/<repo>/releases/latest/download/OBD2Reader.apk
-      - name: Publish a release
+      # Published as a pre-release: phones aren't offered it, and the "latest" download link
+      # (https://github.com/<you>/<repo>/releases/latest/download/OBD2Reader.apk) still gives the
+      # previous version, until the install test passes and makes this the latest release.
+      - name: Publish a pre-release
         uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: v${{ env.APP_VERSION }}-build${{ github.run_number }}
           name: OBD2 Reader ${{ env.APP_VERSION }} (build ${{ github.run_number }})
           body_path: release-body.md
           files: OBD2Reader.apk
-          make_latest: true
+          prerelease: true
+          make_latest: false
