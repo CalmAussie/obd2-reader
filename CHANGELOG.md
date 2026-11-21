@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.14 (21 November 2026)
+- **Steadier readings on slow adapters.** When an adapter answers a request late, after the app has stopped waiting, that late answer is now set aside. Before, it could be taken for the answer to the next request, so a reading could briefly show the wrong value or the protocol search could miss the car.
+- Behind the scenes: the way the app reconnects, waits out the ignition being off, and switches to one reading at a time for cars that need it is now checked by automatic tests on every change.
+
 ## 2.5.13 (21 November 2026)
 - **Up-to-date building blocks.** The app is now built with the current Android build tools and Kotlin, and uses newer versions of the Android libraries behind its screens and buttons. Nothing should look or work differently; this keeps the app current and picks up the libraries' own fixes.
 

@@ -48,7 +48,9 @@ class ChangelogTest {
 
     @Test
     fun theRealChangelogReads() {
-        val f = listOf(File("CHANGELOG.md"), File("../CHANGELOG.md")).firstOrNull { it.isFile } ?: return
+        // Fails rather than passing quietly if the test can't find the file.
+        val f = listOf(File("CHANGELOG.md"), File("../CHANGELOG.md")).firstOrNull { it.isFile }
+            ?: throw AssertionError("CHANGELOG.md not found from ${File(".").absolutePath}")
         val e = Changelog.parse(f.readText())
         assertTrue(e.size > 10)
         assertTrue(e.all { it.text.isNotBlank() })
