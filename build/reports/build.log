@@ -1,0 +1,83 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :app
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/build.gradle.kts:62:9: 'var xmlReport: Boolean' is deprecated. Lint reports are now always generated. Use SingleArtifact.LINT_XML_REPORT or SingleArtifact.AGGREGATED_LINT_XML_REPORT to consume lint report artifacts.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:processDebugNavigationResources
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:javaPreCompileDebug
+> Task :app:mergeDebugAssets
+> Task :app:parseDebugLocalResources
+> Task :app:compressDebugAssets
+> Task :app:generateDebugRFile
+> Task :app:generateDebugGlobalSynthetics
+> Task :app:checkDebugDuplicateClasses
+> Task :app:desugarDebugFileDependencies
+> Task :app:compileDebugKotlin
+> Task :app:mergeExtDexDebug
+> Task :app:mergeLibDexDebug
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:compileDebugNavigationResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:mergeDebugJniLibFolders
+> Task :app:mergeDebugResources
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:processDebugResources
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest
+
+> Task :app:compileDebugKotlin
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:1141:47 'var isChecked: Boolean' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:2933:63 'var isChecked: Boolean' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:3398:43 Cast is redundant.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:4541:63 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:4645:86 Unnecessary safe call on a non-null receiver of type 'String'.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:4652:90 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:4652:110 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/MainActivity.kt:5443:21 Expression is unused.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/BleTransport.kt:109:27 'fun connectGatt(p0: Context!, p1: Boolean, p2: BluetoothGattCallback!, p3: Int): BluetoothGatt!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/Route.kt:132:137 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Double'.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/Route.kt:132:146 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Double'.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/obd/VinDetails.kt:279:62 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Int'.
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/main/java/com/obdreader/app/ui/DriveCardRenderer.kt:148:42 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Route'.
+
+> Task :app:compileDebugJavaWithJavac NO-SOURCE
+> Task :app:compressDebugJavaRes
+> Task :app:mergeDebugJavaResource
+> Task :app:dexBuilderDebug
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+> Task :app:compileDebugUnitTestKotlin
+w: file:///home/runner/work/obd2-reader/obd2-reader/app/src/test/java/com/obdreader/app/obd/GForceTest.kt:163:36 Unnecessary non-null assertion (!!) on a non-null receiver of type 'TripSummary.Motion'.
+
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:compressDebugUnitTestJavaRes
+> Task :app:extractDebugUnitTestJavaRes
+> Task :app:testDebugUnitTest
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1795269875072.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/obd2-reader/obd2-reader/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 2m 19s
+41 actionable tasks: 41 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
