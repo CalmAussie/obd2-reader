@@ -83,7 +83,7 @@ jobs:
         # Its image is named "android-37.0", and its x86_64 image uses 16 KB memory pages (set below).
         api: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.android17 && '[29, 33, 35, 36, 37]' || '[29, 33, 35, 36]') }}
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # The exact release this run is for, so a newer release published meanwhile isn't tested twice.
       - name: Download the published APK, as a user would
         env:
@@ -159,7 +159,7 @@ jobs:
       contents: write
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false   # only the script is needed; gh gets the token itself
       - name: Make it the latest release
