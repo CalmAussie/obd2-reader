@@ -4,7 +4,7 @@ How a new version reaches phones, and what to do when one goes wrong.
 
 ## How a release goes out
 
-1. **Raise the version.** The pull request raises `obdVersion` in `gradle.properties` and adds a `## x.y.z` entry at the top of `CHANGELOG.md`. That entry becomes the release notes.
+1. **Raise the version.** The pull request raises `obdVersion` in `gradle.properties` and adds a `## x.y.z` entry at the top of `CHANGELOG.md`. That entry becomes the release notes. Before the maintainer merges it, the pull request goes through the security, pen test and design reviews.
 2. **Merge it to `main`.** The **Build APK** run checks that this is a new version (the `check` job). The version must be higher than the newest release, live or not, and so must the build number. A push that doesn't raise the version isn't released and asks for nothing.
 3. **Approve it.** The run stops at **Waiting** for the maintainer's approval on the run's page (the `release` environment). After approval it checks the version again, signs the APK and publishes it as a **pre-release**.
    - Phones aren't offered a pre-release, and the "Download the latest APK" link still gives the previous version.
@@ -29,7 +29,7 @@ Android won't install a lower version over a higher one. Phones that already upd
 
 1. **Stop more phones getting it.** This takes a minute.
    - Open the previous good release on the Releases page, press **Edit**, tick **Set as the latest release**, and save.
-   - Open the bad release, press **Edit**, tick **Set as a pre-release**, and save.
+   - Open the bad release, press **Edit**, put **Withdrawn** at the start of its title (for example "Withdrawn: OBD2 Reader 2.5.13 (build 230)"), tick **Set as a pre-release**, and save. The word "Withdrawn" stops a re-run of its old install test from making it live again.
    - New downloads and update notices now point at the good version again.
 2. **Ship the fix as a new version.** Raise `obdVersion` above the bad one, add a CHANGELOG entry that says what was fixed, and merge. Then approve the build as usual. It goes out after its install test like any other release, and phones that got the bad version are offered it.
 3. **Don't delete the bad release** while phones may still have it. Its page is where people read what they installed. Mark it as a pre-release instead (step 1).

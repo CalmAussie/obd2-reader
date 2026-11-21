@@ -160,6 +160,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false   # only the script is needed; gh gets the token itself
       - name: Make it the latest release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -176,7 +178,12 @@ jobs:
             echo "::warning title=Not made live::$TAG passed, but $NEWEST is newer, so $TAG isn't made the latest release."
             exit 0
           fi
-          ID=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .id) || exit 1
+          # A release taken back after going live is renamed "Withdrawn ..." (docs/RELEASING.md), so
+          # re-running its old install test can't make it live again.
+          read -r ID NAME < <(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '"\(.id) \(.name)"') || exit 1
+          case "$NAME" in Withdrawn*)
+            echo "::error title=Not made live::$TAG is marked withdrawn ($NAME), so it isn't made the latest release."; exit 1 ;;
+          esac
           gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$ID" -F prerelease=false -f make_latest=true --jq '"\(.tag_name): prerelease \(.prerelease)"'
           LATEST=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
           [ "$LATEST" = "$TAG" ] || { echo "::error::$TAG was edited but the latest release is $LATEST."; exit 1; }
