@@ -6,8 +6,11 @@
 # Usage: manifest-diff.sh <apk>. Needs GH_TOKEN, GITHUB_REPOSITORY and the Android SDK's aapt2.
 set -u
 APK=$1
-AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt2 | sort | tail -1)
+AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt2 | sort -V | tail -1)
 WORK=$(mktemp -d)
+if [ -z "$AAPT" ]; then
+  echo "::warning title=Manifest compare skipped::aapt2 was not found, so permissions and components were not compared."; exit 0
+fi
 
 # Permissions; the application's backup, cleartext and network security settings; and each activity,
 # service, receiver and provider with its exported flag, permission and authorities.
@@ -36,6 +39,12 @@ fi
 
 describe "$WORK/OBD2Reader.apk" > "$WORK/live.txt"
 describe "$APK" > "$WORK/new.txt"
+# An APK aapt2 can't read gives an empty list, and two empty lists would look like "No change".
+if ! grep -q '^application' "$WORK/live.txt" || ! grep -q '^application' "$WORK/new.txt"; then
+  echo "::warning title=Manifest compare failed::aapt2 gave no manifest for one of the APKs, so permissions and components were not compared."; exit 0
+fi
+echo "Compared $(wc -l < "$WORK/live.txt") lines from $TAG with $(wc -l < "$WORK/new.txt") lines from this build. This build has:"
+sed 's/^/ /' "$WORK/new.txt"
 {
   echo "### Permissions and components compared with $TAG"
   echo
