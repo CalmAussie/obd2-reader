@@ -57,6 +57,11 @@ android {
         }
     }
 
+    lint {
+        // The CI summary (.github/scripts/lint-summary.py) reads the XML report, which AGP 9 no longer writes by default.
+        xmlReport = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

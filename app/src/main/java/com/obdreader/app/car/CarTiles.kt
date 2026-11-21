@@ -217,7 +217,9 @@ class CarTiles(private val car: Context, private val isNight: () -> Boolean) {
         /**
          * Debug builds only: draws a set of tiles (as the car would show them mid-drive) for every style
          * into files/car-tiles, so the install test can check what the Android Auto screen looks like.
+         * It waits between frames and writes files, so it runs off the main thread.
          */
+        @androidx.annotation.WorkerThread
         fun renderSamples(context: Context): List<java.io.File> {
             val dir = java.io.File(context.filesDir, "car-tiles").apply { mkdirs(); listFiles()?.forEach { it.delete() } }
             val out = mutableListOf<java.io.File>()
