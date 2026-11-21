@@ -24,6 +24,11 @@ def escape(text):
     return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
 
 
+def escape_property(text):
+    # A property value also ends at "," or ":".
+    return escape(text).replace(",", "%2C").replace(":", "%3A")
+
+
 def main():
     if len(sys.argv) != 2 or not os.path.exists(sys.argv[1]):
         print("No lint report was written.")
@@ -45,9 +50,9 @@ def main():
 
     for issue in errors[:40]:
         path, line = place(issue)
-        props = [f"file={path}"] if path else []
-        props += [f"line={line}"] if line else []
-        props.append(f"title=Lint {issue.get('id')}")
+        props = [f"file={escape_property(path)}"] if path else []
+        props += [f"line={escape_property(line)}"] if line else []
+        props.append(f"title={escape_property('Lint ' + issue.get('id', '?'))}")
         print(f"::error {','.join(props)}::{escape(issue.get('message', ''))}")
 
     lines = [f"### Android Lint: {len(errors)} error(s), {sum(warnings.values())} warning(s)", ""]
