@@ -444,6 +444,10 @@
         <item name="obdCardRadius">16dp</item>
         <item name="obdButtonRadius">16dp</item>
         <item name="obdLayout">cockpit</item>
+        <!-- Its panels are see-through glass (obdSurface is 8 % white), so sheets and menus can't use
+             obdSurface: they showed the page through them. They get an opaque glass of their own. -->
+        <item name="colorSurfaceContainerLow">#0E1320</item>
+        <item name="colorSurfaceContainer">#0E1320</item>
         <item name="obdDisplayFont">@font/archivo_light</item>
         <item name="obdTitleFont">@font/archivo_light</item>
         <item name="colorPrimary">#7FA6FF</item>

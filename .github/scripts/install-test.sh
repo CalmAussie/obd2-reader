@@ -510,6 +510,74 @@ for STYLE in "Endurance" "Kerb" "Pit lane" "Drift" "Apex" "British racing" "Race
   if [ $PASS = normal ] && [ "$STYLE" = "Race telemetry" ]; then
     adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-gmeter.xml"
     if grep -q "G-force: speeding up" "$OUT/ui-gmeter.xml"; then log "g-force: g-meter on Race telemetry"; else log "g-force: FAILED (no g-meter on Race telemetry)"; FAIL=1; fi
+    # 2.5.11 design shots: the trace carries on through a style change (the screen is drawn again),
+    # the g-meter at a large font size (its legend may wrap), and Diagnostics' outlined rows.
+    shot 5t1-telemetry-before-style-switch
+    # Other dashboards' moving gauges keep the screen from going idle while connected, so uiautomator
+    # often can't read them (or a Style list open over them). So: Style is found by its view id
+    # (dumpsys needs no idle screen), and on the way back, if the list can't be read, Race telemetry is
+    # tapped where it was in the same list opened from Race telemetry, after the same swipes.
+    style_list_find() {   # $1 text: prints its centre from a fresh dump; 2 = list not readable
+      local i
+      for i in 1 2 3 4; do
+        adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+        adb shell cat /sdcard/ui.xml > "$OUT/ui.xml" 2>/dev/null
+        grep -q 'Other layouts\|Liveries' "$OUT/ui.xml" && break
+        sleep 1
+      done
+      grep -q 'Other layouts\|Liveries' "$OUT/ui.xml" || return 2
+      python3 - "$1" "$OUT/ui.xml" <<'PY'
+import re, sys
+want, xml = sys.argv[1].lower(), open(sys.argv[2], encoding='utf-8', errors='ignore').read()
+for m in re.finditer(r'<node [^>]*>', xml):
+    t = (re.search(r' text="([^"]*)"', m.group(0)) or [None, ''])[1].lower()
+    if t == want:
+        x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', m.group(0)).groups())
+        print((x1 + x2) // 2, (y1 + y2) // 2); break
+PY
+    }
+    SW=0; BACK_XY=""; GONE=0
+    scroll_top; XY=$(view_center themeButton)
+    if [ -n "$XY" ]; then adb shell input tap $XY; sleep 2
+      for i in 1 2 3 4 5 6; do
+        C=$(style_list_find "Digital cockpit"); [ -n "$C" ] && break
+        adb shell input swipe 540 1800 540 700 300; sleep 1; SW=$((SW+1))
+      done
+      BACK_XY=$(style_list_find "Race telemetry")
+      [ -n "$C" ] && { adb shell input tap $C; GONE=1; }
+    fi
+    sleep 5
+    if [ $GONE = 1 ]; then
+      scroll_top; XY=$(view_center themeButton)
+      if [ -n "$XY" ]; then adb shell input tap $XY; sleep 2
+        for i in $(seq 1 $SW); do adb shell input swipe 540 1800 540 700 300; sleep 1; done
+        C=$(style_list_find "Race telemetry"); [ -n "$C" ] || C=$BACK_XY
+        [ -n "$C" ] && adb shell input tap $C
+      fi
+      sleep 5
+    else log "trace through style change: FAILED (Digital cockpit not picked)"; FAIL=1; fi
+    scroll_top; shot 5t2-telemetry-after-style-switch
+    for i in 1 2 3; do
+      adb shell rm -f /sdcard/ui.xml; adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-gmeter-back.xml" 2>/dev/null
+      grep -q "G-force: speeding up" "$OUT/ui-gmeter-back.xml" && break; sleep 2
+    done
+    if ! alive; then log "trace through style change: FAILED (app stopped)"; FAIL=1
+    elif grep -q "G-force: speeding up" "$OUT/ui-gmeter-back.xml"; then log "trace through style change: back on Race telemetry, shots taken"
+    # uiautomator often can't read a screen just drawn again; the view list (dumpsys) can: the
+    # g-meter only has a size when Race telemetry is showing.
+    elif app_views "$OUT/views-back.txt" && grep 'app:id/teleGMeter}' "$OUT/views-back.txt" | grep -vq ' 0,0-0,0 '; then
+      log "trace through style change: back on Race telemetry (view list), shots taken"
+    else log "trace through style change: FAILED (not back on Race telemetry)"; FAIL=1; fi
+    adb shell settings put system font_scale 1.3; sleep 5; scroll_top; shot 5t3-telemetry-large-font
+    adb shell settings put system font_scale 1.0; sleep 5
+    diag_top; sleep 1; shot 5t4-telemetry-diagnostics
+    adb shell input swipe 540 1500 540 800 300; sleep 1; shot 5t5-telemetry-diagnostics-rows
+    tap_tab Dashboard; sleep 2; scroll_top; sleep 3
+  fi
+  # Digital cockpit: a sheet must be solid (it was see-through glass before 2.5.11).
+  if [ $PASS = normal ] && [ "$STYLE" = "Digital cockpit" ]; then
+    if tap_text "Style"; then sleep 2; shot 5c1-cockpit-sheet; adb shell input keyevent KEYCODE_BACK; sleep 2
+    else log "cockpit sheet: FAILED (no Style button)"; FAIL=1; fi
   fi
   adb shell settings put system user_rotation 1; sleep 5
   shot "6-$SLUG-landscape"
@@ -842,6 +910,11 @@ if pick_style "Pit lane"; then replies_sheets pit-lane
   [ $EVP = 1 ] && log "ev battery (pit-lane): sheet shown" || log "ev battery (pit-lane): not shown (screenshot only, not a failure)"
   pick_style "Asphalt" || { log "record and replay: FAILED (Asphalt not picked again)"; FAIL=1; }
 else log "record and replay: FAILED (couldn't pick Pit lane)"; FAIL=1; fi
+# 2.5.11 design shots: raised buttons (Read codes, Record drive) go under the status-bar strip when
+# scrolled, not over the clock.
+diag_top; sleep 1; adb shell input swipe 540 1500 540 800 300; sleep 1; shot 5a1-asphalt-diagnostics-rows
+tap_tab Dashboard; sleep 2; scroll_top; adb shell input swipe 540 1700 540 600 300; sleep 1; shot 5a2-asphalt-dashboard-scrolled
+scroll_top; sleep 1
 if [ $DEBUG_BUILD = 1 ]; then
   adb logcat -c
   if open_replies && tap_contains "Demo car (sample recording)" && sleep 2 && tap_text "Replay"; then
