@@ -2,6 +2,10 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.12 (20 November 2026)
+- **Drive routes.** A wrong GPS position, like the far-away place a phone can report for a moment when GPS starts, is now left out. It no longer stretches the route on the drive card or the video overlay's map, or stops the trip summary from spotting that you drove the same route as last time.
+- **Smoother sharing.** The drive card and the video overlay now read a long drive in the background, so the app doesn't pause while they open, and say so if a long drive takes a moment.
+
 ## 2.5.11 (19 November 2026)
 - **Sheets you can read on Digital cockpit.** Sheets and menus took the style's see-through glass colour, so the page behind showed through their text. They're solid now.
 - **Panels on Race telemetry.** The rows under Diagnostics and the tiles in sheets have a thin outline on Race telemetry, so they stand out from its near-black page instead of looking like text with no background.

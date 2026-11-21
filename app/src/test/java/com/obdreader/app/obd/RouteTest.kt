@@ -30,7 +30,8 @@ class RouteTest {
 
     @Test
     fun fitsTheBoxNorthUp() {
-        val r = Route.parse(listOf(header, "t,0,0,0,-33.0,151.0,5", "t,1,0,0,-32.9,151.0,5"))
+        // 11 km north, 200 s apart (a car can do that; in 1 s it would be a stray fix and left out).
+        val r = Route.parse(listOf(header, "t,0,0,0,-33.0,151.0,5", "t,200,0,0,-32.9,151.0,5"))
         val pts = r.fit(200f, 200f, 10f)
         // Heading north: the second point is higher up the box (smaller y).
         assertTrue(pts[1].second < pts[0].second)
@@ -82,5 +83,95 @@ class RouteTest {
         assertEquals(0.0, shares[0]!!, 1e-9)   // slowest stretch
         assertEquals(1.0, shares[2]!!, 1e-9)   // fastest stretch
         assertTrue(shares[1]!! > 0.0 && shares[1]!! < 1.0)
+    }
+
+    /** A drive heading north from Sydney at 72 km/h, one row a second from [from] to [to] seconds. */
+    private fun sydney(from: Int, to: Int) = (from..to).map { "t,$it,2000,72,${-33.9 + it * 0.00018},151.2,5" }
+
+    @Test
+    fun aStrayFirstFixFarAwayIsLeftOut() {
+        // The emulator (and sometimes a phone) gives an old, far-away place with a good accuracy
+        // for a second or two before the real fix. Here: California, then the real drive in Sydney.
+        val lines = mutableListOf(header)
+        lines += listOf("t,0.0,800,0,37.421998,-122.084000,5", "t,0.5,800,0,37.421998,-122.084000,5", "t,1.0,800,0,37.421998,-122.084000,5")
+        lines += sydney(2, 40)
+        val r = Route.parse(lines)
+        assertTrue("every point is in Sydney", r.points.all { it.first < -33.0 && it.second > 151.0 })
+        assertEquals(-33.9 + 2 * 0.00018, r.points.first().first, 1e-9)
+    }
+
+    @Test
+    fun aStrayFixAtTheEndIsLeftOutToo() {
+        val lines = mutableListOf(header)
+        lines += sydney(0, 30)
+        lines += "t,31,2000,72,37.421998,-122.084000,5"
+        assertTrue(Route.parse(lines).points.all { it.first < -33.0 })
+    }
+
+    @Test
+    fun oneJumpMidDriveIsLeftOut() {
+        val lines = mutableListOf(header)
+        lines += sydney(0, 15)
+        lines += "t,16,2000,72,-33.5,151.6,8"   // about 57 km away for one second
+        lines += sydney(17, 30)
+        val r = Route.parse(lines)
+        assertEquals(30, r.points.size)          // every real fix kept (16 + 14), the jump gone
+        assertTrue(r.points.none { it.first > -33.6 })
+    }
+
+    @Test
+    fun aLongTunnelIsNotAJump() {
+        // 5 minutes with no fix, then 6 km further on: 20 m/s, a normal speed, so both halves stay.
+        val lines = mutableListOf(header)
+        lines += sydney(0, 10)
+        for (i in 11..309) lines += "t,$i,2000,72,,,"
+        lines += (310..320).map { "t,$it,2000,72,${-33.9 + 10 * 0.00018 + (6000.0 + (it - 310) * 20) / 111_320.0},151.2,5" }
+        assertEquals(22, Route.parse(lines).points.size)
+    }
+
+    @Test
+    fun aRepeatedFixCountsFromWhenItCame() {
+        // Rows repeat the latest fix until a new one comes: here 8 seconds of the same place, then
+        // one 700 m on. 700 m in 8 s is possible; it's the time since the fix came that counts,
+        // not the 0.2 s since the row that last repeated it.
+        val lines = mutableListOf(header)
+        lines += sydney(0, 20)
+        val held = -33.9 + 20 * 0.00018
+        for (k in 1..40) lines += "t,${20 + k * 0.2},2000,72,$held,151.2,5"
+        lines += (0..10).map { "t,${28.2 + it},2000,72,${held + (700.0 + it * 20) / 111_320.0},151.2,5" }
+        assertEquals(21 + 11, Route.parse(lines).points.size)
+    }
+
+    @Test
+    fun aSkipTooFarForTheTimeIsStillLeftOut() {
+        // The same, but 3 km on after those 8 seconds: no car does that, so the shorter part goes.
+        val lines = mutableListOf(header)
+        lines += sydney(0, 10)
+        val held = -33.9 + 10 * 0.00018
+        for (k in 1..40) lines += "t,${10 + k * 0.2},2000,72,$held,151.2,5"
+        lines += (0..20).map { "t,${18.2 + it},2000,72,${held + (3000.0 + it * 20) / 111_320.0},151.2,5" }
+        val r = Route.parse(lines)
+        // The longer part (21 positions; the 11 before were repeated in many rows, which doesn't count).
+        assertEquals(21, r.points.count { it.first >= held + 3000.0 / 111_320.0 - 1e-9 })
+        assertTrue("nothing from the first part", r.points.none { it.first <= held + 1e-9 })
+    }
+
+    @Test
+    fun anOrdinaryDriveIsUnchanged() {
+        val lines = mutableListOf(header)
+        lines += sydney(0, 60)
+        assertEquals(61, Route.parse(lines).points.size)
+        assertEquals(61, Route.usableFixes(lines).count { it != null })
+    }
+
+    @Test
+    fun usableFixesLineUpWithTheRows() {
+        val lines = mutableListOf(header, "t,0.0,800,0,37.421998,-122.084000,5", "t,0.5,800,0,,,")
+        lines += sydney(1, 20)
+        val fixes = Route.usableFixes(lines)
+        assertEquals(lines.size - 1, fixes.size)
+        assertEquals(null, fixes[0])   // the stray
+        assertEquals(null, fixes[1])   // no fix
+        assertEquals(-33.9 + 0.00018, fixes[2]!!.first, 1e-9)
     }
 }

@@ -2479,12 +2479,41 @@ open class MainActivity : AppCompatActivity() {
         sheet.show()
     }
 
-    /** A picture of the drive in this style, for Shorts, TikTok, Reels or an Instagram post. */
+    /** True while a drive file is being read for the drive card or video overlay, so a second tap waits. */
+    private var readingDrive = false
+
+    /**
+     * Says "Reading the drive…" if reading takes more than a moment (a long drive), so the tap
+     * doesn't seem to have done nothing. Call what it returns once the reading is done.
+     */
+    private fun readingNotice(): () -> Unit {
+        var shown: Toast? = null
+        val job = lifecycleScope.launch {
+            kotlinx.coroutines.delay(300)
+            shown = Toast.makeText(this@MainActivity, "Reading the drive…", Toast.LENGTH_SHORT).also { it.show() }
+        }
+        return { job.cancel(); shown?.cancel() }
+    }
+
+    /**
+     * A picture of the drive in this style, for Shorts, TikTok, Reels or an Instagram post. The
+     * route is read from the drive's recording in the background first: a long drive's file can be
+     * several megabytes, too slow to read while the screen waits.
+     */
     private fun shareDriveCard(trip: TripSummary) {
+        if (readingDrive) return
+        readingDrive = true
+        lifecycleScope.launch {
+            val done = readingNotice()
+            val route = try { withContext(Dispatchers.IO) { routeFor(trip) } } finally { readingDrive = false; done() }
+            showDriveCard(trip, route)
+        }
+    }
+
+    private fun showDriveCard(trip: TripSummary, route: com.obdreader.app.obd.Route?) {
         val formats = DriveCardRenderer.Format.values()
         val card = shareScore(trip)
         val roast = com.obdreader.app.obd.Roast.line(card, trip.startedAt)
-        val route = routeFor(trip)
         android.util.Log.i("OBD2Share", "drive card: route of ${route?.points?.size ?: 0} points")
         var format = DriveCardRenderer.Format.STORY
         var preview: android.graphics.Bitmap? = null
@@ -2633,11 +2662,12 @@ open class MainActivity : AppCompatActivity() {
 
     /**
      * The route of [trip], from the recording(s) made during it with the route saved. Location
-     * lives only in those files, so with no recording there's simply no outline.
+     * lives only in those files, so with no recording (or one that can't be read, too big for this
+     * phone or deleted meanwhile) there's simply no outline. Reads files: call it off the main thread.
      */
     private fun routeFor(trip: TripSummary): com.obdreader.app.obd.Route? = try {
         com.obdreader.app.obd.Route.join(tripFiles(trip).map { com.obdreader.app.obd.Route.parse(it.readLines()) }).takeIf { !it.isEmpty }
-    } catch (e: OutOfMemoryError) { null }
+    } catch (e: OutOfMemoryError) { null } catch (e: java.io.IOException) { null }
 
     /** When a recording started, from its name. */
     private fun fileStart(f: java.io.File): Long? = try {
@@ -3189,10 +3219,29 @@ open class MainActivity : AppCompatActivity() {
     private var overlayJob: kotlinx.coroutines.Job? = null
 
     /** Background and size for the overlay video, then makes it. */
+    /** Reads the drive in the background (a long one can be several megabytes), then offers the video choices. */
     private fun showOverlayOptions(file: java.io.File) {
         if (LogRecorder.active.value?.file == file) { toast("This drive is still recording. Stop recording first."); return }
-        val drive = try { DriveTrack.parse(file.readLines()) } catch (e: OutOfMemoryError) { toast("This drive is too long to make a video on this phone."); return }
-        if (drive == null || drive.duration < 2.0) { toast("This drive is too short to make a video."); return }
+        if (readingDrive) return
+        readingDrive = true
+        lifecycleScope.launch {
+            val done = readingNotice()
+            val read: Result<DriveTrack?> = try {
+                withContext(Dispatchers.IO) { runCatching { DriveTrack.parse(file.readLines()) } }
+            } finally { readingDrive = false; done() }
+            when (val e = read.exceptionOrNull()) {
+                null -> {}
+                is OutOfMemoryError -> { toast("This drive is too long to make a video on this phone."); return@launch }
+                is java.io.IOException -> { toast("Couldn't read this drive. It may have been deleted."); return@launch }
+                else -> throw e
+            }
+            val drive = read.getOrNull()
+            if (drive == null || drive.duration < 2.0) { toast("This drive is too short to make a video."); return@launch }
+            showOverlayChoices(file, drive)
+        }
+    }
+
+    private fun showOverlayChoices(file: java.io.File, drive: DriveTrack) {
         val backgrounds = listOf(
             Triple("Green screen", "Remove it with your editor's chroma key (CapCut, Premiere, DaVinci Resolve…)", android.graphics.Color.rgb(0, 255, 0)),
             Triple("Black", "Use the Screen blend mode to drop the black", android.graphics.Color.BLACK),

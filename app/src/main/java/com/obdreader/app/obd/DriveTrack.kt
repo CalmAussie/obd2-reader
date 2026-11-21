@@ -93,26 +93,24 @@ class DriveTrack private constructor(
             fun col(prefix: String) = header.indexOfFirst { it.startsWith(prefix) }
             val iSec = col("Seconds"); val iRpm = col("Engine RPM"); val iSpeed = col("Speed")
             val iThr = col("Throttle"); val iCool = col("Coolant")
-            val iLat = col("Latitude"); val iLon = col("Longitude"); val iAcc = col("Location accuracy")
+            val iLat = col("Latitude"); val iLon = col("Longitude")
             val iGf = col("Forward g"); val iGs = col("Sideways g")
             if (iSec < 0) return null
-            val rows = lines.drop(1).filter { it.isNotBlank() }.map { splitCsv(it) }
+            // Each row's position, with the same checks as the route outline (rough and stray fixes left out).
+            val fixes = if (iLat >= 0 && iLon >= 0) Route.usableFixes(lines) else emptyList()
+            val rows = lines.drop(1).mapIndexedNotNull { i, line -> if (line.isBlank()) null else splitCsv(line) to fixes.getOrNull(i) }
             fun num(row: List<String>, i: Int) = if (i < 0) Double.NaN else row.getOrNull(i)?.toDoubleOrNull() ?: Double.NaN
-            val ok = rows.filter { !num(it, iSec).isNaN() }
+            val ok = rows.filter { !num(it.first, iSec).isNaN() }
             if (ok.isEmpty()) return null
             val route = if (iLat >= 0) Route.parse(lines).takeIf { !it.isEmpty } else null
-            fun good(row: List<String>): Boolean {
-                val a = num(row, iLat); val o = num(row, iLon); val acc = num(row, iAcc)
-                return !a.isNaN() && !o.isNaN() && !(a == 0.0 && o == 0.0) && (acc.isNaN() || acc <= 50.0)
-            }
             return DriveTrack(
-                ok.map { num(it, iSec) }.toDoubleArray(), ok.map { num(it, iRpm) }.toDoubleArray(), ok.map { num(it, iSpeed) }.toDoubleArray(),
-                ok.map { num(it, iThr) }.toDoubleArray(), ok.map { num(it, iCool) }.toDoubleArray(),
-                if (route == null) DoubleArray(0) else ok.map { if (good(it)) num(it, iLat) else Double.NaN }.toDoubleArray(),
-                if (route == null) DoubleArray(0) else ok.map { if (good(it)) num(it, iLon) else Double.NaN }.toDoubleArray(),
+                ok.map { num(it.first, iSec) }.toDoubleArray(), ok.map { num(it.first, iRpm) }.toDoubleArray(), ok.map { num(it.first, iSpeed) }.toDoubleArray(),
+                ok.map { num(it.first, iThr) }.toDoubleArray(), ok.map { num(it.first, iCool) }.toDoubleArray(),
+                if (route == null) DoubleArray(0) else ok.map { it.second?.first ?: Double.NaN }.toDoubleArray(),
+                if (route == null) DoubleArray(0) else ok.map { it.second?.second ?: Double.NaN }.toDoubleArray(),
                 route,
-                if (iGf < 0) DoubleArray(0) else ok.map { num(it, iGf) }.toDoubleArray(),
-                if (iGs < 0) DoubleArray(0) else ok.map { num(it, iGs) }.toDoubleArray(),
+                if (iGf < 0) DoubleArray(0) else ok.map { num(it.first, iGf) }.toDoubleArray(),
+                if (iGs < 0) DoubleArray(0) else ok.map { num(it.first, iGs) }.toDoubleArray(),
             )
         }
 
