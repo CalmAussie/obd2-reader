@@ -22,9 +22,9 @@ jobs:
     # Pinned: this image ships with the Android SDK preinstalled (ubuntu-latest moved to Ubuntu 26).
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "17"
@@ -45,6 +45,23 @@ jobs:
         run: |
           gradle --no-daemon testDebugUnitTest 2>&1 | tee -a build.log
           exit ${PIPESTATUS[0]}
+
+      # Android Lint on every push and pull request. An error stops the build; warnings are
+      # listed on the run's summary page, and the full report is kept as the lint-report download.
+      - name: Android Lint
+        run: |
+          gradle --no-daemon lintRelease 2>&1 | tee -a build.log
+          rc=${PIPESTATUS[0]}
+          python3 .github/scripts/lint-summary.py app/build/reports/lint-results-release.xml
+          exit $rc
+
+      - name: Keep the lint report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-release.*
+          if-no-files-found: ignore
 
       # Without the key this is signed with a throwaway key: it proves the release build works,
       # and it's kept as a download for testing, but it's never published.
@@ -86,7 +103,7 @@ jobs:
     outputs:
       publish: ${{ steps.check.outputs.publish }}
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Is this a new version?
         id: check
@@ -116,7 +133,7 @@ jobs:
       contents: write
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # The same check as the check job, again just before signing: approval can come hours later,
       # or this job can be re-run on an old run, by which time a newer build may have been released.
@@ -132,7 +149,7 @@ jobs:
             echo "::error::$TAG was published since this build was checked, so build ${{ github.run_number }} isn't released. Raise obdVersion to release again."; exit 1
           fi
 
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "17"
