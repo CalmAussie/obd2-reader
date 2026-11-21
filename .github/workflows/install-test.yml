@@ -1,10 +1,14 @@
 name: Install test
 
 # Checks that the APK people download installs and runs on a clean phone, with nothing else
-# needed: it downloads the latest release exactly as a user would, installs it on fresh
-# emulators from Android 10 to 16 (and 17, experimental, only when asked), opens it, starts the demo
-# car and visits every tab. Runs after every release, and on demand from the Actions tab or a push
-# to the qa branch.
+# needed: it downloads the release exactly as a user would, installs it on fresh emulators from
+# Android 10 to 16 (and 17, experimental, only when asked), opens it, starts the demo car and
+# visits every tab. Runs after every release, and on demand from the Actions tab or a push to the
+# qa branch.
+#
+# A new release is published as a pre-release, which phones aren't offered. When its install test
+# passes, the promote job below makes it the latest release, so phones are offered it; when the
+# test fails, it stays a pre-release. See docs/RELEASING.md.
 #
 # Only the smoke checks (installs, opens, demo car connects, tabs, codes, report, updates, keeps
 # running) fail a phone's job; the rest of the tour is reported as warnings. See the end of
@@ -29,8 +33,9 @@ permissions:
   contents: read
 
 jobs:
-  # Which release to test. After a build, only one that published a release counts: a push that
-  # didn't raise the version isn't released, so there's nothing new to test.
+  # Which release to test. After a build, the pre-release that build published; a push that
+  # didn't raise the version isn't released, so there's nothing new to test. Started by hand or
+  # from qa, the latest (live) release.
   release:
     # After a build, only a release from a push to main counts: the branch filter above matches
     # the branch's name, which a pull request from someone else's fork could also call "main".
@@ -38,6 +43,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       tag: ${{ steps.which.outputs.tag }}
+      prerelease: ${{ steps.which.outputs.prerelease }}
     steps:
       - name: Find the release
         id: which
@@ -45,12 +51,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BUILD: ${{ github.event.workflow_run.run_number }}
         run: |
-          TAG=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
-          if [ "$GITHUB_EVENT_NAME" = workflow_run ] && [[ "$TAG" != *"-build$BUILD" ]]; then
-            echo "::notice title=Nothing to test::Build $BUILD didn't publish a release (the latest is $TAG), so there's nothing new to install."
-            TAG=""
+          if [ "$GITHUB_EVENT_NAME" = workflow_run ]; then
+            # The release this build published (its tag ends in -build<run number>), live or not.
+            FOUND=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=30" \
+              --jq "[.[] | select(.draft | not) | select(.tag_name | endswith(\"-build$BUILD\"))][0] | if . == null then \"\" else \"\(.tag_name) \(.prerelease)\" end") || exit 1
+            TAG=${FOUND% *}; PRE=${FOUND#* }
+            if [ -z "$FOUND" ]; then
+              echo "::notice title=Nothing to test::Build $BUILD didn't publish a release, so there's nothing new to install."
+              TAG=""; PRE=false
+            fi
+          else
+            TAG=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name) || exit 1
+            PRE=false
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRE" >> "$GITHUB_OUTPUT"
 
   install:
     needs: release
@@ -132,3 +147,37 @@ jobs:
           git config user.name "install-test-bot"; git config user.email "install-test-bot@users.noreply.github.com"
           git add -A && git commit -qm "Install test reports"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" install-test-reports
+
+  # Makes a release that passed its install test the latest release, so every installed copy is
+  # offered it. Only for a pre-release that a build on main published (not for a test started by
+  # hand), and only when every phone's smoke checks passed. When they didn't, the release stays a
+  # pre-release and this job fails, so the run shows it wasn't made live.
+  promote:
+    needs: [release, install]
+    if: always() && github.event_name == 'workflow_run' && needs.release.outputs.prerelease == 'true'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Make it the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release.outputs.tag }}
+          TESTED: ${{ needs.install.result }}
+        run: |
+          if [ "$TESTED" != success ]; then
+            echo "::error title=Not made live::$TAG failed its install test ($TESTED), so it stays a pre-release and phones aren't offered it. See docs/RELEASING.md."
+            exit 1
+          fi
+          # Only if nothing newer has been released meanwhile: the newest release, live or not, must be this one.
+          NEWEST=$(bash .github/scripts/newest-release.sh) || exit 1
+          if [ "$NEWEST" != "$TAG" ]; then
+            echo "::warning title=Not made live::$TAG passed, but $NEWEST is newer, so $TAG isn't made the latest release."
+            exit 0
+          fi
+          ID=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .id) || exit 1
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$ID" -F prerelease=false -f make_latest=true --jq '"\(.tag_name): prerelease \(.prerelease)"'
+          LATEST=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
+          [ "$LATEST" = "$TAG" ] || { echo "::error::$TAG was edited but the latest release is $LATEST."; exit 1; }
+          echo "::notice title=Live::$TAG passed its install test and is now the latest release, so phones are offered it."
