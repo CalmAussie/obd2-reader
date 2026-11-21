@@ -219,27 +219,35 @@
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal">
 
-                                <com.obdreader.app.ui.TraceView
-                                    android:id="@+id/teleTrace"
+                                <!-- The trace with its legend underneath -->
+                                <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1" />
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
 
-                                <!-- G-force from the phone's motion sensor, beside the trace -->
+                                    <com.obdreader.app.ui.TraceView
+                                        android:id="@+id/teleTrace"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content" />
+
+                                    <TextView
+                                        android:id="@+id/teleLegend"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="6dp"
+                                        android:textColor="?attr/obdTextSecondary"
+                                        android:textSize="12sp" />
+                                </LinearLayout>
+
+                                <!-- G-force from the phone's motion sensor: its circle beside the trace, as tall as
+                                     it and centred on it; its reading underneath, on the legend's line -->
                                 <com.obdreader.app.ui.GMeterView
                                     android:id="@+id/teleGMeter"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
+                                    android:layout_height="match_parent"
                                     android:layout_marginStart="10dp" />
                             </LinearLayout>
-
-                            <TextView
-                                android:id="@+id/teleLegend"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:textColor="?attr/obdTextSecondary"
-                                android:textSize="12sp" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -1584,12 +1592,15 @@
         </androidx.core.widget.NestedScrollView>
 
         <!-- Behind the status bar, over the pages: scrolled text goes under it, not under the clock.
-             MainActivity sets its height to the status bar's. -->
+             MainActivity sets its height to the status bar's. Raised above the pages so raised
+             buttons (Read codes, Record drive) also go under it; no outline, so no shadow. -->
         <com.obdreader.app.ui.StatusBarScrim
             android:id="@+id/statusScrim"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_gravity="top" />
+            android:layout_gravity="top"
+            android:outlineProvider="none"
+            android:translationZ="16dp" />
     </FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

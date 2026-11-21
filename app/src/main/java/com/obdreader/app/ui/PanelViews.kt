@@ -31,8 +31,12 @@ internal fun fitText(paint: Paint, s: String, avail: Float): String {
 internal fun fmt(value: Double?, decimals: Int): String =
     value?.let { String.format(Locale.US, "%.${decimals}f", it) } ?: "—"
 
-/** A plain panel background in the theme's surface colour and corner radius. */
-fun Context.panelBackground(stroke: Boolean = dashLayout().let { it == DashLayout.COCKPIT || it == DashLayout.CYBERPUNK || it == DashLayout.RETRO || it == DashLayout.HAIRLINE }): GradientDrawable =
+/**
+ * A panel: the style's surface colour, with a hairline round it on the outlined layouts. Race telemetry
+ * is outlined too: its panels are only about 1.06:1 against its near-black page, so without the line
+ * the Diagnostics rows and sheets' tiles looked like text with no background at all.
+ */
+fun Context.panelBackground(stroke: Boolean = dashLayout().let { it == DashLayout.COCKPIT || it == DashLayout.CYBERPUNK || it == DashLayout.RETRO || it == DashLayout.HAIRLINE || it == DashLayout.TELEMETRY }): GradientDrawable =
     GradientDrawable().apply {
         cornerRadius = themeDimen(R.attr.obdCardRadius)
         setColor(themeColor(R.attr.obdSurface))
@@ -226,6 +230,14 @@ class TowerRowView(
 
     fun setUnsupported() {
         unsupported = true
+        invalidate()
+    }
+
+    /** Fills the little trace from points kept outside the screen (oldest first, [TRACE_STEP_MS] apart, ending now). */
+    fun seedTrace(points: List<Double>) {
+        history.clear()
+        points.takeLast(HISTORY).forEach { history.addLast(it) }
+        lastPushMs = android.os.SystemClock.uptimeMillis()
         invalidate()
     }
 

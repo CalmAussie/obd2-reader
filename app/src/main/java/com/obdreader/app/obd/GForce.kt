@@ -13,8 +13,10 @@ import kotlin.math.sqrt
  *  - which way is down: what the sensor reads while the car is parked (it reads only gravity then);
  *  - which way is forward: the direction the phone feels pushed while the car's speed changes,
  *    braking or pulling away in a straight line. Sideways is then at right angles to both.
- * Until it knows forward, both readings are null (N/A). If the phone is moved in its mount (down
- * changes while parked), it learns again.
+ * Until it knows forward, both readings are null (N/A). It knows forward after the first pull-away
+ * or stop (about 15 km/h of speed change) and keeps refining it as you drive. What it's learned is
+ * kept for the next drive (see [mount]), so the readings show straight away while the phone sits
+ * the same way. If the phone is moved in its mount (down changes), it learns again.
  *
  * Only the accelerometer is used: no new permission, and nothing leaves the phone.
  */
@@ -32,10 +34,22 @@ class GForce {
         private const val PARKED_MS = 2_000L
         /** The car's speed changing at least this fast (m/s²) counts towards learning forward. */
         private const val LEARN_ACCEL = 0.8
-        /** How much speed change (m/s, summed) it takes before forward counts as learned. */
-        private const val LEARNED_AFTER = 12.0
+        /**
+         * How much speed change (m/s, summed) it takes before forward counts as learned: 3 m/s counted,
+         * which a gentle pull-away from a standstill to about 15 km/h (or one stop) gives. It was 12 m/s,
+         * 43 km/h of firm speed changes, which could take minutes of town driving. Forward keeps being
+         * refined as you drive anyway.
+         */
+        const val LEARNED_AFTER = 3.0
         /** Down moving more than this while parked means the phone was moved in its mount. */
         private const val MOVED_DEG = 12.0
+        /**
+         * At the start of a drive, a mount kept from the last one is checked against the first second
+         * of readings: down that far out means the phone sits another way now, so it learns again. Wider
+         * than [MOVED_DEG] because the car may already be moving (pulling away tilts it by up to ~17°).
+         */
+        private const val CHECK_DEG = 25.0
+        private const val CHECK_READINGS = 40
         /** Smoothing for the readings shown (seconds): enough to calm road bumps. */
         private const val SHOW_TAU_S = 0.25
 
@@ -174,7 +188,47 @@ class GForce {
         up = null; forward = null; slowUp = null; learnSum = V(0.0, 0.0, 0.0); learnAmount = 0.0
         stillSince = null; stillSum = V(0.0, 0.0, 0.0); stillCount = 0; pendingSum = V(0.0, 0.0, 0.0); pendingCount = 0
         forwardG = null; sideG = null; fwdShown = 0.0; sideShown = 0.0; lastAt = -1
+        checkSum = V(0.0, 0.0, 0.0); checkCount = 0; checking = false
         resetDrive()
+    }
+
+    // Checking a kept mount at the start of a drive: the first readings, averaged.
+    private var checking = false
+    private var checkSum = V(0.0, 0.0, 0.0)
+    private var checkCount = 0
+
+    /**
+     * A new connection (perhaps another car, or the phone put back in its mount another way). The mount
+     * learned before is kept, so the readings show at once, and checked against the first second of
+     * readings: if down has moved, it's forgotten and learned again.
+     */
+    fun newConnection() {
+        val keptUp = up; val keptForward = forward
+        reset()
+        if (keptUp != null && keptForward != null) {
+            up = keptUp; forward = keptForward
+            // Refining carries on from here, weighted like a learned mount.
+            learnSum = keptForward * LEARNED_AFTER; learnAmount = LEARNED_AFTER
+            checking = true
+        }
+    }
+
+    /** What's learned about the mount, to keep for the next drive (up and forward in the phone's axes), or null. */
+    fun mount(): String? {
+        val u = up ?: return null
+        val f = forward ?: return null
+        return listOf(u.x, u.y, u.z, f.x, f.y, f.z).joinToString(",") { String.format(java.util.Locale.US, "%.4f", it) }
+    }
+
+    /** Takes back a mount kept by [mount]; checked at the start of the drive like any kept mount. Ignores anything malformed. */
+    fun restore(saved: String?) {
+        val n = saved?.split(",")?.mapNotNull { it.trim().toDoubleOrNull() }?.takeIf { it.size == 6 && it.all { v -> v.isFinite() } } ?: return
+        val u = V(n[0], n[1], n[2]).unit() ?: return
+        val f = V(n[3], n[4], n[5]).let { it - u * (it dot u) }.unit() ?: return
+        reset()
+        up = u; forward = f
+        learnSum = f * LEARNED_AFTER; learnAmount = LEARNED_AFTER
+        checking = true
     }
 
     /** One accelerometer reading (m/s², phone axes, gravity included). */
@@ -182,6 +236,19 @@ class GForce {
         val a = V(ax, ay, az)
         val dt = if (lastAt < 0) 0.0 else ((timeMs - lastAt) / 1000.0).coerceIn(0.0, 1.0)
         lastAt = timeMs
+
+        // A mount kept from the last drive: does the phone still sit the same way?
+        if (checking) {
+            checkSum = checkSum + a; checkCount++
+            if (checkCount >= CHECK_READINGS) {
+                checking = false
+                val now = checkSum.unit(); val was = up
+                if (now != null && was != null && angleDeg(was, now) > CHECK_DEG) {
+                    up = null; forward = null; learnSum = V(0.0, 0.0, 0.0); learnAmount = 0.0
+                    forwardG = null; sideG = null; fwdShown = 0.0; sideShown = 0.0
+                }
+            }
+        }
 
         // Parked (the car's last speed was 0): kept aside until the next speed reading confirms it.
         val parked = speedMs == 0.0 && timeMs - speedAtMs < 3_000
