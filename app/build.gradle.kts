@@ -23,7 +23,7 @@ val appVersion = (findProperty("obdVersion") as String?) ?: "1.0"
 
 android {
     namespace = "com.obdreader.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.obdreader.app"
