@@ -12,17 +12,39 @@ import kotlin.concurrent.withLock
  *
  * After a command times out its reply may still turn up. The next command first waits up to
  * [lateReplyWaitMs] for that late reply and throws it away, so it isn't taken for its own answer.
+ *
+ * It holds at most [maxChars]: past that, what's waiting is dropped and the command waiting for it
+ * (or the next one) fails with [TOO_MUCH_FROM_ADAPTER].
  */
-class PromptBuffer(private val lateReplyWaitMs: Long = LATE_REPLY_WAIT_MS) {
+class PromptBuffer(
+    private val lateReplyWaitMs: Long = LATE_REPLY_WAIT_MS,
+    private val maxChars: Int = MAX_REPLY_CHARS,
+) {
     private val lock = ReentrantLock()
     private val arrived = lock.newCondition()
     private val rx = StringBuilder()
     private var lateReplyOwed = false
+    private var tooMuch = false
 
     /** Adds bytes the adapter sent. */
     fun append(bytes: ByteArray) = lock.withLock {
-        for (b in bytes) rx.append((b.toInt() and 0xFF).toChar())
+        for (b in bytes) {
+            if (rx.length >= maxChars) {
+                rx.setLength(0)
+                tooMuch = true
+            }
+            rx.append((b.toInt() and 0xFF).toChar())
+        }
         arrived.signalAll()
+    }
+
+    /** Throws [TOO_MUCH_FROM_ADAPTER] once if the buffer overflowed. Call with the lock held. */
+    private fun checkTooMuch() {
+        if (tooMuch) {
+            tooMuch = false
+            rx.setLength(0)
+            throw IOException(TOO_MUCH_FROM_ADAPTER)
+        }
     }
 
     /** Wakes a waiting command, for instance because the link dropped ([failure] then says so). */
@@ -41,11 +63,13 @@ class PromptBuffer(private val lateReplyWaitMs: Long = LATE_REPLY_WAIT_MS) {
             val deadline = System.currentTimeMillis() + lateReplyWaitMs
             while (rx.indexOf(">") < 0) {
                 failure()?.let { throw IOException(it) }
+                checkTooMuch()
                 val remaining = deadline - System.currentTimeMillis()
                 if (remaining <= 0) break
                 arrived.await(remaining, TimeUnit.MILLISECONDS)
             }
         }
+        checkTooMuch()
         rx.setLength(0)
     }
 
@@ -55,6 +79,7 @@ class PromptBuffer(private val lateReplyWaitMs: Long = LATE_REPLY_WAIT_MS) {
         lock.withLock {
             while (true) {
                 failure()?.let { throw IOException(it) }
+                checkTooMuch()
                 val idx = rx.indexOf(">")
                 if (idx >= 0) {
                     val out = rx.substring(0, idx)

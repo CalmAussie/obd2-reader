@@ -25,4 +25,14 @@ class AdapterTimeoutException(message: String) : IOException(message)
  */
 const val LATE_REPLY_WAIT_MS = 1000L
 
+/**
+ * The most an adapter may send for one command. A real ELM327 answer is a few hundred bytes at
+ * most (a few KB for the longest multi-frame replies), so anything bigger is a broken or hostile
+ * adapter: the command fails with [TOO_MUCH_FROM_ADAPTER] instead of the app filling its memory.
+ */
+const val MAX_REPLY_CHARS = 64 * 1024
+
+/** The error for a reply longer than [MAX_REPLY_CHARS], or an adapter that won't stop sending. */
+const val TOO_MUCH_FROM_ADAPTER = "Adapter sent too much"
+
 class ObdException(message: String) : Exception(message)
