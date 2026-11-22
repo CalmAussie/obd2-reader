@@ -16,8 +16,6 @@ import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 /**
  * Bluetooth Low Energy ELM327 adapter (the "works with iPhone" kind).
@@ -48,9 +46,7 @@ class BleTransport(
     @Volatile private var descriptorWritten = CountDownLatch(1)
     private val writeAck = Semaphore(0)
 
-    private val lock = ReentrantLock()
-    private val dataArrived = lock.newCondition()
-    private val rx = StringBuilder()
+    private val replies = PromptBuffer()
 
     private val callback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
@@ -85,16 +81,13 @@ class BleTransport(
         }
     }
 
-    private fun onData(bytes: ByteArray) = lock.withLock {
-        for (b in bytes) rx.append((b.toInt() and 0xFF).toChar())
-        dataArrived.signalAll()
-    }
+    private fun onData(bytes: ByteArray) = replies.append(bytes)
 
     private fun wakeEveryone() {
         servicesReady.countDown()
         descriptorWritten.countDown()
         writeAck.release()
-        lock.withLock { dataArrived.signalAll() }
+        replies.wake()
     }
 
     override fun open() {
@@ -149,31 +142,21 @@ class BleTransport(
         val c = writeChar ?: throw IOException("Not connected")
         failure?.let { throw IOException(it) }
 
-        lock.withLock { rx.setLength(0) }
+        replies.prepare { failure }
         writeAck.drainPermits()
 
         val bytes = (command + "\r").toByteArray(Charsets.US_ASCII)
         for (chunk in bytes.toList().chunked(MAX_CHUNK)) {
             if (!writeChunk(g, c, chunk.toByteArray())) throw IOException("Bluetooth LE write failed")
-            if (!writeAck.tryAcquire(3, TimeUnit.SECONDS)) throw AdapterTimeoutException("Write to '$command' not acknowledged")
+            if (!writeAck.tryAcquire(3, TimeUnit.SECONDS)) {
+                // The adapter may have the command after all, and answer it late.
+                replies.replyIsLate()
+                throw AdapterTimeoutException("Write to '$command' not acknowledged")
+            }
             failure?.let { throw IOException(it) }
         }
 
-        val deadline = System.currentTimeMillis() + timeoutMs
-        lock.withLock {
-            while (true) {
-                failure?.let { throw IOException(it) }
-                val idx = rx.indexOf(">")
-                if (idx >= 0) {
-                    val out = rx.substring(0, idx)
-                    rx.delete(0, idx + 1)
-                    return out
-                }
-                val remaining = deadline - System.currentTimeMillis()
-                if (remaining <= 0) throw AdapterTimeoutException("No reply to '$command'")
-                dataArrived.await(remaining, TimeUnit.MILLISECONDS)
-            }
-        }
+        return replies.awaitReply(command, timeoutMs) { failure }
     }
 
     override fun close() {

@@ -90,7 +90,7 @@ class VinDetailsTest {
     }
 
     @Test fun dataNamesItsSource() {
-        val f = data ?: return
+        val f = data ?: error("vin-data.dat missing")
         val head = java.util.zip.GZIPInputStream(f.inputStream()).bufferedReader().useLines { it.take(2).toList() }
         assertTrue(head[1].contains("NHTSA vPIC"))
     }

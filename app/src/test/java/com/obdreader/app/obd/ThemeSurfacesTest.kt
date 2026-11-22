@@ -17,7 +17,7 @@ class ThemeSurfacesTest {
         Regex("""<item name="([^"]+)">([^<]*)</item>""").findAll(body).associate { it.groupValues[1] to it.groupValues[2].trim() }
 
     @Test fun sheetsAndMenusAreSolidInEveryStyle() {
-        val xml = themes?.readText() ?: return
+        val xml = themes?.readText() ?: throw AssertionError("themes.xml not found from ${File(".").absolutePath}")
         val styles = Regex("""<style name="([^"]+)" parent="([^"]*)">(.*?)</style>""", RegexOption.DOT_MATCHES_ALL).findAll(xml)
             .associate { it.groupValues[1] to (it.groupValues[2] to items(it.groupValues[3])) }
         fun resolve(style: String, name: String): String? {

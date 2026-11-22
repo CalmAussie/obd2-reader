@@ -19,4 +19,10 @@ interface ObdTransport {
 
 class AdapterTimeoutException(message: String) : IOException(message)
 
+/**
+ * After a command times out, its reply can still turn up a moment later. The next command first
+ * waits up to this long for that late reply and throws it away, so it isn't taken for its own answer.
+ */
+const val LATE_REPLY_WAIT_MS = 1000L
+
 class ObdException(message: String) : Exception(message)
