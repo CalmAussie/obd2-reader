@@ -23,7 +23,10 @@ import com.obdreader.app.obd.ReplyRecorder
 import com.obdreader.app.obd.ElmClient
 import com.obdreader.app.obd.ModuleScan
 import com.obdreader.app.obd.IgnitionOffException
+import com.obdreader.app.obd.IgnitionWait
 import com.obdreader.app.obd.IgnitionWatch
+import com.obdreader.app.obd.LiveReads
+import com.obdreader.app.obd.ReconnectLoop
 import com.obdreader.app.obd.ObdException
 import com.obdreader.app.obd.ObdProtocols
 import com.obdreader.app.obd.ObdTransport
@@ -41,7 +44,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -196,74 +198,59 @@ object ObdSession {
         fun isCurrent() = gen == generation
 
         job = scope.launch {
-            var current = t
-            var everConnected = false
-            var attempt = 0
-            var waitingSince = SystemClock.elapsedRealtime()
-            var end = State()
             var first = true
+            var end = State()
             try {
-                while (currentCoroutineContext().isActive) {
-                    var lastError: Exception? = null
-                    try {
-                        runConnection(app, recorder?.let { RecordingTransport(current, it) } ?: current, isDemo) {
-                            everConnected = true
-                            attempt = 0
+                val loop = ReconnectLoop<ObdTransport>(
+                    now = { SystemClock.elapsedRealtime() },
+                    mayRetry = { !isDemo && AppPrefs.autoReconnect(prefs) },
+                    startedByApp = auto,
+                    neverWorks = { it is NotAnAdapter },
+                    freshLink = { lastAdapter(app) },
+                    waiting = { bluetoothOff ->
+                        if (bluetoothOff) {
+                            _state.update { it.copy(detail = "Turn Bluetooth on. The app reconnects to ${t.name} automatically.") }
+                        } else {
+                            _state.update {
+                                it.copy(
+                                    phase = Phase.WAITING,
+                                    title = "Waiting for the car",
+                                    detail = "Turn the ignition on. The app reconnects to ${t.name} automatically.",
+                                    readings = emptyMap(), charging = null,
+                                    rate = 0.0,
+                                )
+                            }
+                        }
+                    },
+                )
+                val result = loop.run(
+                    t,
+                    session = { link, connected ->
+                        runConnection(app, recorder?.let { RecordingTransport(link, it) } ?: link, isDemo) {
+                            connected()
                             if (first) onConnected?.invoke()
                             first = false
                         }
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        lastError = e
-                    } finally {
-                        current.close()
+                    },
+                    close = { link ->
+                        link.close()
                         if (isCurrent()) {
                             client = null
                             transport = null
                         }
+                    },
+                )
+                end = when (result) {
+                    is ReconnectLoop.End.Stopped -> State(
+                        phase = Phase.ERROR,
+                        title = if (result.everConnected) "Connection lost" else "Couldn't connect",
+                        detail = result.error?.message ?: "The connection closed.",
+                    )
+                    is ReconnectLoop.End.GaveUp -> if (result.everConnected) {
+                        State(title = "Stopped reconnecting", detail = "The car didn't answer for 30 minutes. Tap Connect when you're back in the car.")
+                    } else {
+                        State(detail = "Couldn't find ${t.name}. Tap Connect when you're in the car with the ignition on.")
                     }
-                    // Disconnected by the user while the link was closing: stop here, quietly.
-                    currentCoroutineContext().ensureActive()
-
-                    val retry = !isDemo && AppPrefs.autoReconnect(prefs) && (everConnected || auto) && lastError !is NotAnAdapter
-                    if (!retry) {
-                        end = State(
-                            phase = Phase.ERROR,
-                            title = if (everConnected) "Connection lost" else "Couldn't connect",
-                            detail = lastError?.message ?: "The connection closed.",
-                        )
-                        break
-                    }
-                    if (attempt == 0) waitingSince = SystemClock.elapsedRealtime()
-                    val limit = if (everConnected) ReconnectPolicy.GIVE_UP_AFTER_MS else ReconnectPolicy.AUTO_START_GIVE_UP_MS
-                    if (ReconnectPolicy.shouldGiveUp(waitingSince, SystemClock.elapsedRealtime(), limit)) {
-                        end = if (everConnected) {
-                            State(title = "Stopped reconnecting", detail = "The car didn't answer for 30 minutes. Tap Connect when you're back in the car.")
-                        } else {
-                            State(detail = "Couldn't find ${t.name}. Tap Connect when you're in the car with the ignition on.")
-                        }
-                        break
-                    }
-                    _state.update {
-                        it.copy(
-                            phase = Phase.WAITING,
-                            title = "Waiting for the car",
-                            detail = "Turn the ignition on. The app reconnects to ${t.name} automatically.",
-                            readings = emptyMap(), charging = null,
-                            rate = 0.0,
-                        )
-                    }
-                    delay(ReconnectPolicy.delayFor(attempt++))
-                    // A Bluetooth or Wi-Fi link can't be reopened once closed, so build a fresh one.
-                    var next = lastAdapter(app)
-                    while (next == null) {
-                        if (ReconnectPolicy.shouldGiveUp(waitingSince, SystemClock.elapsedRealtime(), limit)) break
-                        _state.update { it.copy(detail = "Turn Bluetooth on. The app reconnects to ${t.name} automatically.") }
-                        delay(ReconnectPolicy.delayFor(Int.MAX_VALUE))
-                        next = lastAdapter(app)
-                    }
-                    current = next ?: current
                 }
             } finally {
                 if (recorder != null) {
@@ -379,23 +366,21 @@ object ObdSession {
      * and return as soon as the car answers again.
      */
     private suspend fun waitIgnitionOff(c: ElmClient, prefs: android.content.SharedPreferences) {
-        val since = SystemClock.elapsedRealtime()
         val offAt = System.currentTimeMillis()
         val watching = AppPrefs.batteryWatch(prefs)
         val limit = if (watching) ReconnectPolicy.WATCH_GIVE_UP_AFTER_MS else ReconnectPolicy.GIVE_UP_AFTER_MS
         if (watching) prefs.edit().putLong(AppPrefs.BATTERY_NIGHT_OFF, offAt).putString(AppPrefs.BATTERY_NIGHT, "").apply()
         val night = mutableListOf<com.obdreader.app.obd.BatteryRest.Sample>()
         var lastSample = 0L
-        var lastProbe = SystemClock.elapsedRealtime()
-        var resting: Double? = null
         _state.update {
             it.copy(phase = Phase.WAITING, title = "Ignition off", detail = "Waiting for the car. Live data comes back as soon as the ignition is on.", readings = emptyMap(), charging = null, rate = 0.0)
         }
-        while (true) {
-            delay(ReconnectPolicy.VOLT_READ_MS)
-            val v = try { c.readVoltage() } catch (e: AdapterTimeoutException) { null }
-            val now = SystemClock.elapsedRealtime()
-            if (v != null) {
+        IgnitionWait(
+            now = { SystemClock.elapsedRealtime() },
+            limitMs = limit,
+            readVoltage = { c.readVoltage() },
+            carAwake = { c.probe() },
+            onVoltage = { v, now ->
                 batteryWatch.update(now, v, 0.0) // the engine is off: these are resting readings
                 val settling = System.currentTimeMillis() - offAt < com.obdreader.app.obd.BatteryRest.SETTLE_MS
                 val text = "Battery " + com.obdreader.app.obd.BatteryRest.describe(v) +
@@ -403,23 +388,13 @@ object ObdSession {
                     ". Live data comes back as soon as the ignition is on."
                 _state.update { it.copy(readings = mapOf(VOLTAGE_KEY to v), detail = text) }
                 _samples.tryEmit(Sample(VOLTAGE_KEY, v, now))
-                if (resting == null) resting = v
                 if (watching && System.currentTimeMillis() - lastSample >= com.obdreader.app.obd.BatteryRest.SAMPLE_EVERY_MS) {
                     lastSample = System.currentTimeMillis()
                     night += com.obdreader.app.obd.BatteryRest.Sample(lastSample, v)
                     prefs.edit().putString(AppPrefs.BATTERY_NIGHT, com.obdreader.app.obd.BatteryRest.encode(night.takeLast(400))).apply()
                 }
-            }
-            if (ReconnectPolicy.shouldProbe(now - lastProbe, v, resting)) {
-                lastProbe = now
-                val awake = try { c.probe() } catch (e: AdapterTimeoutException) { false }
-                if (awake) return
-                resting = v ?: resting
-            }
-            if (ReconnectPolicy.shouldGiveUp(since, now, limit)) {
-                throw IOException(if (watching) "The car didn't answer for 24 hours." else "The car didn't answer for 30 minutes.")
-            }
-        }
+            },
+        ).run()
     }
 
     /**
@@ -968,12 +943,12 @@ object ObdSession {
      */
     private suspend fun pollLoop(c: ElmClient, pids: List<Pid>, extras: List<Pid> = emptyList()) {
         val watch = IgnitionWatch()
-        var multi = c.isCan
+        val reads = LiveReads(startMulti = c.isCan)
         var cycle = 0
         var nextExtra = 0
         var timeouts = 0
         val rateWindow = ArrayDeque<Long>()
-        // Trouble codes are checked shortly after connecting and then every two minutes, so a code
+        // Trouble codes are checked shortly after connecting and then every 30 seconds, so a code
         // that appears mid-drive shows up (and can raise an alert) without tapping Read codes.
         var nextCodeCheck = SystemClock.elapsedRealtime() + FIRST_CODE_CHECK_MS
 
@@ -982,7 +957,7 @@ object ObdSession {
             val slowTurn = cycle % 5 == 0
             val extraTurn = if (focused.isNotEmpty()) cycle % 10 == 0 else slowTurn
             val turnTaking = if (extras.isEmpty() || !extraTurn) emptyList() else {
-                val n = minOf(if (multi) ElmClient.MAX_MULTI_PIDS else 1, extras.size)
+                val n = minOf(if (reads.multi) ElmClient.MAX_MULTI_PIDS else 1, extras.size)
                 (0 until n).map { extras[(nextExtra + it) % extras.size] }.also { nextExtra = (nextExtra + n) % extras.size }
             }
             val wanted = pids.filter { p ->
@@ -995,25 +970,7 @@ object ObdSession {
             val now = { SystemClock.elapsedRealtime() }
             val values = mutableMapOf<String, Double?>()
             try {
-                if (multi) {
-                    for (chunk in wanted.chunked(ElmClient.MAX_MULTI_PIDS)) {
-                        val got = c.readPids(chunk)
-                        if (got.isEmpty() && chunk.size > 1) {
-                            // Either the car is quiet (ignition off) or it doesn't support multi-PID
-                            // requests. If a single request works, it's the latter: switch to one at a time.
-                            val single = c.readPid(chunk.first())
-                            if (single != null) {
-                                multi = false
-                                values[chunk.first().hex] = single
-                                break
-                            }
-                        }
-                        for (p in chunk) values[p.hex] = got[p]
-                    }
-                }
-                if (!multi) {
-                    for (p in wanted) if (p.hex !in values || values[p.hex] == null) values[p.hex] = c.readPid(p)
-                }
+                reads.read(c, wanted, values)
                 timeouts = 0
             } catch (e: AdapterTimeoutException) {
                 if (++timeouts >= 5) throw IOException("The adapter stopped responding.")
