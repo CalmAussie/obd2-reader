@@ -25,4 +25,18 @@ class AdapterTimeoutException(message: String) : IOException(message)
  */
 const val LATE_REPLY_WAIT_MS = 1000L
 
+/**
+ * The most an adapter may send for one command. A real ELM327 answer is a few hundred bytes at
+ * most (a few KB for the longest multi-frame replies), so anything bigger is a broken or hostile
+ * adapter: the command fails with [TOO_MUCH_FROM_ADAPTER] instead of the app filling its memory.
+ */
+const val MAX_REPLY_CHARS = 64 * 1024
+
+/**
+ * The error for a reply longer than [MAX_REPLY_CHARS], or an adapter that won't stop sending. It is
+ * shown under "Connection lost" / "Couldn't connect", so it says what to do next.
+ */
+const val TOO_MUCH_FROM_ADAPTER =
+    "The adapter sent far more data than a car ever does, so the app disconnected. Unplug it for a few seconds and try again."
+
 class ObdException(message: String) : Exception(message)

@@ -16,6 +16,9 @@ abstract class StreamTransport : ObdTransport {
     /** How long the next command waits for a timed-out command's late reply (see [LATE_REPLY_WAIT_MS]). */
     protected open val lateReplyWaitMs: Long = LATE_REPLY_WAIT_MS
 
+    /** The most one reply may be, and the most leftover bytes dropped before a command ([MAX_REPLY_CHARS]). */
+    protected open val maxReplyChars: Int = MAX_REPLY_CHARS
+
     /** Set when a command timed out: its reply may still be on the way. */
     @Volatile private var lateReplyOwed = false
 
@@ -27,8 +30,13 @@ abstract class StreamTransport : ObdTransport {
             lateReplyOwed = false
             skipLateReply(inp)
         }
-        // Discard anything else left over from a previous, timed-out command.
-        while (inp.available() > 0) inp.read()
+        // Discard anything else left over from a previous, timed-out command. An adapter that keeps
+        // sending would keep this loop going forever, so stop after a reply's worth of bytes.
+        var dropped = 0
+        while (inp.available() > 0) {
+            if (inp.read() < 0) throw IOException("Adapter closed the connection")
+            if (++dropped > maxReplyChars) throw IOException(TOO_MUCH_FROM_ADAPTER)
+        }
 
         out.write((command + "\r").toByteArray(Charsets.US_ASCII))
         out.flush()
@@ -44,6 +52,7 @@ abstract class StreamTransport : ObdTransport {
                 for (i in 0 until n) {
                     val c = (buffer[i].toInt() and 0xFF).toChar()
                     if (c == '>') return response.toString()
+                    if (response.length >= maxReplyChars) throw IOException(TOO_MUCH_FROM_ADAPTER)
                     response.append(c)
                 }
             } else {
@@ -54,15 +63,20 @@ abstract class StreamTransport : ObdTransport {
         throw AdapterTimeoutException("No reply to '$command'")
     }
 
-    /** Reads and drops a late reply, up to and including its prompt, waiting at most [lateReplyWaitMs]. */
+    /**
+     * Reads and drops a late reply, up to and including its prompt, waiting at most [lateReplyWaitMs]
+     * and dropping at most [maxReplyChars].
+     */
     private fun skipLateReply(inp: InputStream) {
         val deadline = System.currentTimeMillis() + lateReplyWaitMs
+        var dropped = 0
         while (System.currentTimeMillis() < deadline) {
             if (input == null) throw IOException("Disconnected")
             if (inp.available() > 0) {
                 val c = inp.read()
                 if (c < 0) throw IOException("Adapter closed the connection")
                 if (c == '>'.code) return
+                if (++dropped > maxReplyChars) throw IOException(TOO_MUCH_FROM_ADAPTER)
             } else {
                 Thread.sleep(8)
             }
