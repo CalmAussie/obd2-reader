@@ -1,5 +1,6 @@
 package com.obdreader.app
 
+import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
 import android.view.Gravity
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -400,8 +402,8 @@ internal fun MainActivity.enableGraphDrag(strip: View, keys: MutableList<String>
 internal fun MainActivity.buildGraphs(keys: List<String>) {
     graphList.removeAllViews()
     graphStrips.clear()
-    if (::graphOrderBtn.isInitialized) graphOrderBtn.visibility = if (keys.size >= 2) View.VISIBLE else View.GONE
-    if (::graphCount.isInitialized) showGraphChips()
+    if (graphOrderBtnReady) graphOrderBtn.visibility = if (keys.size >= 2) View.VISIBLE else View.GONE
+    if (graphCountReady) showGraphChips()
     android.util.Log.i("OBD2Graphs", "order: ${keys.joinToString(",")}")
     val fallback = themeColor(R.attr.obdAccent)
     for (ch in keys.mapNotNull { k -> channels.firstOrNull { it.key == k } }) {

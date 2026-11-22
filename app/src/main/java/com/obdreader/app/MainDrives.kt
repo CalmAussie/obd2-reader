@@ -16,7 +16,9 @@ import com.obdreader.app.session.OverlayExporter
 import com.obdreader.app.ui.SkewButton
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.uiTypeface
+import java.io.IOException
 import java.util.Locale
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

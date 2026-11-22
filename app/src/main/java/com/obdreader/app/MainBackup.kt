@@ -3,6 +3,7 @@ package com.obdreader.app
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.obdreader.app.MainActivity.Companion.PREF_CUSTOM
+import com.obdreader.app.obd.CustomReading
 import com.obdreader.app.obd.VehicleCatalog
 import com.obdreader.app.session.AppPrefs
 import com.obdreader.app.session.DriveScorer
@@ -11,6 +12,8 @@ import com.obdreader.app.session.ObdSession
 import com.obdreader.app.ui.AppThemes
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 // Back up and restore.

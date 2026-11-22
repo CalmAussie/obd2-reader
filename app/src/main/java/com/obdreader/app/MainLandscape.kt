@@ -1,6 +1,7 @@
 package com.obdreader.app
 
 import android.content.res.Configuration
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout

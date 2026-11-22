@@ -4,6 +4,7 @@ import android.content.Intent
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
@@ -13,8 +14,10 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.obdreader.app.session.ObdSession
 import com.obdreader.app.session.Updater
+import com.obdreader.app.ui.applyTitleFonts
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.uiTypeface
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // App updates from the GitHub releases, and setup help.

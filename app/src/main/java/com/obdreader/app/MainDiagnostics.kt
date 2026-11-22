@@ -5,10 +5,13 @@ import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.obdreader.app.MainActivity.Companion.PREF_CAR_ENGINE
 import com.obdreader.app.MainActivity.Companion.PREF_CAR_MAKE
 import com.obdreader.app.MainActivity.Companion.PREF_CAR_MODEL
@@ -28,6 +31,7 @@ import com.obdreader.app.ui.uiTypeface
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 // Trouble codes, battery checks and the VIN.

@@ -37,8 +37,10 @@ import com.obdreader.app.obd.BleTransport
 import com.obdreader.app.obd.BluetoothTransport
 import com.obdreader.app.obd.WifiTransport
 import com.obdreader.app.session.LogRecorder
+import com.obdreader.app.ui.applyTitleFonts
 import java.util.Locale
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // Choosing and connecting an adapter.
 // Split out of MainActivity to keep it a readable size. These are MainActivity's own functions,

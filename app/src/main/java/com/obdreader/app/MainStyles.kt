@@ -9,6 +9,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.drawToBitmap
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -22,10 +23,12 @@ import com.obdreader.app.MainActivity.Companion.reopenAppearance
 import com.obdreader.app.session.AppPrefs
 import com.obdreader.app.ui.AppThemes
 import com.obdreader.app.ui.ThemeSwatchView
+import com.obdreader.app.ui.themeBool
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.themeShape
 import com.obdreader.app.ui.uiTypeface
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // Styles, and day and night.
 // Split out of MainActivity to keep it a readable size. These are MainActivity's own functions,

@@ -74,15 +74,19 @@ import com.obdreader.app.ui.TraceView
 import com.obdreader.app.ui.panelBackground
 import com.obdreader.app.ui.themeBool
 import com.obdreader.app.ui.SmoothText
+import com.obdreader.app.ui.applyTitleFonts
 import com.obdreader.app.session.Alerts
 import com.obdreader.app.session.DriveScorer
 import com.obdreader.app.obd.DrivingScore
 import com.obdreader.app.ui.themeColor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -578,6 +582,8 @@ open class MainActivity : AppCompatActivity() {
     // ---------- Driving score ----------
 
     internal lateinit var scoreCard: LinearLayout
+    /** For the split-out files: a lateinit's isInitialized can only be asked inside its class. */
+    internal val scoreCardReady: Boolean get() = ::scoreCard.isInitialized
     internal var scoreStyle = DrivingScore.Style.EVERYDAY
 
     internal var lastTripButton: SkewButton? = null
@@ -647,8 +653,12 @@ open class MainActivity : AppCompatActivity() {
     internal val graphChosen = mutableListOf<String>()
     internal lateinit var graphChipGroup: ChipGroup
     internal lateinit var graphCount: TextView
+    /** For the split-out files: a lateinit's isInitialized can only be asked inside its class. */
+    internal val graphCountReady: Boolean get() = ::graphCount.isInitialized
 
     internal lateinit var graphOrderBtn: MaterialButton
+    /** For the split-out files: a lateinit's isInitialized can only be asked inside its class. */
+    internal val graphOrderBtnReady: Boolean get() = ::graphOrderBtn.isInitialized
 
     /** The Graphs tab's reading tabs: null is All. */
     internal var graphTab: com.obdreader.app.obd.ReadingGroups.Group? = null

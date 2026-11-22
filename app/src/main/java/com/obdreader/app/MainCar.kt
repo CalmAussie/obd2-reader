@@ -10,10 +10,13 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import com.google.android.material.textfield.TextInputLayout
 import com.obdreader.app.MainActivity.AllItemsAdapter
 import com.obdreader.app.MainActivity.Companion.PREF_CAR_ASKED
 import com.obdreader.app.MainActivity.Companion.PREF_CAR_ENGINE
@@ -31,6 +34,7 @@ import com.obdreader.app.session.ObdSession
 import com.obdreader.app.ui.DashLayout
 import com.obdreader.app.ui.MilBannerView
 import com.obdreader.app.ui.PlateView
+import com.obdreader.app.ui.applyTitleFonts
 import com.obdreader.app.ui.panelBackground
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.uiTypeface

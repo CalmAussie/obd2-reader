@@ -5,12 +5,16 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.obdreader.app.MainActivity.Companion.PREF_CUSTOM
 import com.obdreader.app.obd.CustomReading
 import com.obdreader.app.session.AppPrefs
@@ -20,6 +24,7 @@ import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.titleTypeface
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 // Custom readings, market, car and widget readings, and the app icon.
 // Split out of MainActivity to keep it a readable size. These are MainActivity's own functions,

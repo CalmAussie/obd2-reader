@@ -18,11 +18,14 @@ import com.obdreader.app.MainActivity.Companion.SPEED_KEY
 import com.obdreader.app.obd.PerformanceTimer
 import com.obdreader.app.obd.Units
 import com.obdreader.app.session.ObdSession
+import com.obdreader.app.ui.applyTitleFonts
 import com.obdreader.app.ui.displayTypeface
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.titleTypeface
 import com.obdreader.app.ui.uiTypeface
 import java.util.Locale
+import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // Performance timers.

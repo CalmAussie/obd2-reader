@@ -19,10 +19,12 @@ import com.obdreader.app.obd.Pids
 import com.obdreader.app.obd.Units
 import com.obdreader.app.session.Exports
 import com.obdreader.app.session.ObdSession
+import com.obdreader.app.ui.applyTitleFonts
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.titleTypeface
 import com.obdreader.app.ui.uiTypeface
 import java.util.Locale
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 // The car scan and the dashboard readout picker.

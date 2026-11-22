@@ -20,6 +20,7 @@ import com.obdreader.app.obd.Units
 import com.obdreader.app.session.DriveScorer
 import com.obdreader.app.session.ObdSession
 import com.obdreader.app.ui.SkewButton
+import com.obdreader.app.ui.applyTitleFonts
 import com.obdreader.app.ui.displayTypeface
 import com.obdreader.app.ui.panelBackground
 import com.obdreader.app.ui.themeColor
@@ -94,7 +95,7 @@ internal fun MainActivity.setupScore() {
 }
 /** The chosen style's score: the number, what it means, each part with a bar, and the tip that would help most. */
 internal fun MainActivity.renderScore() {
-    if (!::scoreCard.isInitialized) return
+    if (!scoreCardReady) return
     val r = DriveScorer.results.value[scoreStyle]
     val connected = ObdSession.state.value.isConnected || ObdSession.state.value.phase == ObdSession.Phase.WAITING
     scoreCard.removeAllViews()

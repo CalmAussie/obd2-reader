@@ -1,9 +1,12 @@
 package com.obdreader.app
 
 import android.graphics.drawable.GradientDrawable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.obdreader.app.MainActivity.Companion.RPM_KEY
@@ -32,6 +35,7 @@ import com.obdreader.app.ui.panelBackground
 import com.obdreader.app.ui.themeColor
 import com.obdreader.app.ui.uiTypeface
 import java.util.Locale
+import kotlin.math.roundToInt
 
 // The chosen style's dashboard and its readings.
 // Split out of MainActivity to keep it a readable size. These are MainActivity's own functions,
