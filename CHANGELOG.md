@@ -3,7 +3,7 @@
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
 ## 2.5.16 (23 November 2026)
-- **Safer with faulty adapters.** If an adapter sends far more than any real answer (more than 64 KB for one request) or won't stop sending, the app now stops reading it and treats it as a dropped connection, instead of filling up its memory.
+- **Safer with faulty adapters.** If an adapter sends far more than any real answer (more than 64 KB for one request) or won't stop sending, the app now stops reading it and treats it as a dropped connection, instead of using up the phone's memory.
 - Behind the scenes: the automatic test that installs each release on four Android versions is steadier. It waits longer for slow emulators, tries again when the emulator's internet drops for a moment, and starts the app again if the first launch never appears.
 
 ## 2.5.15 (22 November 2026)
