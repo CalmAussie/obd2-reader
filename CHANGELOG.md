@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.15 (22 November 2026)
+- Behind the scenes: the code for the app's main screen, which had grown to over 6,000 lines in one file, is now split into smaller files by feature (graphs, drive card, connecting, updates and so on). Nothing looks or works differently; this makes later changes easier and safer.
+
 ## 2.5.14 (21 November 2026)
 - **Steadier readings on slow adapters.** When an adapter answers a request late, after the app has stopped waiting, that late answer is now set aside. Before, it could be taken for the answer to the next request, so a reading could briefly show the wrong value or the protocol search could miss the car.
 - Behind the scenes: the way the app reconnects, waits out the ignition being off, and switches to one reading at a time for cars that need it is now checked by automatic tests on every change.
