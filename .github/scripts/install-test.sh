@@ -33,7 +33,8 @@ done
 if [ $INSTALLED = 1 ]; then log "install: OK"; else log "install: FAILED $(tail -1 "$OUT/install.txt")"; exit 1; fi
 adb shell dumpsys package $PKG | grep -E "versionName|versionCode|targetSdk" | head -3 | sed 's/^ */  /' | tee -a "$OUT/result.txt"
 
-adb shell am start -W -n $PKG/.MainActivity > /dev/null
+# -W waits for the app to draw; on a stuck emulator that can hang, so don't wait more than a minute.
+timeout 60 adb shell am start -W -n $PKG/.MainActivity > /dev/null
 sleep 6
 shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
 # Dismiss a permission or notification prompt if Android shows one.
@@ -270,10 +271,17 @@ waited() { local t; t=$(cat "$OUT/.waited" 2>/dev/null || echo 0); rm -f "$OUT/.
 FAIL=0
 # First launch asks for the car before anything else.
 SEEN=0
-for i in 1 2 3 4 5 6 7 8 9 10; do   # slow emulators can take a while to show it
+for i in $(seq 1 20); do   # slow emulators can take a while to show it
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
   adb shell cat /sdcard/ui.xml > "$OUT/ui.xml"
   grep -q "First, choose your car" "$OUT/ui.xml" && { SEEN=1; break; }
+  # Android 10's emulator sometimes never brings the app up from the first start (the launcher
+  # is still settling): after 20 s, start it again, once.
+  if [ $i = 10 ]; then
+    echo "  (first launch: app not on screen after 20 s, starting it again)" >> "$OUT/result.txt"
+    adb shell input keyevent KEYCODE_HOME; sleep 2
+    timeout 60 adb shell am start -W -n $PKG/.MainActivity > /dev/null 2>&1; sleep 6
+  fi
   sleep 2
 done
 if [ $SEEN = 1 ]; then
@@ -344,7 +352,15 @@ shot 2-demo-dashboard
 W=$(view_width connectButton); for i in 1 2 3; do [ "${W:-0}" -ge 200 ] && break; sleep 3; W=$(view_width connectButton); done
 [ "${W:-0}" -ge 200 ] && log "button 'Disconnect': visible (${W}px)" || { log "button 'Disconnect': FAILED (${W:-0}px wide)"; FAIL=1; }
 # While connected, Demo car is hidden and Disconnect spans the row (most of the screen's width).
-DV=$(view_flag demoButton); [ "$DV" = "?" ] && { sleep 3; DV=$(view_flag demoButton); W=$(view_width connectButton); }; SW=$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | cut -dx -f1)
+# Android 10 sometimes can't list the app's views for several seconds after connecting ('?', 0px),
+# so read both again, up to 30 s, until the view list answers and shows the connected layout.
+SW=$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | cut -dx -f1)
+for i in 1 2 3 4 5 6 7 8 9 10; do
+  DV=$(view_flag demoButton)
+  if [ "$DV" != "?" ]; then W2=$(view_width connectButton); [ "${W2:-0}" -gt 0 ] && W=$W2; fi
+  [ "$DV" = "G" ] && [ "${W:-0}" -ge $(( ${SW:-1080} * 80 / 100 )) ] && break
+  sleep 3
+done
 if [ "$DV" = "G" ] && [ "${W:-0}" -ge $(( ${SW:-1080} * 80 / 100 )) ]; then log "connected: Demo car hidden, Disconnect full width (${W}px of ${SW}px)"; else log "connected: FAILED (Demo car '${DV:-?}', Disconnect ${W:-0}px of ${SW}px)"; FAIL=1; fi
 # Turn the phone sideways: the Dashboard switches to two columns, then back to portrait.
 adb shell settings put system accelerometer_rotation 0
@@ -703,6 +719,7 @@ tap_text "Done" > /dev/null || true
 connect_demo
 sleep 8
 # Performance timers: the sheet opens and follows the demo car (staging, ready, timing).
+tap_tab Dashboard > /dev/null; sleep 2; scroll_top
 XY=$(view_center_bottom perfButton pageDashboard); [ -n "$XY" ] && adb shell input tap $XY
 sleep 25
 shot 10-performance
@@ -720,16 +737,21 @@ adb shell input keyevent KEYCODE_BACK; sleep 2
 # Drive history: the drive summed up earlier is listed (Dashboard, under the score), in km or in miles
 # (the tour has picked mph by now, and Drive history follows it).
 tap_tab Dashboard > /dev/null; sleep 2; scroll_top
-XY=$(view_center_bottom historyButton pageDashboard); HIST=0
-if [ -n "$XY" ]; then
+HIST=0
+for try in 1 2; do
+  XY=$(view_center_bottom historyButton pageDashboard)
+  [ -n "$XY" ] || { scroll_top; continue; }
   adb shell input tap $XY; sleep 2
-  for i in 1 2 3; do
+  for i in 1 2 3 4 5; do
     adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-history.xml"
-    grep -q 'text="Drive history"' "$OUT/ui-history.xml" && grep -qE " (km|mi) · " "$OUT/ui-history.xml" && { HIST=1; break; }; sleep 1
+    grep -q 'text="Drive history"' "$OUT/ui-history.xml" && grep -qE " (km|mi) · " "$OUT/ui-history.xml" && { HIST=1; break; }; sleep 2
   done
   shot 4a-drive-history
   adb shell input keyevent KEYCODE_BACK; sleep 1
-fi
+  [ $HIST = 1 ] && break
+  [ $try = 1 ] && echo "  (drive history: not read on the first try, trying again)" >> "$OUT/result.txt"
+  app_front; tap_tab Dashboard > /dev/null; sleep 2; scroll_top
+done
 [ $HIST = 1 ] && log "drive history: listed" || { log "drive history: FAILED (not shown)"; FAIL=1; }
 scroll_top
 tap_tab Diagnostics && { tap_text "Read codes" || grep -q "P0133" "$OUT/ui.xml"; } && sleep 3 && shot 4-diagnostics && log "diagnostics: OK" || { log "diagnostics: FAILED"; FAIL=1; }
@@ -959,6 +981,18 @@ if find_scrolled 'text="App updates"' "$OUT/ui-updates.xml"; then
   shot 11-updates
   grep -q "is available" "$OUT/ui-updates2.xml" && tap_text "Later" > /dev/null
   CHECK=$(adb logcat -d -s OBD2Updater:I 2>/dev/null | grep -o "latest build [0-9]*, installed [0-9]*\|check failed.*" | tail -1)
+  # A failed check because the emulator's network dropped for a moment (no DNS, timeout, no route)
+  # is not the app's fault: wait for the network and ask again, twice, before calling it a failure.
+  for i in 1 2; do
+    case "$CHECK" in "check failed"*resolve*|"check failed"*timeout*|"check failed"*"timed out"*|"check failed"*Network*|"check failed"*connect*) ;; *) break ;; esac
+    echo "  (updates: $CHECK; network hiccup, asking again)" >> "$OUT/result.txt"
+    for t in 1 2 3 4 5 6; do adb shell ping -c 1 -W 3 github.com > /dev/null 2>&1 && break; sleep 5; done
+    adb logcat -c
+    for j in 1 2 3; do tap_text "Check for updates" > /dev/null && break; adb shell input swipe 540 1500 540 1100 300; sleep 1; done
+    sleep 8
+    grep -q "is available" "$OUT/ui-updates2.xml" && tap_text "Later" > /dev/null
+    CHECK=$(adb logcat -d -s OBD2Updater:I 2>/dev/null | grep -o "latest build [0-9]*, installed [0-9]*\|check failed.*" | tail -1)
+  done
   case "$CHECK" in
     "latest build"*) log "updates: GitHub checked ($CHECK)" ;;
     *) log "updates: FAILED (${CHECK:-no check logged})"; FAIL=1 ;;
@@ -966,6 +1000,12 @@ if find_scrolled 'text="App updates"' "$OUT/ui-updates.xml"; then
   # The rest of the row: what's changed since this version, from the changelog on GitHub.
   tap_text "App updates" > /dev/null; sleep 6
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-changes.xml"
+  if grep -q "Couldn&apos;t load the changelog\|Couldn't load the changelog" "$OUT/ui-changes.xml"; then
+    echo "  (updates: changelog didn't load, trying once more)" >> "$OUT/result.txt"
+    adb shell input keyevent KEYCODE_BACK; sleep 10
+    tap_text "App updates" > /dev/null; sleep 8
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$OUT/ui-changes.xml"
+  fi
   shot 11b-whats-new
   if grep -q "What&apos;s new since\|What's new since" "$OUT/ui-changes.xml" && ! grep -q "Couldn&apos;t load the changelog\|Couldn't load the changelog" "$OUT/ui-changes.xml"; then log "updates: changes since this version shown"; else log "updates: FAILED (changelog not shown)"; FAIL=1; fi
   adb shell input keyevent KEYCODE_BACK; sleep 1

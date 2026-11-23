@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.Executors
@@ -36,6 +37,7 @@ class StreamTransportTest {
     private class FakeAdapter(
         private val replies: Map<String, List<String>>,
         private val delays: Map<String, Long>,
+        override val maxReplyChars: Int = MAX_REPLY_CHARS,
     ) : StreamTransport() {
         override val name = "fake"
         override val lateReplyWaitMs = 400L
@@ -135,6 +137,48 @@ class StreamTransportTest {
             val start = System.currentTimeMillis()
             assertEquals("41 0C 1A F8\r\r", t.exchange("010C", 2000))
             assertTrue(System.currentTimeMillis() - start < 2000)
+        } finally {
+            t.close()
+        }
+    }
+
+    @Test
+    fun aReplyThatNeverEndsIsCutOff() {
+        val t = FakeAdapter(mapOf("010C" to listOf("41 0C 1A F8 ".repeat(20))), emptyMap(), maxReplyChars = 100)
+        t.open()
+        try {
+            t.exchange("010C", 2000)
+            fail("Expected the reply to be refused")
+        } catch (e: IOException) {
+            assertEquals(TOO_MUCH_FROM_ADAPTER, e.message)
+        } finally {
+            t.close()
+        }
+    }
+
+    @Test
+    fun aFloodOfLeftoverBytesIsRefused() {
+        val t = FakeAdapter(mapOf("010C" to listOf("41 0C 1A F8\r\r>")), emptyMap(), maxReplyChars = 100)
+        t.open()
+        try {
+            // Junk the adapter sent before any command, more than a reply's worth.
+            t.incoming.add("Z".repeat(500))
+            t.exchange("010C", 2000)
+            fail("Expected the junk to be refused")
+        } catch (e: IOException) {
+            assertEquals(TOO_MUCH_FROM_ADAPTER, e.message)
+        } finally {
+            t.close()
+        }
+    }
+
+    @Test
+    fun aFewLeftoverBytesAreDroppedQuietly() {
+        val t = FakeAdapter(mapOf("010C" to listOf("41 0C 1A F8\r\r>")), emptyMap(), maxReplyChars = 100)
+        t.open()
+        try {
+            t.incoming.add("STOPPED\r\r>")
+            assertEquals("41 0C 1A F8\r\r", t.exchange("010C", 2000))
         } finally {
             t.close()
         }
