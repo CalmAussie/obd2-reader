@@ -180,10 +180,16 @@ jobs:
           fi
           # A release taken back after going live is renamed "Withdrawn ..." (docs/RELEASING.md), so
           # re-running its old install test can't make it live again.
+          # Any capitalisation counts ("withdrawn", "WITHDRAWN"), and a release that can't be found stops here.
           read -r ID NAME < <(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '"\(.id) \(.name)"') || exit 1
-          case "$NAME" in Withdrawn*)
+          if ! [[ "$ID" =~ ^[0-9]+$ ]]; then
+            echo "::error title=Not made live::Couldn't find the release for $TAG, so nothing was changed."; exit 1
+          fi
+          shopt -s nocasematch
+          case "$NAME" in withdrawn*)
             echo "::error title=Not made live::$TAG is marked withdrawn ($NAME), so it isn't made the latest release."; exit 1 ;;
           esac
+          shopt -u nocasematch
           gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$ID" -F prerelease=false -f make_latest=true --jq '"\(.tag_name): prerelease \(.prerelease)"'
           LATEST=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
           [ "$LATEST" = "$TAG" ] || { echo "::error::$TAG was edited but the latest release is $LATEST."; exit 1; }
