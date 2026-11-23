@@ -433,7 +433,7 @@ internal object MakerCodeData {
             "Toyota bulletin on hybrid inverter over-current: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2022/MC-10214334-9999.pdf
         e("P1C80", "Toyota", listOf(f(2019, 2021, "RAV4", "2.5 hybrid")),
-            "Hybrid battery insulation fault (rear motor area)",
+            "High-voltage insulation fault (rear motor area)",
             "Toyota's definition: the hybrid system found that the high-voltage circuit isn't fully insulated from the car's body, in the area of the rear electric motor on all-wheel-drive models.",
             H,
             listOf("Corrosion, dirt or water at the high-voltage connector for the rear motor under the car, the cause Toyota names for these cars", "A damaged high-voltage cable to the rear motor", "Less often, a fault inside the rear motor"),
@@ -465,7 +465,7 @@ internal object MakerCodeData {
             H,
             listOf("Lower-grade fuel than recommended", "Hard acceleration at low engine speed, where pre-ignition is most likely", "Engine computer software, which Lexus updated for these cars"),
             listOf("Check-engine light on", "A \"Reduced engine power\" message", "Knocking or pinging under load in some cases"),
-            listOf("Use at least the fuel grade the owner's manual asks for", "Avoid hard acceleration at low engine speed until it's checked", "Ask a dealer whether an engine computer update applies; the bulletins for these cars update its software"),
+            listOf("Use at least the fuel grade the owner's manual asks for", "Avoid hard acceleration at low engine speed until it's checked", "Ask a Lexus dealer whether an engine computer update applies; Lexus's bulletin for these cars updates its software"),
             "Lexus L-SB-0159-17: the maker's own service bulletin, filed with NHTSA")
     }
 

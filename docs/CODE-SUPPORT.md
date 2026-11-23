@@ -1998,7 +1998,7 @@ Manufacturer-specific codes: 19. Each is explained only on the cars listed besid
 | P1C1B | Charger boost circuit malfunction | RAV4 2021–2022 (2.5 plug-in hybrid) | Toyota T-SB-0067-22: the maker's own service bulletin, filed with NHTSA |
 | P1C5D | Drive motor A inverter current above threshold | Camry 2019–2020 (2.5 hybrid)<br>RAV4 2019–2020 (2.5 hybrid) | Toyota bulletin on hybrid inverter over-current: the maker's own service bulletin, filed with NHTSA |
 | P1C5F | Generator inverter current above threshold | Camry 2019–2020 (2.5 hybrid)<br>RAV4 2019–2020 (2.5 hybrid) | Toyota bulletin on hybrid inverter over-current: the maker's own service bulletin, filed with NHTSA |
-| P1C80 | Hybrid battery insulation fault (rear motor area) | RAV4 2019–2021 (2.5 hybrid) | Toyota T-SB-0026-22: the maker's own service bulletin, filed with NHTSA |
+| P1C80 | High-voltage insulation fault (rear motor area) | RAV4 2019–2021 (2.5 hybrid) | Toyota T-SB-0026-22: the maker's own service bulletin, filed with NHTSA |
 | P1C84 | High-voltage power circuit short during READY | Camry 2018–2023 (2.5 hybrid)<br>Corolla 2022 (1.8 hybrid, 2.0 hybrid)<br>Kluger / Highlander 2020–2023 (2.5 hybrid)<br>Prius 2016–2022 (1.8 hybrid)<br>Prius 2017–2022 (1.8 plug-in hybrid)<br>RAV4 2019–2023 (2.5 hybrid)<br>RAV4 2021–2022 (2.5 plug-in hybrid)<br>Tundra 2022–2023 (3.5 twin-turbo V6 hybrid) | Toyota T-SB-0085-23: the maker's own service bulletin, filed with NHTSA |
 | P1CCC | DC/DC converter internal failure | RAV4 2021 (2.5 plug-in hybrid) | Toyota T-SB-0007-21: the maker's own service bulletin, filed with NHTSA |
 | P1CE9 | Charger cooling fan speed sensor: no signal | RAV4 2021 (2.5 plug-in hybrid) | Toyota T-SB-0021-21: the maker's own service bulletin, filed with NHTSA |
