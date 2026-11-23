@@ -395,6 +395,78 @@ internal object MakerCodeData {
             listOf("Check-engine light on", "Reduced power or limp-home mode on some cars", "A loud whirring pump noise after a cold start in some cases"),
             listOf("Listen for the air pump running for a short time after a cold start", "Check the air injection fuses and relay", "Have the switching valves tested; a stuck valve needs replacing"),
             "Toyota T-SB-0230-12: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2015/MC-10111144-9999.pdf
+        e("P3190", "Toyota", listOf(f(2010, 2013, "Prius", "1.8 hybrid")),
+            "Poor engine power",
+            "Toyota's definition: the hybrid system asked the petrol engine for power and the engine made less than expected.",
+            M,
+            listOf("A vacuum hose from the purge valve (VSV) or PCV system that has come off the throttle body, the cause Toyota names for these cars", "Running very low on fuel", "Other intake air leaks"),
+            listOf("Check-engine and hybrid system warnings on the dash", "Weak acceleration, especially up hills or when overtaking", "The petrol engine running roughly"),
+            listOf("Look for a loose or disconnected small vacuum hose at the throttle body and refit it", "Check the fuel level and fill up if it's low", "If the hoses are sound and the code returns, have a Toyota dealer or hybrid-trained technician check the engine"),
+            "Toyota T-SB-0041-15: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2015/MC-10111144-9999.pdf
+        e("P3191", "Toyota", listOf(f(2010, 2013, "Prius", "1.8 hybrid")),
+            "Engine does not start",
+            "Toyota's definition: the hybrid system tried to start the petrol engine and it didn't start.",
+            H,
+            listOf("A vacuum hose from the purge valve (VSV) or PCV system that has come off the throttle body, the cause Toyota names for these cars", "Running very low on fuel", "Other intake air leaks"),
+            listOf("Check-engine and hybrid system warnings on the dash", "The car driving on battery power only for a short distance, then losing power", "The petrol engine not starting when it should"),
+            listOf("Look for a loose or disconnected small vacuum hose at the throttle body and refit it", "Check the fuel level and fill up if it's low", "If the hoses are sound and the code returns, have a Toyota dealer or hybrid-trained technician check the engine"),
+            "Toyota T-SB-0041-15: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10173802-9999.pdf
+        e("P1C5D", "Toyota", listOf(f(2019, 2020, "Camry", "2.5 hybrid"), f(2019, 2020, "RAV4", "2.5 hybrid")),
+            "Drive motor A inverter current above threshold",
+            "Toyota's definition: the inverter measured more current than it should in the circuit for the hybrid drive motor (MG2).",
+            H,
+            listOf("Metal debris at the motor cable bolts between the inverter and the transmission, the cause Toyota names for these cars (usually seen at low kilometres)", "Another fault in the inverter or the motor-generator"),
+            listOf("A \"Check hybrid system\" warning on the dash", "Check-engine light on", "The car going into a reduced-power mode or refusing to go into READY"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system"),
+            "Toyota bulletin on hybrid inverter over-current: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10173802-9999.pdf
+        e("P1C5F", "Toyota", listOf(f(2019, 2020, "Camry", "2.5 hybrid"), f(2019, 2020, "RAV4", "2.5 hybrid")),
+            "Generator inverter current above threshold",
+            "Toyota's definition: the inverter measured more current than it should in the circuit for the hybrid generator (MG1).",
+            H,
+            listOf("Metal debris at the motor cable bolts between the inverter and the transmission, the cause Toyota names for these cars (usually seen at low kilometres)", "Another fault in the inverter or the motor-generator"),
+            listOf("A \"Check hybrid system\" warning on the dash", "Check-engine light on", "The car going into a reduced-power mode or refusing to go into READY"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system"),
+            "Toyota bulletin on hybrid inverter over-current: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10214334-9999.pdf
+        e("P1C80", "Toyota", listOf(f(2019, 2021, "RAV4", "2.5 hybrid")),
+            "Hybrid battery insulation fault (rear motor area)",
+            "Toyota's definition: the hybrid system found that the high-voltage circuit isn't fully insulated from the car's body, in the area of the rear electric motor on all-wheel-drive models.",
+            H,
+            listOf("Corrosion, dirt or water at the high-voltage connector for the rear motor under the car, the cause Toyota names for these cars", "A damaged high-voltage cable to the rear motor", "Less often, a fault inside the rear motor"),
+            listOf("Check-engine light on", "Static or crackling on AM radio", "Often no change in how the car drives"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system"),
+            "Toyota T-SB-0026-22: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10220195-9999.pdf; https://static.nhtsa.gov/odi/tsbs/2022/MC-10230364-9999.pdf
+        e("P107A", "Toyota", listOf(f(2020, 2022, "Highlander", "3.5 V6|2.5 hybrid"), f(2019, 2022, "RAV4", "2.5")),
+            "Low-pressure fuel sensor fault",
+            "Toyota's definition: a fault with the pressure sensor in the low-pressure side of the fuel system (the side fed by the pump in the tank). Toyota's bulletin describes its reading staying stuck when driving at altitude in hot weather.",
+            M,
+            listOf("Driving at high altitude in hot weather, the condition Toyota's bulletin describes", "A faulty fuel pressure sensor or its wiring", "A weak in-tank fuel pump"),
+            listOf("Check-engine light on", "Hesitation or loss of power in some cases", "Often no change in how the car drives"),
+            listOf("Note whether it happened in hot weather or at altitude, as Toyota's bulletin describes", "Check that the fuel cap is tight and the fuel is from a good station", "Ask a Toyota dealer whether the updates in their bulletin for these cars apply to your car"),
+            "Toyota T-SB-0058-22, T-SB-0049-21: the maker's own service bulletins, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10240057-9999.pdf
+        e("P1450", "Toyota", listOf(f(2020, 2023, "Highlander", "2.5 hybrid"), f(2021, 2023, "RAV4", "2.5 hybrid|2.5 plug-in hybrid")),
+            "Fuel tank pressure sensor fault",
+            "Toyota's definition: a fault with the fuel tank pressure sensor, which the evaporative emissions (EVAP) system uses to check for leaks. Toyota's bulletin describes its reading staying stuck.",
+            L,
+            listOf("A faulty fuel tank pressure sensor", "A sticking EVAP switching valve, which Toyota's bulletin lists alongside it", "Damaged wiring or a loose connector at the tank"),
+            listOf("Check-engine light on", "Usually no change in how the car drives"),
+            listOf("Make sure the fuel cap clicks shut", "Check the sensor and valve connectors near the fuel tank", "Have a Toyota dealer test the EVAP parts if it returns"),
+            "Toyota T-SB-0033-23: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2017/MC-10132667-9999.pdf
+        e("P1378", "Lexus", listOf(f(2016, 2017, "IS", "2.0 turbo")),
+            "Pre-ignition detected",
+            "Lexus's definition: the engine computer detected pre-ignition, where fuel lights before the spark plug fires. It can damage the engine, so the computer cuts power to protect it.",
+            H,
+            listOf("Lower-grade fuel than recommended", "Hard acceleration at low engine speed, where pre-ignition is most likely", "Engine computer software, which Lexus updated for these cars"),
+            listOf("Check-engine light on", "A \"Reduced engine power\" message", "Knocking or pinging under load in some cases"),
+            listOf("Use at least the fuel grade the owner's manual asks for", "Avoid hard acceleration at low engine speed until it's checked", "Ask a dealer whether an engine computer update applies; the bulletins for these cars update its software"),
+            "Lexus L-SB-0159-17: the maker's own service bulletin, filed with NHTSA")
     }
 
     private fun gm(sink: Sink) = with(sink) {
@@ -714,6 +786,39 @@ internal object MakerCodeData {
             listOf("The engine not starting, or starting and cutting out", "A key or security warning light", "The fault coming and going"),
             listOf("Try the spare key", "Replace the key fob battery", "Have the car's 12-volt battery tested", "Ask a Mazda dealer to check the keys and immobiliser if it returns"),
             "Mazda service alert on advanced keyless entry: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2019/MC-10160555-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2021/MC-10201768-0001.pdf
+        e("P1738", "Mazda", listOf(
+                f(2016, 2021, "CX-3"),
+                f(2013, 2021, "CX-5", "2.0|2.5|2.5 turbo"),
+                f(2016, 2021, "CX-9"),
+                f(2014, 2018, "Mazda3", "2.0|2.5"),
+                f(2014, 2021, "Mazda6", "2.5|2.5 turbo"),
+            ),
+            "Automatic transmission internal malfunction",
+            "Mazda's definition: the transmission computer found a fault inside the SKYACTIV 6-speed automatic transmission.",
+            H,
+            listOf("An oil pressure switch in the transmission's valve body stuck by contamination, the cause Mazda names for these cars", "Old or contaminated transmission fluid", "Other wear inside the transmission"),
+            listOf("Check-engine and automatic transmission warning lights on", "Harsh or missing gear changes", "In some cases, the transmission holding one gear to protect itself"),
+            listOf("Drive gently and get it checked soon", "Ask a Mazda dealer to read the transmission codes and check whether their bulletin for these cars applies"),
+            "Mazda 05-004/19 and its update: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2017/MC-10120379-9999.pdf
+        e("P130C", "Mazda", listOf(f(2016, 2017, "CX-9")),
+            "Pre-ignition detected",
+            "Mazda's definition: the engine computer detected pre-ignition, where fuel lights before the spark plug fires. It can damage the engine, so the computer cuts power to protect it.",
+            H,
+            listOf("Lower-grade fuel than recommended", "Hard acceleration at low engine speed, where pre-ignition is most likely", "Carbon build-up or oil getting into the cylinders"),
+            listOf("Check-engine light on", "Lack of power", "Knocking or pinging under load in some cases"),
+            listOf("Use at least the fuel grade the owner's manual asks for", "Avoid hard acceleration at low engine speed until it's checked", "Ask a Mazda dealer whether their bulletin for these cars applies"),
+            "Mazda 01-009/17: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2014/SB-10098016-2532.pdf
+        e("P1794", "Mazda", listOf(f(2014, 2014, "Mazda3", "2.0|2.5"), f(2014, 2015, "Mazda6", "2.5")),
+            "i-ELOOP capacitor malfunction",
+            "Mazda's definition: a fault in the capacitor of i-ELOOP, the system that stores energy from braking to power the car's electrics.",
+            M,
+            listOf("A fault in the i-ELOOP capacitor", "A fault in its control unit or wiring", "Engine computer software on early cars, which Mazda's bulletin updates"),
+            listOf("The master warning light on", "A warning message on the instrument cluster"),
+            listOf("Note the message on the instrument cluster", "Ask a Mazda dealer to check the i-ELOOP system and whether their software update applies"),
+            "Mazda 01-001/14: the maker's own service bulletin, filed with NHTSA")
     }
 
     private fun volkswagenGroup(sink: Sink) = with(sink) {

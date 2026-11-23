@@ -17,9 +17,9 @@ Every manufacturer has its own section below, with its manufacturer-specific cod
 - On GitHub, open the outline (the list button at the top right of this page) and type the manufacturer's name into its filter box.
 - Use your browser's find (Ctrl+F, or Find in page on a phone) for a manufacturer, a model or a code such as P1326.
 
-**With manufacturer-specific codes** (27 makes, 217 codes, 243 definitions, because makers reuse code numbers for different faults):
+**With manufacturer-specific codes** (28 makes, 227 codes, 254 definitions, because makers reuse code numbers for different faults):
 
-[Acura](#acura) (2) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [GMC](#gmc) (3) · [Holden](#holden) (1) · [Honda](#honda) (2) · [Hyundai](#hyundai) (7) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (13) · [Land Rover](#land-rover) (2) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (1) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (4) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (5) · [Toyota](#toyota) (12) · [Volkswagen](#volkswagen) (30)
+[Acura](#acura) (2) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [GMC](#gmc) (3) · [Holden](#holden) (1) · [Honda](#honda) (2) · [Hyundai](#hyundai) (7) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (13) · [Land Rover](#land-rover) (2) · [Lexus](#lexus) (1) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (4) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (4) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (5) · [Toyota](#toyota) (19) · [Volkswagen](#volkswagen) (30)
 
 **All 87 manufacturers, A to Z:**
 
@@ -1056,7 +1056,11 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 
 ### Lexus
 
-Manufacturer-specific codes: none yet. A manufacturer-specific code on these cars is shown with the maker's name and where to look it up.
+Manufacturer-specific codes: 1. Each is explained only on the cars listed beside it.
+
+| Code | Name | Cars | Source |
+|---|---|---|---|
+| P1378 | Pre-ignition detected | IS 2016–2017 (2.0 turbo) | Lexus L-SB-0159-17: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
@@ -1064,7 +1068,7 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 | ES | 1994–2026 | Yes | None yet |
 | GS | 1994–2020 | Yes | None yet |
 | GX | 2003–2026 | Yes | None yet |
-| IS | 1999–2026 | Yes | None yet |
+| IS | 1999–2026 | Yes | 2016–2017: 1 code (depending on the engine) |
 | LC | 2017–2026 | Yes | None yet |
 | LS | 1994–2026 | Yes | None yet |
 | LX | 1996–2026 | Yes | None yet |
@@ -1201,11 +1205,14 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 
 ### Mazda
 
-Manufacturer-specific codes: 1. Each is explained only on the cars listed beside it.
+Manufacturer-specific codes: 4. Each is explained only on the cars listed beside it.
 
 | Code | Name | Cars | Source |
 |---|---|---|---|
 | P1260 | Immobiliser system problem | CX-30 2020–2025<br>CX-5 2020–2025<br>CX-9 2020–2023<br>CX-90 2024–2025<br>MX-5 2020–2025<br>Mazda3 2019–2025<br>Mazda6 2020–2021 | Mazda service alert on advanced keyless entry: the maker's own service bulletin, filed with NHTSA |
+| P130C | Pre-ignition detected | CX-9 2016–2017 | Mazda 01-009/17: the maker's own service bulletin, filed with NHTSA |
+| P1738 | Automatic transmission internal malfunction | CX-3 2016–2021<br>CX-5 2013–2021 (2.0, 2.5, 2.5 turbo)<br>CX-9 2016–2021<br>Mazda3 2014–2018 (2.0, 2.5)<br>Mazda6 2014–2021 (2.5, 2.5 turbo) | Mazda 05-004/19 and its update: the maker's own service bulletin, filed with NHTSA |
+| P1794 | i-ELOOP capacitor malfunction | Mazda3 2014 (2.0, 2.5)<br>Mazda6 2014–2015 (2.5) | Mazda 01-001/14: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
@@ -1214,15 +1221,15 @@ Manufacturer-specific codes: 1. Each is explained only on the cars listed beside
 | 626 | 1994–2002 | Yes | None yet |
 | B-Series / Bravo | 1994–2006 | Yes | None yet |
 | BT-50 | 2006–2026 | Yes | None yet |
-| CX-3 | 2015–2026 | Yes | None yet |
+| CX-3 | 2015–2026 | Yes | 2016–2021: 1 code |
 | CX-30 | 2019–2026 | Yes | 2020–2025: 1 code |
-| CX-5 | 2012–2026 | Yes | 2020–2025: 1 code |
+| CX-5 | 2012–2026 | Yes | 2013–2019: 1 code · 2020–2021: 2 codes · 2022–2025: 1 code (depending on the engine) |
 | CX-60 | 2022–2026 | Yes | None yet |
 | CX-7 | 2007–2012 | Yes | None yet |
-| CX-9 | 2007–2023 | Yes | 2020–2023: 1 code |
+| CX-9 | 2007–2023 | Yes | 2016–2017: 2 codes · 2018–2019: 1 code · 2020–2021: 2 codes · 2022–2023: 1 code |
 | CX-90 | 2023–2026 | Yes | 2024–2025: 1 code |
-| Mazda3 | 2004–2026 | Yes | 2019–2025: 1 code |
-| Mazda6 | 2002–2026 | Yes | 2020–2021: 1 code |
+| Mazda3 | 2004–2026 | Yes | 2014: 2 codes · 2015–2025: 1 code (depending on the engine) |
+| Mazda6 | 2002–2026 | Yes | 2014–2015: 2 codes · 2016–2019: 1 code · 2020–2021: 2 codes (depending on the engine) |
 | Millenia | 1995–2002 | Yes | None yet |
 | MPV | 2000–2006 | Yes | None yet |
 | MX-5 | 1994–2026 | Yes | 2020–2025: 1 code |
@@ -1975,22 +1982,29 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 
 ### Toyota
 
-Manufacturer-specific codes: 12. Each is explained only on the cars listed beside it.
+Manufacturer-specific codes: 19. Each is explained only on the cars listed beside it.
 
 | Code | Name | Cars | Source |
 |---|---|---|---|
+| P107A | Low-pressure fuel sensor fault | Kluger / Highlander 2020–2022 (2.5 hybrid, 3.5 V6)<br>RAV4 2019–2022 (2.5) | Toyota T-SB-0058-22, T-SB-0049-21: the maker's own service bulletins, filed with NHTSA |
 | P1441 | Secondary air injection switching valve no. 2 stuck open (bank 1) | 4Runner 2005–2009 (4.7 V8)<br>LandCruiser 2006–2007 (4.7 V8 petrol)<br>Tundra 2005–2006 (4.7 V8) | Toyota T-SB-0230-12: the maker's own service bulletin, filed with NHTSA |
 | P1442 | Secondary air injection switching valve no. 2 stuck closed (bank 1) | 4Runner 2005–2009 (4.7 V8)<br>LandCruiser 2006–2007 (4.7 V8 petrol)<br>Tundra 2005–2006 (4.7 V8) | Toyota T-SB-0230-12: the maker's own service bulletin, filed with NHTSA |
 | P1444 | Secondary air injection switching valve no. 2 stuck open (bank 2) | 4Runner 2005–2009 (4.7 V8)<br>LandCruiser 2006–2007 (4.7 V8 petrol)<br>Tundra 2005–2006 (4.7 V8) | Toyota T-SB-0230-12: the maker's own service bulletin, filed with NHTSA |
 | P1445 | Secondary air injection switching valve no. 2 stuck closed (bank 2) | 4Runner 2005–2009 (4.7 V8)<br>LandCruiser 2006–2007 (4.7 V8 petrol)<br>Tundra 2005–2006 (4.7 V8) | Toyota T-SB-0230-12: the maker's own service bulletin, filed with NHTSA |
+| P1450 | Fuel tank pressure sensor fault | Kluger / Highlander 2020–2023 (2.5 hybrid)<br>RAV4 2021–2023 (2.5 hybrid, 2.5 plug-in hybrid) | Toyota T-SB-0033-23: the maker's own service bulletin, filed with NHTSA |
 | P1604 | Startability malfunction | Tundra 2009–2019 (5.7 V8) | Toyota T-SB-0166-19: the maker's own service bulletin, filed with NHTSA |
 | P1605 | Rough idling | Tundra 2012–2015 (5.7 V8) | Toyota T-SB-0058-13: the maker's own service bulletin, filed with NHTSA |
 | P1BD3 | Charger B boost circuit malfunction | RAV4 2021–2022 (2.5 plug-in hybrid) | Toyota T-SB-0067-22: the maker's own service bulletin, filed with NHTSA |
 | P1C1B | Charger boost circuit malfunction | RAV4 2021–2022 (2.5 plug-in hybrid) | Toyota T-SB-0067-22: the maker's own service bulletin, filed with NHTSA |
+| P1C5D | Drive motor A inverter current above threshold | Camry 2019–2020 (2.5 hybrid)<br>RAV4 2019–2020 (2.5 hybrid) | Toyota bulletin on hybrid inverter over-current: the maker's own service bulletin, filed with NHTSA |
+| P1C5F | Generator inverter current above threshold | Camry 2019–2020 (2.5 hybrid)<br>RAV4 2019–2020 (2.5 hybrid) | Toyota bulletin on hybrid inverter over-current: the maker's own service bulletin, filed with NHTSA |
+| P1C80 | Hybrid battery insulation fault (rear motor area) | RAV4 2019–2021 (2.5 hybrid) | Toyota T-SB-0026-22: the maker's own service bulletin, filed with NHTSA |
 | P1C84 | High-voltage power circuit short during READY | Camry 2018–2023 (2.5 hybrid)<br>Corolla 2022 (1.8 hybrid, 2.0 hybrid)<br>Kluger / Highlander 2020–2023 (2.5 hybrid)<br>Prius 2016–2022 (1.8 hybrid)<br>Prius 2017–2022 (1.8 plug-in hybrid)<br>RAV4 2019–2023 (2.5 hybrid)<br>RAV4 2021–2022 (2.5 plug-in hybrid)<br>Tundra 2022–2023 (3.5 twin-turbo V6 hybrid) | Toyota T-SB-0085-23: the maker's own service bulletin, filed with NHTSA |
 | P1CCC | DC/DC converter internal failure | RAV4 2021 (2.5 plug-in hybrid) | Toyota T-SB-0007-21: the maker's own service bulletin, filed with NHTSA |
 | P1CE9 | Charger cooling fan speed sensor: no signal | RAV4 2021 (2.5 plug-in hybrid) | Toyota T-SB-0021-21: the maker's own service bulletin, filed with NHTSA |
 | P3004 | High-voltage power circuit short during pre-charge | Camry 2018–2023 (2.5 hybrid)<br>Corolla 2022 (1.8 hybrid, 2.0 hybrid)<br>Kluger / Highlander 2020–2023 (2.5 hybrid)<br>Prius 2016–2022 (1.8 hybrid)<br>Prius 2017–2022 (1.8 plug-in hybrid)<br>RAV4 2019–2023 (2.5 hybrid)<br>RAV4 2021–2022 (2.5 plug-in hybrid)<br>Tundra 2022–2023 (3.5 twin-turbo V6 hybrid) | Toyota T-SB-0085-23: the maker's own service bulletin, filed with NHTSA |
+| P3190 | Poor engine power | Prius 2010–2013 (1.8 hybrid) | Toyota T-SB-0041-15: the maker's own service bulletin, filed with NHTSA |
+| P3191 | Engine does not start | Prius 2010–2013 (1.8 hybrid) | Toyota T-SB-0041-15: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
@@ -2000,7 +2014,7 @@ Manufacturer-specific codes: 12. Each is explained only on the cars listed besid
 | Avalon | 1995–2022 | Yes | None yet |
 | Avanza | 2003–2026 | Yes | None yet |
 | C-HR | 2017–2026 | Yes | None yet |
-| Camry | 1994–2026 | Yes | 2018–2023: 2 codes (depending on the engine) |
+| Camry | 1994–2026 | Yes | 2018: 2 codes · 2019–2020: 4 codes · 2021–2023: 2 codes (depending on the engine) |
 | Celica | 1994–2006 | Yes | None yet |
 | Corolla | 1994–2026 | Yes | 2022: 2 codes (depending on the engine) |
 | Corolla Cross | 2020–2026 | Yes | None yet |
@@ -2010,11 +2024,11 @@ Manufacturer-specific codes: 12. Each is explained only on the cars listed besid
 | HiAce | 1994–2026 | Yes | None yet |
 | HiLux | 1994–2026 | Yes | None yet |
 | Innova | 2004–2026 | Yes | None yet |
-| Kluger / Highlander | 2003–2026 | Yes | 2020–2023: 2 codes (depending on the engine) |
+| Kluger / Highlander | 2003–2026 | Yes | 2020–2022: 4 codes · 2023: 3 codes (depending on the engine) |
 | LandCruiser | 1994–2026 | Yes | 2006–2007: 4 codes (depending on the engine) |
 | LandCruiser Prado | 1996–2026 | Yes | None yet |
-| Prius | 2001–2026 | Yes | 2016–2022: 2 codes (depending on the engine) |
-| RAV4 | 1994–2026 | Yes | 2019–2020: 2 codes · 2021: 6 codes · 2022: 4 codes · 2023: 2 codes (depending on the engine) |
+| Prius | 2001–2026 | Yes | 2010–2013: 2 codes · 2016–2022: 2 codes (depending on the engine) |
+| RAV4 | 1994–2026 | Yes | 2019–2020: 6 codes · 2021: 9 codes · 2022: 6 codes · 2023: 3 codes (depending on the engine) |
 | Rush | 2006–2026 | Yes | None yet |
 | Supra | 2019–2026 | Yes | None yet |
 | Supra (A80) | 1994–2002 | Yes | None yet |

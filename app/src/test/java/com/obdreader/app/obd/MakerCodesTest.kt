@@ -187,6 +187,34 @@ class MakerCodesTest {
     }
 
     @Test
+    fun toyotaLexusAndMazdaCodesOnlyForTheCarsTheirBulletinsName() {
+        // Toyota T-SB-0041-15: 2010-2013 Prius.
+        assertEquals("Poor engine power", DtcLibrary.lookup("P3190", "Toyota", 2012, "Prius", "1.8 hybrid").title)
+        assertFalse(DtcLibrary.lookup("P3190", "Toyota", 2015, "Prius", "1.8 hybrid").known)
+        assertFalse(DtcLibrary.lookup("P3190", "Toyota", 2012, "Camry", "2.5 hybrid").known)
+        // Toyota T-SB-0026-22: the RAV4 hybrid only, not the petrol RAV4.
+        assertTrue(DtcLibrary.lookup("P1C80", "Toyota", 2020, "RAV4", "2.5 hybrid").known)
+        assertFalse(DtcLibrary.lookup("P1C80", "Toyota", 2020, "RAV4", "2.5").known)
+        // P107A: the petrol RAV4 (T-SB-0058-22), and both Highlander engines (T-SB-0049-21).
+        assertTrue(DtcLibrary.lookup("P107A", "Toyota", 2021, "RAV4", "2.5").known)
+        assertTrue(DtcLibrary.lookup("P107A", "Toyota", 2021, "Kluger / Highlander", "3.5 V6").known)
+        assertFalse(DtcLibrary.lookup("P107A", "Toyota", 2021, "RAV4", "2.5 hybrid").known)
+        // Toyota and Ford both use P1450, for different faults.
+        assertEquals("Fuel tank pressure sensor fault", DtcLibrary.lookup("P1450", "Toyota", 2022, "RAV4", "2.5 hybrid").title)
+        assertEquals("Unable to bleed up fuel tank vacuum (excessive vacuum)", DtcLibrary.lookup("P1450", "Ford", 2022).title)
+        // Lexus L-SB-0159-17: the IS 200t (2.0 turbo), not the IS's other engines.
+        assertTrue(DtcLibrary.lookup("P1378", "Lexus", 2016, "IS", "2.0 turbo").known)
+        assertFalse(DtcLibrary.lookup("P1378", "Lexus", 2016, "IS", "3.5 V6").known)
+        assertFalse(DtcLibrary.lookup("P1378", "Toyota", 2016, "Camry", "2.5").known)
+        // Mazda 05-004/19: SKYACTIV 6-speed automatic cars, petrol engines only.
+        assertTrue(DtcLibrary.lookup("P1738", "Mazda", 2019, "CX-5", "2.5").known)
+        assertFalse(DtcLibrary.lookup("P1738", "Mazda", 2019, "CX-5", "2.2 diesel").known)
+        assertFalse(DtcLibrary.lookup("P1738", "Mazda", 2013, "Mazda3", "2.0").known)
+        assertTrue(DtcLibrary.lookup("P130C", "Mazda", 2016, "CX-9", null).known)
+        assertFalse(DtcLibrary.lookup("P130C", "Mazda", 2018, "CX-9", null).known)
+    }
+
+    @Test
     fun fordCodesDontDependOnModelOrEngine() {
         assertTrue(DtcLibrary.lookup("P1450", "Ford", 2016, "Escape", "2.0 EcoBoost").known)
         assertTrue(DtcLibrary.lookup("P1450", "Ford", 2016, "Mustang", null).known)
