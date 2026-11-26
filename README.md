@@ -1,6 +1,6 @@
 # OBD2 Reader
 
-A free Android app for cheap ELM327 OBD2 adapters. It shows live engine data, explains your trouble codes in plain English and scores your driving. It also works on Android Auto. No account, no ads, and it never changes anything in your car.
+A free Android app for cheap ELM327 OBD2 adapters. It shows live engine data, explains your trouble codes in plain English and scores your driving. It also has an Android Auto screen, which Android Auto only lists when the app is installed from Google Play ([why](#android-auto)). No account, no ads, and it never changes anything in your car.
 
 **[Download the latest APK](https://github.com/CalmAussie/obd2-reader/releases/latest/download/OBD2Reader.apk)** · [Try the demo in your browser](https://raw.githack.com/CalmAussie/obd2-reader/main/preview/index.html) · [Changelog](CHANGELOG.md)
 
@@ -53,7 +53,7 @@ After the first time, it reconnects by itself. Help is also inside the app, unde
 - **More readings to graph:** fuel trims, oxygen sensors, fuel and fuel rail pressure, EGR, catalyst and exhaust temperatures, fuel rate, ethanol, torque and more, whichever your car reports. Fuel trims and oxygen sensors say what they tell you. Graphs sorts every reading into tabs by part of the car, up to six at once.
 - **13 styles:** from racing liveries to an 80s digital dash. Every style works in landscape too.
 - **Day and night:** a day style and a night style, switched at sunrise and sunset, with the phone's dark mode or by the light sensor.
-- **Android Auto:** your readings and trouble codes on the car's screen, drawn in your style. You choose which readings it shows.
+- **Android Auto:** your readings and trouble codes on the car's screen, drawn in your style. You choose which readings it shows. Android Auto only lists the app when it's installed from Google Play: [see why](#android-auto).
 - **Picture-in-picture (optional):** keep your readings in a small window over other apps.
 - **Home-screen widget:** live readings while connected, the last drive and battery reading when not.
 - **Alerts:** a hot engine, a battery not charging, or a new trouble code mid-drive. New codes notify quietly.
@@ -133,12 +133,9 @@ Cars only report some readings. Anything yours doesn't report shows **N/A**, nev
 
 ## Android Auto
 
-Android Auto only shows Play Store apps until you allow others:
+Android Auto only lists car apps like OBD2 Reader when they were installed from Google Play. Google leaves them out of Android Auto's **Unknown sources** developer setting ([Google's guide](https://developer.android.com/training/cars/testing)), so the APK from this page doesn't appear in Android Auto. That's the same on every phone and Android version, and turning on Unknown sources doesn't change it.
 
-1. Open Android Auto's settings (search "Android Auto" in Settings).
-2. Tap **Version** about 10 times to turn on developer mode.
-3. Open the three-dot menu → **Developer settings** → turn on **Unknown sources**.
-4. Reconnect to your car. OBD2 Reader is now in the app list.
+Everything else works as usual: the Dashboard, Graphs, Diagnostics, the home-screen widget and picture-in-picture.
 
 ## Video overlay
 

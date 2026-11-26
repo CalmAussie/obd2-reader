@@ -806,9 +806,9 @@ internal object MakerCodeData {
             "Pre-ignition detected",
             "Mazda's definition: the engine computer detected pre-ignition, where fuel lights before the spark plug fires. It can damage the engine, so the computer cuts power to protect it.",
             H,
-            listOf("Lower-grade fuel than recommended", "Hard acceleration at low engine speed, where pre-ignition is most likely", "Carbon build-up or oil getting into the cylinders"),
+            listOf("Engine computer software on cars built before late June 2017 that can mistake normal engine noise for knocking, the cause Mazda names for these cars", "Lower-grade fuel than recommended", "Hard acceleration at low engine speed, where pre-ignition is most likely"),
             listOf("Check-engine light on", "Lack of power", "Knocking or pinging under load in some cases"),
-            listOf("Use at least the fuel grade the owner's manual asks for", "Avoid hard acceleration at low engine speed until it's checked", "Ask a Mazda dealer whether their bulletin for these cars applies"),
+            listOf("Ask a Mazda dealer whether the engine computer update in their bulletin for these cars applies", "Use at least the fuel grade the owner's manual asks for", "Avoid hard acceleration at low engine speed until it's checked"),
             "Mazda 01-009/17: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2014/SB-10098016-2532.pdf
         e("P1794", "Mazda", listOf(f(2014, 2014, "Mazda3", "2.0|2.5"), f(2014, 2015, "Mazda6", "2.5")),
