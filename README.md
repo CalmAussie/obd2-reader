@@ -135,9 +135,9 @@ Cars only report some readings. Anything yours doesn't report shows **N/A**, nev
 
 Android Auto only lists car apps like this one when they were installed from Google Play. OBD2 Reader isn't on Google Play, so it doesn't appear in Android Auto's app list. Google leaves apps like this out of Android Auto's **Unknown sources** developer setting ([Google's guide](https://developer.android.com/training/cars/testing)), so turning that on doesn't help, on any phone or Android version.
 
-An app on Google Play with this name isn't ours. Only install OBD2 Reader from this page's [releases](https://github.com/CalmAussie/obd2-reader/releases/latest).
-
 Everything else works as usual: the Dashboard, Graphs, Diagnostics, the home-screen widget and picture-in-picture.
+
+Any app on Google Play with this name isn't ours. Only install OBD2 Reader from this page's [releases](https://github.com/CalmAussie/obd2-reader/releases/latest).
 
 ## Video overlay
 
