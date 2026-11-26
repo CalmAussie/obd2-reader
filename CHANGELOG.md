@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.18 (27 November 2026)
+- **Android Auto help corrected.** The Help topic and the README said that turning on Android Auto's Unknown sources setting would make OBD2 Reader appear on the car's screen. It doesn't: Google leaves car apps like this one out of that setting, and Android Auto only lists them when they were installed from Google Play. The copy from GitHub therefore doesn't appear in Android Auto, on any phone or Android version. The help now says so. Everything else in the app works as before.
+
 ## 2.5.17 (23 November 2026)
 - **More maker codes for Toyota, Lexus and Mazda.** 11 more manufacturer-specific codes, each explained only for the models, years and engines the maker's own service bulletin names. Toyota: hybrid codes for the Prius (poor engine power, engine doesn't start), the Camry and RAV4 hybrids (inverter over-current) and the RAV4 hybrid (high-voltage insulation near the rear motor), plus fuel pressure and fuel tank sensor codes for the RAV4 and Kluger. Lexus: pre-ignition on the IS 200t. Mazda: SKYACTIV automatic transmission fault, pre-ignition on the CX-9 turbo and the i-ELOOP capacitor.
 
