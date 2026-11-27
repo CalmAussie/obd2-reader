@@ -244,9 +244,10 @@ class MakerCodesTest {
         assertFalse(DtcLibrary.lookup("P1603", "Kia", 2020, "Seltos", "2.0 I4").known)
         assertTrue(DtcLibrary.lookup("P1C2E", "Kia", 2023, "Sorento", "2.5 turbo").known)
         assertFalse(DtcLibrary.lookup("P1C2E", "Kia", 2023, "Sorento", "1.6 turbo hybrid").known)
-        // P1441 means a hose fault on both makes, for their own hybrids.
-        assertTrue(DtcLibrary.lookup("P1441", "Hyundai", 2022, "Tucson / ix35", "1.6 turbo hybrid").known)
-        assertFalse(DtcLibrary.lookup("P1441", "Hyundai", 2023, "Tucson / ix35", "1.6 turbo hybrid").known)
+        // P1441 means a hose fault on both makes, for their own hybrids. Hyundai 23-FL-001H took the Tucson
+        // hybrid back out of 22-FL-003H, so Hyundai's stays on the Santa Fe hybrid.
+        assertTrue(DtcLibrary.lookup("P1441", "Hyundai", 2022, "Santa Fe", "1.6 turbo hybrid").known)
+        assertFalse(DtcLibrary.lookup("P1441", "Hyundai", 2022, "Tucson / ix35", "1.6 turbo hybrid").known)
         assertEquals("Purge valve downstream hose off", DtcLibrary.lookup("P1441", "Kia", 2022, "Sorento", "1.6 turbo hybrid").title)
     }
 

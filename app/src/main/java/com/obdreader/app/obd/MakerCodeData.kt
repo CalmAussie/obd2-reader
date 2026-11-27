@@ -291,24 +291,24 @@ internal object MakerCodeData {
     }
 
     private fun hyundai(sink: Sink) = with(sink) {
-        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10232200-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2022/MC-10215600-0001.pdf
-        e("P1441", "Hyundai", listOf(f(2021, 2022, "Santa Fe", "1.6 turbo hybrid"), f(2022, 2022, "Tucson", "1.6 turbo hybrid")),
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10232200-0001.pdf
+        e("P1441", "Hyundai", listOf(f(2021, 2022, "Santa Fe", "1.6 turbo hybrid")),
             "Purge valve rear hose missing",
             "Hyundai's definition: the hose on the tank side of the purge control valve, which carries fuel vapour to the engine, is disconnected or missing.",
             L,
             listOf("A purge hose that has come off or wasn't refitted after work", "A split hose", "A faulty purge control valve"),
             listOf("Usually nothing you'd notice", "A fuel smell in some cases"),
             listOf("Check the hoses at the purge control valve are pushed fully home", "Look for split or kinked vapour hoses", "Have the EVAP system tested if the code returns"),
-            "Hyundai 23-FL-001H, 22-FL-003H: the maker's own service bulletins, filed with NHTSA")
-        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10232200-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2022/MC-10215600-0001.pdf
-        e("P1A77", "Hyundai", listOf(f(2021, 2022, "Santa Fe", "1.6 turbo hybrid"), f(2022, 2022, "Tucson", "1.6 turbo hybrid")),
+            "Hyundai 23-FL-001H: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10232200-0001.pdf
+        e("P1A77", "Hyundai", listOf(f(2021, 2022, "Santa Fe", "1.6 turbo hybrid")),
             "Hybrid starter-generator belt slip",
             "Hyundai's definition: the belt that drives the hybrid starter-generator is slipping. That unit restarts the engine and helps charge the hybrid battery.",
             M,
             listOf("A worn or stretched belt", "A weak belt tensioner", "Oil or coolant on the belt"),
             listOf("A squeal from the engine bay on start-up", "Rough or slow engine restarts", "A hybrid system warning"),
             listOf("Look at the belt for cracks, glazing or fluid on it", "Have the belt and tensioner checked and replaced if worn", "Fix any leak that's wetting the belt"),
-            "Hyundai 23-FL-001H, 22-FL-003H: the maker's own service bulletins, filed with NHTSA")
+            "Hyundai 23-FL-001H: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2023/MC-10238402-0001.pdf
         e("P1233", "Hyundai", listOf(f(2015, 2019, "Sonata")),
             "Low pressure fuel system",

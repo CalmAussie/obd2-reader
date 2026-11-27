@@ -784,12 +784,12 @@ Manufacturer-specific codes: 26. Each is explained only on the cars listed besid
 | Code | Name | Cars | Source |
 |---|---|---|---|
 | P1233 | Low pressure fuel system | Sonata / i45 2015–2019 | Hyundai 23-FL-004H: the maker's own service bulletin, filed with NHTSA |
-| P1441 | Purge valve rear hose missing | Santa Fe 2021–2022 (1.6 turbo hybrid)<br>Tucson / ix35 2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H, 22-FL-003H: the maker's own service bulletins, filed with NHTSA |
+| P1441 | Purge valve rear hose missing | Santa Fe 2021–2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H: the maker's own service bulletin, filed with NHTSA |
 | P193B | High-pressure electric oil pump low hydraulic pressure | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
 | P193D | Second gearbox oil pump system fault | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
 | P193E | Second gearbox oil pump performance | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
 | P1990 | Oil pump unit high-voltage input wiring open | Sonata / i45 2016–2017 (2.4 hybrid) | Hyundai 20-01-003H: the maker's own service bulletin, filed with NHTSA |
-| P1A77 | Hybrid starter-generator belt slip | Santa Fe 2021–2022 (1.6 turbo hybrid)<br>Tucson / ix35 2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H, 22-FL-003H: the maker's own service bulletins, filed with NHTSA |
+| P1A77 | Hybrid starter-generator belt slip | Santa Fe 2021–2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H: the maker's own service bulletin, filed with NHTSA |
 | P1A90 | DC/DC converter input voltage sensor fault | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
 | P1AA7 | Drive battery cell voltage deviation | Kona Electric 2019–2023 | Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA |
 | P1AA7 | Drive battery abnormal performance: cell voltage deviation | Ioniq 5 2025 | Hyundai 26-EV-002H: the maker's own service bulletin, filed with NHTSA |
@@ -842,7 +842,7 @@ Manufacturer-specific codes: 26. Each is explained only on the cars listed besid
 | Terracan | 2001–2007 | Yes | None yet |
 | Tiburon / Coupe | 1996–2009 | Yes | None yet |
 | Trajet | 1999–2008 | Yes | None yet |
-| Tucson / ix35 | 2004–2026 | Yes | 2022: 3 codes · 2023–2024: 1 code (depending on the engine) |
+| Tucson / ix35 | 2004–2026 | Yes | 2022–2024: 1 code (depending on the engine) |
 | Veloster | 2011–2022 | Yes | 2020–2022: 6 codes (depending on the engine) |
 | Venue | 2019–2026 | Yes | None yet |
 | Veracruz / ix55 | 2007–2015 | Yes | None yet |
