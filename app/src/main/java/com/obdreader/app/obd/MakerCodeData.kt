@@ -1482,7 +1482,7 @@ internal object MakerCodeData {
         // https://static.nhtsa.gov/odi/tsbs/2022/MC-10222352-0001.pdf
         e("U113B", "Subaru", listOf(f(2023, 2023, "Solterra")),
             "Lost communication with the charging communication module",
-            "Subaru's definition: the charging computer (plug-in ECU) isn't getting messages it expects from the communication ECU, over the network wiring between them.",
+            "Subaru's definition: the charging computer isn't getting messages it expects from the charging communication module, over the network wiring between them.",
             M,
             listOf("Service or maintenance work, including the pre-delivery check, which Subaru says can set this code", "A fault in the network wiring between the two modules"),
             listOf("A Plug-in Charge System warning on the dash"),
