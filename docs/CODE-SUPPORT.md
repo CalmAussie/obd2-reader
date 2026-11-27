@@ -17,9 +17,9 @@ Every manufacturer has its own section below, with its manufacturer-specific cod
 - On GitHub, open the outline (the list button at the top right of this page) and type the manufacturer's name into its filter box.
 - Use your browser's find (Ctrl+F, or Find in page on a phone) for a manufacturer, a model or a code such as P1326.
 
-**With manufacturer-specific codes** (29 makes, 241 codes, 286 definitions, because makers reuse code numbers for different faults):
+**With manufacturer-specific codes** (29 makes, 249 codes, 294 definitions, because makers reuse code numbers for different faults):
 
-[Acura](#acura) (2) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [Genesis](#genesis) (1) · [GMC](#gmc) (3) · [Holden](#holden) (1) · [Honda](#honda) (2) · [Hyundai](#hyundai) (26) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (24) · [Land Rover](#land-rover) (2) · [Lexus](#lexus) (1) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (4) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (4) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (5) · [Toyota](#toyota) (19) · [Volkswagen](#volkswagen) (30)
+[Acura](#acura) (2) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [Genesis](#genesis) (1) · [GMC](#gmc) (3) · [Holden](#holden) (1) · [Honda](#honda) (2) · [Hyundai](#hyundai) (26) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (24) · [Land Rover](#land-rover) (2) · [Lexus](#lexus) (1) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (4) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (4) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (13) · [Toyota](#toyota) (19) · [Volkswagen](#volkswagen) (30)
 
 **All 87 manufacturers, A to Z:**
 
@@ -1927,30 +1927,38 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 
 ### Subaru
 
-Manufacturer-specific codes: 5. Each is explained only on the cars listed beside it.
+Manufacturer-specific codes: 13. Each is explained only on the cars listed beside it.
 
 | Code | Name | Cars | Source |
 |---|---|---|---|
+| B1441 | Passenger air mix door actuator stuck | Liberty / Legacy 2020–2021<br>Outback 2020–2021 | Subaru TechTIPS October 2020: the maker's own technician newsletter, filed with NHTSA |
 | B1572 | Immobiliser circuit fault (other than the antenna circuit) | Liberty / Legacy 2017–2019<br>Outback 2017–2019 | Subaru 07-181-20: the maker's own service bulletin, filed with NHTSA |
+| P119F | Air-fuel ratio imbalance (direct injection) | BRZ 2017–2019 (2.0) | Subaru 11-184-18: the maker's own service bulletin, filed with NHTSA |
+| P1449 | EVAP system clog detected | Ascent 2019–2024<br>Crosstrek / XV 2018–2023 (2.0 H4, 2.5 H4)<br>Forester 2019–2024 (2.5)<br>Impreza 2017–2023 (2.0)<br>WRX / STI 2022–2024 (2.4 turbo) | Subaru 11-205-25: the maker's own service bulletin, filed with NHTSA |
 | P1604 | Startability malfunction | WRX / STI 2022 (2.4 turbo) | Subaru 09-95-22R: the maker's own service bulletin, filed with NHTSA |
 | P173B | CVT electric fluid pump performance | Forester 2019 (2.5) | Subaru 16-123-19: the maker's own service bulletin, filed with NHTSA |
 | P1C06 | 12-volt battery relay close circuit performance | Crosstrek / XV 2014–2016 (2.0 hybrid) | Subaru 07-147-19: the maker's own service bulletin, filed with NHTSA |
 | P1C07 | 12-volt battery relay open circuit performance | Crosstrek / XV 2014–2016 (2.0 hybrid) | Subaru 07-147-19: the maker's own service bulletin, filed with NHTSA |
+| P1C14 | Generator performance | Crosstrek / XV 2014 (2.0 hybrid) | Subaru 07-132-18R: the maker's own service bulletin, filed with NHTSA |
+| U113B | Lost communication with the charging communication module | Solterra 2023 | Subaru TechTIPS August 2022: the maker's own technician newsletter, filed with NHTSA |
+| U122E | Lost communication with a door mirror module | Liberty / Legacy 2020<br>Outback 2020 | Subaru TechTIPS January 2020: the maker's own technician newsletter, filed with NHTSA |
+| U122F | Lost communication with a door mirror module | Liberty / Legacy 2020<br>Outback 2020 | Subaru TechTIPS January 2020: the maker's own technician newsletter, filed with NHTSA |
+| U1235 | Lost communication with EyeSight | Ascent 2020<br>Impreza 2020 | Subaru TechTIPS February 2021: the maker's own technician newsletter, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
-| Ascent | 2019–2026 | Yes | None yet |
+| Ascent | 2019–2026 | Yes | 2019: 1 code · 2020: 2 codes · 2021–2024: 1 code |
 | Baja | 2003–2006 | Yes | None yet |
-| BRZ | 2012–2026 | Yes | None yet |
-| Crosstrek / XV | 2012–2026 | Yes | 2014–2016: 2 codes (depending on the engine) |
-| Forester | 1997–2026 | Yes | 2019: 1 code (depending on the engine) |
-| Impreza | 1994–2026 | Yes | None yet |
+| BRZ | 2012–2026 | Yes | 2017–2019: 1 code (depending on the engine) |
+| Crosstrek / XV | 2012–2026 | Yes | 2014: 3 codes · 2015–2016: 2 codes · 2018–2023: 1 code (depending on the engine) |
+| Forester | 1997–2026 | Yes | 2019: 2 codes · 2020–2024: 1 code (depending on the engine) |
+| Impreza | 1994–2026 | Yes | 2017–2019: 1 code · 2020: 2 codes · 2021–2023: 1 code (depending on the engine) |
 | Levorg | 2016–2026 | Yes | None yet |
-| Liberty / Legacy | 1994–2026 | Yes | 2017–2019: 1 code |
-| Outback | 1996–2026 | Yes | 2017–2019: 1 code |
-| Solterra | 2023–2026 | Few or none (electric) | None |
+| Liberty / Legacy | 1994–2026 | Yes | 2017–2019: 1 code · 2020: 3 codes · 2021: 1 code |
+| Outback | 1996–2026 | Yes | 2017–2019: 1 code · 2020: 3 codes · 2021: 1 code |
+| Solterra | 2023–2026 | Few or none (electric) | 2023: 1 code |
 | Tribeca | 2006–2014 | Yes | None yet |
-| WRX / STI | 1994–2026 | Yes | 2022: 1 code (depending on the engine) |
+| WRX / STI | 1994–2026 | Yes | 2022: 2 codes · 2023–2024: 1 code (depending on the engine) |
 
 [Back to the manufacturer list](#find-your-manufacturer)
 
