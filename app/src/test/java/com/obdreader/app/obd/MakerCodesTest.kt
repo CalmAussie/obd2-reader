@@ -234,7 +234,7 @@ class MakerCodesTest {
         assertFalse(DtcLibrary.lookup("P1A90", "Genesis", 2023, "G80", "2.5 turbo").known)
         // Hyundai and Kia print different names for P1E13.
         assertEquals("Inverter charging relay fault", DtcLibrary.lookup("P1E13", "Hyundai", 2024, "Ioniq 6", null).title)
-        assertEquals("Battery charger power module system voltage", DtcLibrary.lookup("P1E13", "Kia", 2024, "EV9", null).title)
+        assertEquals("Charger power module voltage fault", DtcLibrary.lookup("P1E13", "Kia", 2024, "EV9", null).title)
         assertFalse(DtcLibrary.lookup("P1E14", "Kia", 2024, "EV9", null).known)
         // Hyundai 23-01-073H-1: Kona Electric 2019-2023, not the petrol Kona.
         assertTrue(DtcLibrary.lookup("P1AA8", "Hyundai", 2020, "Kona Electric", null).known)

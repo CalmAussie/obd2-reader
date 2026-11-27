@@ -199,14 +199,14 @@ internal object MakerCodeData {
             "DC/DC converter input voltage sensor fault",
             "Kia's definition: a fault with the input voltage sensor of the DC/DC converter. The converter sits in the charging unit (ICCU) and charges the 12-volt battery from the drive battery.",
             H,
-            listOf("A fault inside the charging unit (ICCU)", "A blown fuse in the charging unit's circuit, which the recall checks", "Charging unit software, which the maker's recall updates"),
-            listOf("A warning on the dash", "The 12-volt battery going flat", "In some cases the car losing drive power, the risk the maker's recall addresses"),
-            listOf("If a power warning appears, pull over safely as soon as you can", "Have the 12-volt battery tested", "Ask a dealer whether the charging unit (ICCU) recall has been done on your car"),
+            listOf("A fault inside the charging unit (ICCU)", "A blown fuse in the charging unit's circuit, which the recall checks", "Charging unit software, which Kia's recall updates"),
+            listOf("A warning on the dash", "The 12-volt battery going flat", "In some cases the car losing drive power, the risk Kia's recall addresses"),
+            listOf("If a power warning appears, pull over safely as soon as you can", "Have the 12-volt battery tested", "Ask a Kia dealer whether the charging unit (ICCU) recall has been done on your car"),
             "Kia SC302 (recall 24V-200): the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004385-0001.pdf
         e("P1E01", "Kia", listOf(f(2024, 2024, "EV9")),
-            "PFC voltage sensor reliability and offset check failed",
-            "Kia's definition: the voltage sensor for the PFC (power factor correction) stage at the front of the on-board charger, which takes in mains (AC) power, failed its reliability and starting offset check.",
+            "Charger input voltage sensor self-check failed",
+            "Kia's definition: the voltage sensor in the on-board charger's input stage, which takes in mains (AC) power (Kia calls it the PFC, power factor correction, stage), failed its reliability and starting offset check.",
             M,
             listOf("A difference between the charging unit's real and sensed temperature, which Kia's software update for these cars addresses", "A fault inside the charging unit (ICCU), which Kia's service action replaces where needed"),
             listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
@@ -214,8 +214,8 @@ internal object MakerCodeData {
             "Kia SA570: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004385-0001.pdf
         e("P1E02", "Kia", listOf(f(2024, 2024, "EV9")),
-            "PFC voltage sensor circuit low",
-            "Kia's definition: the voltage sensor circuit for the PFC (power factor correction) stage at the front of the on-board charger, which takes in mains (AC) power, reads lower than it should.",
+            "Charger input voltage sensor reading low",
+            "Kia's definition: the voltage sensor circuit in the on-board charger's input stage, which takes in mains (AC) power (Kia calls it the PFC, power factor correction, stage), reads lower than it should.",
             M,
             listOf("A difference between the charging unit's real and sensed temperature, which Kia's software update for these cars addresses", "A fault inside the charging unit (ICCU), which Kia's service action replaces where needed"),
             listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
@@ -223,7 +223,7 @@ internal object MakerCodeData {
             "Kia SA570: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004385-0001.pdf
         e("P1E13", "Kia", listOf(f(2024, 2024, "EV9")),
-            "Battery charger power module system voltage",
+            "Charger power module voltage fault",
             "Kia's definition: a voltage fault in the power module of the on-board battery charger, inside the charging unit (ICCU).",
             M,
             listOf("A difference between the charging unit's real and sensed temperature, which Kia's software update for these cars addresses", "A fault inside the charging unit (ICCU), which Kia's service action replaces where needed"),
@@ -254,7 +254,7 @@ internal object MakerCodeData {
                 f(2021, 2021, "Seltos", "2.0 I4"),
                 f(2020, 2021, "Soul", "2.0 I4"),
             ),
-            "CVT P-learning fail",
+            "CVT self-learning (P-learning) not completed",
             "Kia's definition: the computer for the CVT automatic (Kia calls it IVT) couldn't complete one of its self-learning steps, which Kia calls P-learning.",
             M,
             listOf("Transmission software logic, which Kia's emissions campaign for these cars updates", "In some cases a fault inside the transmission, which the same campaign replaces"),
@@ -263,7 +263,7 @@ internal object MakerCodeData {
             "Kia SC199: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2024/MC-11010699-0001.pdf
         e("P1C2E", "Kia", listOf(f(2021, 2023, "K5|Sorento", "2.5 turbo")),
-            "High-pressure electric oil pump motor out of control",
+            "High-pressure electric oil pump motor control fault",
             "Kia's definition: the motor of the electric pump that supplies high-pressure oil to the 8-speed dual-clutch gearbox has gone out of control.",
             H,
             listOf("Gearbox software, which Kia's bulletin for these cars updates", "A fault in the gearbox's electric oil pump"),
@@ -281,8 +281,8 @@ internal object MakerCodeData {
             "Kia ELE285: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233643-0001.pdf
         e("P1A77", "Kia", listOf(f(2021, 2023, "Sorento", "1.6 turbo hybrid")),
-            "Check generator belt",
-            "Kia's definition: the computer wants the belt that drives the hybrid starter-generator checked, because it seems to be slipping. That unit restarts the engine and helps charge the hybrid battery.",
+            "Hybrid starter-generator belt fault",
+            "Kia's definition: the computer has flagged the belt that drives the hybrid starter-generator for checking. That unit restarts the engine and helps charge the hybrid battery.",
             M,
             listOf("Engine oil diluted with fuel or moisture from repeated short trips, which Kia's bulletin for these cars links to this code", "Engine and hybrid control software, which Kia updated for these cars", "A worn or stretched belt, or a weak tensioner"),
             listOf("Check-engine light on", "A squeal from the engine bay on start-up", "Rough or slow engine restarts"),
@@ -388,7 +388,7 @@ internal object MakerCodeData {
                 f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
                 f(2020, 2022, "Veloster", "2.0 turbo (N)"),
             ),
-            "High-pressure electric oil pump motor control",
+            "High-pressure electric oil pump motor control fault",
             "Hyundai's definition: the motor of the electric pump that supplies high-pressure oil to the dual-clutch gearbox isn't being controlled properly.",
             H,
             listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
@@ -416,7 +416,7 @@ internal object MakerCodeData {
                 f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
                 f(2020, 2022, "Veloster", "2.0 turbo (N)"),
             ),
-            "HF electric oil pump system fault",
+            "Second gearbox oil pump system fault",
             "Hyundai's definition: a fault in the gearbox's second electric oil pump, which Hyundai labels the HF EOP.",
             H,
             listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
@@ -430,7 +430,7 @@ internal object MakerCodeData {
                 f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
                 f(2020, 2022, "Veloster", "2.0 turbo (N)"),
             ),
-            "HF electric oil pump performance",
+            "Second gearbox oil pump performance",
             "Hyundai's definition: the gearbox's second electric oil pump, which Hyundai labels the HF EOP, isn't performing as expected.",
             H,
             listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
@@ -444,7 +444,7 @@ internal object MakerCodeData {
                 f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
                 f(2020, 2022, "Veloster", "2.0 turbo (N)"),
             ),
-            "Lost communication between the gearbox computer and HF oil pump",
+            "Gearbox computer lost contact with second oil pump",
             "Hyundai's definition: the gearbox computer can't communicate properly with the second electric oil pump, which Hyundai labels the HF EOP.",
             H,
             listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
@@ -456,14 +456,14 @@ internal object MakerCodeData {
             "DC/DC converter input voltage sensor fault",
             "Hyundai's definition: a fault with the input voltage sensor of the DC/DC converter. The converter sits in the charging unit (ICCU) and charges the 12-volt battery from the drive battery.",
             H,
-            listOf("A fault inside the charging unit (ICCU)", "A blown fuse in the charging unit's circuit, which the recall checks", "Charging unit software, which the maker's recall updates"),
-            listOf("A warning on the dash", "The 12-volt battery going flat", "In some cases the car losing drive power, the risk the maker's recall addresses"),
-            listOf("If a power warning appears, pull over safely as soon as you can", "Have the 12-volt battery tested", "Ask a dealer whether the charging unit (ICCU) recall has been done on your car"),
+            listOf("A fault inside the charging unit (ICCU)", "A blown fuse in the charging unit's circuit, which the recall checks", "Charging unit software, which Hyundai's recall updates"),
+            listOf("A warning on the dash", "The 12-volt battery going flat", "In some cases the car losing drive power, the risk Hyundai's recall addresses"),
+            listOf("If a power warning appears, pull over safely as soon as you can", "Have the 12-volt battery tested", "Ask a Hyundai dealer whether the charging unit (ICCU) recall has been done on your car"),
             "Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2026/MC-11033693-0001.pdf
         e("P1E01", "Hyundai", listOf(f(2022, 2024, "Ioniq 5"), f(2023, 2025, "Ioniq 6")),
-            "PFC voltage sensor reliability and offset check failed",
-            "Hyundai's definition: the voltage sensor for the PFC (power factor correction) stage at the front of the on-board charger, which takes in mains (AC) power, failed its reliability and starting offset check.",
+            "Charger input voltage sensor self-check failed",
+            "Hyundai's definition: the voltage sensor in the on-board charger's input stage, which takes in mains (AC) power (Hyundai calls it the PFC, power factor correction, stage), failed its reliability and starting offset check.",
             M,
             listOf("A fault inside the charging unit (ICCU), which Hyundai's warranty extension for these cars covers by replacing the unit"),
             listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
@@ -471,8 +471,8 @@ internal object MakerCodeData {
             "Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2026/MC-11033693-0001.pdf
         e("P1E02", "Hyundai", listOf(f(2022, 2024, "Ioniq 5"), f(2023, 2025, "Ioniq 6")),
-            "PFC voltage sensor circuit low",
-            "Hyundai's definition: the voltage sensor circuit for the PFC (power factor correction) stage at the front of the on-board charger, which takes in mains (AC) power, reads lower than it should.",
+            "Charger input voltage sensor reading low",
+            "Hyundai's definition: the voltage sensor circuit in the on-board charger's input stage, which takes in mains (AC) power (Hyundai calls it the PFC, power factor correction, stage), reads lower than it should.",
             M,
             listOf("A fault inside the charging unit (ICCU), which Hyundai's warranty extension for these cars covers by replacing the unit"),
             listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
@@ -489,8 +489,8 @@ internal object MakerCodeData {
             "Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2026/MC-11033693-0001.pdf
         e("P1E14", "Hyundai", listOf(f(2022, 2024, "Ioniq 5"), f(2023, 2025, "Ioniq 6")),
-            "PFC output voltage too high",
-            "Hyundai's definition: the output voltage of the PFC (power factor correction) stage at the front of the on-board charger, which takes in mains (AC) power, is higher than it should be.",
+            "Charger input stage output voltage too high",
+            "Hyundai's definition: the output voltage of the on-board charger's input stage, which takes in mains (AC) power (Hyundai calls it the PFC, power factor correction, stage), is higher than it should be.",
             M,
             listOf("A fault inside the charging unit (ICCU), which Hyundai's warranty extension for these cars covers by replacing the unit"),
             listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
@@ -576,9 +576,9 @@ internal object MakerCodeData {
             "DC/DC converter input voltage sensor fault",
             "Genesis's definition: a fault with the input voltage sensor of the DC/DC converter. The converter sits in the charging unit (ICCU) and charges the 12-volt battery from the drive battery.",
             H,
-            listOf("A fault inside the charging unit (ICCU)", "A blown fuse in the charging unit's circuit, which the recall checks", "Charging unit software, which the maker's recall updates"),
-            listOf("A warning on the dash", "The 12-volt battery going flat", "In some cases the car losing drive power, the risk the maker's recall addresses"),
-            listOf("If a power warning appears, pull over safely as soon as you can", "Have the 12-volt battery tested", "Ask a dealer whether the charging unit (ICCU) recall has been done on your car"),
+            listOf("A fault inside the charging unit (ICCU)", "A blown fuse in the charging unit's circuit, which the recall checks", "Charging unit software, which Genesis's recall updates"),
+            listOf("A warning on the dash", "The 12-volt battery going flat", "In some cases the car losing drive power, the risk Genesis's recall addresses"),
+            listOf("If a power warning appears, pull over safely as soon as you can", "Have the 12-volt battery tested", "Ask a Genesis dealer whether the charging unit (ICCU) recall has been done on your car"),
             "Genesis 23-01-069G-1 (SC907G): the maker's own service bulletin, filed with NHTSA")
     }
 

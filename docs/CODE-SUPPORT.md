@@ -786,8 +786,8 @@ Manufacturer-specific codes: 26. Each is explained only on the cars listed besid
 | P1233 | Low pressure fuel system | Sonata / i45 2015–2019 | Hyundai 23-FL-004H: the maker's own service bulletin, filed with NHTSA |
 | P1441 | Purge valve rear hose missing | Santa Fe 2021–2022 (1.6 turbo hybrid)<br>Tucson / ix35 2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H, 22-FL-003H: the maker's own service bulletins, filed with NHTSA |
 | P193B | High-pressure electric oil pump low hydraulic pressure | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
-| P193D | HF electric oil pump system fault | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
-| P193E | HF electric oil pump performance | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
+| P193D | Second gearbox oil pump system fault | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
+| P193E | Second gearbox oil pump performance | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
 | P1990 | Oil pump unit high-voltage input wiring open | Sonata / i45 2016–2017 (2.4 hybrid) | Hyundai 20-01-003H: the maker's own service bulletin, filed with NHTSA |
 | P1A77 | Hybrid starter-generator belt slip | Santa Fe 2021–2022 (1.6 turbo hybrid)<br>Tucson / ix35 2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H, 22-FL-003H: the maker's own service bulletins, filed with NHTSA |
 | P1A90 | DC/DC converter input voltage sensor fault | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
@@ -803,13 +803,13 @@ Manufacturer-specific codes: 26. Each is explained only on the cars listed besid
 | P1B77 | High-voltage battery pre-charging fault | Sonata / i45 2016–2017 (2.4 hybrid) | Hyundai 20-01-003H: the maker's own service bulletin, filed with NHTSA |
 | P1BB2 | 12-volt lithium battery cell voltage high | Elantra / Lantra 2021–2023 (1.6 hybrid)<br>Sonata / i45 2020–2022 (2.0 hybrid)<br>Tucson / ix35 2022–2024 (1.6 turbo hybrid) | Hyundai 25-01-010H (SC9B4): the maker's own service bulletin, filed with NHTSA |
 | P1C2D | High-pressure electric oil pump motor position sensor | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
-| P1C2E | High-pressure electric oil pump motor control | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
-| P1E01 | PFC voltage sensor reliability and offset check failed | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
-| P1E02 | PFC voltage sensor circuit low | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
+| P1C2E | High-pressure electric oil pump motor control fault | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
+| P1E01 | Charger input voltage sensor self-check failed | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
+| P1E02 | Charger input voltage sensor reading low | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
 | P1E0C | Input relay stuck closed | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
 | P1E13 | Inverter charging relay fault | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
-| P1E14 | PFC output voltage too high | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
-| U1135 | Lost communication between the gearbox computer and HF oil pump | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
+| P1E14 | Charger input stage output voltage too high | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
+| U1135 | Gearbox computer lost contact with second oil pump | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
@@ -947,9 +947,9 @@ Manufacturer-specific codes: 24. Each is explained only on the cars listed besid
 |---|---|---|---|
 | P1326 | Knock signal range/performance | Cerato / Forte / K3 2012–2013 (2.4 I4)<br>Cerato / Forte / K3 2014–2015 (2.0 I4)<br>Magentis / Optima / K5 2011–2013 (2.0 hybrid)<br>Magentis / Optima / K5 2011–2018 (2.0 turbo, 2.4 I4)<br>Sorento 2011–2018 (2.4 I4)<br>Sorento 2015–2018 (2.0 turbo)<br>Soul 2012–2013 (1.6 I4)<br>Soul 2014–2016 (1.6 I4, 2.0 I4)<br>Sportage 2011–2018 (2.0 turbo)<br>Sportage 2012 (2.4 I4)<br>Sportage 2014–2018 (2.4 I4) | Kia Knock Sensor Detection System bulletin, PI1803, PI1802W/X, SC291YZ: the maker's own service bulletins, filed with NHTSA |
 | P1441 | Purge valve downstream hose off | Sorento 2021–2023 (1.6 turbo hybrid) | Kia ELE285: the maker's own service bulletin, filed with NHTSA |
-| P1603 | CVT P-learning fail | Cerato / Forte / K3 2019–2020 (2.0 I4)<br>Seltos 2021 (2.0 I4)<br>Soul 2020–2021 (2.0 I4) | Kia SC199: the maker's own service bulletin, filed with NHTSA |
+| P1603 | CVT self-learning (P-learning) not completed | Cerato / Forte / K3 2019–2020 (2.0 I4)<br>Seltos 2021 (2.0 I4)<br>Soul 2020–2021 (2.0 I4) | Kia SC199: the maker's own service bulletin, filed with NHTSA |
 | P17A0 | Navigation unit requested the check-engine light | Sorento 2022–2024 (1.6 turbo hybrid)<br>Sportage 2023–2025 (1.6 turbo hybrid) | Kia ELE394: the maker's own service bulletin, filed with NHTSA |
-| P1A77 | Check generator belt | Sorento 2021–2023 (1.6 turbo hybrid) | Kia ELE285: the maker's own service bulletin, filed with NHTSA |
+| P1A77 | Hybrid starter-generator belt fault | Sorento 2021–2023 (1.6 turbo hybrid) | Kia ELE285: the maker's own service bulletin, filed with NHTSA |
 | P1A90 | DC/DC converter input voltage sensor fault | EV6 2022–2024 | Kia SC302 (recall 24V-200): the maker's own service bulletin, filed with NHTSA |
 | P1AA6 | Drive battery abnormal performance detected | Niro EV 2019–2022 | Kia ELE293: the maker's own service bulletin, filed with NHTSA |
 | P1AA7 | Drive battery cell voltage deviation | Niro EV 2019–2022 | Kia ELE293: the maker's own service bulletin, filed with NHTSA |
@@ -964,11 +964,11 @@ Manufacturer-specific codes: 24. Each is explained only on the cars listed besid
 | P1BA8 | Battery heater relay fault | Niro EV 2023 | Kia SA522: the maker's own service bulletin, filed with NHTSA |
 | P1BB2 | 12-volt lithium battery cell voltage high | Niro 2023–2024 (1.6 hybrid)<br>Sportage 2023–2024 (1.6 turbo hybrid) | Kia SA553: the maker's own service bulletin, filed with NHTSA |
 | P1C2D | High-pressure electric oil pump motor position sensor | Magentis / Optima / K5 2021–2022 (2.5 turbo)<br>Sorento 2021–2022 (2.5 turbo) | Kia SC250 (recall 22V-760): the maker's own service bulletin, filed with NHTSA |
-| P1C2E | High-pressure electric oil pump motor out of control | Magentis / Optima / K5 2021–2023 (2.5 turbo)<br>Sorento 2021–2023 (2.5 turbo) | Kia TRA111: the maker's own service bulletin, filed with NHTSA |
-| P1E01 | PFC voltage sensor reliability and offset check failed | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
-| P1E02 | PFC voltage sensor circuit low | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
+| P1C2E | High-pressure electric oil pump motor control fault | Magentis / Optima / K5 2021–2023 (2.5 turbo)<br>Sorento 2021–2023 (2.5 turbo) | Kia TRA111: the maker's own service bulletin, filed with NHTSA |
+| P1E01 | Charger input voltage sensor self-check failed | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
+| P1E02 | Charger input voltage sensor reading low | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
 | P1E0C | Input relay stuck closed | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
-| P1E13 | Battery charger power module system voltage | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
+| P1E13 | Charger power module voltage fault | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
