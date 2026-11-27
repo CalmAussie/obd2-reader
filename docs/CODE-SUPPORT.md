@@ -17,9 +17,9 @@ Every manufacturer has its own section below, with its manufacturer-specific cod
 - On GitHub, open the outline (the list button at the top right of this page) and type the manufacturer's name into its filter box.
 - Use your browser's find (Ctrl+F, or Find in page on a phone) for a manufacturer, a model or a code such as P1326.
 
-**With manufacturer-specific codes** (28 makes, 227 codes, 254 definitions, because makers reuse code numbers for different faults):
+**With manufacturer-specific codes** (29 makes, 241 codes, 286 definitions, because makers reuse code numbers for different faults):
 
-[Acura](#acura) (2) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [GMC](#gmc) (3) · [Holden](#holden) (1) · [Honda](#honda) (2) · [Hyundai](#hyundai) (7) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (13) · [Land Rover](#land-rover) (2) · [Lexus](#lexus) (1) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (4) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (4) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (5) · [Toyota](#toyota) (19) · [Volkswagen](#volkswagen) (30)
+[Acura](#acura) (2) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [Genesis](#genesis) (1) · [GMC](#gmc) (3) · [Holden](#holden) (1) · [Honda](#honda) (2) · [Hyundai](#hyundai) (26) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (24) · [Land Rover](#land-rover) (2) · [Lexus](#lexus) (1) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (4) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (4) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (5) · [Toyota](#toyota) (19) · [Volkswagen](#volkswagen) (30)
 
 **All 87 manufacturers, A to Z:**
 
@@ -626,14 +626,18 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 
 ### Genesis
 
-Manufacturer-specific codes: none yet. A manufacturer-specific code on these cars is shown with the maker's name and where to look it up.
+Manufacturer-specific codes: 1. Each is explained only on the cars listed beside it.
+
+| Code | Name | Cars | Source |
+|---|---|---|---|
+| P1A90 | DC/DC converter input voltage sensor fault | GV60 2023–2024 | Genesis 23-01-069G-1 (SC907G): the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
 | G70 | 2017–2026 | Yes | None yet |
 | G80 | 2016–2026 | Yes | None yet |
 | G90 | 2016–2026 | Yes | None yet |
-| GV60 | 2021–2026 | Few or none (electric) | None |
+| GV60 | 2021–2026 | Few or none (electric) | 2023–2024: 1 code |
 | GV70 | 2020–2026 | Yes | None yet |
 | GV80 | 2020–2026 | Yes | None yet |
 
@@ -775,17 +779,37 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 
 ### Hyundai
 
-Manufacturer-specific codes: 7. Each is explained only on the cars listed beside it.
+Manufacturer-specific codes: 26. Each is explained only on the cars listed beside it.
 
 | Code | Name | Cars | Source |
 |---|---|---|---|
 | P1233 | Low pressure fuel system | Sonata / i45 2015–2019 | Hyundai 23-FL-004H: the maker's own service bulletin, filed with NHTSA |
-| P1441 | Purge valve rear hose missing | Santa Fe 2021–2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H: the maker's own service bulletin, filed with NHTSA |
+| P1441 | Purge valve rear hose missing | Santa Fe 2021–2022 (1.6 turbo hybrid)<br>Tucson / ix35 2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H, 22-FL-003H: the maker's own service bulletins, filed with NHTSA |
+| P193B | High-pressure electric oil pump low hydraulic pressure | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
+| P193D | HF electric oil pump system fault | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
+| P193E | HF electric oil pump performance | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
 | P1990 | Oil pump unit high-voltage input wiring open | Sonata / i45 2016–2017 (2.4 hybrid) | Hyundai 20-01-003H: the maker's own service bulletin, filed with NHTSA |
-| P1A77 | Hybrid starter-generator belt slip | Santa Fe 2021–2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H: the maker's own service bulletin, filed with NHTSA |
+| P1A77 | Hybrid starter-generator belt slip | Santa Fe 2021–2022 (1.6 turbo hybrid)<br>Tucson / ix35 2022 (1.6 turbo hybrid) | Hyundai 23-FL-001H, 22-FL-003H: the maker's own service bulletins, filed with NHTSA |
+| P1A90 | DC/DC converter input voltage sensor fault | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
+| P1AA7 | Drive battery cell voltage deviation | Kona Electric 2019–2023 | Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA |
 | P1AA7 | Drive battery abnormal performance: cell voltage deviation | Ioniq 5 2025 | Hyundai 26-EV-002H: the maker's own service bulletin, filed with NHTSA |
+| P1AA8 | Drive battery insulation resistance error | Kona Electric 2019–2023 | Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA |
+| P1AA9 | Abnormal cell voltage change after charging | Kona Electric 2019–2023 | Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA |
+| P1AAB | Drive battery overtemperature | Kona Electric 2019–2023 | Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA |
+| P1AAC | Drive battery overvoltage | Kona Electric 2019–2023 | Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA |
+| P1AAD | Drive battery low voltage | Kona Electric 2019–2023 | Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA |
+| P1AAE | Drive battery temperature deviation | Kona Electric 2019–2023 | Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA |
 | P1AD3 | Drive battery abnormal performance: MISD | Ioniq 5 2025 | Hyundai 26-EV-002H: the maker's own service bulletin, filed with NHTSA |
 | P1B77 | High-voltage battery pre-charging fault | Sonata / i45 2016–2017 (2.4 hybrid) | Hyundai 20-01-003H: the maker's own service bulletin, filed with NHTSA |
+| P1BB2 | 12-volt lithium battery cell voltage high | Elantra / Lantra 2021–2023 (1.6 hybrid)<br>Sonata / i45 2020–2022 (2.0 hybrid)<br>Tucson / ix35 2022–2024 (1.6 turbo hybrid) | Hyundai 25-01-010H (SC9B4): the maker's own service bulletin, filed with NHTSA |
+| P1C2D | High-pressure electric oil pump motor position sensor | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
+| P1C2E | High-pressure electric oil pump motor control | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
+| P1E01 | PFC voltage sensor reliability and offset check failed | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
+| P1E02 | PFC voltage sensor circuit low | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
+| P1E0C | Input relay stuck closed | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
+| P1E13 | Inverter charging relay fault | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
+| P1E14 | PFC output voltage too high | Ioniq 5 2022–2024<br>Ioniq 6 2023–2025 | Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA |
+| U1135 | Lost communication between the gearbox computer and HF oil pump | Elantra / Lantra 2022 (2.0 turbo (N))<br>Kona 2022 (2.0 turbo (N))<br>Santa Cruz 2022 (2.5 turbo)<br>Santa Fe 2021–2022 (2.5 turbo)<br>Sonata / i45 2021–2022 (2.5 turbo)<br>Veloster 2020–2022 (2.0 turbo (N)) | Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
@@ -793,7 +817,7 @@ Manufacturer-specific codes: 7. Each is explained only on the cars listed beside
 | Atos / Santro | 1998–2022 | Yes | None yet |
 | Bayon | 2021–2026 | Yes | None yet |
 | Creta | 2015–2026 | Yes | None yet |
-| Elantra / Lantra | 1994–2026 | Yes | None yet |
+| Elantra / Lantra | 1994–2026 | Yes | 2021: 1 code · 2022: 7 codes · 2023: 1 code (depending on the engine) |
 | Equus | 2009–2016 | Yes | None yet |
 | Excel | 1994–2000 | Yes | None yet |
 | Genesis | 2008–2016 | Yes | None yet |
@@ -805,21 +829,21 @@ Manufacturer-specific codes: 7. Each is explained only on the cars listed beside
 | i40 | 2011–2019 | Yes | None yet |
 | iLoad / iMax / H-1 / Starex | 1997–2021 | Yes | None yet |
 | Ioniq | 2016–2022 | Yes | None yet |
-| Ioniq 5 | 2021–2026 | Few or none (electric) | 2025: 2 codes |
-| Ioniq 6 | 2022–2026 | Few or none (electric) | None |
-| Kona | 2017–2026 | Yes | None yet |
-| Kona Electric | 2018–2026 | Few or none (electric) | None |
+| Ioniq 5 | 2021–2026 | Few or none (electric) | 2022–2024: 6 codes · 2025: 2 codes |
+| Ioniq 6 | 2022–2026 | Few or none (electric) | 2023–2025: 6 codes |
+| Kona | 2017–2026 | Yes | 2022: 6 codes (depending on the engine) |
+| Kona Electric | 2018–2026 | Few or none (electric) | 2019–2023: 7 codes |
 | Matrix / Lavita | 2001–2010 | Yes | None yet |
 | Palisade | 2018–2026 | Yes | None yet |
-| Santa Cruz | 2021–2026 | Yes | None yet |
-| Santa Fe | 2000–2026 | Yes | 2021–2022: 2 codes (depending on the engine) |
-| Sonata / i45 | 1994–2026 | Yes | 2015: 1 code · 2016–2017: 3 codes · 2018–2019: 1 code (depending on the engine) |
+| Santa Cruz | 2021–2026 | Yes | 2022: 6 codes (depending on the engine) |
+| Santa Fe | 2000–2026 | Yes | 2021–2022: 8 codes (depending on the engine) |
+| Sonata / i45 | 1994–2026 | Yes | 2015: 1 code · 2016–2017: 3 codes · 2018–2020: 1 code · 2021–2022: 7 codes (depending on the engine) |
 | Staria | 2021–2026 | Yes | None yet |
 | Terracan | 2001–2007 | Yes | None yet |
 | Tiburon / Coupe | 1996–2009 | Yes | None yet |
 | Trajet | 1999–2008 | Yes | None yet |
-| Tucson / ix35 | 2004–2026 | Yes | None yet |
-| Veloster | 2011–2022 | Yes | None yet |
+| Tucson / ix35 | 2004–2026 | Yes | 2022: 3 codes · 2023–2024: 1 code (depending on the engine) |
+| Veloster | 2011–2022 | Yes | 2020–2022: 6 codes (depending on the engine) |
 | Venue | 2019–2026 | Yes | None yet |
 | Veracruz / ix55 | 2007–2015 | Yes | None yet |
 
@@ -917,12 +941,16 @@ Manufacturer-specific codes: 5. Each is explained only on the cars listed beside
 
 ### Kia
 
-Manufacturer-specific codes: 13. Each is explained only on the cars listed beside it.
+Manufacturer-specific codes: 24. Each is explained only on the cars listed beside it.
 
 | Code | Name | Cars | Source |
 |---|---|---|---|
 | P1326 | Knock signal range/performance | Cerato / Forte / K3 2012–2013 (2.4 I4)<br>Cerato / Forte / K3 2014–2015 (2.0 I4)<br>Magentis / Optima / K5 2011–2013 (2.0 hybrid)<br>Magentis / Optima / K5 2011–2018 (2.0 turbo, 2.4 I4)<br>Sorento 2011–2018 (2.4 I4)<br>Sorento 2015–2018 (2.0 turbo)<br>Soul 2012–2013 (1.6 I4)<br>Soul 2014–2016 (1.6 I4, 2.0 I4)<br>Sportage 2011–2018 (2.0 turbo)<br>Sportage 2012 (2.4 I4)<br>Sportage 2014–2018 (2.4 I4) | Kia Knock Sensor Detection System bulletin, PI1803, PI1802W/X, SC291YZ: the maker's own service bulletins, filed with NHTSA |
+| P1441 | Purge valve downstream hose off | Sorento 2021–2023 (1.6 turbo hybrid) | Kia ELE285: the maker's own service bulletin, filed with NHTSA |
+| P1603 | CVT P-learning fail | Cerato / Forte / K3 2019–2020 (2.0 I4)<br>Seltos 2021 (2.0 I4)<br>Soul 2020–2021 (2.0 I4) | Kia SC199: the maker's own service bulletin, filed with NHTSA |
 | P17A0 | Navigation unit requested the check-engine light | Sorento 2022–2024 (1.6 turbo hybrid)<br>Sportage 2023–2025 (1.6 turbo hybrid) | Kia ELE394: the maker's own service bulletin, filed with NHTSA |
+| P1A77 | Check generator belt | Sorento 2021–2023 (1.6 turbo hybrid) | Kia ELE285: the maker's own service bulletin, filed with NHTSA |
+| P1A90 | DC/DC converter input voltage sensor fault | EV6 2022–2024 | Kia SC302 (recall 24V-200): the maker's own service bulletin, filed with NHTSA |
 | P1AA6 | Drive battery abnormal performance detected | Niro EV 2019–2022 | Kia ELE293: the maker's own service bulletin, filed with NHTSA |
 | P1AA7 | Drive battery cell voltage deviation | Niro EV 2019–2022 | Kia ELE293: the maker's own service bulletin, filed with NHTSA |
 | P1AA8 | Drive battery insulation resistance breakdown | Niro EV 2019–2022 | Kia ELE293: the maker's own service bulletin, filed with NHTSA |
@@ -933,7 +961,14 @@ Manufacturer-specific codes: 13. Each is explained only on the cars listed besid
 | P1AAD | Drive battery cell voltage too low | Niro EV 2019–2022 | Kia ELE293: the maker's own service bulletin, filed with NHTSA |
 | P1AAE | Drive battery temperature deviation | Niro EV 2019–2022 | Kia ELE293: the maker's own service bulletin, filed with NHTSA |
 | P1AAF | Drive battery abnormal voltage change detection fault | Niro EV 2019–2022 | Kia ELE293: the maker's own service bulletin, filed with NHTSA |
+| P1BA8 | Battery heater relay fault | Niro EV 2023 | Kia SA522: the maker's own service bulletin, filed with NHTSA |
+| P1BB2 | 12-volt lithium battery cell voltage high | Niro 2023–2024 (1.6 hybrid)<br>Sportage 2023–2024 (1.6 turbo hybrid) | Kia SA553: the maker's own service bulletin, filed with NHTSA |
 | P1C2D | High-pressure electric oil pump motor position sensor | Magentis / Optima / K5 2021–2022 (2.5 turbo)<br>Sorento 2021–2022 (2.5 turbo) | Kia SC250 (recall 22V-760): the maker's own service bulletin, filed with NHTSA |
+| P1C2E | High-pressure electric oil pump motor out of control | Magentis / Optima / K5 2021–2023 (2.5 turbo)<br>Sorento 2021–2023 (2.5 turbo) | Kia TRA111: the maker's own service bulletin, filed with NHTSA |
+| P1E01 | PFC voltage sensor reliability and offset check failed | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
+| P1E02 | PFC voltage sensor circuit low | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
+| P1E0C | Input relay stuck closed | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
+| P1E13 | Battery charger power module system voltage | EV9 2024 | Kia SA570: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
@@ -942,28 +977,28 @@ Manufacturer-specific codes: 13. Each is explained only on the cars listed besid
 | Carens / Rondo | 1999–2019 | Yes | None yet |
 | Carnival / Sedona | 1999–2026 | Yes | None yet |
 | Ceed / ProCeed / XCeed | 2006–2026 | Yes | None yet |
-| Cerato / Forte / K3 | 2003–2026 | Yes | 2012–2015: 1 code (depending on the engine) |
+| Cerato / Forte / K3 | 2003–2026 | Yes | 2012–2015: 1 code · 2019–2020: 1 code (depending on the engine) |
 | Credos / Clarus | 1995–2001 | Yes | None yet |
 | EV3 | 2024–2026 | Few or none (electric) | None |
-| EV6 | 2021–2026 | Few or none (electric) | None |
-| EV9 | 2023–2026 | Few or none (electric) | None |
+| EV6 | 2021–2026 | Few or none (electric) | 2022–2024: 1 code |
+| EV9 | 2023–2026 | Few or none (electric) | 2024: 4 codes |
 | K900 / Quoris | 2012–2025 | Yes | None yet |
-| Magentis / Optima / K5 | 2000–2026 | Yes | 2011–2018: 1 code · 2021–2022: 1 code (depending on the engine) |
+| Magentis / Optima / K5 | 2000–2026 | Yes | 2011–2018: 1 code · 2021–2022: 2 codes · 2023: 1 code (depending on the engine) |
 | Mohave / Borrego | 2008–2026 | Yes | None yet |
-| Niro | 2016–2026 | Yes | None yet |
-| Niro EV | 2018–2026 | Few or none (electric) | 2019–2022: 10 codes |
+| Niro | 2016–2026 | Yes | 2023–2024: 1 code (depending on the engine) |
+| Niro EV | 2018–2026 | Few or none (electric) | 2019–2022: 10 codes · 2023: 1 code |
 | Opirus / Amanti | 2003–2012 | Yes | None yet |
 | Picanto / Morning | 2004–2026 | Yes | None yet |
 | Pregio | 1995–2006 | Yes | None yet |
 | Pride / Festiva | 1994–2000 | Yes | None yet |
 | Rio | 2000–2026 | Yes | None yet |
-| Seltos | 2019–2026 | Yes | None yet |
+| Seltos | 2019–2026 | Yes | 2021: 1 code (depending on the engine) |
 | Sephia / Spectra / Mentor | 1994–2004 | Yes | None yet |
 | Shuma | 1997–2004 | Yes | None yet |
 | Sonet | 2020–2026 | Yes | None yet |
-| Sorento | 2002–2026 | Yes | 2011–2018: 1 code · 2021: 1 code · 2022: 2 codes · 2023–2024: 1 code (depending on the engine) |
-| Soul | 2008–2026 | Yes | 2012–2016: 1 code (depending on the engine) |
-| Sportage | 1994–2026 | Yes | 2011–2018: 1 code · 2023–2025: 1 code (depending on the engine) |
+| Sorento | 2002–2026 | Yes | 2011–2018: 1 code · 2021: 4 codes · 2022: 5 codes · 2023: 4 codes · 2024: 1 code (depending on the engine) |
+| Soul | 2008–2026 | Yes | 2012–2016: 1 code · 2020–2021: 1 code (depending on the engine) |
+| Sportage | 1994–2026 | Yes | 2011–2018: 1 code · 2023–2024: 2 codes · 2025: 1 code (depending on the engine) |
 | Stinger | 2017–2023 | Yes | None yet |
 | Stonic | 2017–2026 | Yes | None yet |
 | Tasman | 2025–2026 | Yes | None yet |

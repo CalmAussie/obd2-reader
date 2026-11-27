@@ -2,6 +2,9 @@
 
 Every change to OBD2 Reader, newest first. Each GitHub release shows the entry for its version.
 
+## 2.5.19 (27 November 2026)
+- **More maker codes for Hyundai, Genesis and Kia.** 32 more manufacturer-specific codes, each explained only for the models, years and engines the maker's own service bulletin names. Hyundai: the 12-volt lithium battery code on the Elantra, Sonata and Tucson hybrids, the electric oil pump codes for the 8-speed dual-clutch gearbox (Santa Fe, Sonata and Santa Cruz 2.5 turbo, and the Elantra N, Kona N and Veloster N), the charging unit (ICCU) codes on the Ioniq 5 and Ioniq 6, and drive battery codes on the Kona Electric. The existing purge hose and starter-generator belt codes now also cover the 2022 Tucson hybrid. Genesis: the charging unit code on the GV60. Kia: the 12-volt lithium battery code on the Niro and Sportage hybrids, charging unit codes on the EV6 and EV9, a battery heater relay code on the Niro EV, a CVT learning code on the Cerato, Soul and Seltos 2.0, an oil pump code for the Sorento and K5 2.5 turbo, and purge hose and generator belt codes on the Sorento hybrid.
+
 ## 2.5.18 (27 November 2026)
 - **Android Auto help corrected.** The Help topic and the README said that turning on Android Auto's Unknown sources setting would make OBD2 Reader appear on the car's screen. It doesn't: Google leaves car apps like this one out of that setting, and Android Auto only lists them when they were installed from Google Play. The copy from GitHub therefore doesn't appear in Android Auto, on any phone or Android version. The help now says so, and that OBD2 Reader isn't on Google Play, so any app there with this name isn't ours. Everything else in the app works as before.
 
