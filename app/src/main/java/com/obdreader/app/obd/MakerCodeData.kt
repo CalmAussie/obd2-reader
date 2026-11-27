@@ -294,7 +294,7 @@ internal object MakerCodeData {
         // https://static.nhtsa.gov/odi/tsbs/2023/MC-10232200-0001.pdf
         e("P1441", "Hyundai", listOf(f(2021, 2022, "Santa Fe", "1.6 turbo hybrid")),
             "Purge valve rear hose missing",
-            "Hyundai's definition: the hose on the tank side of the purge control valve, which carries fuel vapour to the engine, is disconnected or missing.",
+            "Hyundai's definition: a hose at the purge control valve, the valve that lets fuel vapour from the tank into the engine, is disconnected or missing. Hyundai's bulletin calls it the rear hose without saying which side of the valve that is.",
             L,
             listOf("A purge hose that has come off or wasn't refitted after work", "A split hose", "A faulty purge control valve"),
             listOf("Usually nothing you'd notice", "A fuel smell in some cases"),
