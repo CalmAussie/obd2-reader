@@ -252,6 +252,34 @@ class MakerCodesTest {
     }
 
     @Test
+    fun subaruCodesOnlyForTheCarsTheirDocumentsName() {
+        // Subaru 07-132-18R: the 2014 Crosstrek hybrid only.
+        assertEquals("Generator performance", DtcLibrary.lookup("P1C14", "Subaru", 2014, "Crosstrek / XV", "2.0 hybrid").title)
+        assertFalse(DtcLibrary.lookup("P1C14", "Subaru", 2014, "Crosstrek / XV", "2.0 H4").known)
+        assertFalse(DtcLibrary.lookup("P1C14", "Subaru", 2020, "Crosstrek / XV", "2.0 hybrid").known)
+        // Subaru 11-205-25: petrol engines only, no hybrids.
+        assertTrue(DtcLibrary.lookup("P1449", "Subaru", 2020, "Forester", "2.5").known)
+        assertTrue(DtcLibrary.lookup("P1449", "Subaru", 2023, "WRX / STI", "2.4 turbo").known)
+        assertTrue(DtcLibrary.lookup("P1449", "Subaru", 2021, "Ascent", null).known)
+        assertFalse(DtcLibrary.lookup("P1449", "Subaru", 2020, "Forester", "2.0 hybrid").known)
+        assertFalse(DtcLibrary.lookup("P1449", "Subaru", 2020, "Crosstrek / XV", "2.0 hybrid").known)
+        assertFalse(DtcLibrary.lookup("P1449", "Subaru", 2020, "Outback", "2.5").known)
+        // Subaru 11-184-18: BRZ 2017-2019.
+        assertTrue(DtcLibrary.lookup("P119F", "Subaru", 2018, "BRZ", "2.0").known)
+        assertFalse(DtcLibrary.lookup("P119F", "Subaru", 2022, "BRZ", "2.4").known)
+        // TechTIPS articles: 2020 Legacy/Outback mirrors and air mix door, 2020 Impreza/Ascent EyeSight, Solterra.
+        assertTrue(DtcLibrary.lookup("U122E", "Subaru", 2020, "Liberty / Legacy", null).known)
+        assertTrue(DtcLibrary.lookup("U122F", "Subaru", 2020, "Outback", null).known)
+        assertFalse(DtcLibrary.lookup("U122E", "Subaru", 2021, "Outback", null).known)
+        assertTrue(DtcLibrary.lookup("B1441", "Subaru", 2021, "Outback", null).known)
+        assertTrue(DtcLibrary.lookup("U1235", "Subaru", 2020, "Impreza", "2.0").known)
+        assertFalse(DtcLibrary.lookup("U1235", "Subaru", 2020, "Forester", "2.5").known)
+        assertTrue(DtcLibrary.lookup("U113B", "Subaru", 2023, "Solterra", null).known)
+        // Other makes don't pick up Subaru's meanings.
+        assertFalse(DtcLibrary.lookup("P1449", "Toyota", 2020, "Corolla", null).title == "EVAP system clog detected")
+    }
+
+    @Test
     fun fordCodesDontDependOnModelOrEngine() {
         assertTrue(DtcLibrary.lookup("P1450", "Ford", 2016, "Escape", "2.0 EcoBoost").known)
         assertTrue(DtcLibrary.lookup("P1450", "Ford", 2016, "Mustang", null).known)

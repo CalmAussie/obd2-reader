@@ -1419,6 +1419,75 @@ internal object MakerCodeData {
             listOf("The engine not starting", "A security warning light"),
             listOf("Try the spare key", "Have the 12-volt battery tested", "Ask a Subaru dealer to test the immobiliser system"),
             "Subaru 07-181-20: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2018/MC-10133519-9999.pdf
+        e("P1C14", "Subaru", listOf(f(2014, 2014, "Crosstrek", "2.0 hybrid")),
+            "Generator performance",
+            "Subaru's definition: the hybrid system's generator, the integrated starter generator (ISG), isn't performing as expected.",
+            H,
+            listOf("A fault in the integrated starter generator or its wiring", "A fault in the hybrid control system; Subaru revised how dealers diagnose this code before replacing the generator"),
+            listOf("A hybrid system warning on the dash", "Check-engine light on"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system"),
+            "Subaru 07-132-18R: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2025/MC-11013512-0001.pdf
+        e("P1449", "Subaru", listOf(
+                f(2019, 2024, "Ascent"),
+                f(2018, 2023, "Crosstrek", "2.0 H4|2.5 H4"),
+                f(2019, 2024, "Forester", "2.5"),
+                f(2017, 2023, "Impreza", "2.0"),
+                f(2022, 2024, "WRX", "2.4 turbo"),
+            ),
+            "EVAP system clog detected",
+            "Subaru's definition: the engine computer has found a blockage in the evaporative emissions (EVAP) system, which stores fuel vapour from the tank and feeds it to the engine.",
+            L,
+            listOf("Debris blocking the EVAP system's drain filter, the cause Subaru names for these cars", "A kinked or blocked vapour hose"),
+            listOf("Check-engine light on", "Usually no change in how the car drives"),
+            listOf("Make sure the fuel cap clicks shut", "Ask a Subaru dealer whether the new drain filter in their bulletin for these cars has been fitted"),
+            "Subaru 11-205-25: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2018/MC-10153613-9999.pdf
+        e("P119F", "Subaru", listOf(f(2017, 2019, "BRZ", "2.0")),
+            "Air-fuel ratio imbalance (direct injection)",
+            "Subaru's definition: the engine computer sees the air-fuel mixture differing between cylinders on the direct-injection side, judged from small swings in engine speed.",
+            M,
+            listOf("Engine computer software that can set this code in error once the engine is warm, which Subaru updated for manual-gearbox cars", "Valve clearances out of specification, which Subaru names as a factor", "A faulty fuel injector"),
+            listOf("Check-engine light on", "A slightly rough idle in some cases", "Often no change in how the car drives"),
+            listOf("On a manual-gearbox car, ask a Subaru dealer whether the engine computer update in their bulletin has been done", "Have the valve clearances checked if the code returns after the update"),
+            "Subaru 11-184-18: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10171103-0001.pdf
+        e("U122E U122F", "Subaru", listOf(f(2020, 2020, "Legacy|Outback")),
+            "Lost communication with a door mirror module",
+            "Subaru's definition: a control module has lost communication with a door mirror module, U122E for the left mirror and U122F for the right mirror. Subaru's US newsletter, written for left-hand-drive cars, calls these the driver's and passenger's mirrors.",
+            L,
+            listOf("A loose wiring connector behind the lower trim cover of the door mirror, the cause Subaru found on these cars", "Damaged wiring in the door", "A faulty mirror module"),
+            listOf("Mirror tilt or seat memory not working", "The driver monitoring system not recognising the driver", "Other communication codes stored at the same time"),
+            listOf("Have the mirror connectors behind the lower trim checked and refitted", "Have the 12-volt battery tested; low voltage causes many communication codes", "Ask a Subaru dealer to check the mirror module and its wiring if the code returns"),
+            "Subaru TechTIPS January 2020: the maker's own technician newsletter, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2021/MC-10189668-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2021/MC-10198755-0001.pdf
+        e("U1235", "Subaru", listOf(f(2020, 2020, "Impreza|Ascent")),
+            "Lost communication with EyeSight",
+            "Subaru's definition: the car's networked control units have lost communication with the EyeSight driver-assist system.",
+            M,
+            listOf("A loose or backed-out pin in a wiring connector on the network, the cause Subaru found on these cars", "Damaged network wiring", "A fault in the EyeSight unit"),
+            listOf("An EyeSight warning, with EyeSight and adaptive cruise control switched off", "The same code stored in several control units"),
+            listOf("Don't rely on EyeSight or adaptive cruise control until it's fixed", "Have the 12-volt battery tested; low voltage causes many communication codes", "Ask a Subaru dealer to check the EyeSight connectors and network wiring"),
+            "Subaru TechTIPS February 2021: the maker's own technician newsletter, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10182238-0001.pdf
+        e("B1441", "Subaru", listOf(f(2020, 2021, "Legacy|Outback")),
+            "Passenger air mix door actuator stuck",
+            "Subaru's definition: the actuator that moves the air mix door on the passenger side, which blends hot and cold air, is stuck.",
+            L,
+            listOf("A faulty air mix door actuator", "A sticking air mix door", "Damaged wiring or a loose connector at the actuator"),
+            listOf("The passenger side blowing air at the wrong temperature", "A clicking noise from behind the dashboard in some cases"),
+            listOf("Note whether the driver and passenger sides blow different temperatures", "Ask a Subaru dealer to check the passenger air mix door actuator and its connector"),
+            "Subaru TechTIPS October 2020: the maker's own technician newsletter, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10222352-0001.pdf
+        e("U113B", "Subaru", listOf(f(2023, 2023, "Solterra")),
+            "Lost communication with the charging communication module",
+            "Subaru's definition: the charging computer (plug-in ECU) isn't getting messages it expects from the communication ECU, over the network wiring between them.",
+            M,
+            listOf("Service or maintenance work, including the pre-delivery check, which Subaru says can set this code", "A fault in the network wiring between the two modules"),
+            listOf("A Plug-in Charge System warning on the dash"),
+            listOf("Note whether the code appeared after service work", "Have a Subaru dealer check and clear it; if it returns, they need to check the wiring between the modules"),
+            "Subaru TechTIPS August 2022: the maker's own technician newsletter, filed with NHTSA")
     }
 
     private fun mitsubishi(sink: Sink) = with(sink) {
