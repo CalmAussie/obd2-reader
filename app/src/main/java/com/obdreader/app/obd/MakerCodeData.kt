@@ -39,6 +39,7 @@ internal object MakerCodeData {
         val sink = Sink(this)
         kia(sink)
         hyundai(sink)
+        genesis(sink)
         toyota(sink)
         gm(sink)
         honda(sink)
@@ -184,13 +185,116 @@ internal object MakerCodeData {
             listOf("A transmission warning", "Loss of drive, sometimes after a short warning", "The gearbox going into a fail-safe mode"),
             listOf("If a transmission warning appears, pull over safely as soon as you can", "Ask a Kia dealer whether the pump recall or software update has been done on your car"),
             "Kia SC250 (recall 22V-760): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10245264-0001.pdf
+        e("P1BB2", "Kia", listOf(f(2023, 2024, "Niro", "1.6 hybrid"), f(2023, 2024, "Sportage", "1.6 turbo hybrid")),
+            "12-volt lithium battery cell voltage high",
+            "Kia's definition: a cell in the car's 12-volt lithium battery is above its normal voltage. These hybrids use a lithium 12-volt battery rather than a lead-acid one.",
+            M,
+            listOf("The car being left in high heat or hot weather, the condition Kia's bulletin names", "Battery management software, which Kia's service action for these cars updates"),
+            listOf("A warning light on the dash", "Often no change in how the car drives"),
+            listOf("Note when the warning appears, for example after parking in hot weather", "Ask a Kia dealer whether the battery software update in their bulletin for these cars has been done", "Have the 12-volt battery checked by a dealer; lithium 12-volt batteries need the maker's test tools"),
+            "Kia SA553: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/rcl/2024/RCRIT-24V200-9454.pdf
+        e("P1A90", "Kia", listOf(f(2022, 2024, "EV6")),
+            "DC/DC converter input voltage sensor fault",
+            "Kia's definition: a fault with the input voltage sensor of the DC/DC converter. The converter sits in the charging unit (ICCU) and charges the 12-volt battery from the drive battery.",
+            H,
+            listOf("A fault inside the charging unit (ICCU)", "A blown fuse in the charging unit's circuit, which the recall checks", "Charging unit software, which Kia's recall updates"),
+            listOf("A warning on the dash", "The 12-volt battery going flat", "In some cases the car losing drive power, the risk Kia's recall addresses"),
+            listOf("If a power warning appears, pull over safely as soon as you can", "Have the 12-volt battery tested", "Ask a Kia dealer whether the charging unit (ICCU) recall has been done on your car"),
+            "Kia SC302 (recall 24V-200): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004385-0001.pdf
+        e("P1E01", "Kia", listOf(f(2024, 2024, "EV9")),
+            "Charger input voltage sensor self-check failed",
+            "Kia's definition: the voltage sensor in the on-board charger's input stage, which takes in mains (AC) power (Kia calls it the PFC, power factor correction, stage), failed its reliability and starting offset check.",
+            M,
+            listOf("A difference between the charging unit's real and sensed temperature, which Kia's software update for these cars addresses", "A fault inside the charging unit (ICCU), which Kia's service action replaces where needed"),
+            listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
+            listOf("Try a different charge point or cable to rule them out", "Have the 12-volt battery tested", "Ask a Kia dealer whether the charging unit (ICCU) service action applies to your car"),
+            "Kia SA570: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004385-0001.pdf
+        e("P1E02", "Kia", listOf(f(2024, 2024, "EV9")),
+            "Charger input voltage sensor reading low",
+            "Kia's definition: the voltage sensor circuit in the on-board charger's input stage, which takes in mains (AC) power (Kia calls it the PFC, power factor correction, stage), reads lower than it should.",
+            M,
+            listOf("A difference between the charging unit's real and sensed temperature, which Kia's software update for these cars addresses", "A fault inside the charging unit (ICCU), which Kia's service action replaces where needed"),
+            listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
+            listOf("Try a different charge point or cable to rule them out", "Have the 12-volt battery tested", "Ask a Kia dealer whether the charging unit (ICCU) service action applies to your car"),
+            "Kia SA570: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004385-0001.pdf
+        e("P1E13", "Kia", listOf(f(2024, 2024, "EV9")),
+            "Charger power module voltage fault",
+            "Kia's definition: a voltage fault in the power module of the on-board battery charger, inside the charging unit (ICCU).",
+            M,
+            listOf("A difference between the charging unit's real and sensed temperature, which Kia's software update for these cars addresses", "A fault inside the charging unit (ICCU), which Kia's service action replaces where needed"),
+            listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
+            listOf("Try a different charge point or cable to rule them out", "Have the 12-volt battery tested", "Ask a Kia dealer whether the charging unit (ICCU) service action applies to your car"),
+            "Kia SA570: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004385-0001.pdf
+        e("P1E0C", "Kia", listOf(f(2024, 2024, "EV9")),
+            "Input relay stuck closed",
+            "Kia's definition: a relay at the charging unit's input is stuck closed and doesn't open when it should.",
+            M,
+            listOf("A difference between the charging unit's real and sensed temperature, which Kia's software update for these cars addresses", "A fault inside the charging unit (ICCU), which Kia's service action replaces where needed"),
+            listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
+            listOf("Try a different charge point or cable to rule them out", "Have the 12-volt battery tested", "Ask a Kia dealer whether the charging unit (ICCU) service action applies to your car"),
+            "Kia SA570: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10230886-0001.pdf
+        e("P1BA8", "Kia", listOf(f(2023, 2023, "Niro EV")),
+            "Battery heater relay fault",
+            "Kia's definition: a fault with the relay that the battery management system uses to switch the drive battery's heater.",
+            M,
+            listOf("Battery management software that can flag the relay wrongly, the cause Kia names for these cars", "A faulty relay or battery heater"),
+            listOf("An EV system warning on the dash"),
+            listOf("Ask a Kia dealer whether the battery coolant service action in their bulletin for these cars has been done", "Have the battery heater circuit tested if the code returns"),
+            "Kia SA522: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10216497-0001.pdf
+        e("P1603", "Kia", listOf(
+                f(2019, 2020, "Forte", "2.0 I4"),
+                f(2021, 2021, "Seltos", "2.0 I4"),
+                f(2020, 2021, "Soul", "2.0 I4"),
+            ),
+            "CVT self-learning (P-learning) not completed",
+            "Kia's definition: the computer for the CVT automatic (Kia calls it IVT) couldn't complete one of its self-learning steps, which Kia calls P-learning.",
+            M,
+            listOf("Transmission software logic, which Kia's emissions campaign for these cars updates", "In some cases a fault inside the transmission, which the same campaign replaces"),
+            listOf("Check-engine light on", "Often no change in how the car drives"),
+            listOf("Ask a Kia dealer whether the transmission software campaign for these cars has been done", "Have the transmission fluid level and condition checked"),
+            "Kia SC199: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11010699-0001.pdf
+        e("P1C2E", "Kia", listOf(f(2021, 2023, "K5|Sorento", "2.5 turbo")),
+            "High-pressure electric oil pump motor control fault",
+            "Kia's definition: the motor of the electric pump that supplies high-pressure oil to the 8-speed dual-clutch gearbox has gone out of control.",
+            H,
+            listOf("Gearbox software, which Kia's bulletin for these cars updates", "A fault in the gearbox's electric oil pump"),
+            listOf("A transmission warning", "Harsh shifts, slipping gears or no drive when in D", "The gearbox going into a fail-safe mode"),
+            listOf("If a transmission warning appears, pull over safely as soon as you can", "Ask a Kia dealer whether the gearbox software update in their bulletin has been done on your car"),
+            "Kia TRA111: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233643-0001.pdf
+        e("P1441", "Kia", listOf(f(2021, 2023, "Sorento", "1.6 turbo hybrid")),
+            "Purge valve downstream hose off",
+            "Kia's definition: the hose after the purge control valve, which carries fuel vapour to the engine, appears to be off.",
+            L,
+            listOf("Engine oil diluted with fuel or moisture from repeated short trips, which Kia's bulletin for these cars links to this code", "Engine and hybrid control software, which Kia updated for these cars", "A purge hose that really has come off or split"),
+            listOf("Check-engine light on", "Usually no change in how the car drives"),
+            listOf("Check the hoses at the purge control valve are pushed fully home", "Check the engine oil level; a level above the full mark can mean fuel in the oil", "Take a longer drive now and then so the engine fully warms up", "Ask a Kia dealer whether the software update in their bulletin for these cars has been done"),
+            "Kia ELE285: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10233643-0001.pdf
+        e("P1A77", "Kia", listOf(f(2021, 2023, "Sorento", "1.6 turbo hybrid")),
+            "Hybrid starter-generator belt fault",
+            "Kia's definition: the computer has flagged the belt that drives the hybrid starter-generator for checking. That unit restarts the engine and helps charge the hybrid battery.",
+            M,
+            listOf("Engine oil diluted with fuel or moisture from repeated short trips, which Kia's bulletin for these cars links to this code", "Engine and hybrid control software, which Kia updated for these cars", "A worn or stretched belt, or a weak tensioner"),
+            listOf("Check-engine light on", "A squeal from the engine bay on start-up", "Rough or slow engine restarts"),
+            listOf("Look at the belt for cracks, glazing or fluid on it", "Check the engine oil level; a level above the full mark can mean fuel in the oil", "Take a longer drive now and then so the engine fully warms up", "Ask a Kia dealer whether the software update in their bulletin for these cars has been done"),
+            "Kia ELE285: the maker's own service bulletin, filed with NHTSA")
     }
 
     private fun hyundai(sink: Sink) = with(sink) {
         // https://static.nhtsa.gov/odi/tsbs/2023/MC-10232200-0001.pdf
         e("P1441", "Hyundai", listOf(f(2021, 2022, "Santa Fe", "1.6 turbo hybrid")),
             "Purge valve rear hose missing",
-            "Hyundai's definition: the hose on the tank side of the purge control valve, which carries fuel vapour to the engine, is disconnected or missing.",
+            "Hyundai's definition: a hose at the purge control valve, the valve that lets fuel vapour from the tank into the engine, is disconnected or missing. Hyundai's bulletin calls it the rear hose without saying which side of the valve that is.",
             L,
             listOf("A purge hose that has come off or wasn't refitted after work", "A split hose", "A faulty purge control valve"),
             listOf("Usually nothing you'd notice", "A fuel smell in some cases"),
@@ -250,6 +354,232 @@ internal object MakerCodeData {
             listOf("An EV system warning", "Reduced power or range", "Charging stopping early or not starting"),
             listOf("Stop charging and park outside if you notice heat, smell or smoke", "Don't open or work on the battery yourself", "Ask a Hyundai dealer to test the battery; battery faults are often covered by the battery warranty"),
             "Hyundai 26-EV-002H: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2025/MC-11014285-0001.pdf
+        e("P1BB2", "Hyundai", listOf(
+                f(2021, 2023, "Elantra", "1.6 hybrid"),
+                f(2020, 2022, "Sonata", "2.0 hybrid"),
+                f(2022, 2024, "Tucson", "1.6 turbo hybrid"),
+            ),
+            "12-volt lithium battery cell voltage high",
+            "Hyundai's definition: a cell in the car's 12-volt lithium battery is above its normal voltage. These hybrids use a lithium 12-volt battery rather than a lead-acid one.",
+            M,
+            listOf("Battery management software, which Hyundai's campaign for these cars updates", "A fault in the 12-volt lithium battery itself"),
+            listOf("A warning light on the dash", "Often no change in how the car drives"),
+            listOf("Note when the warning appears, for example after parking in hot weather", "Ask a Hyundai dealer whether the battery software update in their campaign for these cars has been done", "Have the 12-volt battery checked by a dealer; lithium 12-volt batteries need the maker's test tools"),
+            "Hyundai 25-01-010H (SC9B4): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10217250-0001.pdf; https://static.nhtsa.gov/odi/rcl/2022/RCRIT-22V746-7209.pdf
+        e("P1C2D", "Hyundai", listOf(
+                f(2022, 2022, "Elantra|Kona", "2.0 turbo (N)"),
+                f(2022, 2022, "Santa Cruz", "2.5 turbo"),
+                f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
+                f(2020, 2022, "Veloster", "2.0 turbo (N)"),
+            ),
+            "High-pressure electric oil pump motor position sensor",
+            "Hyundai's definition: a fault with the position sensor in the motor of the electric pump that supplies high-pressure oil to the dual-clutch gearbox.",
+            H,
+            listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
+            listOf("A transmission warning on the dash", "Rough or harsh gear changes, hesitation or loss of drive", "The gearbox going into a fail-safe mode"),
+            listOf("If a transmission warning appears, pull over safely as soon as you can", "Ask a Hyundai dealer whether the gearbox software recall and bulletin for these cars have been done"),
+            "Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10217250-0001.pdf
+        e("P1C2E", "Hyundai", listOf(
+                f(2022, 2022, "Elantra|Kona", "2.0 turbo (N)"),
+                f(2022, 2022, "Santa Cruz", "2.5 turbo"),
+                f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
+                f(2020, 2022, "Veloster", "2.0 turbo (N)"),
+            ),
+            "High-pressure electric oil pump motor control fault",
+            "Hyundai's definition: the motor of the electric pump that supplies high-pressure oil to the dual-clutch gearbox isn't being controlled properly.",
+            H,
+            listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
+            listOf("A transmission warning on the dash", "Rough or harsh gear changes, hesitation or loss of drive", "The gearbox going into a fail-safe mode"),
+            listOf("If a transmission warning appears, pull over safely as soon as you can", "Ask a Hyundai dealer whether the gearbox software recall and bulletin for these cars have been done"),
+            "Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10217250-0001.pdf
+        e("P193B", "Hyundai", listOf(
+                f(2022, 2022, "Elantra|Kona", "2.0 turbo (N)"),
+                f(2022, 2022, "Santa Cruz", "2.5 turbo"),
+                f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
+                f(2020, 2022, "Veloster", "2.0 turbo (N)"),
+            ),
+            "High-pressure electric oil pump low hydraulic pressure",
+            "Hyundai's definition: the electric pump that supplies high-pressure oil to the dual-clutch gearbox isn't building enough pressure.",
+            H,
+            listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
+            listOf("A transmission warning on the dash", "Rough or harsh gear changes, hesitation or loss of drive", "The gearbox going into a fail-safe mode"),
+            listOf("If a transmission warning appears, pull over safely as soon as you can", "Ask a Hyundai dealer whether the gearbox software recall and bulletin for these cars have been done"),
+            "Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10217250-0001.pdf
+        e("P193D", "Hyundai", listOf(
+                f(2022, 2022, "Elantra|Kona", "2.0 turbo (N)"),
+                f(2022, 2022, "Santa Cruz", "2.5 turbo"),
+                f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
+                f(2020, 2022, "Veloster", "2.0 turbo (N)"),
+            ),
+            "Second gearbox oil pump system fault",
+            "Hyundai's definition: a fault in the gearbox's second electric oil pump, which Hyundai labels the HF EOP.",
+            H,
+            listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
+            listOf("A transmission warning on the dash", "Rough or harsh gear changes, hesitation or loss of drive", "The gearbox going into a fail-safe mode"),
+            listOf("If a transmission warning appears, pull over safely as soon as you can", "Ask a Hyundai dealer whether the gearbox software recall and bulletin for these cars have been done"),
+            "Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10217250-0001.pdf
+        e("P193E", "Hyundai", listOf(
+                f(2022, 2022, "Elantra|Kona", "2.0 turbo (N)"),
+                f(2022, 2022, "Santa Cruz", "2.5 turbo"),
+                f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
+                f(2020, 2022, "Veloster", "2.0 turbo (N)"),
+            ),
+            "Second gearbox oil pump performance",
+            "Hyundai's definition: the gearbox's second electric oil pump, which Hyundai labels the HF EOP, isn't performing as expected.",
+            H,
+            listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
+            listOf("A transmission warning on the dash", "Rough or harsh gear changes, hesitation or loss of drive", "The gearbox going into a fail-safe mode"),
+            listOf("If a transmission warning appears, pull over safely as soon as you can", "Ask a Hyundai dealer whether the gearbox software recall and bulletin for these cars have been done"),
+            "Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10217250-0001.pdf
+        e("U1135", "Hyundai", listOf(
+                f(2022, 2022, "Elantra|Kona", "2.0 turbo (N)"),
+                f(2022, 2022, "Santa Cruz", "2.5 turbo"),
+                f(2021, 2022, "Santa Fe|Sonata", "2.5 turbo"),
+                f(2020, 2022, "Veloster", "2.0 turbo (N)"),
+            ),
+            "Gearbox computer lost contact with second oil pump",
+            "Hyundai's definition: the gearbox computer can't communicate properly with the second electric oil pump, which Hyundai labels the HF EOP.",
+            H,
+            listOf("A fault in the gearbox's electric oil pump or its wiring", "Gearbox computer software, which Hyundai updated for these cars"),
+            listOf("A transmission warning on the dash", "Rough or harsh gear changes, hesitation or loss of drive", "The gearbox going into a fail-safe mode"),
+            listOf("If a transmission warning appears, pull over safely as soon as you can", "Ask a Hyundai dealer whether the gearbox software recall and bulletin for these cars have been done"),
+            "Hyundai 22-AT-009H: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2026/MC-11033693-0001.pdf; https://static.nhtsa.gov/odi/rcl/2024/RCRIT-24V204-8922.pdf
+        e("P1A90", "Hyundai", listOf(f(2022, 2024, "Ioniq 5"), f(2023, 2025, "Ioniq 6")),
+            "DC/DC converter input voltage sensor fault",
+            "Hyundai's definition: a fault with the input voltage sensor of the DC/DC converter. The converter sits in the charging unit (ICCU) and charges the 12-volt battery from the drive battery.",
+            H,
+            listOf("A fault inside the charging unit (ICCU)", "A blown fuse in the charging unit's circuit, which the recall checks", "Charging unit software, which Hyundai's recall updates"),
+            listOf("A warning on the dash", "The 12-volt battery going flat", "In some cases the car losing drive power, the risk Hyundai's recall addresses"),
+            listOf("If a power warning appears, pull over safely as soon as you can", "Have the 12-volt battery tested", "Ask a Hyundai dealer whether the charging unit (ICCU) recall has been done on your car"),
+            "Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2026/MC-11033693-0001.pdf
+        e("P1E01", "Hyundai", listOf(f(2022, 2024, "Ioniq 5"), f(2023, 2025, "Ioniq 6")),
+            "Charger input voltage sensor self-check failed",
+            "Hyundai's definition: the voltage sensor in the on-board charger's input stage, which takes in mains (AC) power (Hyundai calls it the PFC, power factor correction, stage), failed its reliability and starting offset check.",
+            M,
+            listOf("A fault inside the charging unit (ICCU), which Hyundai's warranty extension for these cars covers by replacing the unit"),
+            listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
+            listOf("Try a different charge point or cable to rule them out", "Have the 12-volt battery tested", "Ask a Hyundai dealer whether the charging unit (ICCU) warranty extension applies to your car"),
+            "Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2026/MC-11033693-0001.pdf
+        e("P1E02", "Hyundai", listOf(f(2022, 2024, "Ioniq 5"), f(2023, 2025, "Ioniq 6")),
+            "Charger input voltage sensor reading low",
+            "Hyundai's definition: the voltage sensor circuit in the on-board charger's input stage, which takes in mains (AC) power (Hyundai calls it the PFC, power factor correction, stage), reads lower than it should.",
+            M,
+            listOf("A fault inside the charging unit (ICCU), which Hyundai's warranty extension for these cars covers by replacing the unit"),
+            listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
+            listOf("Try a different charge point or cable to rule them out", "Have the 12-volt battery tested", "Ask a Hyundai dealer whether the charging unit (ICCU) warranty extension applies to your car"),
+            "Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2026/MC-11033693-0001.pdf
+        e("P1E13", "Hyundai", listOf(f(2022, 2024, "Ioniq 5"), f(2023, 2025, "Ioniq 6")),
+            "Inverter charging relay fault",
+            "Hyundai's definition: a fault with the charging unit's inverter charging relay, a switch in the charging circuit.",
+            M,
+            listOf("A fault inside the charging unit (ICCU), which Hyundai's warranty extension for these cars covers by replacing the unit"),
+            listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
+            listOf("Try a different charge point or cable to rule them out", "Have the 12-volt battery tested", "Ask a Hyundai dealer whether the charging unit (ICCU) warranty extension applies to your car"),
+            "Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2026/MC-11033693-0001.pdf
+        e("P1E14", "Hyundai", listOf(f(2022, 2024, "Ioniq 5"), f(2023, 2025, "Ioniq 6")),
+            "Charger input stage output voltage too high",
+            "Hyundai's definition: the output voltage of the on-board charger's input stage, which takes in mains (AC) power (Hyundai calls it the PFC, power factor correction, stage), is higher than it should be.",
+            M,
+            listOf("A fault inside the charging unit (ICCU), which Hyundai's warranty extension for these cars covers by replacing the unit"),
+            listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
+            listOf("Try a different charge point or cable to rule them out", "Have the 12-volt battery tested", "Ask a Hyundai dealer whether the charging unit (ICCU) warranty extension applies to your car"),
+            "Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2026/MC-11033693-0001.pdf
+        e("P1E0C", "Hyundai", listOf(f(2022, 2024, "Ioniq 5"), f(2023, 2025, "Ioniq 6")),
+            "Input relay stuck closed",
+            "Hyundai's definition: a relay at the charging unit's input is stuck closed and doesn't open when it should.",
+            M,
+            listOf("A fault inside the charging unit (ICCU), which Hyundai's warranty extension for these cars covers by replacing the unit"),
+            listOf("A charging warning, or charging not starting or stopping early", "An EV system warning on the dash"),
+            listOf("Try a different charge point or cable to rule them out", "Have the 12-volt battery tested", "Ask a Hyundai dealer whether the charging unit (ICCU) warranty extension applies to your car"),
+            "Hyundai 26-EV-004H (warranty extension Z14): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10244989-0001.pdf
+        e("P1AA7", "Hyundai", listOf(f(2019, 2023, "Kona Electric")),
+            "Drive battery cell voltage deviation",
+            "Hyundai's definition: one or more cells in the drive battery are at a different voltage from the rest.",
+            H,
+            listOf("A weak or damaged battery cell", "A fault in the battery's cooling", "Battery management software, which Hyundai's campaign for these cars updates", "A fault in the battery management system or its sensors"),
+            listOf("An EV system warning", "Reduced power or range", "Charging stopping early or not starting"),
+            listOf("Stop charging and park outside if you notice heat, smell or smoke", "Don't open or work on the battery yourself", "Ask a Hyundai dealer to test the battery and whether the Kona Electric battery campaign has been done on your car"),
+            "Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10244989-0001.pdf
+        e("P1AA8", "Hyundai", listOf(f(2019, 2023, "Kona Electric")),
+            "Drive battery insulation resistance error",
+            "Hyundai's definition: the insulation that keeps high voltage away from the car's body is weaker than it should be somewhere.",
+            H,
+            listOf("A weak or damaged battery cell", "A fault in the battery's cooling", "Battery management software, which Hyundai's campaign for these cars updates", "A fault in the battery management system or its sensors"),
+            listOf("An EV system warning", "Reduced power or range", "Charging stopping early or not starting"),
+            listOf("Stop charging and park outside if you notice heat, smell or smoke", "Don't open or work on the battery yourself", "Ask a Hyundai dealer to test the battery and whether the Kona Electric battery campaign has been done on your car"),
+            "Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10244989-0001.pdf
+        e("P1AA9", "Hyundai", listOf(f(2019, 2023, "Kona Electric")),
+            "Abnormal cell voltage change after charging",
+            "Hyundai's definition: a cell's voltage changed abnormally after the car finished charging.",
+            H,
+            listOf("A weak or damaged battery cell", "A fault in the battery's cooling", "Battery management software, which Hyundai's campaign for these cars updates", "A fault in the battery management system or its sensors"),
+            listOf("An EV system warning", "Reduced power or range", "Charging stopping early or not starting"),
+            listOf("Stop charging and park outside if you notice heat, smell or smoke", "Don't open or work on the battery yourself", "Ask a Hyundai dealer to test the battery and whether the Kona Electric battery campaign has been done on your car"),
+            "Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10244989-0001.pdf
+        e("P1AAB", "Hyundai", listOf(f(2019, 2023, "Kona Electric")),
+            "Drive battery overtemperature",
+            "Hyundai's definition: the drive battery is hotter than its safe limit.",
+            H,
+            listOf("A weak or damaged battery cell", "A fault in the battery's cooling", "Battery management software, which Hyundai's campaign for these cars updates", "A fault in the battery management system or its sensors"),
+            listOf("An EV system warning", "Reduced power or range", "Charging stopping early or not starting"),
+            listOf("Stop charging and park outside if you notice heat, smell or smoke", "Don't open or work on the battery yourself", "Ask a Hyundai dealer to test the battery and whether the Kona Electric battery campaign has been done on your car"),
+            "Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10244989-0001.pdf
+        e("P1AAC", "Hyundai", listOf(f(2019, 2023, "Kona Electric")),
+            "Drive battery overvoltage",
+            "Hyundai's definition: the drive battery's voltage is above its safe limit.",
+            H,
+            listOf("A weak or damaged battery cell", "A fault in the battery's cooling", "Battery management software, which Hyundai's campaign for these cars updates", "A fault in the battery management system or its sensors"),
+            listOf("An EV system warning", "Reduced power or range", "Charging stopping early or not starting"),
+            listOf("Stop charging and park outside if you notice heat, smell or smoke", "Don't open or work on the battery yourself", "Ask a Hyundai dealer to test the battery and whether the Kona Electric battery campaign has been done on your car"),
+            "Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10244989-0001.pdf
+        e("P1AAD", "Hyundai", listOf(f(2019, 2023, "Kona Electric")),
+            "Drive battery low voltage",
+            "Hyundai's definition: the drive battery's voltage is below its safe limit.",
+            H,
+            listOf("A weak or damaged battery cell", "A fault in the battery's cooling", "Battery management software, which Hyundai's campaign for these cars updates", "A fault in the battery management system or its sensors"),
+            listOf("An EV system warning", "Reduced power or range", "Charging stopping early or not starting"),
+            listOf("Stop charging and park outside if you notice heat, smell or smoke", "Don't open or work on the battery yourself", "Ask a Hyundai dealer to test the battery and whether the Kona Electric battery campaign has been done on your car"),
+            "Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10244989-0001.pdf
+        e("P1AAE", "Hyundai", listOf(f(2019, 2023, "Kona Electric")),
+            "Drive battery temperature deviation",
+            "Hyundai's definition: parts of the drive battery are at noticeably different temperatures from each other.",
+            M,
+            listOf("A weak or damaged battery cell", "A fault in the battery's cooling", "Battery management software, which Hyundai's campaign for these cars updates", "A fault in the battery management system or its sensors"),
+            listOf("An EV system warning", "Reduced power or range", "Charging stopping early or not starting"),
+            listOf("Stop charging and park outside if you notice heat, smell or smoke", "Don't open or work on the battery yourself", "Ask a Hyundai dealer to test the battery and whether the Kona Electric battery campaign has been done on your car"),
+            "Hyundai 23-01-073H-1 (SC9A4): the maker's own service bulletin, filed with NHTSA")
+    }
+
+    private fun genesis(sink: Sink) = with(sink) {
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10243366-0001.pdf
+        e("P1A90", "Genesis", listOf(f(2023, 2024, "GV60")),
+            "DC/DC converter input voltage sensor fault",
+            "Genesis's definition: a fault with the input voltage sensor of the DC/DC converter. The converter sits in the charging unit (ICCU) and charges the 12-volt battery from the drive battery.",
+            H,
+            listOf("A fault inside the charging unit (ICCU)", "A blown fuse in the charging unit's circuit, which the recall checks", "Charging unit software, which Genesis's recall updates"),
+            listOf("A warning on the dash", "The 12-volt battery going flat", "In some cases the car losing drive power, the risk Genesis's recall addresses"),
+            listOf("If a power warning appears, pull over safely as soon as you can", "Have the 12-volt battery tested", "Ask a Genesis dealer whether the charging unit (ICCU) recall has been done on your car"),
+            "Genesis 23-01-069G-1 (SC907G): the maker's own service bulletin, filed with NHTSA")
     }
 
     private fun toyota(sink: Sink) = with(sink) {
@@ -1089,6 +1419,75 @@ internal object MakerCodeData {
             listOf("The engine not starting", "A security warning light"),
             listOf("Try the spare key", "Have the 12-volt battery tested", "Ask a Subaru dealer to test the immobiliser system"),
             "Subaru 07-181-20: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2018/MC-10133519-9999.pdf
+        e("P1C14", "Subaru", listOf(f(2014, 2014, "Crosstrek", "2.0 hybrid")),
+            "Generator performance",
+            "Subaru's definition: the hybrid system's generator, the integrated starter generator (ISG), isn't performing as expected.",
+            H,
+            listOf("A fault in the integrated starter generator or its wiring", "A fault in the hybrid control system; Subaru revised how dealers diagnose this code before replacing the generator"),
+            listOf("A hybrid system warning on the dash", "Check-engine light on"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system"),
+            "Subaru 07-132-18R: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2025/MC-11013512-0001.pdf
+        e("P1449", "Subaru", listOf(
+                f(2019, 2024, "Ascent"),
+                f(2018, 2023, "Crosstrek", "2.0 H4|2.5 H4"),
+                f(2019, 2024, "Forester", "2.5"),
+                f(2017, 2023, "Impreza", "2.0"),
+                f(2022, 2024, "WRX", "2.4 turbo"),
+            ),
+            "EVAP system clog detected",
+            "Subaru's definition: the engine computer has found a blockage in the evaporative emissions (EVAP) system, which stores fuel vapour from the tank and feeds it to the engine.",
+            L,
+            listOf("Debris blocking the EVAP system's drain filter, the cause Subaru names for these cars", "A kinked or blocked vapour hose"),
+            listOf("Check-engine light on", "Usually no change in how the car drives"),
+            listOf("Make sure the fuel cap clicks shut", "Ask a Subaru dealer whether the new drain filter in their bulletin for these cars has been fitted"),
+            "Subaru 11-205-25: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2018/MC-10153613-9999.pdf
+        e("P119F", "Subaru", listOf(f(2017, 2019, "BRZ", "2.0")),
+            "Air-fuel ratio imbalance (direct injection)",
+            "Subaru's definition: the engine computer sees the air-fuel mixture differing between cylinders on the direct-injection side, judged from small swings in engine speed.",
+            M,
+            listOf("Engine computer software that can set this code in error once the engine is warm, which Subaru updated for manual-gearbox cars", "Valve clearances out of specification, which Subaru names as a factor", "A faulty fuel injector"),
+            listOf("Check-engine light on", "A slightly rough idle in some cases", "Often no change in how the car drives"),
+            listOf("On a manual-gearbox car, ask a Subaru dealer whether the engine computer update in their bulletin has been done", "Have the valve clearances checked if the code returns after the update"),
+            "Subaru 11-184-18: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10171103-0001.pdf
+        e("U122E U122F", "Subaru", listOf(f(2020, 2020, "Legacy|Outback")),
+            "Lost communication with a door mirror module",
+            "Subaru's definition: a control module has lost communication with a door mirror module, U122E for the left mirror and U122F for the right mirror. Subaru's US newsletter, written for left-hand-drive cars, calls these the driver's and passenger's mirrors.",
+            L,
+            listOf("A loose wiring connector behind the lower trim cover of the door mirror, the cause Subaru found on these cars", "Damaged wiring in the door", "A faulty mirror module"),
+            listOf("Mirror tilt or seat memory not working", "The driver monitoring system not recognising the driver", "Other communication codes stored at the same time"),
+            listOf("Have the mirror connectors behind the lower trim checked and refitted", "Have the 12-volt battery tested; low voltage causes many communication codes", "Ask a Subaru dealer to check the mirror module and its wiring if the code returns"),
+            "Subaru TechTIPS January 2020: the maker's own technician newsletter, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2021/MC-10189668-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2021/MC-10198755-0001.pdf
+        e("U1235", "Subaru", listOf(f(2020, 2020, "Impreza|Ascent")),
+            "Lost communication with EyeSight",
+            "Subaru's definition: the car's networked control units have lost communication with the EyeSight driver-assist system.",
+            M,
+            listOf("A loose or backed-out pin in a wiring connector on the network, the cause Subaru found on these cars", "Damaged network wiring", "A fault in the EyeSight unit"),
+            listOf("An EyeSight warning, with EyeSight and adaptive cruise control switched off", "The same code stored in several control units"),
+            listOf("Don't rely on EyeSight or adaptive cruise control until it's fixed", "Have the 12-volt battery tested; low voltage causes many communication codes", "Ask a Subaru dealer to check the EyeSight connectors and network wiring"),
+            "Subaru TechTIPS February 2021: the maker's own technician newsletter, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10182238-0001.pdf
+        e("B1441", "Subaru", listOf(f(2020, 2021, "Legacy|Outback")),
+            "Passenger air mix door actuator stuck",
+            "Subaru's definition: the actuator that moves the air mix door on the passenger side, which blends hot and cold air, is stuck.",
+            L,
+            listOf("A faulty air mix door actuator", "A sticking air mix door", "Damaged wiring or a loose connector at the actuator"),
+            listOf("The passenger side blowing air at the wrong temperature", "A clicking noise from behind the dashboard in some cases"),
+            listOf("Note whether the driver and passenger sides blow different temperatures", "Ask a Subaru dealer to check the passenger air mix door actuator and its connector"),
+            "Subaru TechTIPS October 2020: the maker's own technician newsletter, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10222352-0001.pdf
+        e("U113B", "Subaru", listOf(f(2023, 2023, "Solterra")),
+            "Lost communication with the charging communication module",
+            "Subaru's definition: the charging computer isn't getting messages it expects from the charging communication module, over the network wiring between them.",
+            M,
+            listOf("Service or maintenance work, including the pre-delivery check, which Subaru says can set this code", "A fault in the network wiring between the two modules"),
+            listOf("A Plug-in Charge System warning on the dash"),
+            listOf("Note whether the code appeared after service work", "Have a Subaru dealer check and clear it; if it returns, they need to check the wiring between the modules"),
+            "Subaru TechTIPS August 2022: the maker's own technician newsletter, filed with NHTSA")
     }
 
     private fun mitsubishi(sink: Sink) = with(sink) {

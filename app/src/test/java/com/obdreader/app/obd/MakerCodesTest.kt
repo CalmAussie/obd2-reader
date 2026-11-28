@@ -215,6 +215,71 @@ class MakerCodesTest {
     }
 
     @Test
+    fun hyundaiGenesisAndKiaCodesOnlyForTheCarsTheirBulletinsName() {
+        // Hyundai 25-01-010H: the hybrids only, not the petrol cars of the same model.
+        assertTrue(DtcLibrary.lookup("P1BB2", "Hyundai", 2022, "Elantra", "1.6 hybrid").known)
+        assertTrue(DtcLibrary.lookup("P1BB2", "Hyundai", 2023, "Tucson", "1.6 turbo hybrid").known)
+        assertFalse(DtcLibrary.lookup("P1BB2", "Hyundai", 2022, "Elantra", "2.0 I4").known)
+        assertFalse(DtcLibrary.lookup("P1BB2", "Hyundai", 2025, "Tucson", "1.6 turbo hybrid").known)
+        // Hyundai 22-AT-009H: the 8-speed dual-clutch cars (2.5 turbo and the N models), up to 2022.
+        assertTrue(DtcLibrary.lookup("P193D", "Hyundai", 2022, "Santa Cruz", "2.5 turbo").known)
+        assertTrue(DtcLibrary.lookup("U1135", "Hyundai", 2020, "Veloster", "2.0 turbo (N)").known)
+        assertFalse(DtcLibrary.lookup("P193D", "Hyundai", 2022, "Santa Cruz", "2.5 I4").known)
+        assertFalse(DtcLibrary.lookup("P193D", "Hyundai", 2022, "Veloster", "1.6 turbo").known)
+        // The charging unit (ICCU) codes: Ioniq 5 2022-2024, Ioniq 6 2023-2025, GV60 2023-2024, EV6 2022-2024.
+        assertEquals("DC/DC converter input voltage sensor fault", DtcLibrary.lookup("P1A90", "Hyundai", 2023, "Ioniq 5", null).title)
+        assertTrue(DtcLibrary.lookup("P1A90", "Genesis", 2023, "GV60", null).known)
+        assertTrue(DtcLibrary.lookup("P1A90", "Kia", 2022, "EV6", null).known)
+        assertFalse(DtcLibrary.lookup("P1A90", "Hyundai", 2023, "Kona Electric", null).known)
+        assertFalse(DtcLibrary.lookup("P1A90", "Genesis", 2023, "G80", "2.5 turbo").known)
+        // Hyundai and Kia print different names for P1E13.
+        assertEquals("Inverter charging relay fault", DtcLibrary.lookup("P1E13", "Hyundai", 2024, "Ioniq 6", null).title)
+        assertEquals("Charger power module voltage fault", DtcLibrary.lookup("P1E13", "Kia", 2024, "EV9", null).title)
+        assertFalse(DtcLibrary.lookup("P1E14", "Kia", 2024, "EV9", null).known)
+        // Hyundai 23-01-073H-1: Kona Electric 2019-2023, not the petrol Kona.
+        assertTrue(DtcLibrary.lookup("P1AA8", "Hyundai", 2020, "Kona Electric", null).known)
+        assertFalse(DtcLibrary.lookup("P1AA8", "Hyundai", 2020, "Kona", "2.0 I4").known)
+        // Kia SC199: the 2.0 with the IVT; Kia TRA111: Sorento and K5 2.5 turbo to 2023.
+        assertTrue(DtcLibrary.lookup("P1603", "Kia", 2020, "Cerato / Forte / K3", "2.0 I4").known)
+        assertFalse(DtcLibrary.lookup("P1603", "Kia", 2020, "Seltos", "2.0 I4").known)
+        assertTrue(DtcLibrary.lookup("P1C2E", "Kia", 2023, "Sorento", "2.5 turbo").known)
+        assertFalse(DtcLibrary.lookup("P1C2E", "Kia", 2023, "Sorento", "1.6 turbo hybrid").known)
+        // P1441 means a hose fault on both makes, for their own hybrids. Hyundai 23-FL-001H took the Tucson
+        // hybrid back out of 22-FL-003H, so Hyundai's stays on the Santa Fe hybrid.
+        assertTrue(DtcLibrary.lookup("P1441", "Hyundai", 2022, "Santa Fe", "1.6 turbo hybrid").known)
+        assertFalse(DtcLibrary.lookup("P1441", "Hyundai", 2022, "Tucson / ix35", "1.6 turbo hybrid").known)
+        assertEquals("Purge valve downstream hose off", DtcLibrary.lookup("P1441", "Kia", 2022, "Sorento", "1.6 turbo hybrid").title)
+    }
+
+    @Test
+    fun subaruCodesOnlyForTheCarsTheirDocumentsName() {
+        // Subaru 07-132-18R: the 2014 Crosstrek hybrid only.
+        assertEquals("Generator performance", DtcLibrary.lookup("P1C14", "Subaru", 2014, "Crosstrek / XV", "2.0 hybrid").title)
+        assertFalse(DtcLibrary.lookup("P1C14", "Subaru", 2014, "Crosstrek / XV", "2.0 H4").known)
+        assertFalse(DtcLibrary.lookup("P1C14", "Subaru", 2020, "Crosstrek / XV", "2.0 hybrid").known)
+        // Subaru 11-205-25: petrol engines only, no hybrids.
+        assertTrue(DtcLibrary.lookup("P1449", "Subaru", 2020, "Forester", "2.5").known)
+        assertTrue(DtcLibrary.lookup("P1449", "Subaru", 2023, "WRX / STI", "2.4 turbo").known)
+        assertTrue(DtcLibrary.lookup("P1449", "Subaru", 2021, "Ascent", null).known)
+        assertFalse(DtcLibrary.lookup("P1449", "Subaru", 2020, "Forester", "2.0 hybrid").known)
+        assertFalse(DtcLibrary.lookup("P1449", "Subaru", 2020, "Crosstrek / XV", "2.0 hybrid").known)
+        assertFalse(DtcLibrary.lookup("P1449", "Subaru", 2020, "Outback", "2.5").known)
+        // Subaru 11-184-18: BRZ 2017-2019.
+        assertTrue(DtcLibrary.lookup("P119F", "Subaru", 2018, "BRZ", "2.0").known)
+        assertFalse(DtcLibrary.lookup("P119F", "Subaru", 2022, "BRZ", "2.4").known)
+        // TechTIPS articles: 2020 Legacy/Outback mirrors and air mix door, 2020 Impreza/Ascent EyeSight, Solterra.
+        assertTrue(DtcLibrary.lookup("U122E", "Subaru", 2020, "Liberty / Legacy", null).known)
+        assertTrue(DtcLibrary.lookup("U122F", "Subaru", 2020, "Outback", null).known)
+        assertFalse(DtcLibrary.lookup("U122E", "Subaru", 2021, "Outback", null).known)
+        assertTrue(DtcLibrary.lookup("B1441", "Subaru", 2021, "Outback", null).known)
+        assertTrue(DtcLibrary.lookup("U1235", "Subaru", 2020, "Impreza", "2.0").known)
+        assertFalse(DtcLibrary.lookup("U1235", "Subaru", 2020, "Forester", "2.5").known)
+        assertTrue(DtcLibrary.lookup("U113B", "Subaru", 2023, "Solterra", null).known)
+        // Other makes don't pick up Subaru's meanings.
+        assertFalse(DtcLibrary.lookup("P1449", "Toyota", 2020, "Corolla", null).title == "EVAP system clog detected")
+    }
+
+    @Test
     fun fordCodesDontDependOnModelOrEngine() {
         assertTrue(DtcLibrary.lookup("P1450", "Ford", 2016, "Escape", "2.0 EcoBoost").known)
         assertTrue(DtcLibrary.lookup("P1450", "Ford", 2016, "Mustang", null).known)
