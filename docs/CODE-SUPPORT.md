@@ -17,9 +17,9 @@ Every manufacturer has its own section below, with its manufacturer-specific cod
 - On GitHub, open the outline (the list button at the top right of this page) and type the manufacturer's name into its filter box.
 - Use your browser's find (Ctrl+F, or Find in page on a phone) for a manufacturer, a model or a code such as P1326.
 
-**With manufacturer-specific codes** (29 makes, 249 codes, 294 definitions, because makers reuse code numbers for different faults):
+**With manufacturer-specific codes** (30 makes, 271 codes, 321 definitions, because makers reuse code numbers for different faults):
 
-[Acura](#acura) (2) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [Genesis](#genesis) (1) · [GMC](#gmc) (3) · [Holden](#holden) (1) · [Honda](#honda) (2) · [Hyundai](#hyundai) (26) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (24) · [Land Rover](#land-rover) (2) · [Lexus](#lexus) (1) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (4) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (4) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (13) · [Toyota](#toyota) (19) · [Volkswagen](#volkswagen) (30)
+[Acura](#acura) (7) · [Audi](#audi) (2) · [Buick](#buick) (1) · [Chevrolet](#chevrolet) (5) · [Chrysler](#chrysler) (11) · [Dodge](#dodge) (14) · [Ford](#ford) (8) · [Genesis](#genesis) (1) · [GMC](#gmc) (3) · [Holden](#holden) (1) · [Honda](#honda) (3) · [Hyundai](#hyundai) (26) · [Infiniti](#infiniti) (6) · [Isuzu](#isuzu) (2) · [Jaguar](#jaguar) (1) · [Jeep](#jeep) (5) · [Kia](#kia) (24) · [Land Rover](#land-rover) (2) · [Lexus](#lexus) (1) · [Lincoln](#lincoln) (8) · [Mazda](#mazda) (4) · [Mitsubishi](#mitsubishi) (4) · [Nissan](#nissan) (19) · [Porsche](#porsche) (86) · [Ram](#ram) (16) · [Saab](#saab) (2) · [Saturn](#saturn) (2) · [Subaru](#subaru) (13) · [Toyota](#toyota) (19) · [Volkswagen](#volkswagen) (30)
 
 **All 87 manufacturers, A to Z:**
 
@@ -61,25 +61,30 @@ Manufacturer-specific codes: none yet. A manufacturer-specific code on these car
 
 ### Acura
 
-Manufacturer-specific codes: 2. Each is explained only on the cars listed beside it.
+Manufacturer-specific codes: 7. Each is explained only on the cars listed beside it.
 
 | Code | Name | Cars | Source |
 |---|---|---|---|
+| B1403 | Telematics GPS receiver error | MDX 2014–2015<br>RL / RLX 2014–2015<br>TLX 2015 | Acura service bulletin 15-017: the maker's own service bulletin, filed with NHTSA |
+| P1437 | Hybrid inverter short circuit | ILX 2013 (1.5 hybrid) | Acura service bulletin 20-021: the maker's own service bulletin, filed with NHTSA |
+| P1440 | Hybrid inverter output circuit | ILX 2013 (1.5 hybrid) | Acura service bulletin 20-021: the maker's own service bulletin, filed with NHTSA |
 | P1456 | EVAP control system leakage (fuel tank system) | CL 2001–2003<br>MDX 2001–2004<br>NSX 1997–2005<br>RL / RLX 1996–2004<br>TL 1999–2003 | Acura service bulletin 99-040: the maker's own service bulletin, filed with NHTSA |
 | P1457 | EVAP control system leakage (EVAP canister system) | CL 2001–2003<br>MDX 2001–2004<br>NSX 1997–2005<br>RL / RLX 1996–2004<br>TL 1999–2003 | Acura service bulletin 99-040: the maker's own service bulletin, filed with NHTSA |
+| P15A5 | Motor current sensor circuit | ILX 2013 (1.5 hybrid) | Acura service bulletin 20-021: the maker's own service bulletin, filed with NHTSA |
+| P1634 | Hybrid inverter signal circuit | ILX 2013 (1.5 hybrid) | Acura service bulletin 20-021: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
 | CL | 2001–2003 | Yes | 2001–2003: 2 codes |
-| ILX | 2013–2022 | Yes | None yet |
+| ILX | 2013–2022 | Yes | 2013: 4 codes (depending on the engine) |
 | Integra | 2023–2026 | Yes | None yet |
-| MDX | 2001–2026 | Yes | 2001–2004: 2 codes |
+| MDX | 2001–2026 | Yes | 2001–2004: 2 codes · 2014–2015: 1 code |
 | NSX | 1994–2022 | Yes | 1997–2005: 2 codes |
 | RDX | 2007–2026 | Yes | None yet |
-| RL / RLX | 1996–2020 | Yes | 1996–2004: 2 codes |
+| RL / RLX | 1996–2020 | Yes | 1996–2004: 2 codes · 2014–2015: 1 code |
 | RSX | 2002–2006 | Yes | None yet |
 | TL | 1996–2014 | Yes | 1999–2003: 2 codes |
-| TLX | 2015–2026 | Yes | None yet |
+| TLX | 2015–2026 | Yes | 2015: 1 code |
 | TSX | 2004–2014 | Yes | None yet |
 | ZDX | 2010–2026 | Few or none (electric) | None |
 
@@ -732,12 +737,13 @@ Manufacturer-specific codes: 1. Each is explained only on the cars listed beside
 
 ### Honda
 
-Manufacturer-specific codes: 2. Each is explained only on the cars listed beside it.
+Manufacturer-specific codes: 3. Each is explained only on the cars listed beside it.
 
 | Code | Name | Cars | Source |
 |---|---|---|---|
 | P1456 | EVAP control system leakage (fuel tank system) | Accord 1998–2002<br>CR-V 1998–2001<br>Civic 1996–2000<br>Insight 2000–2005<br>Odyssey 1999–2004<br>Pilot 2003–2004<br>S2000 2000–2006 | Honda service bulletin 99-075: the maker's own service bulletin, filed with NHTSA |
 | P1457 | EVAP control system leakage (EVAP canister system) | Accord 1998–2002<br>CR-V 1998–2001<br>Civic 1996–2000<br>Insight 2000–2005<br>Odyssey 1999–2004<br>Pilot 2003–2004<br>S2000 2000–2006 | Honda service bulletin 99-075: the maker's own service bulletin, filed with NHTSA |
+| P145E | EVAP purge flow fault 2 | CR-V 2023–2024 (2.0 hybrid) | Honda service bulletin 24-114: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
@@ -748,7 +754,7 @@ Manufacturer-specific codes: 2. Each is explained only on the cars listed beside
 | Brio | 2011–2026 | Yes | None yet |
 | City | 2003–2026 | Yes | None yet |
 | Civic | 1994–2026 | Yes | 1996–2000: 2 codes |
-| CR-V | 1997–2026 | Yes | 1998–2001: 2 codes |
+| CR-V | 1997–2026 | Yes | 1998–2001: 2 codes · 2023–2024: 1 code (depending on the engine) |
 | CR-Z | 2011–2016 | Yes | None yet |
 | HR-V | 2015–2026 | Yes | None yet |
 | Insight | 2000–2014 | Yes | 2000–2005: 2 codes |
@@ -851,21 +857,30 @@ Manufacturer-specific codes: 26. Each is explained only on the cars listed besid
 
 ### Infiniti
 
-Manufacturer-specific codes: none yet. A manufacturer-specific code on these cars is shown with the maker's name and where to look it up.
+Manufacturer-specific codes: 6. Each is explained only on the cars listed beside it.
+
+| Code | Name | Cars | Source |
+|---|---|---|---|
+| B2E01 | Telematics unit internal battery | Q50 2020–2024<br>QX50 / EX 2020–2024<br>QX56 / QX80 2020–2024<br>Q60 2020–2022<br>QX60 / JX 2022–2024 | Infiniti ITB22-017B: the maker's own service bulletin, filed with NHTSA |
+| P11AB | Variable compression control module circuit | QX50 / EX 2019 (2.0 VC-Turbo) | Infiniti ITB18-020: the maker's own service bulletin, filed with NHTSA |
+| U1000 | CAN communication missing | G35 / G37 2005–2013<br>Q50 2014–2022<br>Q60 2014–2022<br>M / Q70 2005–2019<br>QX50 / EX 2008–2022<br>QX60 / JX 2013–2021<br>FX / QX70 2005–2017<br>QX56 / QX80 2005–2022 | Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA |
+| U1001 | CAN communication missing (emissions related) | G35 / G37 2005–2013<br>Q50 2014–2022<br>Q60 2014–2022<br>M / Q70 2005–2019<br>QX50 / EX 2008–2022<br>QX60 / JX 2013–2021<br>FX / QX70 2005–2017<br>QX56 / QX80 2005–2022 | Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA |
+| U1002 | CAN communication missing (tighter timing) | G35 / G37 2005–2013<br>Q50 2014–2022<br>Q60 2014–2022<br>M / Q70 2005–2019<br>QX50 / EX 2008–2022<br>QX60 / JX 2013–2021<br>FX / QX70 2005–2017<br>QX56 / QX80 2005–2022 | Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA |
+| U1010 | Control unit internal fault | G35 / G37 2005–2013<br>Q50 2014–2022<br>Q60 2014–2022<br>M / Q70 2005–2019<br>QX50 / EX 2008–2022<br>QX60 / JX 2013–2021<br>FX / QX70 2005–2017<br>QX56 / QX80 2005–2022 | Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
-| FX / QX70 | 2003–2017 | Yes | None yet |
-| G35 / G37 | 2003–2013 | Yes | None yet |
+| FX / QX70 | 2003–2017 | Yes | 2005–2017: 4 codes |
+| G35 / G37 | 2003–2013 | Yes | 2005–2013: 4 codes |
 | I30 / I35 | 1996–2004 | Yes | None yet |
-| M / Q70 | 2003–2019 | Yes | None yet |
+| M / Q70 | 2003–2019 | Yes | 2005–2019: 4 codes |
 | Q30 | 2016–2019 | Yes | None yet |
-| Q50 | 2014–2026 | Yes | None yet |
-| Q60 | 2014–2022 | Yes | None yet |
+| Q50 | 2014–2026 | Yes | 2014–2019: 4 codes · 2020–2022: 5 codes · 2023–2024: 1 code |
+| Q60 | 2014–2022 | Yes | 2014–2019: 4 codes · 2020–2022: 5 codes |
 | QX30 | 2017–2019 | Yes | None yet |
-| QX50 / EX | 2008–2026 | Yes | None yet |
-| QX56 / QX80 | 2004–2026 | Yes | None yet |
-| QX60 / JX | 2013–2026 | Yes | None yet |
+| QX50 / EX | 2008–2026 | Yes | 2008–2018: 4 codes · 2019–2022: 5 codes · 2023–2024: 1 code (depending on the engine) |
+| QX56 / QX80 | 2004–2026 | Yes | 2005–2019: 4 codes · 2020–2022: 5 codes · 2023–2024: 1 code |
+| QX60 / JX | 2013–2026 | Yes | 2013–2021: 4 codes · 2022–2024: 1 code |
 
 [Back to the manufacturer list](#find-your-manufacturer)
 
@@ -1404,44 +1419,59 @@ Manufacturer-specific codes: 4. Each is explained only on the cars listed beside
 
 ### Nissan
 
-Manufacturer-specific codes: 4. Each is explained only on the cars listed beside it.
+Manufacturer-specific codes: 19. Each is explained only on the cars listed beside it.
 
 | Code | Name | Cars | Source |
 |---|---|---|---|
+| B2902 | Power delivery module (PDM) fault | Leaf 2018–2019 | Nissan NTB20-017: the maker's own service bulletin, filed with NHTSA |
+| C111F | G sensor fault | Altima 2019–2023<br>Kicks 2021–2023 | Nissan NTB23-038: the maker's own service bulletin, filed with NHTSA |
+| C1170 | ABS unit configuration not done | Altima 2013–2015 (2.5 I4)<br>Murano 2015<br>Rogue 2014–2015 | Nissan NTB14-115c: the maker's own service bulletin, filed with NHTSA |
+| C1A03 | Driver assist: vehicle speed sensor | Altima 2017–2018<br>Maxima 2017–2018<br>Murano 2017–2018<br>Pathfinder 2017–2018<br>Pulsar / Sentra 2017–2018<br>Rogue 2017–2018 | Nissan NTB18-008: the maker's own service bulletin, filed with NHTSA |
+| C1A04 | Driver assist: ABS/TCS/VDC system | Altima 2017–2018<br>Maxima 2017–2018<br>Murano 2017–2018<br>Pathfinder 2017–2018<br>Pulsar / Sentra 2017–2018<br>Rogue 2017–2018 | Nissan NTB18-008: the maker's own service bulletin, filed with NHTSA |
+| C1B01 | Driver assist: camera aiming incomplete | Altima 2017–2018<br>Maxima 2017–2018<br>Murano 2017–2018<br>Pathfinder 2017–2018<br>Pulsar / Sentra 2017–2018<br>Rogue 2017–2018 | Nissan NTB18-008: the maker's own service bulletin, filed with NHTSA |
+| C1B56 | Rear sonar circuit | Altima 2019–2022 | Nissan NTB22-073: the maker's own service bulletin, filed with NHTSA |
 | P11A7 | Variable compression stopper position | Altima 2019–2021 (2.0 VC-Turbo) | Nissan NTB21-110A: the maker's own service bulletin, filed with NHTSA |
-| P17F0 | CVT judder (transmission inspection) | Altima 2013–2016 (2.5 I4)<br>Altima 2013–2017 (3.5 V6)<br>Pathfinder 2013–2017 (3.5 V6)<br>Maxima 2016–2017 (3.5 V6)<br>Murano 2015–2017 (3.5 V6)<br>Rogue 2014–2016 (2.5 I4) | Nissan NTB15-084b, NTB17-039h: the maker's own service bulletins, filed with NHTSA |
+| P17F0 | CVT judder (transmission inspection) | Altima 2013–2016 (2.5 I4)<br>Altima 2013–2017 (3.5 V6)<br>Pathfinder 2013–2017 (3.5 V6)<br>Maxima 2016–2017 (3.5 V6)<br>Murano 2015–2017 (3.5 V6)<br>Rogue 2014–2016 (2.5 I4)<br>Pulsar / Sentra 2013–2017 | Nissan NTB15-084b, NTB17-039h, NTB18-058b: the maker's own service bulletins, filed with NHTSA |
 | P17F1 | CVT judder (control unit inspection) | Altima 2013–2016 (2.5 I4)<br>Altima 2013–2017 (3.5 V6)<br>Pathfinder 2013–2017 (3.5 V6)<br>Maxima 2016–2017 (3.5 V6)<br>Murano 2015–2017 (3.5 V6)<br>Rogue 2014–2016 (2.5 I4) | Nissan NTB15-084b, NTB17-039h: the maker's own service bulletins, filed with NHTSA |
 | P17F4 | Auxiliary gearbox clutch judder | Kicks 2018–2022 (1.6 I4) | Nissan NTB23-048: the maker's own service bulletin, filed with NHTSA |
+| P1C55 | NOx sensor 1/1 intermittent | Titan 2016 (5.0 V8 diesel) | Nissan PC465: the maker's own service bulletin, filed with NHTSA |
+| P1C56 | NOx sensor 1/2 intermittent | Titan 2016 (5.0 V8 diesel) | Nissan PC465: the maker's own service bulletin, filed with NHTSA |
+| P31E7 | Restart inhibition | Leaf 2019–2025 | Nissan NTB23-024A: the maker's own service bulletin, filed with NHTSA |
+| U1000 | CAN communication missing | 350Z 2005–2009<br>370Z 2009–2020<br>Altima 2005–2024<br>Frontier 2005–2024<br>GT-R 2009–2024<br>Juke 2011–2017<br>Kicks 2018–2024<br>Leaf 2011–2024<br>Maxima 2005–2023<br>Murano 2005–2024<br>Pathfinder 2005–2021<br>Rogue 2008–2020<br>Pulsar / Sentra 2005–2019<br>Titan 2005–2024 | Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA |
+| U1001 | CAN communication missing (emissions related) | 350Z 2005–2009<br>370Z 2009–2020<br>Altima 2005–2024<br>Frontier 2005–2024<br>GT-R 2009–2024<br>Juke 2011–2017<br>Kicks 2018–2024<br>Leaf 2011–2024<br>Maxima 2005–2023<br>Murano 2005–2024<br>Pathfinder 2005–2021<br>Rogue 2008–2020<br>Pulsar / Sentra 2005–2019<br>Titan 2005–2024 | Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA |
+| U1002 | CAN communication missing (tighter timing) | 350Z 2005–2009<br>370Z 2009–2020<br>Altima 2005–2024<br>Frontier 2005–2024<br>GT-R 2009–2024<br>Juke 2011–2017<br>Kicks 2018–2024<br>Leaf 2011–2024<br>Maxima 2005–2023<br>Murano 2005–2024<br>Pathfinder 2005–2021<br>Rogue 2008–2020<br>Pulsar / Sentra 2005–2019<br>Titan 2005–2024 | Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA |
+| U1009 | Quick charger communication | Leaf 2018–2019 | Nissan NTB19-056a: the maker's own service bulletin, filed with NHTSA |
+| U1010 | Control unit internal fault | 350Z 2005–2009<br>370Z 2009–2020<br>Altima 2005–2024<br>Frontier 2005–2024<br>GT-R 2009–2024<br>Juke 2011–2017<br>Kicks 2018–2024<br>Leaf 2011–2024<br>Maxima 2005–2023<br>Murano 2005–2024<br>Pathfinder 2005–2021<br>Rogue 2008–2020<br>Pulsar / Sentra 2005–2019<br>Titan 2005–2024 | Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA |
 
 | Model | Years | Generic codes | Manufacturer-specific codes |
 |---|---|---|---|
 | 200SX / Silvia | 1994–2002 | Yes | None yet |
 | 240SX | 1995–1998 | Yes | None yet |
 | 300ZX | 1994–1996 | Yes | None yet |
-| 350Z | 2003–2009 | Yes | None yet |
-| 370Z | 2009–2020 | Yes | None yet |
+| 350Z | 2003–2009 | Yes | 2005–2009: 4 codes |
+| 370Z | 2009–2020 | Yes | 2009–2020: 4 codes |
 | Almera / Sunny | 1995–2026 | Yes | None yet |
-| Altima | 1994–2026 | Yes | 2013–2017: 2 codes · 2019–2021: 1 code (depending on the engine) |
+| Altima | 1994–2026 | Yes | 2005–2012: 4 codes · 2013–2015: 7 codes · 2016: 6 codes · 2017: 9 codes · 2018–2021: 7 codes · 2022: 6 codes · 2023: 5 codes · 2024: 4 codes (depending on the engine) |
 | Dualis / Qashqai | 2007–2026 | Yes | None yet |
-| Frontier | 1998–2026 | Yes | None yet |
-| GT-R | 2008–2026 | Yes | None yet |
-| Juke | 2010–2026 | Yes | None yet |
-| Kicks | 2016–2026 | Yes | 2018–2022: 1 code (depending on the engine) |
-| Leaf | 2011–2026 | Few or none (electric) | None |
-| Maxima | 1994–2023 | Yes | 2016–2017: 2 codes (depending on the engine) |
+| Frontier | 1998–2026 | Yes | 2005–2024: 4 codes |
+| GT-R | 2008–2026 | Yes | 2009–2024: 4 codes |
+| Juke | 2010–2026 | Yes | 2011–2017: 4 codes |
+| Kicks | 2016–2026 | Yes | 2018–2020: 5 codes · 2021–2022: 6 codes · 2023: 5 codes · 2024: 4 codes (depending on the engine) |
+| Leaf | 2011–2026 | Few or none (electric) | 2011–2017: 4 codes · 2018: 6 codes · 2019: 7 codes · 2020–2024: 5 codes · 2025: 1 code |
+| Maxima | 1994–2023 | Yes | 2005–2015: 4 codes · 2016: 6 codes · 2017: 9 codes · 2018: 7 codes · 2019–2023: 4 codes (depending on the engine) |
 | Micra | 1994–2017 | Yes | None yet |
-| Murano | 2003–2026 | Yes | 2015–2017: 2 codes (depending on the engine) |
+| Murano | 2003–2026 | Yes | 2005–2014: 4 codes · 2015: 7 codes · 2016: 6 codes · 2017: 9 codes · 2018: 7 codes · 2019–2024: 4 codes (depending on the engine) |
 | Navara | 1994–2026 | Yes | None yet |
 | Note | 2005–2020 | Yes | None yet |
-| Pathfinder | 1994–2026 | Yes | 2013–2017: 2 codes (depending on the engine) |
+| Pathfinder | 1994–2026 | Yes | 2005–2012: 4 codes · 2013–2016: 6 codes · 2017: 9 codes · 2018: 7 codes · 2019–2021: 4 codes (depending on the engine) |
 | Patrol | 1994–2026 | Yes | None yet |
-| Pulsar / Sentra | 1994–2019 | Yes | None yet |
+| Pulsar / Sentra | 1994–2019 | Yes | 2005–2012: 4 codes · 2013–2016: 5 codes · 2017: 8 codes · 2018: 7 codes · 2019: 4 codes |
 | Quest | 1994–2002 | Yes | None yet |
-| Rogue | 2008–2026 | Yes | 2014–2016: 2 codes (depending on the engine) |
+| Rogue | 2008–2026 | Yes | 2008–2013: 4 codes · 2014–2015: 7 codes · 2016: 6 codes · 2017–2018: 7 codes · 2019–2020: 4 codes (depending on the engine) |
 | Skyline | 1994–2007 | Yes | None yet |
 | Terra | 2018–2026 | Yes | None yet |
 | Tiida | 2006–2013 | Yes | None yet |
-| Titan | 2004–2024 | Yes | None yet |
+| Titan | 2004–2024 | Yes | 2005–2015: 4 codes · 2016: 6 codes · 2017–2024: 4 codes (depending on the engine) |
 | X-Trail | 2001–2026 | Yes | None yet |
 
 [Back to the manufacturer list](#find-your-manufacturer)

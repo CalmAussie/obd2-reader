@@ -280,6 +280,40 @@ class MakerCodesTest {
     }
 
     @Test
+    fun nissanHondaCodesOnlyForTheCarsTheirBulletinsName() {
+        // Nissan NTB13-027D: CAN codes on US-sold Nissans 2005-2024, but not the 2021-on Rogue or 2022-on Pathfinder.
+        assertEquals("CAN communication missing", DtcLibrary.lookup("U1000", "Nissan", 2015, "Altima", "2.5 I4").title)
+        assertTrue(DtcLibrary.lookup("U1010", "Nissan", 2012, "Leaf", null).known)
+        assertFalse(DtcLibrary.lookup("U1000", "Nissan", 2022, "Rogue", "1.5 VC-Turbo").known)
+        assertFalse(DtcLibrary.lookup("U1000", "Nissan", 2023, "Pathfinder", "3.5 V6").known)
+        assertFalse(DtcLibrary.lookup("U1000", "Nissan", 2015, "Navara", "2.5 diesel").known)
+        // Infiniti ITB13-006C: same codes, 2005-2022, not the 2022 QX60 or the Mercedes-based QX30.
+        assertTrue(DtcLibrary.lookup("U1001", "Infiniti", 2018, "Q50", null).known)
+        assertFalse(DtcLibrary.lookup("U1001", "Infiniti", 2022, "QX60 / JX", null).known)
+        assertFalse(DtcLibrary.lookup("U1001", "Infiniti", 2018, "QX30", null).known)
+        // P11AB on the 2019 QX50 VC-Turbo only; P17F0 now also on the 2013-2017 Sentra.
+        assertTrue(DtcLibrary.lookup("P11AB", "Infiniti", 2019, "QX50 / EX", "2.0 VC-Turbo").known)
+        assertFalse(DtcLibrary.lookup("P11AB", "Infiniti", 2020, "QX50 / EX", "2.0 VC-Turbo").known)
+        assertEquals("CVT judder (transmission inspection)", DtcLibrary.lookup("P17F0", "Nissan", 2015, "Pulsar / Sentra", "1.8 I4").title)
+        assertFalse(DtcLibrary.lookup("P17F0", "Nissan", 2018, "Pulsar / Sentra", "1.8 I4").known)
+        // Leaf, Titan XD diesel and driver-assist codes.
+        assertTrue(DtcLibrary.lookup("P31E7", "Nissan", 2021, "Leaf", null).known)
+        assertFalse(DtcLibrary.lookup("U1009", "Nissan", 2021, "Leaf", null).known)
+        assertTrue(DtcLibrary.lookup("P1C55", "Nissan", 2016, "Titan", "5.0 V8 diesel").known)
+        assertFalse(DtcLibrary.lookup("P1C55", "Nissan", 2016, "Titan", "5.6 V8").known)
+        assertTrue(DtcLibrary.lookup("C1B01", "Nissan", 2017, "Rogue", null).known)
+        assertFalse(DtcLibrary.lookup("C1B01", "Nissan", 2019, "Rogue", null).known)
+        // Honda 24-114: CR-V hybrid only. Acura 20-021: 2013 ILX Hybrid only.
+        assertTrue(DtcLibrary.lookup("P145E", "Honda", 2023, "CR-V", "2.0 hybrid").known)
+        assertFalse(DtcLibrary.lookup("P145E", "Honda", 2023, "CR-V", "1.5 turbo").known)
+        assertTrue(DtcLibrary.lookup("P1440", "Acura", 2013, "ILX", "1.5 hybrid").known)
+        assertFalse(DtcLibrary.lookup("P1440", "Acura", 2013, "ILX", "2.4 I4").known)
+        assertTrue(DtcLibrary.lookup("B1403", "Acura", 2015, "RL / RLX", null).known)
+        // Nissan's meanings stay on Nissans.
+        assertFalse(DtcLibrary.lookup("U1000", "Honda", 2015, "Civic", null).title == "CAN communication missing")
+    }
+
+    @Test
     fun fordCodesDontDependOnModelOrEngine() {
         assertTrue(DtcLibrary.lookup("P1450", "Ford", 2016, "Escape", "2.0 EcoBoost").known)
         assertTrue(DtcLibrary.lookup("P1450", "Ford", 2016, "Mustang", null).known)

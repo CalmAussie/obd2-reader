@@ -1045,16 +1045,71 @@ internal object MakerCodeData {
             listOf("Usually nothing you'd notice", "A fuel smell in some cases"),
             listOf("Check the hoses around the charcoal canister for splits", "Check the fuel cap as well, since it's the cheapest thing to rule out", "Have the system smoke-tested to find the leak"),
             "Acura service bulletin 99-040: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11009202-0001.pdf
+        e("P145E", "Honda", listOf(f(2023, 2024, "CR-V", "2.0 hybrid")),
+            "EVAP purge flow fault 2",
+            "Honda's definition: the engine computer has found a fault in the purge flow of the evaporative emissions (EVAP) system, which feeds fuel vapour from the tank to the engine.",
+            L,
+            listOf("A false reading from the EVAP leak check module's pressure sensor when the tank is nearly full, which Honda fixed with a software update", "A purge valve or hose fault"),
+            listOf("Check-engine light on", "Usually no change in how the car drives"),
+            listOf("Note whether the code appeared after filling the tank right up", "Ask a Honda dealer whether the engine software update in their bulletin has been done"),
+            "Honda service bulletin 24-114: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10184664-0001.pdf
+        e("P1440", "Acura", listOf(f(2013, 2013, "ILX", "1.5 hybrid")),
+            "Hybrid inverter output circuit",
+            "Acura's definition: a malfunction in the output circuit of the motor power inverter (MPI), the unit that drives the hybrid system's electric motor.",
+            H,
+            listOf("A failed motor power inverter; Acura found a defective solder joint in this part on the 2013 ILX Hybrid and extended its warranty"),
+            listOf("The IMA (hybrid system) warning light on", "Check-engine light on", "Less electric assist from the hybrid system"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system", "Ask an Acura dealer whether the extended warranty on the motor power inverter covers the car"),
+            "Acura service bulletin 20-021: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10184664-0001.pdf
+        e("P1437", "Acura", listOf(f(2013, 2013, "ILX", "1.5 hybrid")),
+            "Hybrid inverter short circuit",
+            "Acura's definition: a short circuit in the motor power inverter (MPI), the unit that drives the hybrid system's electric motor.",
+            H,
+            listOf("A failed motor power inverter; Acura found a defective solder joint in this part on the 2013 ILX Hybrid and extended its warranty"),
+            listOf("The IMA (hybrid system) warning light on", "Check-engine light on", "Less electric assist from the hybrid system"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system", "Ask an Acura dealer whether the extended warranty on the motor power inverter covers the car"),
+            "Acura service bulletin 20-021: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10184664-0001.pdf
+        e("P15A5", "Acura", listOf(f(2013, 2013, "ILX", "1.5 hybrid")),
+            "Motor current sensor circuit",
+            "Acura's definition: a malfunction in the circuit of the sensor that measures the current flowing to the hybrid system's electric motor.",
+            H,
+            listOf("A failed motor power inverter; Acura found a defective solder joint in this part on the 2013 ILX Hybrid and extended its warranty"),
+            listOf("The IMA (hybrid system) warning light on", "Check-engine light on", "Less electric assist from the hybrid system"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system", "Ask an Acura dealer whether the extended warranty on the motor power inverter covers the car"),
+            "Acura service bulletin 20-021: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10184664-0001.pdf
+        e("P1634", "Acura", listOf(f(2013, 2013, "ILX", "1.5 hybrid")),
+            "Hybrid inverter signal circuit",
+            "Acura's definition: a malfunction in the signal circuit of the motor power inverter (MPI), the unit that drives the hybrid system's electric motor.",
+            H,
+            listOf("A failed motor power inverter; Acura found a defective solder joint in this part on the 2013 ILX Hybrid and extended its warranty"),
+            listOf("The IMA (hybrid system) warning light on", "Check-engine light on", "Less electric assist from the hybrid system"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system", "Ask an Acura dealer whether the extended warranty on the motor power inverter covers the car"),
+            "Acura service bulletin 20-021: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2015/SB-10108380-9340.pdf
+        e("B1403", "Acura", listOf(f(2014, 2015, "MDX|RLX"), f(2015, 2015, "TLX")),
+            "Telematics GPS receiver error",
+            "Acura's definition: the telematics unit (TCU), which runs the AcuraLink connected services, has an error with its GPS receiver.",
+            L,
+            listOf("An intermittent fault in the telematics unit, the cause Acura found on these cars", "A GPS aerial or wiring fault"),
+            listOf("The AcuraLink status light red instead of green", "Connected services losing the car's location"),
+            listOf("Note whether the AcuraLink light stays red", "Ask an Acura dealer to inspect the telematics unit; their fix is to replace it if needed"),
+            "Acura service bulletin 15-017: the maker's own service bulletin, filed with NHTSA")
     }
 
     private fun nissan(sink: Sink) = with(sink) {
-        // https://static.nhtsa.gov/odi/tsbs/2016/SB-10075090-5448.pdf; https://static.nhtsa.gov/odi/tsbs/2019/MC-10167365-0001.pdf
+        // https://static.nhtsa.gov/odi/tsbs/2016/SB-10075090-5448.pdf; https://static.nhtsa.gov/odi/tsbs/2019/MC-10167365-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2019/MC-10154723-9999.pdf
         e("P17F0", "Nissan", listOf(
                 f(2013, 2016, "Altima", "2.5 I4"),
                 f(2013, 2017, "Altima|Pathfinder", "3.5 V6"),
                 f(2016, 2017, "Maxima", "3.5 V6"),
                 f(2015, 2017, "Murano", "3.5 V6"),
                 f(2014, 2016, "Rogue", "2.5 I4"),
+                f(2013, 2017, "Sentra"),
             ),
             "CVT judder (transmission inspection)",
             "Nissan's definition: the gearbox computer has detected judder (a shudder) in the CVT automatic, and points to the transmission itself.",
@@ -1062,7 +1117,7 @@ internal object MakerCodeData {
             listOf("Wear inside the CVT, such as the belt and pulleys", "Old or wrong CVT fluid"),
             listOf("A shudder or vibration when pulling away or at light throttle", "Revs rising and falling on their own", "The gearbox feeling like it's slipping"),
             listOf("Note when the shudder happens, such as speed and how warm the car is", "Have the CVT fluid level and condition checked", "Ask a Nissan dealer to test it; Nissan's fix for this code is transmission repair or replacement"),
-            "Nissan NTB15-084b, NTB17-039h: the maker's own service bulletins, filed with NHTSA")
+            "Nissan NTB15-084b, NTB17-039h, NTB18-058b: the maker's own service bulletins, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2016/SB-10075090-5448.pdf; https://static.nhtsa.gov/odi/tsbs/2019/MC-10167365-0001.pdf
         e("P17F1", "Nissan", listOf(
                 f(2013, 2016, "Altima", "2.5 I4"),
@@ -1096,6 +1151,299 @@ internal object MakerCodeData {
             listOf("Check-engine light on", "Reduced power", "Higher fuel use"),
             listOf("Check the engine oil level, since the mechanism relies on good oil", "Ask a Nissan dealer to test the variable compression actuator and check for updates"),
             "Nissan NTB21-110A: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2018/MC-10141447-9999.pdf
+        e("P11AB", "Infiniti", listOf(f(2019, 2019, "QX50", "2.0 VC-Turbo")),
+            "Variable compression control module circuit",
+            "Infiniti's definition: a fault in the circuit of the variable compression ratio (VCR) control module, which runs the mechanism that changes this engine's compression ratio.",
+            M,
+            listOf("12-volt power cut while the ignition was on, or within about 3 minutes of switching off, such as a battery being disconnected too soon", "A weak or flat 12-volt battery", "Less often, a fault in the module or its wiring"),
+            listOf("Check-engine light on", "Often other low-voltage or connection codes stored at the same time"),
+            listOf("Think back to whether the battery was disconnected or went flat; Infiniti says the code can then simply be cleared", "Have the 12-volt battery tested", "If the code comes back on its own, with no low-voltage codes, ask an Infiniti dealer to diagnose it"),
+            "Infiniti ITB18-020: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004974-0001.pdf
+        e("P31E7", "Nissan", listOf(f(2019, 2025, "Leaf")),
+            "Restart inhibition",
+            "Nissan's definition: restart inhibition. The EV control system is blocking the car from being started (switched to READY). Nissan's bulletin for this code covers Leafs with the 62 kWh battery.",
+            H,
+            listOf("A fault in a module inside the high-voltage battery; on the 62 kWh battery Nissan found a bent retention plate in some battery modules", "Another high-voltage system fault the dealer's diagnosis has to find"),
+            listOf("The car won't start (won't go into READY)", "EV system warnings on the dash", "Often a high-voltage isolation code stored at the same time"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system"),
+            "Nissan NTB23-024A: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10172241-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2019/MC-10163708-9999.pdf
+        e("U1009", "Nissan", listOf(f(2018, 2019, "Leaf")),
+            "Quick charger communication",
+            "Nissan's definition: the car has a communication fault with a quick (DC fast) charger.",
+            M,
+            listOf("Battery controller software, which Nissan updated for 2018-19 Leafs with the 40 kWh battery built before late January 2019", "A fault at the charger or its plug"),
+            listOf("The car won't quick-charge", "Normal (AC) charging may still work"),
+            listOf("Try another quick charger to rule out the charger itself", "Ask a Nissan dealer whether the battery controller update in their bulletin applies to the car"),
+            "Nissan NTB19-056a: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2020/MC-10173556-0001.pdf
+        e("B2902", "Nissan", listOf(f(2018, 2019, "Leaf")),
+            "Power delivery module (PDM) fault",
+            "Nissan's definition: Nissan names this code only after the power delivery module (PDM), which handles charging and high-voltage power distribution; it means the PDM has logged a fault.",
+            M,
+            listOf("PDM software, which Nissan updated for 2018-19 Leafs with the 40 kWh battery built before early January 2019", "A fault in the PDM itself"),
+            listOf("The EV battery warning light on"),
+            listOf("Check whether normal charging still works and note any other warnings", "Ask a Nissan dealer to check the PDM part number and whether the update in their bulletin applies"),
+            "Nissan NTB20-017: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11006964-0001.pdf
+        e("B2E01", "Infiniti", listOf(
+                f(2020, 2024, "Q50|QX50|QX80"),
+                f(2020, 2022, "Q60"),
+                f(2022, 2024, "QX60"),
+            ),
+            "Telematics unit internal battery",
+            "Infiniti's definition: the telematics control unit (TCU), which runs the car's connected services, has a fault with its internal backup battery.",
+            L,
+            listOf("The TCU's backup battery status needing a reset, which Infiniti's dealers can do with their diagnostic tool", "A worn-out backup battery or a fault in the TCU"),
+            listOf("Often no symptoms other than the stored code"),
+            listOf("Have the car's 12-volt battery tested first", "Ask an Infiniti dealer about the TCU backup battery reset in their bulletin"),
+            "Infiniti ITB22-017B: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2023/MC-10235783-0001.pdf
+        e("C111F", "Nissan", listOf(f(2019, 2023, "Altima"), f(2021, 2023, "Kicks")),
+            "G sensor fault",
+            "Nissan's definition: the ABS unit has found a fault with its G sensor, which measures how hard the car is slowing, turning or rotating.",
+            M,
+            listOf("A G sensor that needs calibrating; Nissan says to calibrate it with the car parked on level ground before replacing anything", "A faulty sensor in the ABS unit"),
+            listOf("The ABS, VDC (stability control) or brake warning lights on"),
+            listOf("Have a Nissan dealer run the G sensor calibration on level ground", "Don't replace the ABS unit unless the dealer's diagnosis says so"),
+            "Nissan NTB23-038: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2015/MC-10192608-9999.pdf
+        e("C1170", "Nissan", listOf(
+                f(2013, 2015, "Altima", "2.5 I4"),
+                f(2015, 2015, "Murano"),
+                f(2014, 2015, "Rogue"),
+            ),
+            "ABS unit configuration not done",
+            "Nissan's definition: variant coding. The ABS control unit hasn't been configured for this car, which must be done whenever the unit is replaced.",
+            M,
+            listOf("A new or swapped ABS control unit that hasn't been configured"),
+            listOf("ABS, VDC (stability control) or brake warning lights on", "Usually appears after the ABS unit has been replaced"),
+            listOf("Ask whoever replaced the ABS unit to do the configuration with a Nissan diagnostic tool"),
+            "Nissan NTB14-115c: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2018/MC-10130496-9999.pdf
+        e("C1A03", "Nissan", listOf(f(2017, 2018, "Rogue|Pathfinder|Murano|Sentra|Altima|Maxima")),
+            "Driver assist: vehicle speed sensor",
+            "Nissan's definition: the driver-assist (ADAS) system has found a problem with the vehicle speed sensor signal it uses.",
+            M,
+            listOf("A fault in the ABS system or a wheel speed sensor", "Network wiring between the ABS and driver-assist units"),
+            listOf("Emergency braking (AEB/FEB) or other driver-assist warnings on", "Driver-assist features switched off"),
+            listOf("Don't rely on emergency braking until it's fixed", "Check for ABS codes first; Nissan says to fix those before replacing driver-assist parts"),
+            "Nissan NTB18-008: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2018/MC-10130496-9999.pdf
+        e("C1A04", "Nissan", listOf(f(2017, 2018, "Rogue|Pathfinder|Murano|Sentra|Altima|Maxima")),
+            "Driver assist: ABS/TCS/VDC system",
+            "Nissan's definition: the driver-assist (ADAS) system has detected a fault in the ABS, traction control (TCS) or stability control (VDC) system it works with.",
+            M,
+            listOf("A fault in the ABS, traction or stability control system", "Network wiring between the units"),
+            listOf("Emergency braking (AEB/FEB) or other driver-assist warnings on", "ABS or VDC warning lights on in some cases"),
+            listOf("Don't rely on emergency braking until it's fixed", "Check for ABS codes first; Nissan says to fix those before replacing driver-assist parts"),
+            "Nissan NTB18-008: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2018/MC-10130496-9999.pdf
+        e("C1B01", "Nissan", listOf(f(2017, 2018, "Rogue|Pathfinder|Murano|Sentra|Altima|Maxima")),
+            "Driver assist: camera aiming incomplete",
+            "Nissan's definition: camera aiming is incomplete. The windscreen camera used by the driver-assist system hasn't been aimed (calibrated).",
+            M,
+            listOf("Camera aiming not done after a windscreen or camera replacement or repair", "A fault with the lane camera"),
+            listOf("Driver-assist warnings on, such as emergency braking or lane warnings", "Driver-assist features switched off"),
+            listOf("Don't rely on driver-assist features until it's fixed", "Ask a Nissan dealer to aim the camera and check it"),
+            "Nissan NTB18-008: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10218973-0001.pdf
+        e("C1B56", "Nissan", listOf(f(2019, 2022, "Altima")),
+            "Rear sonar circuit",
+            "Nissan's definition: a fault in the sonar (parking sensor) circuit used by the driver-assist control unit.",
+            L,
+            listOf("Dirt, ice or damage on a rear sonar sensor", "A sonar sensor fault or damaged wiring", "A network communication fault"),
+            listOf("The rear automatic braking warning light on", "Rear automatic braking or parking sensors not working"),
+            listOf("Clean the rear bumper's parking sensors", "Switch the car off and on, then see if the warning returns", "If it stays on, ask a Nissan dealer to diagnose the sonar sensors"),
+            "Nissan NTB22-073: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004961-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2023/MC-10233896-0001.pdf
+        e("U1000", "Nissan", listOf(
+                f(2005, 2009, "350Z"),
+                f(2009, 2020, "370Z"),
+                f(2005, 2024, "Altima"),
+                f(2005, 2024, "Frontier"),
+                f(2009, 2024, "GT-R"),
+                f(2011, 2017, "Juke"),
+                f(2018, 2024, "Kicks"),
+                f(2011, 2024, "Leaf"),
+                f(2005, 2023, "Maxima"),
+                f(2005, 2024, "Murano"),
+                f(2005, 2021, "Pathfinder"),
+                f(2008, 2020, "Rogue"),
+                f(2005, 2019, "Sentra"),
+                f(2005, 2024, "Titan"),
+            ),
+            "CAN communication missing",
+            "Nissan's definition: a control unit is missing messages it expects on the CAN network, the wiring the car's computers use to talk to each other. Stored in the engine computer, it means messages not related to the emissions (OBD2) system.",
+            M,
+            listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
+            listOf("Warning lights for one or more systems", "Features run by other control units not working", "Often stored in several control units at once"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            "Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10208930-0001.pdf
+        e("U1000", "Infiniti", listOf(
+                f(2005, 2013, "G37"),
+                f(2014, 2022, "Q50"),
+                f(2014, 2022, "Q60"),
+                f(2005, 2019, "Q70"),
+                f(2008, 2022, "QX50"),
+                f(2013, 2021, "QX60"),
+                f(2005, 2017, "QX70"),
+                f(2005, 2022, "QX80"),
+            ),
+            "CAN communication missing",
+            "Infiniti's definition: a control unit is missing messages it expects on the CAN network, the wiring the car's computers use to talk to each other. Stored in the engine computer, it means messages not related to the emissions (OBD2) system.",
+            M,
+            listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
+            listOf("Warning lights for one or more systems", "Features run by other control units not working", "Often stored in several control units at once"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            "Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004961-0001.pdf
+        e("U1001", "Nissan", listOf(
+                f(2005, 2009, "350Z"),
+                f(2009, 2020, "370Z"),
+                f(2005, 2024, "Altima"),
+                f(2005, 2024, "Frontier"),
+                f(2009, 2024, "GT-R"),
+                f(2011, 2017, "Juke"),
+                f(2018, 2024, "Kicks"),
+                f(2011, 2024, "Leaf"),
+                f(2005, 2023, "Maxima"),
+                f(2005, 2024, "Murano"),
+                f(2005, 2021, "Pathfinder"),
+                f(2008, 2020, "Rogue"),
+                f(2005, 2019, "Sentra"),
+                f(2005, 2024, "Titan"),
+            ),
+            "CAN communication missing (emissions related)",
+            "Nissan's definition: the engine computer is missing messages it expects on the CAN network, the wiring the car's computers use to talk to each other, and they are messages the emissions (OBD2) system relies on.",
+            M,
+            listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
+            listOf("Check-engine light on", "Warning lights for other systems"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            "Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10208930-0001.pdf
+        e("U1001", "Infiniti", listOf(
+                f(2005, 2013, "G37"),
+                f(2014, 2022, "Q50"),
+                f(2014, 2022, "Q60"),
+                f(2005, 2019, "Q70"),
+                f(2008, 2022, "QX50"),
+                f(2013, 2021, "QX60"),
+                f(2005, 2017, "QX70"),
+                f(2005, 2022, "QX80"),
+            ),
+            "CAN communication missing (emissions related)",
+            "Infiniti's definition: the engine computer is missing messages it expects on the CAN network, the wiring the car's computers use to talk to each other, and they are messages the emissions (OBD2) system relies on.",
+            M,
+            listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
+            listOf("Check-engine light on", "Warning lights for other systems"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            "Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004961-0001.pdf
+        e("U1002", "Nissan", listOf(
+                f(2005, 2009, "350Z"),
+                f(2009, 2020, "370Z"),
+                f(2005, 2024, "Altima"),
+                f(2005, 2024, "Frontier"),
+                f(2009, 2024, "GT-R"),
+                f(2011, 2017, "Juke"),
+                f(2018, 2024, "Kicks"),
+                f(2011, 2024, "Leaf"),
+                f(2005, 2023, "Maxima"),
+                f(2005, 2024, "Murano"),
+                f(2005, 2021, "Pathfinder"),
+                f(2008, 2020, "Rogue"),
+                f(2005, 2019, "Sentra"),
+                f(2005, 2024, "Titan"),
+            ),
+            "CAN communication missing (tighter timing)",
+            "Nissan's definition: like U1000, a control unit is missing messages it expects on the CAN network, but this code sets on a tighter timing limit.",
+            M,
+            listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
+            listOf("Warning lights for one or more systems", "Often stored in several control units at once"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            "Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10208930-0001.pdf
+        e("U1002", "Infiniti", listOf(
+                f(2005, 2013, "G37"),
+                f(2014, 2022, "Q50"),
+                f(2014, 2022, "Q60"),
+                f(2005, 2019, "Q70"),
+                f(2008, 2022, "QX50"),
+                f(2013, 2021, "QX60"),
+                f(2005, 2017, "QX70"),
+                f(2005, 2022, "QX80"),
+            ),
+            "CAN communication missing (tighter timing)",
+            "Infiniti's definition: like U1000, a control unit is missing messages it expects on the CAN network, but this code sets on a tighter timing limit.",
+            M,
+            listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
+            listOf("Warning lights for one or more systems", "Often stored in several control units at once"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            "Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004961-0001.pdf
+        e("U1010", "Nissan", listOf(
+                f(2005, 2009, "350Z"),
+                f(2009, 2020, "370Z"),
+                f(2005, 2024, "Altima"),
+                f(2005, 2024, "Frontier"),
+                f(2009, 2024, "GT-R"),
+                f(2011, 2017, "Juke"),
+                f(2018, 2024, "Kicks"),
+                f(2011, 2024, "Leaf"),
+                f(2005, 2023, "Maxima"),
+                f(2005, 2024, "Murano"),
+                f(2005, 2021, "Pathfinder"),
+                f(2008, 2020, "Rogue"),
+                f(2005, 2019, "Sentra"),
+                f(2005, 2024, "Titan"),
+            ),
+            "Control unit internal fault",
+            "Nissan's definition: the control unit that stored this code has an internal problem.",
+            M,
+            listOf("A faulty control unit", "Low 12-volt battery voltage at the time"),
+            listOf("Warning lights for the system that control unit runs", "That system not working properly"),
+            listOf("Have the 12-volt battery tested", "Note which control unit stored the code", "Ask a dealer to confirm the fault; their fix for this code is to replace the control unit that set it"),
+            "Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2022/MC-10208930-0001.pdf
+        e("U1010", "Infiniti", listOf(
+                f(2005, 2013, "G37"),
+                f(2014, 2022, "Q50"),
+                f(2014, 2022, "Q60"),
+                f(2005, 2019, "Q70"),
+                f(2008, 2022, "QX50"),
+                f(2013, 2021, "QX60"),
+                f(2005, 2017, "QX70"),
+                f(2005, 2022, "QX80"),
+            ),
+            "Control unit internal fault",
+            "Infiniti's definition: the control unit that stored this code has an internal problem.",
+            M,
+            listOf("A faulty control unit", "Low 12-volt battery voltage at the time"),
+            listOf("Warning lights for the system that control unit runs", "That system not working properly"),
+            listOf("Have the 12-volt battery tested", "Note which control unit stored the code", "Ask a dealer to confirm the fault; their fix for this code is to replace the control unit that set it"),
+            "Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2016/MC-10090650-2280.pdf
+        e("P1C55", "Nissan", listOf(f(2016, 2016, "Titan", "5.0 V8 diesel")),
+            "NOx sensor 1/1 intermittent",
+            "Nissan's definition: NOx sensor 1/1 (Nissan's numbering) has an intermittent signal. The NOx sensors measure nitrogen oxides in the exhaust so the diesel exhaust treatment can be controlled.",
+            M,
+            listOf("Loose or corroded NOx sensor connector or wiring", "A failing NOx sensor", "Engine computer warning-light logic, which Nissan updated on some 2016 Titan XD diesels before sale"),
+            listOf("Check-engine light on", "Usually no change in how the truck drives"),
+            listOf("Check the NOx sensor wiring and connector, away from hot exhaust parts", "Ask a Nissan dealer whether the engine computer update (PC465) was done"),
+            "Nissan PC465: the maker's own service bulletin, filed with NHTSA")
+        // https://static.nhtsa.gov/odi/tsbs/2016/MC-10090650-2280.pdf
+        e("P1C56", "Nissan", listOf(f(2016, 2016, "Titan", "5.0 V8 diesel")),
+            "NOx sensor 1/2 intermittent",
+            "Nissan's definition: NOx sensor 1/2 (Nissan's numbering) has an intermittent signal. The NOx sensors measure nitrogen oxides in the exhaust so the diesel exhaust treatment can be controlled.",
+            M,
+            listOf("Loose or corroded NOx sensor connector or wiring", "A failing NOx sensor", "Engine computer warning-light logic, which Nissan updated on some 2016 Titan XD diesels before sale"),
+            listOf("Check-engine light on", "Usually no change in how the truck drives"),
+            listOf("Check the NOx sensor wiring and connector, away from hot exhaust parts", "Ask a Nissan dealer whether the engine computer update (PC465) was done"),
+            "Nissan PC465: the maker's own service bulletin, filed with NHTSA")
     }
 
     private fun mazda(sink: Sink) = with(sink) {
