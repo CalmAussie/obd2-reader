@@ -1167,7 +1167,7 @@ internal object MakerCodeData {
             H,
             listOf("A fault in a module inside the high-voltage battery; on the 62 kWh battery Nissan found a bent retention plate in some battery modules", "Another high-voltage system fault the dealer's diagnosis has to find"),
             listOf("The car won't start (won't go into READY)", "EV system warnings on the dash", "Often a high-voltage isolation code stored at the same time"),
-            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any EV system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any EV system warning on the dash and whether the car still goes into READY", "Have a Nissan dealer or EV-trained technician test the high-voltage system"),
             "Nissan NTB23-024A: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2020/MC-10172241-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2019/MC-10163708-9999.pdf
         e("U1009", "Nissan", listOf(f(2018, 2019, "Leaf")),
