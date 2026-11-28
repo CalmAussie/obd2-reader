@@ -1,0 +1,90 @@
+--------- beginning of main
+11-28 12:08:14.900  1159  4003 D OverviewCommandHelper: adding command type: 4
+11-28 12:08:14.902  1159  1159 D OverviewCommandHelper: executeCommand: CommandInfo(type=4, createTime=4654346, mActiveCallbacks=null) - visibleRecentsView: null
+11-28 12:08:14.902  1159  1159 D StateManager: goToState - fromState: Normal, toState: Overview, partial trace:
+11-28 12:08:14.902  1159  1159 D StateManager: 	at com.android.quickstep.LauncherActivityInterface.switchToRecentsIfVisible(go/retraceme 31f9979659277bb965985aff1272c33e3c3c9e755b77166d20a2465454178f2c:39)
+11-28 12:08:14.902  1159  1159 D StateManager: 	at com.android.quickstep.OverviewCommandHelper.executeCommand(go/retraceme 31f9979659277bb965985aff1272c33e3c3c9e755b77166d20a2465454178f2c:207)
+11-28 12:08:14.902  1159  1159 D StateManager: 	at com.android.quickstep.OverviewCommandHelper.executeNext(go/retraceme 31f9979659277bb965985aff1272c33e3c3c9e755b77166d20a2465454178f2c:26)
+11-28 12:08:14.902  1159  1159 D StateManager: onStateTransitionStart - state: Overview
+--------- beginning of system
+11-28 12:08:14.904   558   580 D AutofillManagerService: Close system dialogs
+11-28 12:08:14.908   907   907 I vol.VolumeDialogImpl: mDialog.dismiss() reason: volume_controller from: com.android.systemui.volume.VolumeDialogImpl$7.onDismissRequested:3
+11-28 12:08:14.908  1159  1159 D StateManager: onStateTransitionEnd - state: Overview
+11-28 12:08:14.909  1159  1159 D OverviewCommandHelper: switching to Overview state - onAnimationEnd: CommandInfo(type=4, createTime=4654346, mActiveCallbacks=null)
+11-28 12:08:14.909  1159  1159 D OverviewCommandHelper: scheduleNextTask called: CommandInfo(type=4, createTime=4654346, mActiveCallbacks=null)
+11-28 12:08:14.909  1159  1159 D OverviewCommandHelper: executeNext - mPendingCommands is empty
+11-28 12:08:14.909  1159  1159 D OverviewCommandHelper: switching to Overview state - waiting: CommandInfo(type=4, createTime=4654346, mActiveCallbacks=null)
+11-28 12:08:14.909  1159  1159 D OverviewCommandHelper: executeNext cmd type: CommandInfo(type=4, createTime=4654346, mActiveCallbacks=null), result: false
+11-28 12:08:14.914  1159  1720 D EGL_emulation: app_time_stats: avg=1643.50ms min=1643.50ms max=1643.50ms count=1
+11-28 12:08:14.919  1159  1159 D RecentsView: applyLoadPlan - taskGroups: []
+11-28 12:08:14.949   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:14.983  1159  1720 D EGL_emulation: app_time_stats: avg=603.33ms min=34.92ms max=2578.12ms count=5
+11-28 12:08:15.290  3299  3359 D EGL_emulation: app_time_stats: avg=39.28ms min=2.07ms max=85.14ms count=25
+11-28 12:08:15.349   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:15.750   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:16.150   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:16.290  3299  3359 D EGL_emulation: app_time_stats: avg=36.71ms min=16.48ms max=83.73ms count=27
+11-28 12:08:16.550   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:16.951   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:17.307  3299  3359 D EGL_emulation: app_time_stats: avg=37.36ms min=16.52ms max=99.38ms count=27
+11-28 12:08:17.354   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:17.755   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:17.991 30138 30138 W BpBinder: Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+11-28 12:08:17.991 30138 30138 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+11-28 12:08:18.005   149   149 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+11-28 12:08:18.005 30138 30139 I Gralloc4: mapper 4.x is not supported
+--------- beginning of kernel
+11-28 12:08:18.127     0     0 I servicemanager: Caller(pid=30138,uid=2000,sid=u:r:shell:s0) Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest. No alternative instances declared in VINTF.
+11-28 12:08:18.161   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:18.210  1159  1159 D b/318590728: onInterceptTouchEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=540.0, y[0]=1300.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=4657655, downTime=4657655, deviceId=-1, source=0x1002, displayId=0, eventId=-478858114 }
+11-28 12:08:18.340  3299  3359 D EGL_emulation: app_time_stats: avg=39.73ms min=16.16ms max=81.49ms count=26
+11-28 12:08:18.565   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:18.619  3770  3770 W TimedProcessReaper: Memory state is: 125
+11-28 12:08:18.619  3770  3770 D TimedProcessReaper: Attempted to reap process, but was too important
+11-28 12:08:18.966   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:19.356  3299  3359 D EGL_emulation: app_time_stats: avg=40.22ms min=11.95ms max=115.97ms count=25
+11-28 12:08:19.366   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:19.767   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:20.169   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:20.358  3299  3359 D EGL_emulation: app_time_stats: avg=36.71ms min=15.65ms max=100.94ms count=27
+11-28 12:08:20.569   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:20.973   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:21.376   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:21.424  3299  3359 D EGL_emulation: app_time_stats: avg=38.96ms min=12.58ms max=98.59ms count=27
+11-28 12:08:21.776   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:22.178   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:22.440  3299  3359 D EGL_emulation: app_time_stats: avg=38.78ms min=4.43ms max=97.64ms count=26
+11-28 12:08:22.566  3299  3307 I m.obdreader.app: Background concurrent mark compact GC freed 11MB AllocSpace bytes, 0(0B) LOS objects, 49% free, 11MB/23MB, paused 113us,7.378ms total 45.633ms
+11-28 12:08:22.571 30147 30147 W BpBinder: Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+11-28 12:08:22.571 30147 30147 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+11-28 12:08:22.588   558  1160 I AppWidgetServiceImpl: getAppWidgetIds() 0
+11-28 12:08:22.591   149   149 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+11-28 12:08:22.591 30147 30148 I Gralloc4: mapper 4.x is not supported
+11-28 12:08:22.713     0     0 I servicemanager: Caller(pid=30147,uid=2000,sid=u:r:shell:s0) Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest. No alternative instances declared in VINTF.
+11-28 12:08:22.828   558   581 W ActivityTaskManager: callingPackage for (uid=-1, pid=0) has no WPC
+11-28 12:08:22.828   558   581 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_OVERRIDE
+11-28 12:08:22.828   558   581 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_FULLSCREEN_OVERRIDE
+11-28 12:08:22.828   558   581 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE
+11-28 12:08:22.829   558   581 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES
+11-28 12:08:22.829   558   581 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE
+11-28 12:08:22.829   558   581 V GrammaticalInflectionUtils: AttributionSource: AttributionSource { uid = 10178, packageName = null, attributionTag = null, token = android.os.Binder@83e736a, deviceId = 0, next = null } does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+11-28 12:08:22.830   558   580 D AutofillManagerService: Close system dialogs
+11-28 12:08:22.832   907  1065 D KeyguardService: setOccluded(false)
+11-28 12:08:22.832   907  1065 D KeyguardViewMediator: setOccluded(false)
+11-28 12:08:22.832   558   581 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity (has extras)} with LAUNCH_SINGLE_TASK from uid 0 (BAL_ALLOW_ALLOWLISTED_UID) result code=3
+11-28 12:08:22.833  1159  1159 W SplitSelectStateCtor: Missing session instanceIds
+11-28 12:08:22.833  1159  1159 D StatsLog: LAUNCHER_SPLIT_SELECTION_EXIT_INTERRUPTED
+11-28 12:08:22.833   907   960 D WindowManagerShell: onActivityRestartAttempt: ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}
+11-28 12:08:22.833   907   907 D KeyguardViewMediator: handleSetOccluded(false)
+11-28 12:08:22.834  1159  1159 D StateManager: goToState - fromState: Overview, toState: Normal, partial trace:
+11-28 12:08:22.834  1159  1159 D StateManager: 	at com.android.launcher3.Launcher.onNewIntent(go/retraceme 31f9979659277bb965985aff1272c33e3c3c9e755b77166d20a2465454178f2c:118)
+11-28 12:08:22.834  1159  1159 D StateManager: 	at com.android.launcher3.uioverrides.QuickstepLauncher.onNewIntent(go/retraceme 31f9979659277bb965985aff1272c33e3c3c9e755b77166d20a2465454178f2c:1)
+11-28 12:08:22.834  1159  1159 D StateManager: 	at android.app.Activity.onNewIntent(Activity.java:2418)
+11-28 12:08:22.834  1159  1159 D StateManager: onStateTransitionStart - state: Normal
+11-28 12:08:22.836  1159  1159 D StateManager: onStateTransitionEnd - state: Normal
+11-28 12:08:22.837   907   907 D KeyguardViewMediator: KeyguardViewMediator queue processing message: SET_OCCLUDED
+11-28 12:08:22.837   907   907 I vol.VolumeDialogImpl: mDialog.dismiss() reason: volume_controller from: com.android.systemui.volume.VolumeDialogImpl$7.onDismissRequested:3
+11-28 12:08:22.837  1159  1159 D RecentsView: reset - mEnableDrawingLiveTile: false, mRecentsAnimationController: null
+11-28 12:08:22.837  1159  1159 D OverviewCommandHelper: clearing pending commands - size: 0
+11-28 12:08:22.837  1159  1159 D StatsLog: LAUNCHER_ONRESUME
+11-28 12:08:22.847   558  1492 W AppSearchIcing: icing-search-engine.cc:321: Error: 5, Message: Document (com.google.android.googlequicksearchbox$OneSearchZeroStateGoogleSuggestions/default, zp) not found.

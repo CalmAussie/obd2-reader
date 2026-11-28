@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.obdreader.app.obd.RouteTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-11-28T10:49:29.345Z" hostname="runnervm0j63q" time="0.017">
+  <properties/>
+  <testcase name="readsTheRouteAndSkipsRepeatsAndBadFixes" classname="com.obdreader.app.obd.RouteTest" time="0.0"/>
+  <testcase name="usableFixesLineUpWithTheRows" classname="com.obdreader.app.obd.RouteTest" time="0.0"/>
+  <testcase name="aStrayFirstFixFarAwayIsLeftOut" classname="com.obdreader.app.obd.RouteTest" time="0.001"/>
+  <testcase name="aLongTunnelIsNotAJump" classname="com.obdreader.app.obd.RouteTest" time="0.002"/>
+  <testcase name="aStrayFixAtTheEndIsLeftOutToo" classname="com.obdreader.app.obd.RouteTest" time="0.0"/>
+  <testcase name="fitsTheBoxNorthUp" classname="com.obdreader.app.obd.RouteTest" time="0.0"/>
+  <testcase name="noLocationColumnsMeansNoRoute" classname="com.obdreader.app.obd.RouteTest" time="0.0"/>
+  <testcase name="oneJumpMidDriveIsLeftOut" classname="com.obdreader.app.obd.RouteTest" time="0.001"/>
+  <testcase name="aDriveThatEndsInATunnelCarriesOnByTheCarsSpeed" classname="com.obdreader.app.obd.RouteTest" time="0.002"/>
+  <testcase name="anOrdinaryDriveIsUnchanged" classname="com.obdreader.app.obd.RouteTest" time="0.001"/>
+  <testcase name="standingStillAddsNothing" classname="com.obdreader.app.obd.RouteTest" time="0.001"/>
+  <testcase name="aSkipTooFarForTheTimeIsStillLeftOut" classname="com.obdreader.app.obd.RouteTest" time="0.002"/>
+  <testcase name="aRepeatedFixCountsFromWhenItCame" classname="com.obdreader.app.obd.RouteTest" time="0.004"/>
+  <testcase name="aGapInTheMiddleJustJoinsTheFixes" classname="com.obdreader.app.obd.RouteTest" time="0.0"/>
+  <testcase name="stretchesAreRankedBySpeedForShading" classname="com.obdreader.app.obd.RouteTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
