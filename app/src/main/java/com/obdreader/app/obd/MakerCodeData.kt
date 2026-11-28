@@ -1162,28 +1162,28 @@ internal object MakerCodeData {
             "Infiniti ITB18-020: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004974-0001.pdf
         e("P31E7", "Nissan", listOf(f(2019, 2025, "Leaf")),
-            "Restart inhibition",
-            "Nissan's definition: restart inhibition. The EV control system is blocking the car from being started (switched to READY). Nissan's bulletin for this code covers Leafs with the 62 kWh battery.",
+            "EV system blocking start-up (restart inhibition)",
+            "Nissan's definition: the EV control system is blocking the car from being started (switched to READY). Nissan's bulletin for this code covers Leafs with the 62 kWh battery.",
             H,
             listOf("A fault in a module inside the high-voltage battery; on the 62 kWh battery Nissan found a bent retention plate in some battery modules", "Another high-voltage system fault the dealer's diagnosis has to find"),
             listOf("The car won't start (won't go into READY)", "EV system warnings on the dash", "Often a high-voltage isolation code stored at the same time"),
-            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any hybrid system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system"),
+            listOf("Don't touch the orange high-voltage cables or open any high-voltage part yourself", "Note any EV system warning on the dash and whether the car still goes into READY", "Have a dealer or hybrid-trained technician test the high-voltage system"),
             "Nissan NTB23-024A: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2020/MC-10172241-0001.pdf; https://static.nhtsa.gov/odi/tsbs/2019/MC-10163708-9999.pdf
         e("U1009", "Nissan", listOf(f(2018, 2019, "Leaf")),
             "Quick charger communication",
             "Nissan's definition: the car has a communication fault with a quick (DC fast) charger.",
             M,
-            listOf("Battery controller software, which Nissan updated for 2018-19 Leafs with the 40 kWh battery built before late January 2019", "A fault at the charger or its plug"),
+            listOf("Battery controller software, which Nissan updated for 2018–2019 Leafs with the 40 kWh battery built before late January 2019", "A fault at the charger or its plug"),
             listOf("The car won't quick-charge", "Normal (AC) charging may still work"),
             listOf("Try another quick charger to rule out the charger itself", "Ask a Nissan dealer whether the battery controller update in their bulletin applies to the car"),
             "Nissan NTB19-056a: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2020/MC-10173556-0001.pdf
         e("B2902", "Nissan", listOf(f(2018, 2019, "Leaf")),
             "Power delivery module (PDM) fault",
-            "Nissan's definition: Nissan names this code only after the power delivery module (PDM), which handles charging and high-voltage power distribution; it means the PDM has logged a fault.",
+            "Nissan's definition: a fault logged by the power delivery module (PDM), which handles charging and high-voltage power distribution. Nissan's name for the code gives no more detail.",
             M,
-            listOf("PDM software, which Nissan updated for 2018-19 Leafs with the 40 kWh battery built before early January 2019", "A fault in the PDM itself"),
+            listOf("PDM software, which Nissan updated for 2018–2019 Leafs with the 40 kWh battery built before early January 2019", "A fault in the PDM itself"),
             listOf("The EV battery warning light on"),
             listOf("Check whether normal charging still works and note any other warnings", "Ask a Nissan dealer to check the PDM part number and whether the update in their bulletin applies"),
             "Nissan NTB20-017: the maker's own service bulletin, filed with NHTSA")
@@ -1207,7 +1207,7 @@ internal object MakerCodeData {
             M,
             listOf("A G sensor that needs calibrating; Nissan says to calibrate it with the car parked on level ground before replacing anything", "A faulty sensor in the ABS unit"),
             listOf("The ABS, VDC (stability control) or brake warning lights on"),
-            listOf("Have a Nissan dealer run the G sensor calibration on level ground", "Don't replace the ABS unit unless the dealer's diagnosis says so"),
+            listOf("If the red brake warning light stays on, have the brakes checked before driving on", "Have a Nissan dealer run the G sensor calibration on level ground", "Don't replace the ABS unit unless the dealer's diagnosis says so"),
             "Nissan NTB23-038: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2015/MC-10192608-9999.pdf
         e("C1170", "Nissan", listOf(
@@ -1220,7 +1220,7 @@ internal object MakerCodeData {
             M,
             listOf("A new or swapped ABS control unit that hasn't been configured"),
             listOf("ABS, VDC (stability control) or brake warning lights on", "Usually appears after the ABS unit has been replaced"),
-            listOf("Ask whoever replaced the ABS unit to do the configuration with a Nissan diagnostic tool"),
+            listOf("If the red brake warning light stays on, have the brakes checked before driving on", "Ask whoever replaced the ABS unit to do the configuration with a Nissan diagnostic tool"),
             "Nissan NTB14-115c: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2018/MC-10130496-9999.pdf
         e("C1A03", "Nissan", listOf(f(2017, 2018, "Rogue|Pathfinder|Murano|Sentra|Altima|Maxima")),
@@ -1280,7 +1280,7 @@ internal object MakerCodeData {
             M,
             listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
             listOf("Warning lights for one or more systems", "Features run by other control units not working", "Often stored in several control units at once"),
-            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a Nissan dealer to follow their network diagnosis before any control unit is replaced"),
             "Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2022/MC-10208930-0001.pdf
         e("U1000", "Infiniti", listOf(
@@ -1298,7 +1298,7 @@ internal object MakerCodeData {
             M,
             listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
             listOf("Warning lights for one or more systems", "Features run by other control units not working", "Often stored in several control units at once"),
-            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask an Infiniti dealer to follow their network diagnosis before any control unit is replaced"),
             "Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004961-0001.pdf
         e("U1001", "Nissan", listOf(
@@ -1322,7 +1322,7 @@ internal object MakerCodeData {
             M,
             listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
             listOf("Check-engine light on", "Warning lights for other systems"),
-            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a Nissan dealer to follow their network diagnosis before any control unit is replaced"),
             "Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2022/MC-10208930-0001.pdf
         e("U1001", "Infiniti", listOf(
@@ -1340,7 +1340,7 @@ internal object MakerCodeData {
             M,
             listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
             listOf("Check-engine light on", "Warning lights for other systems"),
-            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask an Infiniti dealer to follow their network diagnosis before any control unit is replaced"),
             "Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004961-0001.pdf
         e("U1002", "Nissan", listOf(
@@ -1364,7 +1364,7 @@ internal object MakerCodeData {
             M,
             listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
             listOf("Warning lights for one or more systems", "Often stored in several control units at once"),
-            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a Nissan dealer to follow their network diagnosis before any control unit is replaced"),
             "Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2022/MC-10208930-0001.pdf
         e("U1002", "Infiniti", listOf(
@@ -1382,7 +1382,7 @@ internal object MakerCodeData {
             M,
             listOf("Low 12-volt battery voltage", "A loose or corroded network connector", "Damaged network wiring", "A control unit that has stopped communicating"),
             listOf("Warning lights for one or more systems", "Often stored in several control units at once"),
-            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask a dealer to follow their network diagnosis before any control unit is replaced"),
+            listOf("Have the 12-volt battery tested; low voltage causes many communication codes", "Note which other codes are stored with it and in which control units", "Ask an Infiniti dealer to follow their network diagnosis before any control unit is replaced"),
             "Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2024/MC-11004961-0001.pdf
         e("U1010", "Nissan", listOf(
@@ -1406,7 +1406,7 @@ internal object MakerCodeData {
             M,
             listOf("A faulty control unit", "Low 12-volt battery voltage at the time"),
             listOf("Warning lights for the system that control unit runs", "That system not working properly"),
-            listOf("Have the 12-volt battery tested", "Note which control unit stored the code", "Ask a dealer to confirm the fault; their fix for this code is to replace the control unit that set it"),
+            listOf("Have the 12-volt battery tested", "Note which control unit stored the code", "Ask a Nissan dealer to confirm the fault; their fix for this code is to replace the control unit that set it"),
             "Nissan NTB13-027D: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2022/MC-10208930-0001.pdf
         e("U1010", "Infiniti", listOf(
@@ -1424,7 +1424,7 @@ internal object MakerCodeData {
             M,
             listOf("A faulty control unit", "Low 12-volt battery voltage at the time"),
             listOf("Warning lights for the system that control unit runs", "That system not working properly"),
-            listOf("Have the 12-volt battery tested", "Note which control unit stored the code", "Ask a dealer to confirm the fault; their fix for this code is to replace the control unit that set it"),
+            listOf("Have the 12-volt battery tested", "Note which control unit stored the code", "Ask an Infiniti dealer to confirm the fault; their fix for this code is to replace the control unit that set it"),
             "Infiniti ITB13-006C: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2016/MC-10090650-2280.pdf
         e("P1C55", "Nissan", listOf(f(2016, 2016, "Titan", "5.0 V8 diesel")),
@@ -1432,7 +1432,7 @@ internal object MakerCodeData {
             "Nissan's definition: NOx sensor 1/1 (Nissan's numbering) has an intermittent signal. The NOx sensors measure nitrogen oxides in the exhaust so the diesel exhaust treatment can be controlled.",
             M,
             listOf("Loose or corroded NOx sensor connector or wiring", "A failing NOx sensor", "Engine computer warning-light logic, which Nissan updated on some 2016 Titan XD diesels before sale"),
-            listOf("Check-engine light on", "Usually no change in how the truck drives"),
+            listOf("Check-engine light on", "Usually no change in how it drives"),
             listOf("Check the NOx sensor wiring and connector, away from hot exhaust parts", "Ask a Nissan dealer whether the engine computer update (PC465) was done"),
             "Nissan PC465: the maker's own service bulletin, filed with NHTSA")
         // https://static.nhtsa.gov/odi/tsbs/2016/MC-10090650-2280.pdf
@@ -1441,7 +1441,7 @@ internal object MakerCodeData {
             "Nissan's definition: NOx sensor 1/2 (Nissan's numbering) has an intermittent signal. The NOx sensors measure nitrogen oxides in the exhaust so the diesel exhaust treatment can be controlled.",
             M,
             listOf("Loose or corroded NOx sensor connector or wiring", "A failing NOx sensor", "Engine computer warning-light logic, which Nissan updated on some 2016 Titan XD diesels before sale"),
-            listOf("Check-engine light on", "Usually no change in how the truck drives"),
+            listOf("Check-engine light on", "Usually no change in how it drives"),
             listOf("Check the NOx sensor wiring and connector, away from hot exhaust parts", "Ask a Nissan dealer whether the engine computer update (PC465) was done"),
             "Nissan PC465: the maker's own service bulletin, filed with NHTSA")
     }
